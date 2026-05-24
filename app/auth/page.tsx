@@ -1,13 +1,13 @@
 'use client';
 // app/auth/page.tsx — Sign in / sign up (replaces auth.html)
 
-import { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect, FormEvent, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { signIn, signUp, resetPassword, onAuthStateChanged } from '@/lib/firebase';
 
 type Tab = 'login' | 'register';
 
-export default function AuthPage() {
+function AuthPageInner() {
   const router       = useRouter();
   const searchParams = useSearchParams();
   const [tab, setTab]         = useState<Tab>('login');
@@ -290,6 +290,14 @@ export default function AuthPage() {
         }
       `}</style>
     </div>
+  );
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense fallback={null}>
+      <AuthPageInner />
+    </Suspense>
   );
 }
 
