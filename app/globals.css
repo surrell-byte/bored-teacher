@@ -223,15 +223,138 @@ a { color: inherit; }
   object-fit: contain;
 }
 
-.header-right {
+.nav-links {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  scrollbar-width: none;
+  flex: 1;
+  justify-content: center;
 }
-.header-right::-webkit-scrollbar { display: none; }
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* ── Profile Dropdown ───────────────────────────────────── */
+.profile-dropdown-wrap {
+  position: relative;
+}
+
+.profile-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 200px;
+  background: var(--surface-strong);
+  border: 1px solid var(--border-bright);
+  border-radius: 16px;
+  padding: 6px;
+  z-index: 200;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.4);
+  animation: fadeIn 0.15s ease both;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: none;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 10px;
+  text-align: left;
+  text-decoration: none;
+  gap: 8px;
+  transition: background 0.15s;
+}
+.dropdown-item:hover { background: var(--surface-soft); }
+
+.dropdown-theme { cursor: default; }
+.dropdown-theme:hover { background: none; }
+
+.dropdown-signout { color: var(--red); }
+.dropdown-signout:hover { background: rgba(233,109,109,0.1); }
+
+.dropdown-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 6px;
+}
+
+.theme-select-inline {
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  cursor: pointer;
+  outline: none;
+  max-width: 110px;
+}
+
+/* ── Hamburger ──────────────────────────────────────────── */
+.hamburger {
+  display: none;
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 1.1rem;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.18s;
+}
+.hamburger:hover { border-color: var(--border-bright); }
+
+/* ── Mobile Menu ────────────────────────────────────────── */
+.mobile-menu {
+  display: none;
+  flex-direction: column;
+  background: var(--surface-strong);
+  border-bottom: 1px solid var(--border);
+  padding: 8px 16px 12px;
+  gap: 4px;
+}
+
+.mobile-nav-item {
+  display: block;
+  width: 100%;
+  padding: 12px 14px;
+  border: none;
+  background: none;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 10px;
+  text-align: left;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+.mobile-nav-item:hover { background: var(--surface-soft); }
+.mobile-signout { color: var(--red); }
+
+@media (max-width: 700px) {
+  .nav-links { display: none; }
+  .hamburger { display: inline-flex; }
+  .mobile-menu { display: flex; }
+}
 
 .pill-btn {
   display: inline-flex;
@@ -980,8 +1103,149 @@ a { color: inherit; }
   to   { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes modalEnter {
+  from { opacity: 0; transform: scale(0.93) translateY(12px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes dropdownEnter {
+  from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes cardStagger {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes toastSlideUp {
+  from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245,200,66,0); }
+  50%       { box-shadow: 0 0 0 6px rgba(245,200,66,0.15); }
+}
+
+/* ── Page transitions ───────────────────────────────────── */
+.page-enter {
+  opacity: 1;
+}
+.page-enter-active {
+  animation: pageEnter 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ── Modal entrance ─────────────────────────────────────── */
+.modal-animated {
+  animation: modalEnter 0.28s cubic-bezier(0.34, 1.3, 0.64, 1) both;
+}
+
+/* ── Dropdown entrance ──────────────────────────────────── */
+.dropdown-animated {
+  animation: dropdownEnter 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: top right;
+}
+
+/* ── Staggered game cards ───────────────────────────────── */
+.card-stagger {
+  animation: cardStagger 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(min(var(--stagger-i, 0) * 0.04s, 0.5s));
+}
+
+/* ── Animate in utility ─────────────────────────────────── */
 .animate-in {
   animation: fadeIn 0.4s ease both;
+}
+
+/* ── Button press feel ──────────────────────────────────── */
+.pill-btn {
+  transition: border-color 0.18s, background 0.18s, transform 0.12s, box-shadow 0.15s;
+}
+.pill-btn:active {
+  transform: scale(0.95) !important;
+}
+
+/* ── Game card hover lift ───────────────────────────────── */
+.game-card {
+  transition: transform 0.2s cubic-bezier(0.34, 1.3, 0.64, 1),
+              border-color 0.2s,
+              box-shadow 0.2s;
+}
+.game-card:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+}
+.game-card:active {
+  transform: scale(0.97);
+}
+
+/* ── XP bar fill animation ──────────────────────────────── */
+.hub-xp-fill {
+  transition: width 1s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+
+/* ── Stat numbers pulse when updated ───────────────────── */
+.hub-stat-val, .trophy-stat-val {
+  transition: color 0.3s;
+}
+
+/* ── Modal backdrop fade ────────────────────────────────── */
+.modal-backdrop {
+  animation: fadeIn 0.2s ease both;
+}
+.modal-backdrop.open {
+  animation: fadeIn 0.2s ease both;
+}
+
+/* ── Toast animation ────────────────────────────────────── */
+.toast {
+  animation: toastSlideUp 0.3s cubic-bezier(0.34, 1.3, 0.64, 1) both;
+}
+
+/* ── Nav link underline slide ───────────────────────────── */
+.nav-links .pill-btn {
+  position: relative;
+  overflow: hidden;
+}
+.nav-links .pill-btn::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 50%;
+  width: 0; height: 2px;
+  background: var(--teal);
+  border-radius: 2px;
+  transition: width 0.2s ease, left 0.2s ease;
+}
+.nav-links .pill-btn:hover::after {
+  width: 60%;
+  left: 20%;
+}
+
+/* ── Pill active glow ───────────────────────────────────── */
+.pill-btn.active {
+  animation: pulseGlow 2.5s ease-in-out infinite;
+}
+
+/* ── Hub filter row entrance ────────────────────────────── */
+.hub-filter-row {
+  animation: fadeIn 0.4s ease 0.1s both;
+}
+.hub-tag-tabs {
+  animation: fadeIn 0.4s ease 0.18s both;
+}
+
+/* ── Reduce motion — respect user preference ────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -1056,30 +1320,6 @@ a { color: inherit; }
 
 .avatar-grid {
   grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)) !important;
-}
-
-/* ══════════════════════════════════════════════════════════════
-   NAVBAR — SCROLL FADE INDICATOR
-   Fades the right edge of header-right to hint at more items.
-══════════════════════════════════════════════════════════════ */
-.header-right-wrap {
-  position: relative;
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  overflow: hidden;
-}
-.header-right-wrap::after {
-  content: '';
-  position: absolute;
-  right: 0;
-  top: 0;
-  height: 100%;
-  width: 48px;
-  background: linear-gradient(to right, transparent, var(--surface-strong));
-  pointer-events: none;
-  z-index: 1;
 }
 
 /* ══════════════════════════════════════════════════════════════

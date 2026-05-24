@@ -2,6 +2,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { GameProvider } from '@/lib/gameState';
+import PageTransition from '@/components/PageTransition';
 
 export const metadata: Metadata = {
   title: 'ESL Game Hub',
@@ -14,7 +15,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         <GameProvider>
-          {children}
+          <PageTransition>
+            {children}
+          </PageTransition>
         </GameProvider>
       </body>
     </html>

@@ -42,7 +42,7 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="modal-backdrop open" role="dialog" aria-modal aria-labelledby="profileTitle">
-      <div className="modal" style={{ maxHeight: '90vh', overflowY: 'auto', scrollbarWidth: 'thin', width: 'min(96vw,520px)' }}>
+      <div className="modal modal-animated" style={{ maxHeight: '90vh', overflowY: 'auto', scrollbarWidth: 'thin', width: 'min(96vw,520px)' }}>
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
           <div className="modal-title" id="profileTitle">✏️ Edit Profile</div>

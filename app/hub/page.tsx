@@ -295,7 +295,7 @@ export default function HubPage() {
       ) : (
         <div className="hub-game-grid">
           {filteredGames.map((gameId, i) => (
-            <div key={gameId} style={{ animation: `fadeIn 0.3s ease ${Math.min(i * 0.03, 0.5)}s both` }}>
+            <div key={gameId} className="card-stagger" style={{ '--stagger-i': i } as React.CSSProperties}>
               <GameCard gameId={gameId} onClick={handlePlay} />
             </div>
           ))}
