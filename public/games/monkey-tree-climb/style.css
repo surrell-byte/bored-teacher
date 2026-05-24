@@ -1,0 +1,299 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    overflow: hidden;
+    font-family: 'Arial', sans-serif;
+    background: #87ceeb;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 
+   To replace the dynamic sky with your own image, 
+   change the background property of #game to:
+   background: url('assets/images/background.jpg') no-repeat center/cover;
+*/
+#game {
+    position: relative;
+    width: 100vw;
+    max-width: 800px;
+    height: 100vh;
+    background: linear-gradient(180deg, #87ceeb 0%, #d4f1ff 70%, #8bc34a 100%);
+    overflow: hidden;
+    box-shadow: 0 0 30px rgba(0,0,0,0.3);
+}
+
+/* Sky decorations */
+.sun {
+    position: absolute;
+    top: 30px;
+    right: 50px;
+    font-size: 70px;
+    opacity: 0.9;
+    animation: sunPulse 3s infinite;
+}
+
+.cloud {
+    position: absolute;
+    font-size: 80px;
+    opacity: 0.7;
+    animation: cloudDrift 20s linear infinite;
+}
+.cloud:nth-child(2) { top: 80px; left: 10%; animation-duration: 25s; }
+.cloud:nth-child(3) { top: 150px; left: 60%; animation-duration: 30s; animation-delay: 5s; }
+
+@keyframes sunPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+@keyframes cloudDrift {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(120vw); }
+}
+
+/* Tree */
+.trunk {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 85%;
+    background: linear-gradient(180deg, #8B5A2B 0%, #5C3A1E 100%);
+    border-radius: 30px 30px 0 0;
+    box-shadow: inset -10px 0 15px rgba(0,0,0,0.3), inset 5px 0 10px rgba(255,255,255,0.2);
+    z-index: 2;
+    transition: box-shadow 0.3s;
+}
+
+.trunk.winGlow {
+    box-shadow:
+        0 0 20px gold,
+        0 0 40px orange,
+        inset -10px 0 15px rgba(0,0,0,0.3);
+}
+
+.canopy {
+    position: absolute;
+    top: 5%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 250px;
+    height: 200px;
+    background: radial-gradient(circle at 30% 40%, #4caf50, #2e7d32);
+    border-radius: 50%;
+    filter: blur(2px);
+    box-shadow: 0 0 40px rgba(0,100,0,0.3);
+    z-index: 3;
+}
+
+.progress-track {
+    position: absolute;
+    bottom: 5%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 78%;
+    background: rgba(255,255,255,0.15);
+    border-radius: 10px;
+    z-index: 4;
+    overflow: hidden;
+}
+
+.progress-fill {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background: #ffeb3b;
+    height: 0%;
+    transition: height 0.4s ease;
+    border-radius: 10px;
+    box-shadow: 0 0 10px #ffc107;
+}
+
+/* Monkey */
+#monkey {
+    position: absolute;
+    font-size: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 5%;
+    z-index: 5;
+    animation: monkeyBounce 1.2s infinite;
+    filter: drop-shadow(2px 4px 4px rgba(0,0,0,0.3));
+    transition: bottom 0.5s cubic-bezier(0.25, 0.1, 0.25, 1.5);
+    will-change: transform, bottom;
+}
+
+@keyframes monkeyBounce {
+    0% { transform: translateX(-50%) rotate(-5deg); }
+    50% { transform: translateX(-50%) translateY(-12px) rotate(5deg); }
+    100% { transform: translateX(-50%) rotate(-5deg); }
+}
+
+/* Banana */
+#banana {
+    position: absolute;
+    font-size: 40px;
+    left: 55%;
+    bottom: 30%;
+    z-index: 6;
+    animation: bananaFloat 1.5s infinite ease-in-out;
+}
+
+@keyframes bananaFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+/* Crown at top */
+#topCrown {
+    position: absolute;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 60px;
+    z-index: 10;
+    animation: pulseCrown 1.2s infinite;
+}
+
+@keyframes pulseCrown {
+    0%, 100% { transform: translateX(-50%) scale(1); }
+    50% { transform: translateX(-50%) scale(1.15); }
+}
+
+/* UI */
+.ui {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 10;
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(10px);
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+    text-align: center;
+    min-width: 180px;
+}
+
+h1 {
+    margin-bottom: 10px;
+    color: #4e342e;
+    font-size: 1.5rem;
+}
+
+#levelText {
+    font-size: 28px;
+    margin: 5px 0;
+    font-weight: bold;
+    color: #2e7d32;
+}
+
+#lives {
+    font-size: 28px;
+    margin: 5px 0;
+    letter-spacing: 5px;
+}
+
+#slipMessage {
+    font-size: 16px;
+    color: #d32f2f;
+    margin: 5px 0;
+    min-height: 24px;
+    font-weight: bold;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+button {
+    padding: 14px 28px;
+    border: none;
+    border-radius: 30px;
+    font-size: 20px;
+    cursor: pointer;
+    background: #4caf50;
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    transition: transform 0.1s, background 0.2s, box-shadow 0.2s;
+    margin-top: 10px;
+    touch-action: manipulation;
+}
+
+button:hover:not(:disabled) {
+    transform: scale(1.05);
+    background: #43a047;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+}
+
+button:active {
+    transform: scale(0.92);
+}
+
+button:disabled {
+    background: #9e9e9e;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.cooldown-indicator {
+    font-size: 14px;
+    margin-top: 5px;
+    color: #555;
+}
+
+/* Win screen */
+#winScreen {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    z-index: 20;
+    color: white;
+    text-align: center;
+    backdrop-filter: blur(5px);
+}
+
+#winScreen h2 {
+    font-size: 60px;
+    margin-bottom: 20px;
+    text-shadow: 0 0 20px gold;
+}
+
+#crown {
+    font-size: 120px;
+    animation: bounce 1s infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+}
+
+/* Confetti animation */
+@keyframes confettiFall {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .ui {
+        left: 10px;
+        top: 10px;
+        padding: 12px;
+    }
+    h1 { font-size: 1.2rem; }
+    #levelText, #lives { font-size: 22px; }
+    button { padding: 12px 20px; font-size: 18px; }
+}

@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>🦄✨ CINEMATIC UNICORN TROPHY RUN ✨🏆</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      user-select: none;
+    }
+
+    body {
+      font-family: 'Comic Sans MS', 'Poppins', 'Segoe UI', cursive, sans-serif;
+      background: linear-gradient(135deg, #ffc0cb, #ffe4ec, #ffd6f0);
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Floating unicorn background */
+    body::before {
+      content: "🦄 ✨ 🌈 🦄 ✨ 🌈 🦄";
+      position: fixed;
+      top: 10%;
+      left: 0;
+      width: 100%;
+      font-size: 30px;
+      opacity: 0.12;
+      animation: floatBG 20s linear infinite;
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 0;
+    }
+
+    @keyframes floatBG {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    /* bouncing unicorn (alive!) */
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0) rotate(-3deg); }
+      50% { transform: translateY(-8px) rotate(3deg); }
+    }
+
+    .unicorn {
+      font-size: 48px;
+      animation: bounce 1s infinite ease-in-out;
+      display: inline-block;
+    }
+
+    /* cinematic screen pulse + bloom flash */
+    @keyframes screenPulse {
+      0% { transform: scale(1); filter: brightness(1); }
+      50% { transform: scale(1.02); filter: brightness(1.05); }
+      100% { transform: scale(1); filter: brightness(1); }
+    }
+
+    @keyframes bloomFlash {
+      0% { background: rgba(255,255,255,0); }
+      50% { background: rgba(255,255,255,0.4); }
+      100% { background: rgba(255,255,255,0); }
+    }
+
+    .screen.win {
+      animation: screenPulse 0.6s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    }
+
+    .screen.flash {
+      animation: bloomFlash 0.6s ease;
+    }
+
+    .screen {
+      max-width: 800px;
+      width: 100%;
+      background: rgba(255, 245, 250, 0.96);
+      backdrop-filter: blur(4px);
+      padding: 30px 25px 40px;
+      text-align: center;
+      box-shadow: 0 20px 35px rgba(255, 105, 180, 0.2);
+      border: 2px solid #ffb7c5;
+      transition: all 0.3s ease;
+      position: relative;
+      z-index: 2;
+      border-radius: 64px;
+    }
+
+    h1, h2, h3 {
+      color: #ff4da6;
+      text-shadow: 1px 1px 3px white;
+      font-weight: bold;
+    }
+
+    button {
+      background: linear-gradient(135deg, #ff66b2, #ff99cc);
+      border: none;
+      padding: 12px 28px;
+      margin: 10px;
+      border-radius: 60px;
+      font-size: 1rem;
+      font-weight: bold;
+      color: white;
+      cursor: pointer;
+      transition: 0.2s;
+      box-shadow: 0 5px 10px rgba(0,0,0,0.15);
+      font-family: inherit;
+    }
+
+    button:hover {
+      transform: scale(1.08);
+      background: linear-gradient(135deg, #ff3385, #ff80bf);
+    }
+
+    .level-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      margin: 30px 0 20px;
+    }
+
+    .level-card {
+      background: linear-gradient(145deg, #fff0f5, #ffe4ed);
+      border-radius: 40px;
+      padding: 20px 25px;
+      min-width: 140px;
+      cursor: pointer;
+      transition: 0.25s;
+      border: 2px solid #ffb3c6;
+      text-align: center;
+      position: relative;
+    }
+
+    .level-card:hover:not(.locked-level) {
+      transform: translateY(-8px);
+      border-color: #ff66b2;
+    }
+
+    .level-card.locked-level {
+      opacity: 0.65;
+      cursor: not-allowed;
+      filter: grayscale(0.1);
+    }
+
+    .lock-badge {
+      position: absolute;
+      top: 12px;
+      right: 18px;
+      font-size: 1.2rem;
+    }
+
+    .score-panel {
+      background: #ffeef4;
+      border-radius: 80px;
+      display: inline-flex;
+      align-items: baseline;
+      gap: 18px;
+      padding: 6px 25px;
+      margin-bottom: 25px;
+    }
+
+    .score-value {
+      font-size: 2rem;
+      font-weight: 800;
+      background: #ff66b2;
+      color: white;
+      padding: 0 20px;
+      border-radius: 50px;
+      min-width: 90px;
+    }
+
+    .emoji-arena {
+      background: #fff8fb;
+      border-radius: 70px;
+      padding: 20px;
+      margin: 15px 0;
+      border: 1px solid #ffc0dd;
+    }
+
+    .big-emoji {
+      font-size: 5rem;
+    }
+
+    .sentence {
+      font-size: 1.5rem;
+      font-weight: 600;
+      background: #ffeef4;
+      display: inline-block;
+      padding: 10px 24px;
+      border-radius: 60px;
+      color: #cc3388;
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+      margin: 25px 0;
+    }
+
+    .option-btn {
+      background: white;
+      border: 2px solid #ffb7d0;
+      padding: 10px;
+      border-radius: 60px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.1s;
+      color: #b34180;
+    }
+
+    .option-btn:hover:not(:disabled) {
+      background: #ffecf2;
+      border-color: #ff66b2;
+    }
+
+    .feedback {
+      background: #ffeef4;
+      border-radius: 50px;
+      padding: 10px;
+      display: inline-block;
+      min-width: 240px;
+      color: #b34180;
+      font-weight: bold;
+    }
+
+    /* ========== CINEMATIC PROGRESSION HILL ========== */
+    .hill-container {
+      margin: 20px 0 10px;
+      position: relative;
+      height: 260px;
+      background: #fce4ec;
+      border-radius: 120px;
+      overflow: hidden;
+      border: 3px solid #ffb3c6;
+      box-shadow: inset 0 0 20px #ffc0cb;
+      transform: scale(0.95);
+      transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .hill-container.zoom-in {
+      transform: scale(1.05);
+    }
+
+    .hill {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 180px;
+      background: linear-gradient(145deg, #b0d9b1, #9bc48a);
+      border-radius: 80% 80% 0 0;
+      z-index: 1;
+    }
+
+    /* Parallax backgrounds */
+    .parallax {
+      position: absolute;
+      bottom: 0;
+      width: 200%;
+      height: 100%;
+      background-repeat: repeat-x;
+      opacity: 0.25;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .parallax.back {
+      background: radial-gradient(circle at 20% 50%, #fff, transparent 60%);
+      animation: moveBack 12s linear infinite;
+    }
+
+    .parallax.mid {
+      background: radial-gradient(circle at 60% 60%, #ffd6f0, transparent 60%);
+      animation: moveMid 6s linear infinite;
+    }
+
+    @keyframes moveBack {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+
+    @keyframes moveMid {
+      from { transform: translateX(0); }
+      to { transform: translateX(-100%); }
+    }
+
+    /* Trophy at the end of path */
+    .trophy-spot {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      font-size: 52px;
+      z-index: 3;
+      filter: drop-shadow(0 0 8px gold);
+      transition: all 0.3s;
+    }
+
+    /* Trophy animations */
+    @keyframes trophyGlow {
+      0% { filter: drop-shadow(0 0 5px gold); transform: scale(1); }
+      100% { filter: drop-shadow(0 0 20px #ffcc44); transform: scale(1.08); }
+    }
+
+    @keyframes trophyCelebrate {
+      0% { transform: scale(1) rotate(0deg); }
+      50% { transform: scale(1.2) rotate(10deg); }
+      100% { transform: scale(1.1) rotate(-10deg); }
+    }
+
+    @keyframes trophyAnticipate {
+      0% { transform: scale(1); }
+      30% { transform: scale(0.9); }
+      60% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    .trophy-glow {
+      animation: trophyGlow 1.5s infinite alternate;
+    }
+
+    .trophy-win {
+      animation: trophyCelebrate 0.6s ease infinite alternate;
+    }
+
+    .trophy-anticipate {
+      animation: trophyAnticipate 0.4s ease;
+    }
+
+    /* Avatar runner with running bounce */
+    .avatar-runner {
+      position: absolute;
+      bottom: 20px;
+      left: 10%;
+      font-size: 52px;
+      transition: left 0s; /* controlled by JS */
+      z-index: 4;
+      filter: drop-shadow(2px 4px 8px rgba(0,0,0,0.2));
+      transform: rotate(-5deg);
+    }
+
+    @keyframes runBounce {
+      0% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-10px) scale(1.05, 0.95); }
+      100% { transform: translateY(0) scale(1); }
+    }
+
+    .avatar-runner.running {
+      animation: runBounce 0.4s infinite ease-in-out;
+    }
+
+    /* Magic particle trail */
+    .trail {
+      position: absolute;
+      opacity: 0.8;
+      animation: fadeTrail 0.6s forwards;
+      pointer-events: none;
+      z-index: 10;
+      font-weight: normal;
+    }
+
+    @keyframes fadeTrail {
+      0% { opacity: 0.9; transform: scale(1); }
+      100% { opacity: 0; transform: scale(0.5) translateY(10px); }
+    }
+
+    /* Progress bar */
+    .progress-wrapper {
+      width: 85%;
+      margin: 15px auto 5px;
+      text-align: center;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 16px;
+      background: #ffd6e7;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: inset 0 1px 3px #ffa5c0;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #ff6ec7, #ff9a9e);
+      border-radius: 20px;
+      transition: width 0.6s cubic-bezier(0.34, 1.2, 0.64, 1);
+      width: 0%;
+    }
+
+    .progress-label {
+      font-size: 0.85rem;
+      font-weight: bold;
+      color: #cc3388;
+      margin-top: 6px;
+    }
+
+    .progression-text {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #cc3388;
+      margin: 15px 0;
+    }
+
+    /* Continue button fade-in */
+    #continueAfterProgression {
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    input {
+      padding: 12px 20px;
+      border-radius: 60px;
+      border: 2px solid #ffb3c6;
+      text-align: center;
+      font-size: 1rem;
+      width: 70%;
+    }
+
+    footer {
+      font-size: 0.7rem;
+      margin-top: 20px;
+      color: #dd88aa;
+    }
+
+    /* CONFETTI BURST (cinematic) */
+    @keyframes confettiBurst {
+      0% { transform: translate(0,0) scale(1); opacity: 1; }
+      100% { transform: translate(var(--x), var(--y)) rotate(720deg); opacity: 0; }
+    }
+
+    .confetti {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      animation: confettiBurst 1.2s ease-out forwards;
+    }
+
+    .correct-flash { animation: sparkleFlash 0.4s ease; }
+    @keyframes sparkleFlash {
+      0% { background: #ffe0f0; }
+      100% { background: #fff8fb; }
+    }
+
+    /* ========== CONGRATULATORY POPUP MODAL ========== */
+    .popup-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+ backdrop-filter: blur(8px);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: fadeInPopup 0.3s ease;
+    }
+
+    @keyframes fadeInPopup {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .popup-card {
+      background: linear-gradient(145deg, #fff8fb, #ffeef4);
+      border-radius: 80px;
+      padding: 30px 40px;
+      max-width: 400px;
+      text-align: center;
+      border: 3px solid #ff99cc;
+      box-shadow: 0 30px 40px rgba(255, 80, 120, 0.4);
+      animation: popIn 0.4s cubic-bezier(0.34, 1.3, 0.64, 1);
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.8); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .popup-card h2 {
+      font-size: 2rem;
+      margin: 0 0 10px;
+      color: #ff3385;
+    }
+
+    .popup-card p {
+      font-size: 1.3rem;
+      margin: 15px 0;
+      color: #b34180;
+    }
+
+    .popup-card button {
+      background: #ff66b2;
+      font-size: 1.2rem;
+      padding: 10px 28px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- START SCREEN -->
+<div id="startScreen" class="screen">
+  <h1>🦄✨ Vocabulary Adventure ✨🦄</h1>
+  <div class="unicorn">🦄 🌈 🦄</div>
+  <p>Enter your magical name:</p>
+  <input id="nameInput" placeholder="Your name..." style="padding:12px; border-radius:25px; border:2px solid pink; text-align:center;">
+  <br><br>
+  <button id="startMagicBtn">✨ Start Adventure ✨</button>
+  <footer>🌸 10 questions per level · wrong = -50 points · Cinematic Trophy Run!</footer>
+</div>
+
+<!-- LEVEL SELECT SCREEN -->
+<div id="levelScreen" class="screen" style="display: none;">
+  <h1>🌟🌈 CHOOSE YOUR MAGIC LEVEL 🌈🌟</h1>
+  <div id="levelButtonsContainer" class="level-buttons"></div>
+  <button id="resetGameFromLevel" style="background: #dd88aa;">🔄 Restart Adventure</button>
+  <div id="levelFeedback" class="feedback">✨ Pick a level and shine! ✨</div>
+</div>
+
+<!-- GAME SCREEN -->
+<div id="gameScreen" class="screen" style="display: none;">
+  <div class="score-panel">
+    <span class="score-label">🦄 SCORE</span>
+    <span class="score-value" id="gameScore">1000</span>
+  </div>
+  <div class="emoji-arena">
+    <div class="big-emoji" id="questionEmoji">❓</div>
+    <div class="sentence" id="questionSentence">Loading...</div>
+  </div>
+  <div id="optionsContainer" class="options-grid"></div>
+  <div id="gameFeedback" class="feedback">✨ Tap a sparkly option ✨</div>
+  <div class="action-row">
+    <button id="exitToLevelsBtn">🏠 LEVELS</button>
+  </div>
+  <footer>💖 Each right answer moves you forward. After each level, watch the cinematic trophy run!</footer>
+</div>
+
+<!-- CINEMATIC PROGRESSION SCREEN (with parallax layers) -->
+<div id="progressionScreen" class="screen" style="display: none;">
+  <h2>🏔️✨ CINEMATIC TROPHY RUN ✨🏔️</h2>
+  <div class="hill-container" id="hillContainer">
+    <div class="parallax back"></div>
+    <div class="parallax mid"></div>
+    <div class="hill"></div>
+    <div class="trophy-spot" id="hillTrophy">🏆✨</div>
+    <div class="avatar-runner" id="avatarRunner">🦄🌈</div>
+  </div>
+  <div class="progress-wrapper">
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="progress-label" id="progressPercent">🌟 The unicorn dashes to the trophy!</div>
+  </div>
+  <div id="progressionMessage" class="progression-text"></div>
+  <button id="continueAfterProgression">🚀 CONTINUE ADVENTURE</button>
+</div>
+
+<!-- TROPHY SCREEN (final victory) -->
+<div id="trophyScreen" class="screen" style="display: none;">
+  <h1>🦄🏆 CONGRATULATIONS 🏆🦄</h1>
+  <div style="font-size:90px;">🦄✨🏆✨🦄</div>
+  <h2 id="trophyText"></h2>
+  <p>🌈 You are a Vocabulary Champion! 🌈</p>
+  <div class="unicorn">🦄✨🦄✨🦄</div>
+  <button id="playAgainTrophy">🎮 PLAY AGAIN</button>
+</div>
+
+<script>
+  // ---------- 10 QUESTIONS PER LEVEL ----------
+  const questionsDB = {
+    1: [ { emoji: "✏️", sentence: "I write with a ______.", correct: "Pencil", options: ["Pen", "Pencil", "Marker", "Crayon"] },
+         { emoji: "🍎", sentence: "A healthy red fruit is an ______.", correct: "Apple", options: ["Orange", "Apple", "Banana", "Grape"] },
+         { emoji: "🐱", sentence: "A small furry pet that says meow is a ______.", correct: "Cat", options: ["Dog", "Cat", "Mouse", "Bird"] },
+         { emoji: "🚗", sentence: "You drive on the road in a ______.", correct: "Car", options: ["Bike", "Car", "Bus", "Train"] },
+         { emoji: "☀️", sentence: "The bright star in the sky is the ______.", correct: "Sun", options: ["Moon", "Sun", "Star", "Cloud"] },
+         { emoji: "📚", sentence: "You read stories from a ______.", correct: "Book", options: ["Notebook", "Book", "Magazine", "Diary"] },
+         { emoji: "🐟", sentence: "This animal lives in water and has fins: ______.", correct: "Fish", options: ["Whale", "Fish", "Shark", "Dolphin"] },
+         { emoji: "🏠", sentence: "A place where families live is a ______.", correct: "House", options: ["Apartment", "House", "Castle", "Cottage"] },
+         { emoji: "🍕", sentence: "Round, cheesy Italian dish: ______.", correct: "Pizza", options: ["Burger", "Pizza", "Pasta", "Salad"] },
+         { emoji: "🎂", sentence: "You blow candles on a birthday ______.", correct: "Cake", options: ["Pie", "Cake", "Cookie", "Muffin"] } ],
+    2: [ { emoji: "🐶", sentence: "A loyal pet that barks is a ______.", correct: "Dog", options: ["Cat", "Dog", "Rabbit", "Hamster"] },
+         { emoji: "✈️", sentence: "Flies in the sky, transports people: ______.", correct: "Airplane", options: ["Helicopter", "Airplane", "Rocket", "Drone"] },
+         { emoji: "🎨", sentence: "You paint pictures with a ______.", correct: "Brush", options: ["Pen", "Brush", "Crayon", "Marker"] },
+         { emoji: "🏀", sentence: "Sport played with a orange ball and hoop: ______.", correct: "Basketball", options: ["Soccer", "Basketball", "Tennis", "Baseball"] },
+         { emoji: "🎵", sentence: "You listen to this with headphones: ______.", correct: "Music", options: ["Radio", "Music", "Song", "Melody"] },
+         { emoji: "🌧️", sentence: "Water falling from clouds: ______.", correct: "Rain", options: ["Snow", "Rain", "Hail", "Fog"] },
+         { emoji: "📱", sentence: "Smart device for calls and apps: ______.", correct: "Phone", options: ["Tablet", "Phone", "Laptop", "Watch"] },
+         { emoji: "🧀", sentence: "Yellow dairy product that mice love: ______.", correct: "Cheese", options: ["Butter", "Cheese", "Yogurt", "Milk"] },
+         { emoji: "⚽", sentence: "Round ball used in World Cup: ______.", correct: "Soccer ball", options: ["Basketball", "Soccer ball", "Volleyball", "Tennis ball"] },
+         { emoji: "🚲", sentence: "Two wheels, pedals, no engine: ______.", correct: "Bicycle", options: ["Motorcycle", "Bicycle", "Scooter", "Skateboard"] } ],
+    3: [ { emoji: "🧠", sentence: "The organ that thinks and remembers: ______.", correct: "Brain", options: ["Heart", "Brain", "Lungs", "Stomach"] },
+         { emoji: "🌋", sentence: "Mountain that erupts with lava: ______.", correct: "Volcano", options: ["Mountain", "Volcano", "Geyser", "Earthquake"] },
+         { emoji: "🔬", sentence: "Scientists use this to see tiny things: ______.", correct: "Microscope", options: ["Telescope", "Microscope", "Magnifying glass", "Lens"] },
+         { emoji: "🧩", sentence: "A puzzle piece or a challenge: ______.", correct: "Problem", options: ["Game", "Problem", "Riddle", "Mystery"] },
+         { emoji: "⚡", sentence: "Flash of electricity in a storm: ______.", correct: "Lightning", options: ["Thunder", "Lightning", "Spark", "Bolt"] },
+         { emoji: "🏆", sentence: "Prize you get for winning: ______.", correct: "Trophy", options: ["Medal", "Trophy", "Cup", "Award"] },
+         { emoji: "🧭", sentence: "Tool that shows direction: ______.", correct: "Compass", options: ["Map", "Compass", "GPS", "Sign"] },
+         { emoji: "🎭", sentence: "Theatrical performance or a mask: ______.", correct: "Drama", options: ["Comedy", "Drama", "Play", "Opera"] },
+         { emoji: "🧬", sentence: "The building blocks of life (DNA): ______.", correct: "Genes", options: ["Cells", "Genes", "Proteins", "Molecules"] },
+         { emoji: "🚀", sentence: "Spacecraft that travels to the moon: ______.", correct: "Rocket", options: ["Shuttle", "Rocket", "Satellite", "Spaceship"] } ]
+  };
+  const minScoreRequired = { 1: 700, 2: 750, 3: 800 };
+
+  let playerName = "", currentUnlockedLevel = 1, currentPlayingLevel = 1, currentScore = 1000, currentQuestionIndex = 0;
+  let questionsForLevel = [], isAnswerLock = false, levelCompletedFlag = false, originalSentence = "";
+  let activeTrailInterval = null;
+
+  // DOM elements
+  const startScreen = document.getElementById('startScreen'), levelScreen = document.getElementById('levelScreen');
+  const gameScreen = document.getElementById('gameScreen'), trophyScreen = document.getElementById('trophyScreen');
+  const progressionScreen = document.getElementById('progressionScreen');
+  const gameScoreSpan = document.getElementById('gameScore'), questionEmoji = document.getElementById('questionEmoji');
+  const questionSentence = document.getElementById('questionSentence'), optionsContainer = document.getElementById('optionsContainer');
+  const gameFeedbackDiv = document.getElementById('gameFeedback'), exitToLevelsBtn = document.getElementById('exitToLevelsBtn');
+  const resetGameFromLevel = document.getElementById('resetGameFromLevel'), playAgainTrophy = document.getElementById('playAgainTrophy');
+  const startMagicBtn = document.getElementById('startMagicBtn'), continueProgressionBtn = document.getElementById('continueAfterProgression');
+
+  function shuffleArray(arr) { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; }
+
+  // ========== LAYERED SOUND DESIGN ==========
+  function playMagicGlow() {
+    try {
+      new Audio("https://assets.mixkit.co/sfx/preview/mixkit-magical-coin-win-1936.mp3").play().catch(e=>{});
+    } catch(e) {}
+  }
+  function playLayeredWin() {
+    try {
+      new Audio("https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3").play().catch(e=>{});
+      setTimeout(() => {
+        new Audio("https://assets.mixkit.co/sfx/preview/mixkit-arcade-bonus-alert-767.mp3").play().catch(e=>{});
+      }, 200);
+    } catch(e) {}
+  }
+
+  // ========== CONGRATULATORY POPUP ==========
+  function showCongratulatoryPopup() {
+    // remove any existing popup
+    const existing = document.querySelector('.popup-overlay');
+    if(existing) existing.remove();
+    
+    const overlay = document.createElement('div');
+    overlay.className = 'popup-overlay';
+    overlay.innerHTML = `
+      <div class="popup-card">
+        <h2>🎉✨ CONGRATULATIONS! ✨🎉</h2>
+        <p>🌟 <strong>${playerName.toUpperCase()}</strong> 🌟</p>
+        <p>🏆 You are the ULTIMATE Vocabulary Champion! 🏆</p>
+        <p>🌈 Your magical unicorn salutes you! 🌈</p>
+        <button id="closePopupBtn">🎊 CELEBRATE 🎊</button>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    
+    // extra confetti burst when popup appears
+    celebrateBurst();
+    setTimeout(celebrateBurst, 300);
+    
+    const closeBtn = document.getElementById('closePopupBtn');
+    closeBtn.addEventListener('click', () => {
+      overlay.remove();
+      // optional: play a happy sound
+      playLayeredWin();
+    });
+    // auto-remove after 5 seconds but keep interactive
+    setTimeout(() => {
+      if(document.body.contains(overlay)) overlay.remove();
+    }, 6000);
+  }
+
+  // ========== MULTI-STAGE CONFETTI ==========
+  function celebrateBurst() {
+    for (let i = 0; i < 45; i++) {
+      const confetti = document.createElement("div");
+      confetti.className = "confetti";
+      const colors = ["#ff66b2", "#ff99cc", "#ffd966", "#c96eff", "#ffb347"];
+      confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+      confetti.style.width = Math.random() * 12 + 6 + "px";
+      confetti.style.height = Math.random() * 12 + 6 + "px";
+      confetti.style.left = Math.random() * 100 + "%";
+      confetti.style.top = Math.random() * 80 + "%";
+      const randX = (Math.random() * 500 - 250);
+      const randY = (Math.random() * -400) - 50;
+      confetti.style.setProperty('--x', randX + 'px');
+      confetti.style.setProperty('--y', randY + 'px');
+      document.body.appendChild(confetti);
+      setTimeout(() => confetti.remove(), 1300);
+    }
+    for (let i=0;i<20;i++) {
+      let star = document.createElement("div");
+      star.innerText = "✨🦄";
+      star.style.position = "fixed";
+      star.style.left = Math.random() * 100 + "%";
+      star.style.top = Math.random() * 100 + "%";
+      star.style.fontSize = "28px";
+      star.style.pointerEvents = "none";
+      star.style.zIndex = "9999";
+      star.style.animation = "confettiBurst 1s ease-out forwards";
+      star.style.setProperty('--x', (Math.random() * 300 - 150) + 'px');
+      star.style.setProperty('--y', (Math.random() * -300) + 'px');
+      document.body.appendChild(star);
+      setTimeout(() => star.remove(), 1000);
+    }
+  }
+
+  // ========== MAGIC PARTICLE TRAIL ==========
+  function createTrail(x, y, container) {
+    const t = document.createElement("div");
+    t.className = "trail";
+    const icons = ["✨","🌈","💫","⭐","🦄","💖"];
+    t.innerText = icons[Math.floor(Math.random() * icons.length)];
+    t.style.left = (x - container.offsetLeft) + "px";
+    t.style.top = (y - container.offsetTop) + "px";
+    t.style.fontSize = (Math.random() * 12 + 20) + "px";
+    container.appendChild(t);
+    setTimeout(() => t.remove(), 600);
+  }
+
+  // ========== CINEMATIC PROGRESSION ==========
+  function showProgression(completedLevel) {
+    levelScreen.style.display = 'none';
+    gameScreen.style.display = 'none';
+    trophyScreen.style.display = 'none';
+    progressionScreen.style.display = 'block';
+    
+    const avatar = document.getElementById('avatarRunner');
+    const trophyEl = document.getElementById('hillTrophy');
+    const progressFill = document.getElementById('progressFill');
+    const hillContainer = document.getElementById('hillContainer');
+    const continueBtn = document.getElementById('continueAfterProgression');
+    continueBtn.style.opacity = "0";
+    
+    avatar.style.transition = "none";
+    avatar.style.left = "10%";
+    if (activeTrailInterval) clearInterval(activeTrailInterval);
+    trophyEl.classList.remove("trophy-glow", "trophy-win", "trophy-anticipate");
+    progressFill.style.width = "0%";
+    avatar.classList.remove("running");
+    
+    let targetLeft = completedLevel === 1 ? 35 : (completedLevel === 2 ? 68 : 88);
+    let progressTarget = completedLevel === 1 ? 33 : (completedLevel === 2 ? 66 : 100);
+    let message = completedLevel === 1 ? "🌈 Level 1 conquered! Unicorn runs up the hill!" : 
+                  (completedLevel === 2 ? "⚡ Level 2 complete! The trophy glows brighter!" : "🏆 FINAL LEVEL! Trophy celebration incoming!");
+    document.getElementById('progressionMessage').innerHTML = message;
+    document.getElementById('progressPercent').innerText = `🏔️ ${progressTarget}% to the trophy 🏆`;
+    
+    hillContainer.classList.add("zoom-in");
+    setTimeout(() => hillContainer.classList.remove("zoom-in"), 1400);
+    
+    setTimeout(() => {
+      avatar.style.transition = "left 1s cubic-bezier(0.34, 1.4, 0.64, 1)";
+      avatar.style.left = targetLeft + "%";
+      avatar.classList.add("running");
+      playMagicGlow();
+      
+      activeTrailInterval = setInterval(() => {
+        const rect = avatar.getBoundingClientRect();
+        const containerRect = hillContainer.getBoundingClientRect();
+        createTrail(rect.left + 20, rect.top + 30, hillContainer);
+      }, 110);
+      setTimeout(() => {
+        if(activeTrailInterval) clearInterval(activeTrailInterval);
+        avatar.classList.remove("running");
+      }, 1100);
+    }, 200);
+    
+    setTimeout(() => {
+      progressFill.style.width = progressTarget + "%";
+    }, 900);
+    
+    setTimeout(() => {
+      trophyEl.classList.add("trophy-anticipate");
+      setTimeout(() => {
+        trophyEl.classList.remove("trophy-anticipate");
+        trophyEl.classList.add("trophy-glow");
+        playLayeredWin();
+      }, 400);
+    }, 1200);
+    
+    if (completedLevel === 3) {
+      setTimeout(() => {
+        trophyEl.classList.add("trophy-win");
+        celebrateBurst();
+        setTimeout(celebrateBurst, 300);
+        setTimeout(celebrateBurst, 700);
+        playLayeredWin();
+        progressionScreen.classList.add('flash');
+        setTimeout(() => progressionScreen.classList.remove('flash'), 600);
+        progressionScreen.classList.add('win');
+        setTimeout(() => progressionScreen.classList.remove('win'), 700);
+      }, 1400);
+      window.pendingFinalTrophy = true;
+    } else {
+      setTimeout(() => {
+        celebrateBurst();
+        setTimeout(celebrateBurst, 350);
+        progressionScreen.classList.add('flash');
+        setTimeout(() => progressionScreen.classList.remove('flash'), 600);
+      }, 1450);
+      window.pendingFinalTrophy = false;
+    }
+    
+    setTimeout(() => {
+      continueBtn.style.opacity = "1";
+    }, 2000);
+  }
+
+  function finishLevelSuccess() {
+    levelCompletedFlag = true;
+    isAnswerLock = true;
+    if (currentPlayingLevel === currentUnlockedLevel && currentPlayingLevel < 3) {
+      currentUnlockedLevel = currentPlayingLevel + 1;
+    }
+    showProgression(currentPlayingLevel);
+  }
+
+  function evaluateLevelCompletion() {
+    const required = minScoreRequired[currentPlayingLevel];
+    if (currentScore >= required) finishLevelSuccess();
+    else {
+      gameFeedbackDiv.innerHTML = `❌🌈 Need ${required} points. Restarting level... 🌈❌`;
+      setTimeout(() => startLevel(currentPlayingLevel), 2000);
+    }
+  }
+
+  function loadQuestion() {
+    if (currentQuestionIndex >= questionsForLevel.length) { evaluateLevelCompletion(); return; }
+    levelCompletedFlag = false; isAnswerLock = false;
+    const q = questionsForLevel[currentQuestionIndex];
+    questionEmoji.textContent = q.emoji;
+    questionSentence.textContent = q.sentence;
+    originalSentence = q.sentence;
+    updateScoreUI();
+    let shuffledOpts = shuffleArray([...q.options]);
+    optionsContainer.innerHTML = '';
+    shuffledOpts.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.textContent = opt;
+      btn.classList.add('option-btn');
+      btn.addEventListener('click', () => { if(!levelCompletedFlag && !isAnswerLock) handleAnswer(opt, q.correct, btn); });
+      optionsContainer.appendChild(btn);
+    });
+    gameFeedbackDiv.innerHTML = `🦄 Q${currentQuestionIndex+1}/${questionsForLevel.length}`;
+  }
+
+  function handleAnswer(selected, correct, btn) {
+    if(isAnswerLock || levelCompletedFlag) return;
+    isAnswerLock = true;
+    if(selected === correct) {
+      gameFeedbackDiv.innerHTML = "✅🌈 CORRECT!";
+      document.querySelector('.emoji-arena')?.classList.add('correct-flash');
+      setTimeout(() => document.querySelector('.emoji-arena')?.classList.remove('correct-flash'), 300);
+      currentQuestionIndex++;
+      setTimeout(() => loadQuestion(), 350);
+    } else {
+      currentScore = Math.max(0, currentScore - 50);
+      updateScoreUI();
+      questionSentence.innerText = "❌ Try again! (-50)";
+      setTimeout(() => { if(originalSentence) questionSentence.innerText = originalSentence; }, 800);
+      gameFeedbackDiv.innerHTML = `❌ WRONG! Score: ${currentScore}`;
+      btn.style.background = "#ffcccc";
+      setTimeout(() => btn.style.background = "", 400);
+      setTimeout(() => { isAnswerLock = false; }, 800);
+    }
+  }
+
+  function updateScoreUI() { gameScoreSpan.textContent = currentScore; }
+
+  function startLevel(levelId) {
+    if(levelId > currentUnlockedLevel) { gameFeedbackDiv.innerHTML = `🔒 Locked!`; return; }
+    currentPlayingLevel = levelId; currentScore = 1000; currentQuestionIndex = 0;
+    isAnswerLock = false; levelCompletedFlag = false;
+    questionsForLevel = [...questionsDB[levelId]];
+    updateScoreUI();
+    startScreen.style.display = 'none'; levelScreen.style.display = 'none';
+    trophyScreen.style.display = 'none'; progressionScreen.style.display = 'none';
+    gameScreen.style.display = 'block';
+    loadQuestion();
+  }
+
+  function renderLevelButtons() {
+    levelButtonsContainer.innerHTML = '';
+    for(let lvl=1; lvl<=3; lvl++) {
+      const unlocked = lvl <= currentUnlockedLevel;
+      const card = document.createElement('div');
+      card.className = `level-card ${!unlocked ? 'locked-level' : ''}`;
+      card.innerHTML = `<div class="level-icon">${lvl===1?'🌱🦄':lvl===2?'⚡🌈':'🔥🦄'}</div><h3>Level ${lvl}</h3>${!unlocked?'<div class="lock-badge">🔒</div>':''}`;
+      if(unlocked) card.addEventListener('click', () => startLevel(lvl));
+      levelButtonsContainer.appendChild(card);
+    }
+  }
+  function showLevelScreen() {
+    startScreen.style.display='none'; gameScreen.style.display='none'; trophyScreen.style.display='none'; progressionScreen.style.display='none';
+    levelScreen.style.display='block'; renderLevelButtons();
+    document.getElementById('levelFeedback').innerHTML = `✨✨ Welcome, ${playerName}! ✨✨`;
+  }
+  function showTrophyScreen() {
+    progressionScreen.style.display='none'; trophyScreen.style.display='block';
+    document.getElementById("trophyText").innerHTML = `🎉 AMAZING, ${playerName.toUpperCase()}! 🎉`;
+    celebrateBurst(); setTimeout(celebrateBurst, 300); setTimeout(celebrateBurst, 600);
+    playLayeredWin();
+    // ✨ SHOW THE CONGRATULATORY POPUP WITH PLAYER NAME ✨
+    showCongratulatoryPopup();
+  }
+  continueProgressionBtn.addEventListener('click', () => {
+    if(window.pendingFinalTrophy) showTrophyScreen();
+    else showLevelScreen();
+    window.pendingFinalTrophy = false;
+  });
+  function fullReset() { location.reload(); }
+  startMagicBtn.addEventListener('click', () => { let name=document.getElementById('nameInput').value.trim(); if(name) { playerName=name; currentUnlockedLevel=1; showLevelScreen(); } else alert("🌸 Enter magical name!"); });
+  exitToLevelsBtn.addEventListener('click', () => showLevelScreen());
+  resetGameFromLevel.addEventListener('click', fullReset);
+  playAgainTrophy.addEventListener('click', fullReset);
+  document.getElementById('nameInput').addEventListener('keypress', e=>{if(e.key==='Enter')startMagicBtn.click();});
+</script>
+</body>
+</html>

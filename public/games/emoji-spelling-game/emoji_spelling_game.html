@@ -1,0 +1,433 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emoji Spelling Master</title>
+    <style>
+        :root {
+            --bg-color: #f0f4f8;
+            --primary-color: #4a90e2;
+            --secondary-color: #f39c12;
+            --danger-color: #e74c3c;
+            --success-color: #2ecc71;
+            --text-color: #2c3e50;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        #game-container {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .stats {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        #emoji-display {
+            font-size: 80px;
+            margin: 20px 0;
+            min-height: 120px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #sentence-display {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .blank {
+            border-bottom: 3px solid var(--primary-color);
+            display: inline-block;
+            min-width: 100px;
+            margin: 0 5px;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        #word-slots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            min-height: 50px;
+        }
+
+        .slot {
+            width: 40px;
+            height: 45px;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            background: #fafafa;
+        }
+
+        .slot.filled {
+            border-style: solid;
+            border-color: var(--primary-color);
+            background: white;
+        }
+
+        #letter-bank {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .tile {
+            width: 45px;
+            height: 45px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.1s, background 0.2s;
+            box-shadow: 0 4px 0 #2980b9;
+            text-transform: uppercase;
+        }
+
+        .tile:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        .tile:disabled {
+            background: #bdc3c7;
+            box-shadow: 0 4px 0 #95a5a6;
+            cursor: not-allowed;
+        }
+
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        button.main-btn {
+            padding: 12px 25px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: opacity 0.2s;
+        }
+
+        .clear-btn { background: var(--danger-color); color: white; }
+        .submit-btn { background: var(--success-color); color: white; }
+
+        #message {
+            margin-top: 20px;
+            font-weight: bold;
+            height: 24px;
+        }
+
+        .lives { color: var(--danger-color); }
+
+        /* Level Selection Screen */
+        #level-select {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .lvl-btn {
+            padding: 15px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            color: white;
+            transition: filter 0.2s;
+        }
+
+        .easy { background: #2ecc71; }
+        .medium { background: #f1c40f; }
+        .hard { background: #e67e22; }
+        .extra-hard { background: #9b59b6; }
+
+        .hidden { display: none !important; }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+        .shake { animation: shake 0.3s; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="start-screen">
+        <h1>Emoji Spelling Master</h1>
+        <p>Choose your level to start:</p>
+        <div id="level-select">
+            <button class="lvl-btn easy" onclick="startGame('easy')">Easy (3-4 Letters)</button>
+            <button class="lvl-btn medium" onclick="startGame('medium')">Medium (5-7 Letters)</button>
+            <button class="lvl-btn hard" onclick="startGame('hard')">Hard (Compound Words)</button>
+            <button class="lvl-btn extra-hard" onclick="startGame('extra-hard')">Extra Hard (Sentences)</button>
+        </div>
+    </div>
+
+    <div id="game-screen" class="hidden">
+        <div class="header">
+            <div class="stats">Level: <span id="current-lvl-text"></span></div>
+            <div class="stats">Score: <span id="score">0</span></div>
+            <div class="stats lives">Lives: <span id="lives">5</span></div>
+        </div>
+
+        <div id="emoji-display"></div>
+        <div id="sentence-display" class="hidden"></div>
+        <div id="word-slots"></div>
+        <div id="letter-bank"></div>
+
+        <div id="message"></div>
+
+        <div class="controls">
+            <button class="main-btn clear-btn" onclick="clearSelection()">Clear</button>
+            <button class="main-btn submit-btn" onclick="checkAnswer()">Submit</button>
+        </div>
+    </div>
+
+    <div id="game-over-screen" class="hidden">
+        <h2 id="over-title">Game Over!</h2>
+        <p>Final Score: <span id="final-score">0</span></p>
+        <button class="lvl-btn easy" onclick="resetGame()">Play Again</button>
+    </div>
+</div>
+
+<script>
+    const data = {
+        easy: [
+            { word: "CAT", emoji: "🐱", cat: "animals" },
+            { word: "DOG", emoji: "🐶", cat: "animals" },
+            { word: "BUS", emoji: "🚌", cat: "vehicles" },
+            { word: "SUN", emoji: "☀️", cat: "weather" },
+            { word: "TREE", emoji: "🌳", cat: "nature" },
+            { word: "BIRD", emoji: "🐦", cat: "animals" },
+            { word: "RAIN", emoji: "🌧️", cat: "weather" }
+        ],
+        medium: [
+            { word: "RABBIT", emoji: "🐰", cat: "animals" },
+            { word: "POLICE", emoji: "👮", cat: "jobs" },
+            { word: "ROCKET", emoji: "🚀", cat: "vehicles" },
+            { word: "DANCING", emoji: "💃", cat: "activities" },
+            { word: "FLOWER", emoji: "🌻", cat: "nature" },
+            { word: "DOCTOR", emoji: "🧑‍⚕️", cat: "jobs" },
+            { word: "TIGER", emoji: "🐯", cat: "animals" }
+        ],
+        hard: [
+            { word: "SNOWMAN", emoji: "☃️", cat: "nature" },
+            { word: "FIREMAN", emoji: "👨‍🚒", cat: "jobs" },
+            { word: "AIRPLANE", emoji: "✈️", cat: "vehicles" },
+            { word: "FOOTBALL", emoji: "⚽", cat: "activities" },
+            { word: "STARFISH", emoji: "⭐🐟", cat: "animals" },
+            { word: "RAINBOW", emoji: "🌈", cat: "weather" },
+            { word: "SUNFLOWER", emoji: "🌻", cat: "nature" }
+        ],
+        'extra-hard': [
+            { word: "DRIVER", sentence: "The taxi ____ is fast.", emoji: "🚕👨‍✈️", cat: "jobs" },
+            { word: "WINDY", sentence: "Hold your hat, it is ____!", emoji: "💨👒", cat: "weather" },
+            { word: "CYCLING", sentence: "He is ____ in the park.", emoji: "🚴‍♂️🌳", cat: "activities" },
+            { word: "BUMBLEBEE", sentence: "A yellow ____ is on the leaf.", emoji: "🐝🍃", cat: "animals" },
+            { word: "SNOWING", sentence: "Look outside! It is ____.", emoji: "🏠❄️", cat: "weather" },
+            { word: "TRACTOR", sentence: "The farmer drives a ____.", emoji: "👨‍🌾🚜", cat: "vehicles" }
+        ]
+    };
+
+    let currentLevel = '';
+    let currentWordObj = {};
+    let selectedLetters = [];
+    let score = 0;
+    let lives = 5;
+    let usedIndices = [];
+
+    function startGame(lvl) {
+        currentLevel = lvl;
+        score = 0;
+        lives = 5;
+        usedIndices = [];
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('game-over-screen').classList.add('hidden');
+        document.getElementById('game-screen').classList.remove('hidden');
+        document.getElementById('current-lvl-text').innerText = lvl.toUpperCase();
+        nextQuestion();
+    }
+
+    function nextQuestion() {
+        const levelData = data[currentLevel];
+        
+        if (usedIndices.length === levelData.length) {
+            endGame(true);
+            return;
+        }
+
+        let randomIndex;
+        do {
+            randomIndex = Math.floor(Math.random() * levelData.length);
+        } while (usedIndices.includes(randomIndex));
+        
+        usedIndices.push(randomIndex);
+        currentWordObj = levelData[randomIndex];
+        selectedLetters = [];
+        
+        updateUI();
+    }
+
+    function updateUI() {
+        document.getElementById('score').innerText = score;
+        document.getElementById('lives').innerText = lives;
+        document.getElementById('emoji-display').innerText = currentWordObj.emoji;
+        document.getElementById('message').innerText = '';
+        
+        const sentenceBox = document.getElementById('sentence-display');
+        if (currentLevel === 'extra-hard') {
+            sentenceBox.classList.remove('hidden');
+            sentenceBox.innerHTML = currentWordObj.sentence.replace('____', '<span class="blank">______</span>');
+        } else {
+            sentenceBox.classList.add('hidden');
+        }
+
+        const slotsContainer = document.getElementById('word-slots');
+        slotsContainer.innerHTML = '';
+        for (let i = 0; i < currentWordObj.word.length; i++) {
+            const slot = document.createElement('div');
+            slot.className = 'slot';
+            slotsContainer.appendChild(slot);
+        }
+
+        renderBank();
+    }
+
+    function renderBank() {
+        const bank = document.getElementById('letter-bank');
+        bank.innerHTML = '';
+        
+        // Create letters (actual word + random decoys)
+        let letters = currentWordObj.word.split('');
+        const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        while (letters.length < Math.max(currentWordObj.word.length + 3, 8)) {
+            const randomChar = alphabet[Math.floor(Math.random() * alphabet.length)];
+            letters.push(randomChar);
+        }
+        
+        // Shuffle letters
+        letters.sort(() => Math.random() - 0.5);
+
+        letters.forEach((char, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'tile';
+            btn.innerText = char;
+            btn.onclick = () => addLetter(char, btn);
+            bank.appendChild(btn);
+        });
+    }
+
+    function addLetter(char, btn) {
+        if (selectedLetters.length < currentWordObj.word.length) {
+            selectedLetters.push(char);
+            btn.disabled = true;
+            
+            const slots = document.querySelectorAll('.slot');
+            slots[selectedLetters.length - 1].innerText = char;
+            slots[selectedLetters.length - 1].classList.add('filled');
+        }
+    }
+
+    function clearSelection() {
+        selectedLetters = [];
+        const slots = document.querySelectorAll('.slot');
+        slots.forEach(s => {
+            s.innerText = '';
+            s.classList.remove('filled');
+        });
+        const tiles = document.querySelectorAll('.tile');
+        tiles.forEach(t => t.disabled = false);
+    }
+
+    function checkAnswer() {
+        const guess = selectedLetters.join('').toUpperCase();
+        const answer = currentWordObj.word.toUpperCase();
+
+        if (guess === answer) {
+            score += 10;
+            document.getElementById('message').style.color = 'var(--success-color)';
+            document.getElementById('message').innerText = 'Correct! Great job!';
+            setTimeout(nextQuestion, 1500);
+        } else {
+            lives--;
+            document.getElementById('game-container').classList.add('shake');
+            setTimeout(() => document.getElementById('game-container').classList.remove('shake'), 300);
+            
+            document.getElementById('message').style.color = 'var(--danger-color)';
+            document.getElementById('message').innerText = 'Wrong! Try again.';
+            
+            if (lives <= 0) {
+                endGame(false);
+            } else {
+                document.getElementById('lives').innerText = lives;
+                clearSelection();
+            }
+        }
+    }
+
+    function endGame(win) {
+        document.getElementById('game-screen').classList.add('hidden');
+        document.getElementById('game-over-screen').classList.remove('hidden');
+        document.getElementById('over-title').innerText = win ? "You Won! 🎉" : "Game Over! ❌";
+        document.getElementById('final-score').innerText = score;
+    }
+
+    function resetGame() {
+        document.getElementById('game-over-screen').classList.add('hidden');
+        document.getElementById('start-screen').classList.remove('hidden');
+    }
+</script>
+
+</body>
+</html>

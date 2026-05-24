@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>🍎 Fruit Word Hunt | Unlock Levels + Victory Screen 🍌</title>
+  <style>
+    /* Base Styling */
+    body {
+      background: linear-gradient(145deg, #fef5e7 0%, #ffe0b5 100%);
+      font-family: 'Segoe UI', 'Comic Neue', 'Comic Sans MS', 'Chalkboard SE', system-ui, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 16px;
+    }
+    .game-box {
+      width: 100%;
+      max-width: 650px;
+      background: white;
+      border-radius: 48px;
+      box-shadow: 0 25px 40px rgba(0,0,0,0.2);
+      overflow: hidden;
+      text-align: center;
+      border: 4px solid #ffd89a;
+    }
+    
+    /* Header & Progress */
+    .header {
+      background: linear-gradient(120deg, #ff9f3d, #f7b05e);
+      padding: 20px;
+      color: white;
+      font-size: 1.4rem;
+    }
+    .progress-info {
+      background: #fff0cf;
+      padding: 12px;
+      font-weight: bold;
+      color: #a5662a;
+      border-bottom: 2px solid #ffd89a;
+      font-size: 0.9rem;
+    }
+    
+    /* Level Buttons */
+    .level-bar {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      padding: 15px;
+      background: #f7e8d4;
+      flex-wrap: wrap;
+    }
+    .level-btn {
+      padding: 8px 20px;
+      border-radius: 40px;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      background: #e6c8a3;
+      color: #5a3e1b;
+      font-size: 0.9rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: 0.1s;
+    }
+    .level-btn.active {
+      background: #7cb518;
+      color: white;
+      box-shadow: 0 3px 0 #3f6b1f;
+      transform: translateY(1px);
+    }
+    .level-btn:disabled {
+      background: #d4c4aa;
+      color: #8a7a60;
+      cursor: not-allowed;
+      opacity: 0.7;
+      transform: none;
+    }
+
+    /* Game Elements */
+    .fruit-card {
+      font-size: 6rem;
+      margin: 20px 0 10px;
+      filter: drop-shadow(2px 8px 12px rgba(0,0,0,0.15));
+    }
+    .current-word {
+      font-size: 1.9rem;
+      font-family: 'Courier New', monospace;
+      letter-spacing: 8px;
+      min-height: 65px;
+      color: #5a3e1b;
+      font-weight: bold;
+      background: #fef3e6;
+      padding: 12px;
+      margin: 0 20px;
+      border-radius: 60px;
+    }
+    .tiles-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      padding: 20px;
+      min-height: 130px;
+      background: #ffe6ce;
+      margin: 15px 20px;
+      border-radius: 48px;
+    }
+    .tile {
+      width: 65px;
+      height: 65px;
+      background: #fffbee;
+      border: 3px solid #fcb375;
+      border-radius: 20px;
+      font-size: 1.8rem;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 5px 0 #b4621a;
+      transition: 0.05s linear;
+      font-family: monospace;
+    }
+    .tile:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 #b4621a;
+    }
+
+    /* Controls */
+    .controls {
+      padding: 15px 20px 25px;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      padding: 10px 22px;
+      border-radius: 50px;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      color: white;
+      box-shadow: 0 3px 0 rgba(0,0,0,0.2);
+      font-size: 0.9rem;
+    }
+    .btn-check { background: #6aa84f; box-shadow: 0 3px 0 #3f6b2b; }
+    .btn-del { background: #e06666; box-shadow: 0 3px 0 #a14444; }
+    .btn-next { background: #f7b05e; box-shadow: 0 3px 0 #b4621a; color: #2d281c; }
+    .btn-reset { background: #d9872e; box-shadow: 0 3px 0 #8b521c; }
+    
+    /* Popup & Victory */
+    .popup, .victory-popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #2e7d32;
+      color: white;
+      padding: 28px 40px;
+      border-radius: 48px;
+      text-align: center;
+      visibility: hidden;
+      opacity: 0;
+      transition: 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+      z-index: 100;
+      border: 4px solid #ffd966;
+      box-shadow: 0 20px 35px rgba(0,0,0,0.3);
+      font-weight: bold;
+      font-size: 1.3rem;
+      max-width: 85%;
+    }
+    .victory-popup {
+      background: linear-gradient(135deg, #ff8c42, #d6321e);
+      border: 4px solid #ffb347;
+      font-size: 1.4rem;
+    }
+    .popup.show, .victory-popup.show {
+      visibility: visible;
+      opacity: 1;
+    }
+    @media (max-width: 550px) {
+      .tile { width: 55px; height: 55px; font-size: 1.5rem; }
+      .current-word { font-size: 1.3rem; letter-spacing: 5px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="correctPopup" class="popup"></div>
+<div id="victoryPopup" class="victory-popup"></div>
+
+<div class="game-box">
+  <div class="header">
+    <h1>🍎 FRUIT WORD HUNT 🍍</h1>
+  </div>
+  <div class="progress-info" id="progressInfo">⭐ Solve 5 fruits to unlock Medium!</div>
+  
+  <div class="level-bar">
+    <button class="level-btn active" id="btn0" data-level="0">🌱 EASY</button>
+    <button class="level-btn" id="btn1" data-level="1" disabled>🔒 MEDIUM</button>
+    <button class="level-btn" id="btn2" data-level="2" disabled>🔒 HARD</button>
+  </div>
+
+  <div class="fruit-card" id="fruitEmoji">🍎</div>
+  <div class="current-word" id="wordDisplay">_ _ _ _ _</div>
+  
+  <div class="tiles-grid" id="tilesGrid"></div>
+
+  <div class="controls">
+    <button class="btn btn-del" id="deleteBtn">⌫ DELETE</button>
+    <button class="btn btn-check" id="checkBtn">✅ CHECK</button>
+    <button class="btn btn-next" id="nextBtn">🍉 NEXT FRUIT</button>
+    <button class="btn btn-reset" id="resetGameBtn">🏆 RESET GAME</button>
+  </div>
+</div>
+
+<script>
+  // ---------- FRUIT DATABASE (only real fruit emojis, no placeholders) ----------
+  // All fruits have genuine Apple-style emojis (no purple circle for plum)
+  const allFruits = [
+    { emoji: "🍎", name: "apple" },
+    { emoji: "🍐", name: "pear" },
+    { emoji: "🍌", name: "banana" },
+    { emoji: "🍊", name: "orange" },
+    { emoji: "🍒", name: "cherries" },
+    { emoji: "🍇", name: "grapes" },
+    { emoji: "🥝", name: "kiwi" },
+    { emoji: "🥭", name: "mango" },
+    { emoji: "🍓", name: "strawberry" },
+    { emoji: "🫐", name: "blueberries" },
+    { emoji: "🍍", name: "pineapple" },
+    { emoji: "🍉", name: "watermelon" },
+    { emoji: "🍑", name: "peach" },
+    { emoji: "🍋", name: "lemon" },
+    { emoji: "🍈", name: "melon" },
+    { emoji: "🥑", name: "avocado" },
+    { emoji: "🍅", name: "tomato" },
+    { emoji: "🍇", name: "grape" }        // singular grape also uses grape emoji
+  ];
+
+  // Levels with fruit names (must exist in allFruits) – no plum placeholder
+  const levels = [
+    { 
+      name: "Easy", 
+      fruits: [
+        "apple", "pear", "kiwi", "lemon", "peach", "melon", "grape"
+      ], 
+      extra: 2, 
+      required: 5 
+    },
+    { 
+      name: "Medium", 
+      fruits: [
+        "banana", "orange", "cherries", "grapes", "tomato", "avocado"
+      ], 
+      extra: 3, 
+      required: 5 
+    },
+    { 
+      name: "Hard", 
+      fruits: [
+        "strawberry", "blueberries", "pineapple", "watermelon"
+      ], 
+      extra: 4, 
+      required: 4 
+    }
+  ];
+
+  // Helper to get fruit object by name
+  function getFruitByName(name) {
+    return allFruits.find(f => f.name === name);
+  }
+
+  // Game state
+  let currentLevelIdx = 0;
+  let score = [0, 0, 0];           // number of correctly spelled fruits per level
+  let unlocked = [true, false, false];
+  let targetWord = "";
+  let currentSpelling = [];
+  let currentTiles = [];
+  let isLocked = false;            // after correct answer until next fruit
+  let gameComplete = false;        // victory already triggered
+
+  // DOM elements
+  const fruitEmojiSpan = document.getElementById('fruitEmoji');
+  const wordDisplaySpan = document.getElementById('wordDisplay');
+  const tilesGrid = document.getElementById('tilesGrid');
+  const progressInfo = document.getElementById('progressInfo');
+  const correctPopupDiv = document.getElementById('correctPopup');
+  const victoryPopupDiv = document.getElementById('victoryPopup');
+
+  // Helper: random letter a-z
+  function getRandomLetter() {
+    const letters = "abcdefghijklmnopqrstuvwxyz";
+    return letters[Math.floor(Math.random() * letters.length)];
+  }
+
+  // Shuffle array
+  function shuffleArray(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  // Build tile set (target letters + extra random letters)
+  function buildTileSet(word, extraCount) {
+    const letters = word.split('');
+    const extras = [];
+    for (let i = 0; i < extraCount; i++) extras.push(getRandomLetter());
+    const pool = [...letters, ...extras];
+    return shuffleArray(pool);
+  }
+
+  // Check if all levels are fully completed → show victory screen
+  function checkVictory() {
+    if (gameComplete) return true;
+    const easyDone = score[0] >= levels[0].required;
+    const mediumDone = score[1] >= levels[1].required;
+    const hardDone = score[2] >= levels[2].required;
+    if (easyDone && mediumDone && hardDone) {
+      gameComplete = true;
+      victoryPopupDiv.innerHTML = `🏆🎉 GRAND VICTORY! 🎉🏆<br>🍎🍌🍓 You completed ALL 3 levels! 🍒🥝🍍<br>⭐ Fruit Word Master! ⭐<br><span style="font-size:0.9rem;">Press "RESET GAME" to play again!</span>`;
+      victoryPopupDiv.classList.add('show');
+      setTimeout(() => {
+        victoryPopupDiv.classList.remove('show');
+      }, 4000);
+      return true;
+    }
+    return false;
+  }
+
+  // Update level buttons (enable/disable) and progress text
+  function updateUIAndUnlocks() {
+    // Unlock next level if current level reached required score
+    if (currentLevelIdx === 0 && score[0] >= levels[0].required) unlocked[1] = true;
+    if (currentLevelIdx === 1 && score[1] >= levels[1].required) unlocked[2] = true;
+    
+    // Update button states and labels
+    for (let i = 0; i < 3; i++) {
+      const btn = document.getElementById(`btn${i}`);
+      if (!btn) continue;
+      if (unlocked[i]) {
+        btn.disabled = false;
+        if (i > 0 && btn.innerText.includes('🔒')) btn.innerText = levels[i].name.toUpperCase();
+      } else {
+        btn.disabled = true;
+        if (i === 1 && !unlocked[1]) btn.innerText = "🔒 MEDIUM";
+        if (i === 2 && !unlocked[2]) btn.innerText = "🔒 HARD";
+      }
+    }
+    
+    // Update progress info text
+    const currentReq = levels[currentLevelIdx].required;
+    const currentScore = score[currentLevelIdx];
+    if (currentLevelIdx < 2 && !unlocked[currentLevelIdx + 1]) {
+      progressInfo.innerHTML = `⭐ Level ${levels[currentLevelIdx].name}: ${currentScore}/${currentReq} correct → Unlock ${levels[currentLevelIdx+1].name}! ⭐`;
+    } else {
+      progressInfo.innerHTML = `🌟 Level ${levels[currentLevelIdx].name} Mastered! (${currentScore} fruits spelled) 🌟`;
+    }
+    if (gameComplete) progressInfo.innerHTML = "🏆 ALL LEVELS COMPLETE! VICTORY! 🏆";
+  }
+
+  // Load a new random fruit from current level
+  function loadNewFruit() {
+    if (gameComplete) {
+      wordDisplaySpan.textContent = "🏆 VICTORY! Press RESET";
+      tilesGrid.innerHTML = "";
+      return;
+    }
+    isLocked = false;
+    const levelData = levels[currentLevelIdx];
+    const fruitNameList = levelData.fruits;
+    const randomFruitName = fruitNameList[Math.floor(Math.random() * fruitNameList.length)];
+    const fruitObj = getFruitByName(randomFruitName);
+    if (!fruitObj) return;
+    targetWord = fruitObj.name.toLowerCase();
+    currentSpelling = [];
+    
+    // Build tiles
+    const extraCount = levelData.extra;
+    currentTiles = buildTileSet(targetWord, extraCount);
+    
+    // Update emoji
+    fruitEmojiSpan.textContent = fruitObj.emoji;
+    
+    // Render everything
+    renderWordDisplay();
+    renderTiles();
+  }
+
+  function renderWordDisplay() {
+    let display = "";
+    for (let i = 0; i < targetWord.length; i++) {
+      if (i < currentSpelling.length) {
+        display += currentSpelling[i].toUpperCase();
+      } else {
+        display += "_";
+      }
+      if (i !== targetWord.length - 1) display += " ";
+    }
+    wordDisplaySpan.textContent = display || "_____";
+  }
+
+  function renderTiles() {
+    tilesGrid.innerHTML = "";
+    if (!currentTiles.length && !isLocked) {
+      const msg = document.createElement('div');
+      msg.textContent = "✨ No tiles left? Press CLEAR or NEXT FRUIT ✨";
+      msg.style.padding = "10px";
+      tilesGrid.appendChild(msg);
+      return;
+    }
+    for (let i = 0; i < currentTiles.length; i++) {
+      const letter = currentTiles[i];
+      const tileBtn = document.createElement('button');
+      tileBtn.className = 'tile';
+      if (isLocked) tileBtn.style.opacity = "0.6";
+      tileBtn.textContent = letter.toUpperCase();
+      tileBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (gameComplete) {
+          showPopupMessage("🏆 Game complete! Press RESET to play again.", false);
+          return;
+        }
+        if (isLocked) {
+          showPopupMessage("🎉 Already correct! Press NEXT FRUIT.", false);
+          return;
+        }
+        if (currentSpelling.length >= targetWord.length) {
+          showPopupMessage(`⚠️ Word has ${targetWord.length} letters! Use DELETE.`, true);
+          return;
+        }
+        // Add letter to spelling, remove tile
+        const clickedLetter = letter;
+        currentSpelling.push(clickedLetter);
+        currentTiles.splice(i, 1);
+        renderWordDisplay();
+        renderTiles();
+        
+        if (currentSpelling.length === targetWord.length) {
+          showPopupMessage("🎯 Word complete! Press CHECK.", false);
+        }
+      });
+      tilesGrid.appendChild(tileBtn);
+    }
+  }
+
+  function deleteLastLetter() {
+    if (gameComplete) {
+      showPopupMessage("Game complete, press RESET to continue.", false);
+      return;
+    }
+    if (isLocked) {
+      showPopupMessage("Already correct! Press NEXT FRUIT.", false);
+      return;
+    }
+    if (currentSpelling.length === 0) return;
+    const removed = currentSpelling.pop();
+    currentTiles.push(removed);
+    renderWordDisplay();
+    renderTiles();
+  }
+
+  function checkSpelling() {
+    if (gameComplete) {
+      showPopupMessage("🏆 You already won! Press RESET GAME to play again.", false);
+      return;
+    }
+    if (isLocked) {
+      showPopupMessage("You already got this one! Press NEXT FRUIT.", false);
+      return;
+    }
+    const builtWord = currentSpelling.join('').toLowerCase();
+    if (builtWord === targetWord) {
+      // CORRECT!
+      isLocked = true;
+      // Increase score for current level
+      score[currentLevelIdx]++;
+      updateUIAndUnlocks();
+      
+      // Show correct popup
+      showPopupMessage(`🎉 PERFECT! "${targetWord.toUpperCase()}" is correct! 🎉`, false);
+      
+      // Check if this completion unlocks victory
+      const allCompleted = (score[0] >= levels[0].required && score[1] >= levels[1].required && score[2] >= levels[2].required);
+      if (allCompleted && !gameComplete) {
+        checkVictory();  // triggers victory popup and sets gameComplete
+        renderTiles();   // disable tiles visually
+        wordDisplaySpan.textContent = "🏆 VICTORY! 🏆";
+      } else {
+        // Re-render tiles to disable them
+        renderTiles();
+      }
+    } else {
+      // Wrong spelling: shake effect
+      wordDisplaySpan.style.color = 'red';
+      setTimeout(() => wordDisplaySpan.style.color = '#5a3e1b', 400);
+      showPopupMessage(`❌ "${builtWord.toUpperCase() || '???'}" is not correct. Try again!`, true);
+    }
+  }
+
+  function showPopupMessage(msg, isError) {
+    const popup = correctPopupDiv;
+    popup.style.background = isError ? "#c0392b" : "#2e7d32";
+    popup.innerHTML = msg;
+    popup.classList.add('show');
+    setTimeout(() => {
+      popup.classList.remove('show');
+    }, 2000);
+  }
+
+  // Next fruit (load new random fruit within same level)
+  function nextFruit() {
+    if (gameComplete) {
+      showPopupMessage("Game is victorious! Press RESET GAME to start over.", false);
+      return;
+    }
+    loadNewFruit();
+  }
+
+  // Reset entire game progress (scores, unlocks, victory flag)
+  function resetGame() {
+    gameComplete = false;
+    score = [0, 0, 0];
+    unlocked = [true, false, false];
+    currentLevelIdx = 0;
+    isLocked = false;
+    
+    // Reset button visuals and enable correct buttons
+    for (let i = 0; i < 3; i++) {
+      const btn = document.getElementById(`btn${i}`);
+      if (i === 0) {
+        btn.disabled = false;
+        btn.classList.add('active');
+        if (btn.innerText.includes('🔒')) btn.innerText = "🌱 EASY";
+      } else {
+        btn.disabled = true;
+        if (i === 1) btn.innerText = "🔒 MEDIUM";
+        if (i === 2) btn.innerText = "🔒 HARD";
+        btn.classList.remove('active');
+      }
+    }
+    // Ensure active class on level 0
+    document.querySelectorAll('.level-btn').forEach((btn, idx) => {
+      if (idx === 0) btn.classList.add('active');
+      else btn.classList.remove('active');
+    });
+    
+    updateUIAndUnlocks();
+    loadNewFruit(); // loads fruit for Easy level
+    showPopupMessage("🔄 Game reset! Start spelling fruits to unlock levels! 🔄", false);
+  }
+
+  // Switch level (if unlocked)
+  function setLevel(levelIndex) {
+    if (gameComplete) {
+      showPopupMessage("Game is complete! Press RESET GAME to play again.", false);
+      return;
+    }
+    if (!unlocked[levelIndex]) {
+      showPopupMessage(`🔒 ${levels[levelIndex].name} level is locked! Complete previous level first.`, true);
+      return;
+    }
+    currentLevelIdx = levelIndex;
+    // Update active button style
+    document.querySelectorAll('.level-btn').forEach((btn, idx) => {
+      if (idx === levelIndex) btn.classList.add('active');
+      else btn.classList.remove('active');
+    });
+    updateUIAndUnlocks();
+    loadNewFruit();
+  }
+
+  // ---------- Event listeners ----------
+  document.getElementById('checkBtn').addEventListener('click', checkSpelling);
+  document.getElementById('deleteBtn').addEventListener('click', deleteLastLetter);
+  document.getElementById('nextBtn').addEventListener('click', nextFruit);
+  document.getElementById('resetGameBtn').addEventListener('click', resetGame);
+  
+  document.getElementById('btn0').addEventListener('click', () => setLevel(0));
+  document.getElementById('btn1').addEventListener('click', () => setLevel(1));
+  document.getElementById('btn2').addEventListener('click', () => setLevel(2));
+  
+  // Initial load
+  resetGame(); // initializes fresh state and loads first fruit
+</script>
+</body>
+</html>

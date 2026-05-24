@@ -1,36 +1,48 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ESL Game Hub — React / Next.js
 
-## Getting Started
+Converted from the original HTML multi-page app.
 
-First, run the development server:
+## Setup
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## File structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+esl-game-hub/
+├── app/
+│   ├── globals.css           ← All themes + shared CSS classes
+│   ├── layout.tsx            ← Root layout wrapping GameProvider
+│   ├── page.tsx              ← Splash screen + auth redirect  (was index.html)
+│   ├── auth/page.tsx         ← Sign in / Register / Guest     (was auth.html)
+│   ├── hub/page.tsx          ← Main game hub                  (was hub.html)
+│   ├── games/[gameId]/
+│   │   └── page.tsx          ← Full-screen iframe game player  (was game.html)
+│   ├── leaderboard/page.tsx  ← Class leaderboard              (was leaderboard.html)
+│   ├── trophy/page.tsx       ← Badge & tier tracker           (was trophy.html)
+│   └── resources/page.tsx   ← Teaching resources              (was resources.html)
+│
+├── components/
+│   ├── GameCard.tsx          ← Individual game card
+│   ├── Navbar.tsx            ← Top navigation bar
+│   ├── ProfileModal.tsx      ← Edit name, username, avatar
+│   └── Toast.tsx             ← Global notification toast
+│
+└── lib/
+    ├── constants.ts          ← All game data (names, icons, tags, URLs…)
+    ├── firebase.ts           ← Firebase SDK wrapper
+    ├── gameState.tsx         ← Global React context (replaces main.js)
+    └── leaderboard.ts        ← Class leaderboard helpers
+```
 
-## Learn More
+## Important notes
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Your game HTML files go in the `public/` folder so the iframe in
+  `app/games/[gameId]/page.tsx` can load them (e.g. `public/games/unicorn-trophy-run/unicorn.html`)
+- Firebase config is already embedded in `lib/firebase.ts`
+- All 11 themes work via the theme selector in the Navbar

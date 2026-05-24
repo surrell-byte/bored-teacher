@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>🐾 Animal Kingdom Quest</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #1b3a1e;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      font-family: 'Segoe UI', 'Poppins', 'Comic Sans MS', cursive, sans-serif;
+    }
+
+    .screen {
+      background: #fffef8;
+      border-radius: 28px;
+      padding: 32px;
+      max-width: 640px;
+      width: 100%;
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+      transition: all 0.2s ease;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      color: #2e7d32;
+      margin-bottom: 12px;
+    }
+
+    input {
+      border: 2px solid #a5d6a7;
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-size: 1rem;
+      width: 100%;
+      margin-bottom: 12px;
+      outline: none;
+      font-family: inherit;
+    }
+
+    input:focus {
+      border-color: #2e7d32;
+    }
+
+    .btn {
+      background: #2e7d32;
+      color: white;
+      border: none;
+      padding: 12px 28px;
+      border-radius: 50px;
+      font-size: 1rem;
+      cursor: pointer;
+      font-weight: 600;
+      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background 0.2s;
+    }
+
+    .btn:hover {
+      background: #1b5e20;
+      transform: scale(1.02);
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: default;
+      transform: none;
+    }
+
+    .score-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding: 10px 16px;
+      background: #2e7d32;
+      border-radius: 50px;
+      color: white;
+    }
+
+    .score-num {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #a5d6a7;
+    }
+
+    .animal-display {
+      text-align: center;
+      margin: 16px 0;
+    }
+
+    .animal-emoji {
+      font-size: 5rem;
+    }
+
+    .animal-name {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #1b5e20;
+      margin-top: 8px;
+    }
+
+    .animal-fact {
+      font-size: 0.8rem;
+      color: #888;
+      margin-top: 4px;
+      font-style: italic;
+    }
+
+    .opts {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    @media (max-width: 480px) {
+      .opts {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .opt {
+      background: white;
+      border: 2px solid #c8e6c9;
+      border-radius: 16px;
+      padding: 12px 8px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      text-align: center;
+      font-weight: 600;
+      color: #2e7d32;
+      font-family: inherit;
+    }
+
+    .opt:hover {
+      border-color: #2e7d32;
+      background: #e8f5e9;
+      transform: scale(1.02);
+    }
+
+    .opt:active {
+      transform: scale(0.97);
+    }
+
+    .opt.wrong {
+      background: #ffebee;
+      border-color: #e57373;
+      color: #c62828;
+    }
+
+    .opt.right {
+      background: #e8f5e9;
+      border-color: #66bb6a;
+      color: #2e7d32;
+    }
+
+    .level-btn {
+      background: #e8f5e9;
+      color: #2e7d32;
+      border: 2px solid #a5d6a7;
+      border-radius: 50px;
+      padding: 14px 28px;
+      font-size: 1rem;
+      cursor: pointer;
+      font-weight: 600;
+      margin: 8px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .level-btn:hover:not(:disabled) {
+      background: #c8e6c9;
+      transform: scale(1.02);
+    }
+
+    .level-btn:active:not(:disabled) {
+      transform: scale(0.97);
+    }
+
+    .level-btn:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+
+    .progress {
+      font-size: 0.8rem;
+      color: #888;
+      text-align: right;
+      margin-bottom: 8px;
+    }
+
+    footer {
+      margin-top: 20px;
+      font-size: 0.7rem;
+      text-align: center;
+      color: #90a4ae;
+    }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+
+<script>
+  // ========== ANIMAL DATABASE BY LEVEL ==========
+  const db = {
+    easy: [
+      { n: "Frog", e: "🐸", c: "Amphibian", f: "Lives on land and water" },
+      { n: "Cat", e: "🐱", c: "Mammal", f: "Has fur and feeds young with milk" },
+      { n: "Parrot", e: "🦜", c: "Bird", f: "Can mimic human speech" },
+      { n: "Goldfish", e: "🐠", c: "Fish", f: "Breathes through gills" },
+      { n: "Snake", e: "🐍", c: "Reptile", f: "Cold-blooded with scales" },
+      { n: "Dog", e: "🐶", c: "Mammal", f: "Loyal domestic companion" },
+      { n: "Eagle", e: "🦅", c: "Bird", f: "A powerful bird of prey" },
+      { n: "Clownfish", e: "🐟", c: "Fish", f: "Lives near sea anemones" },
+      { n: "Lizard", e: "🦎", c: "Reptile", f: "Regulates heat using sunlight" },
+      { n: "Toad", e: "🐸", c: "Amphibian", f: "Drier skin than a frog" }
+    ],
+    medium: [
+      { n: "Bat", e: "🦇", c: "Mammal", f: "The only flying mammal" },
+      { n: "Turtle", e: "🐢", c: "Reptile", f: "Can live over 100 years" },
+      { n: "Salamander", e: "🦎", c: "Amphibian", f: "Can regenerate lost limbs" },
+      { n: "Shark", e: "🦈", c: "Fish", f: "A cartilaginous fish" },
+      { n: "Ostrich", e: "🐦", c: "Bird", f: "Largest bird, cannot fly" },
+      { n: "Whale", e: "🐋", c: "Mammal", f: "The largest animal on Earth" },
+      { n: "Crocodile", e: "🐊", c: "Reptile", f: "Ancient apex predator" },
+      { n: "Tuna", e: "🐟", c: "Fish", f: "A fast, migratory ocean fish" },
+      { n: "Penguin", e: "🐧", c: "Bird", f: "Swims but cannot fly" },
+      { n: "Axolotl", e: "🦎", c: "Amphibian", f: "Keeps larval features as adult" }
+    ],
+    hard: [
+      { n: "Platypus", e: "🦆", c: "Mammal", f: "Lays eggs but is a mammal" },
+      { n: "Tuatara", e: "🦎", c: "Reptile", f: "Living fossil from New Zealand" },
+      { n: "Cassowary", e: "🐦", c: "Bird", f: "Dangerous flightless bird" },
+      { n: "Lungfish", e: "🐟", c: "Fish", f: "Can breathe air with lungs" },
+      { n: "Echidna", e: "🦔", c: "Mammal", f: "Spiny egg-laying mammal" },
+      { n: "Caecilian", e: "🐛", c: "Amphibian", f: "Legless amphibian" },
+      { n: "Gharial", e: "🐊", c: "Reptile", f: "Narrow-snouted crocodilian" },
+      { n: "Kakapo", e: "🦜", c: "Bird", f: "Nocturnal, flightless parrot" },
+      { n: "Coelacanth", e: "🐟", c: "Fish", f: "Living fossil fish" },
+      { n: "Mudskipper", e: "🐟", c: "Fish", f: "Can walk on land and climb trees" }
+    ]
+  };
+
+  const animalClasses = ["Mammal", "Bird", "Reptile", "Amphibian", "Fish"];
+
+  // ========== GLOBAL STATE ==========
+  let unlocked = { easy: true, medium: false, hard: false };
+  let currentLevel = "easy";
+  let score = 0;
+  let currentIndex = 0;
+  let questions = [];
+  let locked = false;
+  let soundEnabled = true;
+
+  // ========== SOUND HANDLING ==========
+  window.addEventListener('message', (e) => {
+    if (e.data?.type === 'setSound') {
+      soundEnabled = e.data.enabled;
+    }
+  });
+
+  function playCorrectSound() {
+    if (!soundEnabled) return;
+    try {
+      new Audio("https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3").play().catch(()=>{});
+    } catch(e) {}
+  }
+
+  function playWrongSound() {
+    if (!soundEnabled) return;
+    try {
+      new Audio("https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3").play().catch(()=>{});
+    } catch(e) {}
+  }
+
+  function playCompleteSound() {
+    if (!soundEnabled) return;
+    try {
+      new Audio("https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3").play().catch(()=>{});
+    } catch(e) {}
+  }
+
+  // ========== SHUFFLE FUNCTION ==========
+  function shuffleArray(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  // ========== UI RENDERING ==========
+  const root = document.getElementById('root');
+
+  function showStart() {
+    root.innerHTML = `
+      <div class="screen">
+        <h1>🐾 Animal Kingdom Quest</h1>
+        <p style="color:#666; margin-bottom:16px">Classify animals into their correct groups!</p>
+        <input id="playerName" placeholder="Your name…">
+        <br>
+        <button class="btn" id="startBtn">Start →</button>
+        <footer>10 questions per level · +10 correct, -5 wrong · 70% to unlock next level</footer>
+      </div>
+    `;
+    document.getElementById('startBtn').onclick = () => {
+      const name = document.getElementById('playerName').value.trim();
+      if (name) {
+        showLevelSelect();
+      } else {
+        alert("Please enter your name to begin!");
+      }
+    };
+  }
+
+  function showLevelSelect() {
+    root.innerHTML = `
+      <div class="screen">
+        <h1>🐾 Select Level</h1>
+        <div style="margin: 20px 0">
+          <button class="level-btn" id="btnEasy">🌱 Easy<br><small>Common Animals</small></button>
+          <button class="level-btn" id="btnMedium" ${unlocked.medium ? '' : 'disabled'}>⚡ Medium<br><small>Trickier Ones</small></button>
+          <button class="level-btn" id="btnHard" ${unlocked.hard ? '' : 'disabled'}>🔥 Hard<br><small>Expert Level</small></button>
+        </div>
+        <button class="btn" onclick="showStart()">← Back</button>
+      </div>
+    `;
+    document.getElementById('btnEasy').onclick = () => startLevel('easy');
+    if (unlocked.medium) document.getElementById('btnMedium').onclick = () => startLevel('medium');
+    if (unlocked.hard) document.getElementById('btnHard').onclick = () => startLevel('hard');
+  }
+
+  function startLevel(level) {
+    currentLevel = level;
+    score = 0;
+    currentIndex = 0;
+    // Shuffle questions for this level
+    questions = shuffleArray([...db[level]]);
+    showQuestion();
+  }
+
+  function showQuestion() {
+    if (currentIndex >= questions.length) {
+      endLevel();
+      return;
+    }
+    const q = questions[currentIndex];
+    const shuffledClasses = shuffleArray([...animalClasses]);
+    root.innerHTML = `
+      <div class="screen">
+        <div class="score-bar">
+          <span>🌿 Score</span>
+          <span class="score-num">${score}</span>
+        </div>
+        <div class="progress">Question ${currentIndex+1} / ${questions.length}</div>
+        <div class="animal-display">
+          <div class="animal-emoji">${q.e}</div>
+          <div class="animal-name">${q.n}</div>
+          <div class="animal-fact">${q.f}</div>
+        </div>
+        <p style="text-align:center; font-size:0.95rem; color:#555; margin-bottom:4px">What class of animal is this?</p>
+        <div class="opts">
+          ${shuffledClasses.map(cls => `<button class="opt" data-class="${cls}">${cls}</button>`).join('')}
+        </div>
+      </div>
+    `;
+    locked = false;
+    document.querySelectorAll('.opt').forEach(btn => {
+      btn.onclick = () => handleAnswer(btn, q.c);
+    });
+  }
+
+  function handleAnswer(btn, correctClass) {
+    if (locked) return;
+    locked = true;
+    const selected = btn.getAttribute('data-class');
+    if (selected === correctClass) {
+      score += 10;
+      btn.classList.add('right');
+      playCorrectSound();
+      currentIndex++;
+      setTimeout(() => showQuestion(), 500);
+    } else {
+      score = Math.max(0, score - 5);
+      btn.classList.add('wrong');
+      playWrongSound();
+      setTimeout(() => {
+        btn.classList.remove('wrong');
+        locked = false;
+      }, 700);
+    }
+  }
+
+  function endLevel() {
+    const maxScore = questions.length * 10;
+    const percent = Math.round((score / maxScore) * 100);
+    let message = '';
+    if (percent >= 90) message = '🌟 Excellent! You really know your animals! 🌟';
+    else if (percent >= 70) message = '👍 Good job! You\'re a natural! 👍';
+    else message = '📚 Keep studying! Try again to unlock the next level. 📚';
+    
+    // Unlock next level if score >= 70%
+    if (percent >= 70) {
+      if (currentLevel === 'easy') unlocked.medium = true;
+      if (currentLevel === 'medium') unlocked.hard = true;
+    }
+    
+    const showNext = (percent >= 70 && currentLevel !== 'hard');
+    root.innerHTML = `
+      <div class="screen" style="text-align:center">
+        <h1>${percent >= 80 ? '🎉' : '😊'} Level Complete!</h1>
+        <p style="font-size:2rem; margin:20px 0">${score} / ${maxScore}</p>
+        <p style="color:#888; margin-bottom:20px">${percent}% — ${message}</p>
+        ${showNext ? '<button class="btn" id="nextLevelBtn">Next Level →</button>' : ''}
+        <button class="btn" id="backToLevelsBtn" style="margin-left: 10px;">← Back to Levels</button>
+      </div>
+    `;
+    
+    if (showNext) {
+      document.getElementById('nextLevelBtn').onclick = () => {
+        const next = currentLevel === 'easy' ? 'medium' : 'hard';
+        startLevel(next);
+      };
+    }
+    document.getElementById('backToLevelsBtn').onclick = () => showLevelSelect();
+    
+    playCompleteSound();
+    // Report to parent hub
+    if (typeof window.parent !== 'undefined') {
+      window.parent.postMessage({ type: 'gameComplete', gameId: 'animal', score: percent, total: 100 }, '*');
+    }
+  }
+
+  // Expose functions globally for buttons
+  window.showStart = showStart;
+  window.showLevelSelect = showLevelSelect;
+  window.startLevel = startLevel;
+
+  // Initialize
+  showStart();
+</script>
+</body>
+</html>

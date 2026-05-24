@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Monkey Tree Climb</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="game">
+    <!-- Sky decorations -->
+    <div class="sun">☀️</div>
+    <div class="cloud">☁️</div>
+    <div class="cloud">☁️</div>
+
+    <!-- Tree (pure CSS) -->
+    <div class="trunk" id="trunk">
+        <div class="progress-track">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+    </div>
+    <div class="canopy"></div>
+
+    <!-- Monkey & collectibles -->
+    <div id="monkey">🐵</div>
+    <div id="banana">🍌</div>
+    <div id="topCrown">👑</div>
+
+    <!-- UI -->
+    <div class="ui">
+        <h1>🐒 Tree Climb</h1>
+        <div id="levelText">Level: 1</div>
+        <div id="lives">❤️❤️❤️</div>
+        <button id="climbButton" onclick="climb()">⬆️ Climb Up!</button>
+        <div class="cooldown-indicator" id="cooldownText"></div>
+        <div id="slipMessage"></div>
+    </div>
+
+    <!-- Win screen -->
+    <div id="winScreen">
+        <div id="crown">👑</div>
+        <h2>YOU WIN!</h2>
+        <p style="font-size:24px; margin-bottom:20px;">🐵 King of the tree!</p>
+        <button onclick="restartGame()" style="background:#ff9800;">🔄 Play Again</button>
+    </div>
+
+    <!-- Sound effects (optional – add your own files in assets/sounds/) -->
+    <audio id="climbSound" src="assets/sounds/climb.mp3" preload="auto"></audio>
+    <audio id="slipSound" src="assets/sounds/slip.mp3" preload="auto"></audio>
+    <audio id="winSound" src="assets/sounds/win.mp3" preload="auto"></audio>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

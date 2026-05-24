@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Farm World ESL | 4-Option Animal Quiz</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      user-select: none;
+    }
+
+    body {
+      background: linear-gradient(135deg, #8ec63f, #3f8a2e);
+      font-family: 'Segoe UI', 'Poppins', 'Comic Neue', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 10px;
+    }
+
+    .screen {
+      display: none;
+      width: 100%;
+      max-width: min(550px, 95vw);
+      margin: 0 auto;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.97); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .farm-card {
+      background: rgba(255, 251, 235, 0.98);
+      backdrop-filter: blur(2px);
+      border-radius: clamp(30px, 10vw, 60px);
+      padding: clamp(15px, 5vw, 40px);
+      box-shadow: 0 20px 30px rgba(0, 0, 0, 0.2), 0 0 0 5px #f3b33d;
+      text-align: center;
+    }
+
+    .poster-style {
+      background: linear-gradient(to bottom, #cfefff 0%, #fdf5e6 60%);
+      border: 8px solid #8b4513;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 25px 40px rgba(0, 0, 0, 0.35);
+    }
+
+    .poster-style::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle, rgba(255,255,255,0.4) 1px, transparent 1px);
+      background-size: 30px 30px;
+      opacity: 0.3;
+      pointer-events: none;
+    }
+
+    .poster-style::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 80px;
+      background: linear-gradient(#6fcf3b, #3f8a2e);
+      border-top: 4px solid #2f6e22;
+      pointer-events: none;
+    }
+
+    .poster-style h1 {
+      font-size: clamp(2.8rem, 10vw, 4.5rem);
+      margin: 10px 0;
+      color: #5a3a1a;
+      text-shadow: 3px 3px 0 #fff, 6px 6px 0 #d9a441, 8px 8px 15px rgba(0,0,0,0.25);
+      transform: rotate(-2deg);
+      line-height: 1.2;
+      position: relative;
+      z-index: 2;
+    }
+
+    .poster-animals {
+      font-size: 3.2rem;
+      margin: 20px 0;
+      animation: floatAnimals 3s ease-in-out infinite;
+      position: relative;
+      z-index: 2;
+    }
+
+    @keyframes floatAnimals {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .poster-sub {
+      font-weight: 900;
+      color: #3f8a2e;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-size: 1.2rem;
+      animation: fadePulse 2s infinite;
+      position: relative;
+      z-index: 2;
+    }
+
+    @keyframes fadePulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    .sun-decoration {
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      font-size: 4rem;
+      opacity: 0.9;
+      animation: spinSun 12s linear infinite;
+      filter: drop-shadow(0 0 10px rgba(255, 200, 0, 0.6));
+      z-index: 1;
+    }
+
+    @keyframes spinSun {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .drifting-cloud {
+      position: absolute;
+      top: 20px;
+      left: -100px;
+      font-size: 2rem;
+      animation: cloudMove 20s linear infinite;
+      z-index: 1;
+      pointer-events: none;
+      opacity: 0.7;
+    }
+
+    @keyframes cloudMove {
+      from { transform: translateX(0); }
+      to { transform: translateX(700px); }
+    }
+
+    .fence-decoration {
+      font-size: 1.5rem;
+      letter-spacing: 8px;
+      margin-top: 5px;
+      opacity: 0.8;
+      position: relative;
+      z-index: 2;
+    }
+
+    .big-action-btn {
+      background: linear-gradient(145deg, #8ec63f, #5fae2e) !important;
+      font-size: 1.6rem !important;
+      padding: 16px 45px !important;
+      box-shadow: 0 8px 0 #3f8a2e, 0 15px 25px rgba(0,0,0,0.3);
+      margin-top: 25px;
+      transition: 0.2s;
+      position: relative;
+      z-index: 2;
+    }
+
+    .big-action-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .big-action-btn:active {
+      transform: translateY(3px);
+      box-shadow: 0 4px 0 #3f8a2e;
+    }
+
+    #victoryCard {
+      animation: popIn 0.5s ease;
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.7); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .trophy-card {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .trophy {
+      font-size: 5rem;
+      margin: 20px 0;
+      animation: trophyBounce 1s ease infinite alternate;
+    }
+
+    @keyframes trophyBounce {
+      from { transform: translateY(0); }
+      to { transform: translateY(-10px); }
+    }
+
+    .winner-name {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #b45f1b;
+    }
+
+    #confettiCanvas {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      width: 100%;
+      height: 100%;
+    }
+
+    h1, h2 { margin-bottom: 10px; }
+    h1 {
+      font-size: clamp(1.8rem, 8vw, 3rem);
+      background: linear-gradient(135deg, #f5b042, #c97e2a);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+    h2 { color: #4b2f14; }
+
+    input, .option, .sound-btn {
+      width: 100%;
+      max-width: 400px;
+      padding: 12px;
+      font-size: clamp(0.9rem, 4vw, 1.2rem);
+      border-radius: 50px;
+      margin: 10px auto;
+      border: none;
+    }
+
+    .emoji {
+      font-size: clamp(60px, 20vh, 110px);
+      background: #fff7e8;
+      border-radius: 40px;
+      padding: 15px;
+      margin: 10px auto;
+      width: fit-content;
+      aspect-ratio: 1/1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.3s, filter 0.3s, opacity 0.2s;
+      filter: blur(12px);
+      box-shadow: 0 12px 22px rgba(0,0,0,0.1), inset 0 0 0 4px white, inset 0 0 0 7px #ffdd99;
+    }
+    .reveal {
+      filter: blur(0);
+      transform: scale(1.05);
+      box-shadow: 0 0 0 6px #fff8c4, 0 0 20px rgba(255,215,0,0.6), 0 18px 30px rgba(0,0,0,0.2);
+    }
+    .options-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+    .stats {
+      display: flex; justify-content: space-between; background: #fef0db;
+      padding: 8px 15px; border-radius: 100px; margin-bottom: 15px;
+      font-weight: bold; font-size: 0.9rem;
+    }
+    .score-box, .q-counter { background: #fff2df; padding: 4px 14px; border-radius: 40px; color: #b45f1b; }
+    button {
+      background: #ffb347; border: none; font-weight: bold; font-size: 1rem;
+      padding: 10px 18px; border-radius: 60px; cursor: pointer; transition: 0.15s;
+      color: #2c2b26; box-shadow: 0 5px 0 #a45d2e; margin: 5px;
+    }
+    button:active { transform: translateY(2px); box-shadow: 0 2px 0 #a45d2e; }
+    #hintBtn { background: #ffd27f; font-size: 0.9rem; padding: 8px 14px; box-shadow: 0 3px 0 #b97f2e; }
+    .sound-btn { background: #ffe0a3; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .option { background: #f3f0e7; border: 2px solid #e9dbc9; cursor: pointer; }
+    .option:hover { background: #ffe3b5; transform: scale(0.98); }
+    .correct { background: #2b7e3a !important; border-color: #f9e45b !important; color: white !important; pointer-events: none; }
+    .wrong { background: #c93a2b !important; border-color: #ffb4a2 !important; color: white !important; animation: shakeBad 0.28s; pointer-events: none; }
+    @keyframes shakeBad {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      50% { transform: translateX(6px); }
+      75% { transform: translateX(-4px); }
+      100% { transform: translateX(0); }
+    }
+    .message { background: #fff0cf; border-radius: 40px; padding: 10px; margin: 12px 0; font-weight: bold; font-size: 0.9rem; }
+    .menu-buttons { display: flex; justify-content: center; gap: 10px; margin-top: 10px; }
+    .menu-buttons button { background: #e0aa6e; flex: 1; }
+    footer { font-size: 0.7rem; margin-top: 15px; color: #4b2a10; }
+    #levels button { display: block; width: 100%; margin: 12px 0; background: #ffdd99; font-size: 1.1rem; padding: 12px; }
+    .locked { background: #b0aa99 !important; box-shadow: 0 5px 0 #6b5a44 !important; cursor: not-allowed; opacity: 0.7; pointer-events: none; filter: grayscale(0.1); }
+    @media (min-height: 600px) { .emoji { margin: 20px auto; } .options-grid { gap: 15px; } }
+    @media (max-width: 350px) { h1 { font-size: 1.5rem; } .farm-card { padding: 15px; } }
+    @media (orientation: landscape) and (max-height: 500px) {
+      .farm-card { display: flex; flex-direction: row; align-items: center; justify-content: space-around; gap: 20px; padding: 15px; border-radius: 30px; }
+      .left-side { flex: 1; display: flex; flex-direction: column; align-items: center; }
+      h1 { font-size: 1.5rem; margin-bottom: 5px; }
+      .emoji { font-size: 80px; margin: 5px 0; }
+      .right-side { flex: 1.5; display: flex; flex-direction: column; gap: 8px; }
+      .stats { padding: 5px 12px; margin-bottom: 5px; font-size: 0.8rem; }
+      .options-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+      .option { padding: 8px; margin: 0; font-size: 0.85rem; }
+      .sound-btn { padding: 8px; margin: 5px 0; font-size: 0.85rem; }
+      footer { display: none; }
+      .message { font-size: 0.8rem; padding: 6px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- WELCOME POSTER -->
+<div id="welcomeScreen" class="screen active">
+  <div class="farm-card poster-style">
+    <div class="sun-decoration">☀️</div>
+    <div class="drifting-cloud">☁️ ☁️</div>
+    <div class="fence-decoration">🪵 🌾 🪵 🌾 🪵</div>
+    <h1>FARM ANIMAL<br>QUIZ!</h1>
+    <div class="poster-animals">🐄 🚜 🐥</div>
+    <p class="poster-sub">Fun Learning Adventure!</p>
+    <button id="enterBtn" class="big-action-btn">ENTER FARM 🚪</button>
+  </div>
+</div>
+
+<!-- NAME INPUT -->
+<div id="landing" class="screen">
+  <div class="farm-card">
+    <h2>Welcome, Traveler!</h2>
+    <p>What is your name, Farmer?</p>
+    <input type="text" id="playerName" placeholder="Enter your name..." autocomplete="off">
+    <button id="startBtn">Continue 🚜</button>
+  </div>
+</div>
+
+<!-- MAIN MENU -->
+<div id="menu" class="screen">
+  <div class="farm-card">
+    <h2>Welcome, <span id="displayName">Farmer</span> 👋</h2>
+    <p>🐓 Choose your challenge 🐖</p>
+    <div id="levels"></div>
+    <footer>⭐ Complete a level to unlock the next!</footer>
+  </div>
+</div>
+
+<!-- GAME SCREEN -->
+<div id="gameScreen" class="screen">
+  <div class="farm-card">
+    <div class="left-side">
+      <h1>🐄 FARM</h1>
+      <div id="emoji" class="emoji">🐄</div>
+      <button id="hintBtn">👀 Peek</button>
+    </div>
+    <div class="right-side">
+      <div class="stats">
+        <div class="score-box">🌟 <span id="scoreDisplay">0</span></div>
+        <div class="q-counter">📖 <span id="currentQ">1</span>/<span id="totalQ">0</span></div>
+      </div>
+      <button id="soundButton" class="sound-btn">🔊 HEAR SOUND</button>
+      <div id="optionsContainer" class="options-grid"></div>
+      <div id="messageArea" class="message">🐣 Tap the name!</div>
+      <div class="menu-buttons">
+        <button id="exitToMenuBtn">🏠 Menu</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- VICTORY SCREEN (only after all 3 levels) -->
+<div id="victoryScreen" class="screen">
+  <div class="farm-card" id="victoryCard">
+    <h2>🎉 CONGRATULATIONS 🎉</h2>
+    <p id="victoryMessage">Amazing job, Farmer!</p>
+    <button id="collectTrophyBtn" class="big-action-btn">🏆 Collect Trophy</button>
+  </div>
+</div>
+
+<!-- TROPHY SCREEN -->
+<div id="trophyScreen" class="screen">
+  <div class="farm-card trophy-card">
+    <h2>🏆 #1 FARM CHAMPION 🏆</h2>
+    <div class="trophy">🏆</div>
+    <p class="winner-name" id="winnerName">Farmer</p>
+    <canvas id="confettiCanvas"></canvas>
+    <button id="backToMenuFromTrophy">🏠 Back to Menu</button>
+  </div>
+</div>
+
+<script>
+  // ======================== CONFIGURATION ========================
+  const baseURL = "https://raw.githubusercontent.com/surrell-byte/farm-game/main/animal_sounds/";
+  const animalPool = [
+    { name: "Cow", emoji: "🐄", sound: "cow.mp3" },
+    { name: "Sheep", emoji: "🐑", sound: "sheep.mp3" },
+    { name: "Duck", emoji: "🦆", sound: "duck.mp3" },
+    { name: "Goat", emoji: "🐐", sound: "goat.mp3" },
+    { name: "Pig", emoji: "🐖", sound: "pig.mp3" },
+    { name: "Chicken", emoji: "🐓", sound: "chicken.mp3" },
+    { name: "Turkey", emoji: "🦃", sound: "turkey.mp3" },
+    { name: "Donkey", emoji: "🫏", sound: "donkey.mp3" },
+    { name: "Horse", emoji: "🐎", sound: "horse.mp3" },
+    { name: "Dog", emoji: "🐕", sound: "dog.mp3" }
+  ];
+
+  const levels = [
+    { unlocked: true, name: "🐣 Barn Buddies", animals: ["Cow", "Sheep", "Duck", "Dog"] },
+    { unlocked: false, name: "🐷 Pigpen Pals", animals: ["Pig", "Chicken", "Goat", "Donkey"] },
+    { unlocked: false, name: "🏆 Pasture Masters", animals: ["Horse", "Turkey", "Donkey", "Cow"] }
+  ];
+
+  let playerName = "";
+  let currentLevelIndex = 0;
+  let currentQuestions = [];
+  let currentQuestionIndex = 0;
+  let currentScore = 0;
+  let answered = false;
+  let gameActive = false;
+  let levelTimeout = null;
+  let currentAudio = null;
+  let confettiAnimationId = null;
+
+  // DOM elements
+  const displayNameSpan = document.getElementById("displayName");
+  const levelsContainer = document.getElementById("levels");
+  const emojiEl = document.getElementById("emoji");
+  const optionsContainer = document.getElementById("optionsContainer");
+  const messageArea = document.getElementById("messageArea");
+  const scoreDisplaySpan = document.getElementById("scoreDisplay");
+  const currentQSpan = document.getElementById("currentQ");
+  const totalQSpan = document.getElementById("totalQ");
+  const soundBtn = document.getElementById("soundButton");
+  const exitToMenuBtn = document.getElementById("exitToMenuBtn");
+  const startGameBtn = document.getElementById("startBtn");
+  const hintBtn = document.getElementById("hintBtn");
+  const enterBtn = document.getElementById("enterBtn");
+  const collectTrophyBtn = document.getElementById("collectTrophyBtn");
+  const backToMenuFromTrophy = document.getElementById("backToMenuFromTrophy");
+
+  // Helpers
+  function shuffleArray(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function clearLevelTimeout() { if (levelTimeout) clearTimeout(levelTimeout); levelTimeout = null; }
+  function stopCurrentAudio() { if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; currentAudio = null; } }
+  function clearPeekBlur() { if (emojiEl.style.filter === "blur(4px)") emojiEl.style.filter = ""; }
+  function showScreen(id) { document.querySelectorAll(".screen").forEach(s => s.classList.remove("active")); document.getElementById(id).classList.add("active"); }
+
+  function renderLevels() {
+    levelsContainer.innerHTML = "";
+    levels.forEach((level, idx) => {
+      const btn = document.createElement("button");
+      btn.textContent = `🌾 ${level.name} (Level ${idx+1})`;
+      if (!level.unlocked) {
+        btn.classList.add("locked");
+        btn.textContent += ` 🔒`;
+      } else {
+        btn.onclick = () => startLevel(idx);
+      }
+      levelsContainer.appendChild(btn);
+    });
+  }
+
+  function startLevel(levelIndex) {
+    if (!levels[levelIndex].unlocked) return;
+    clearLevelTimeout();
+    stopCurrentAudio();
+    clearPeekBlur();
+    currentLevelIndex = levelIndex;
+    const levelData = levels[levelIndex];
+    let rawQuestions = animalPool.filter(animal => levelData.animals.includes(animal.name));
+    currentQuestions = shuffleArray([...rawQuestions]);
+    currentQuestionIndex = 0;
+    currentScore = 0;
+    answered = false;
+    gameActive = true;
+    updateGameStatsUI();
+    loadQuestion();
+    showScreen("gameScreen");
+  }
+
+  function updateGameStatsUI() {
+    scoreDisplaySpan.textContent = currentScore;
+    if (currentQuestions.length) {
+      currentQSpan.textContent = currentQuestionIndex + 1;
+      totalQSpan.textContent = currentQuestions.length;
+    } else {
+      currentQSpan.textContent = "0";
+      totalQSpan.textContent = "0";
+    }
+  }
+
+  function loadQuestion() {
+    if (!gameActive) return;
+    if (currentQuestionIndex >= currentQuestions.length) {
+      finishLevel();
+      return;
+    }
+    clearLevelTimeout();
+    answered = false;
+    clearPeekBlur();
+    emojiEl.classList.remove("reveal");
+    emojiEl.style.opacity = "0";
+    const q = currentQuestions[currentQuestionIndex];
+    setTimeout(() => {
+      emojiEl.textContent = q.emoji;
+      emojiEl.style.opacity = "1";
+      messageArea.innerHTML = "🐣 Which animal is this?";
+      messageArea.style.background = "#fff0cf";
+      const others = animalPool.filter(a => a.name !== q.name);
+      const shuffledOthers = shuffleArray([...others]);
+      const wrongNames = shuffledOthers.slice(0, 3).map(a => a.name);
+      let options = [q.name, ...wrongNames];
+      options = shuffleArray(options);
+      optionsContainer.innerHTML = "";
+      options.forEach(opt => {
+        const btn = document.createElement("button");
+        btn.textContent = opt;
+        btn.className = "option";
+        btn.addEventListener("click", () => { if (gameActive && !answered) checkAnswer(btn, opt); });
+        optionsContainer.appendChild(btn);
+      });
+      updateGameStatsUI();
+    }, 50);
+  }
+
+  function playSoundForCurrent() {
+    if (!gameActive || currentQuestionIndex >= currentQuestions.length) { messageArea.innerHTML = "🎮 Select a level first!"; return; }
+    const q = currentQuestions[currentQuestionIndex];
+    stopCurrentAudio();
+    const fullURL = baseURL + q.sound;
+    currentAudio = new Audio();
+    currentAudio.src = fullURL;
+    currentAudio.load();
+    currentAudio.play().catch(() => { messageArea.innerHTML = "🔊 Tap again to load sound"; setTimeout(() => { if (gameActive && !answered && currentQuestionIndex < currentQuestions.length) messageArea.innerHTML = "🐣 Which animal is this?"; }, 1500); });
+  }
+
+  function checkAnswer(button, selected) {
+    if (!gameActive || answered) return;
+    const currentQ = currentQuestions[currentQuestionIndex];
+    const isCorrect = (selected === currentQ.name);
+    if (isCorrect) {
+      stopCurrentAudio();
+      clearPeekBlur();
+      answered = true;
+      currentScore++;
+      updateGameStatsUI();
+      button.classList.add("correct");
+      emojiEl.classList.add("reveal");
+      messageArea.innerHTML = "✅ PERFECT! +1 POINT 🎉";
+      messageArea.style.background = "#c8f0d1";
+      document.querySelectorAll(".option").forEach(btn => { btn.style.pointerEvents = "none"; btn.disabled = true; });
+      clearLevelTimeout();
+      levelTimeout = setTimeout(() => {
+        levelTimeout = null;
+        currentQuestionIndex++;
+        if (currentQuestionIndex < currentQuestions.length) loadQuestion();
+        else finishLevel();
+      }, 1300);
+    } else {
+      button.classList.add("wrong");
+      const card = document.querySelector("#gameScreen .farm-card");
+      card.classList.add("shake-bad");
+      setTimeout(() => card.classList.remove("shake-bad"), 300);
+      messageArea.innerHTML = "❌ OOPS! Try again! 🐾";
+      messageArea.style.background = "#ffe0db";
+      setTimeout(() => {
+        if (button && button.classList) { button.classList.remove("wrong"); button.style.pointerEvents = "auto"; button.disabled = false; }
+      }, 800);
+    }
+  }
+
+  // ========== MODIFIED finishLevel: only show victory after ALL 3 levels ==========
+  function finishLevel() {
+    if (!gameActive) return;
+    gameActive = false;
+    answered = true;
+    clearLevelTimeout();
+    stopCurrentAudio();
+    clearPeekBlur();
+
+    // Unlock next level
+    const nextLevel = levels[currentLevelIndex + 1];
+    if (nextLevel && !nextLevel.unlocked) {
+      nextLevel.unlocked = true;
+    }
+
+    // Check if there is another level after this one
+    const hasNextLevel = (currentLevelIndex + 1) < levels.length;
+
+    if (hasNextLevel) {
+      // Auto-advance to next level without victory popup
+      messageArea.innerHTML = "🎉 Level Complete! Loading next level... 🚜";
+      messageArea.style.background = "#ffe5b4";
+      // Disable buttons during transition
+      document.querySelectorAll(".option").forEach(btn => { btn.style.pointerEvents = "none"; btn.disabled = true; });
+      clearLevelTimeout();
+      levelTimeout = setTimeout(() => {
+        levelTimeout = null;
+        startLevel(currentLevelIndex + 1);
+      }, 1800);
+    } else {
+      // All 3 levels completed → show victory screen
+      const msg = `🏆 You scored ${currentScore}/${currentQuestions.length} in the final level!`;
+      document.getElementById("victoryMessage").innerHTML = msg;
+      showScreen("victoryScreen");
+    }
+  }
+
+  // ========== CONFETTI SYSTEM ==========
+  function startConfetti() {
+    const canvas = document.getElementById("confettiCanvas");
+    if (!canvas) return;
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+    const ctx = canvas.getContext("2d");
+    const pieces = [];
+    for (let i = 0; i < 120; i++) {
+      pieces.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: Math.random() * 6 + 4,
+        speed: Math.random() * 3 + 2,
+        color: `hsl(${Math.random() * 360}, 100%, 50%)`
+      });
+    }
+    if (confettiAnimationId) cancelAnimationFrame(confettiAnimationId);
+    function update() {
+      if (!ctx || !ctx.canvas.parentElement) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      pieces.forEach(p => {
+        p.y += p.speed;
+        if (p.y > canvas.height) p.y = -10;
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x, p.y, p.size, p.size);
+      });
+      confettiAnimationId = requestAnimationFrame(update);
+    }
+    update();
+  }
+
+  function stopConfetti() {
+    if (confettiAnimationId) cancelAnimationFrame(confettiAnimationId);
+    const canvas = document.getElementById("confettiCanvas");
+    if (canvas && canvas.getContext) canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
+  }
+
+  function exitToMenu() {
+    clearLevelTimeout();
+    stopCurrentAudio();
+    clearPeekBlur();
+    stopConfetti();
+    gameActive = false;
+    answered = false;
+    showScreen("menu");
+    renderLevels();
+  }
+
+  function startGameFromLanding() {
+    const inputName = document.getElementById("playerName");
+    const name = inputName.value.trim();
+    if (name === "") { alert("🐄 Please enter your name to start farming!"); return; }
+    playerName = name;
+    displayNameSpan.textContent = playerName;
+    levels[0].unlocked = true;
+    levels[1].unlocked = false;
+    levels[2].unlocked = false;
+    renderLevels();
+    showScreen("menu");
+  }
+
+  function peekEmoji() {
+    if (!gameActive || answered) return;
+    emojiEl.style.filter = "blur(4px)";
+    setTimeout(() => { if (!answered && gameActive && emojiEl.style.filter === "blur(4px)") emojiEl.style.filter = ""; }, 800);
+  }
+
+  // Trophy button: show trophy screen with confetti
+  collectTrophyBtn.addEventListener("click", () => {
+    document.getElementById("winnerName").textContent = playerName;
+    showScreen("trophyScreen");
+    startConfetti();
+  });
+
+  backToMenuFromTrophy.addEventListener("click", () => {
+    stopConfetti();
+    exitToMenu();
+  });
+
+  // Event listeners
+  enterBtn.addEventListener("click", () => showScreen("landing"));
+  startGameBtn.addEventListener("click", startGameFromLanding);
+  soundBtn.addEventListener("click", playSoundForCurrent);
+  exitToMenuBtn.addEventListener("click", exitToMenu);
+  hintBtn.addEventListener("click", peekEmoji);
+
+  // Shake animation style
+  const style = document.createElement("style");
+  style.textContent = `.shake-bad { animation: gameShake 0.32s cubic-bezier(0.36,0.07,0.19,0.97) both; }
+    @keyframes gameShake { 0% { transform: translateX(0); } 20% { transform: translateX(-7px); } 40% { transform: translateX(7px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(3px); } 100% { transform: translateX(0); } }
+    .option:active { transform: scale(0.96); }`;
+  document.head.appendChild(style);
+
+  renderLevels();
+</script>
+</body>
+</html>

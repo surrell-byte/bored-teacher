@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>🍕 Food Word Hunt | Spell with Letter Tiles 🍦</title>
+  <style>
+    /* Base Styling */
+    body {
+      background: linear-gradient(145deg, #fef5e7 0%, #ffe0b5 100%);
+      font-family: 'Segoe UI', 'Comic Neue', 'Comic Sans MS', 'Chalkboard SE', system-ui, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 16px;
+    }
+    .game-box {
+      width: 100%;
+      max-width: 650px;
+      background: white;
+      border-radius: 48px;
+      box-shadow: 0 25px 40px rgba(0,0,0,0.2);
+      overflow: hidden;
+      text-align: center;
+      border: 4px solid #ffd89a;
+    }
+    
+    /* Header & Progress */
+    .header {
+      background: linear-gradient(120deg, #ff9f3d, #f7b05e);
+      padding: 20px;
+      color: white;
+      font-size: 1.4rem;
+    }
+    .progress-info {
+      background: #fff0cf;
+      padding: 12px;
+      font-weight: bold;
+      color: #a5662a;
+      border-bottom: 2px solid #ffd89a;
+      font-size: 0.9rem;
+    }
+    
+    /* Level Buttons */
+    .level-bar {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      padding: 15px;
+      background: #f7e8d4;
+      flex-wrap: wrap;
+    }
+    .level-btn {
+      padding: 8px 20px;
+      border-radius: 40px;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      background: #e6c8a3;
+      color: #5a3e1b;
+      font-size: 0.9rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: 0.1s;
+    }
+    .level-btn.active {
+      background: #7cb518;
+      color: white;
+      box-shadow: 0 3px 0 #3f6b1f;
+      transform: translateY(1px);
+    }
+    .level-btn:disabled {
+      background: #d4c4aa;
+      color: #8a7a60;
+      cursor: not-allowed;
+      opacity: 0.7;
+      transform: none;
+    }
+
+    /* Game Elements */
+    .food-card {
+      font-size: 6rem;
+      margin: 20px 0 10px;
+      filter: drop-shadow(2px 8px 12px rgba(0,0,0,0.15));
+    }
+    .current-word {
+      font-size: 1.9rem;
+      font-family: 'Courier New', monospace;
+      letter-spacing: 8px;
+      min-height: 65px;
+      color: #5a3e1b;
+      font-weight: bold;
+      background: #fef3e6;
+      padding: 12px;
+      margin: 0 20px;
+      border-radius: 60px;
+    }
+    .tiles-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      padding: 20px;
+      min-height: 130px;
+      background: #ffe6ce;
+      margin: 15px 20px;
+      border-radius: 48px;
+    }
+    .tile {
+      width: 65px;
+      height: 65px;
+      background: #fffbee;
+      border: 3px solid #fcb375;
+      border-radius: 20px;
+      font-size: 1.8rem;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 5px 0 #b4621a;
+      transition: 0.05s linear;
+      font-family: monospace;
+    }
+    .tile:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 #b4621a;
+    }
+
+    /* Controls */
+    .controls {
+      padding: 15px 20px 25px;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      padding: 10px 22px;
+      border-radius: 50px;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      color: white;
+      box-shadow: 0 3px 0 rgba(0,0,0,0.2);
+      font-size: 0.9rem;
+    }
+    .btn-check { background: #6aa84f; box-shadow: 0 3px 0 #3f6b2b; }
+    .btn-del { background: #e06666; box-shadow: 0 3px 0 #a14444; }
+    .btn-next { background: #f7b05e; box-shadow: 0 3px 0 #b4621a; color: #2d281c; }
+    .btn-reset { background: #d9872e; box-shadow: 0 3px 0 #8b521c; }
+    
+    /* Popup & Victory */
+    .popup, .victory-popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #2e7d32;
+      color: white;
+      padding: 28px 40px;
+      border-radius: 48px;
+      text-align: center;
+      visibility: hidden;
+      opacity: 0;
+      transition: 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+      z-index: 100;
+      border: 4px solid #ffd966;
+      box-shadow: 0 20px 35px rgba(0,0,0,0.3);
+      font-weight: bold;
+      font-size: 1.3rem;
+      max-width: 85%;
+    }
+    .victory-popup {
+      background: linear-gradient(135deg, #ff8c42, #d6321e);
+      border: 4px solid #ffb347;
+      font-size: 1.4rem;
+    }
+    .popup.show, .victory-popup.show {
+      visibility: visible;
+      opacity: 1;
+    }
+    @media (max-width: 550px) {
+      .tile { width: 55px; height: 55px; font-size: 1.5rem; }
+      .current-word { font-size: 1.3rem; letter-spacing: 5px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="correctPopup" class="popup"></div>
+<div id="victoryPopup" class="victory-popup"></div>
+
+<div class="game-box">
+  <div class="header">
+    <h1>🍕 FOOD WORD HUNT 🍦</h1>
+  </div>
+  <div class="progress-info" id="progressInfo">⭐ Solve 5 foods to unlock Medium!</div>
+  
+  <div class="level-bar">
+    <button class="level-btn active" id="btn0" data-level="0">🌱 EASY</button>
+    <button class="level-btn" id="btn1" data-level="1" disabled>🔒 MEDIUM</button>
+    <button class="level-btn" id="btn2" data-level="2" disabled>🔒 HARD</button>
+  </div>
+
+  <div class="food-card" id="foodEmoji">🍕</div>
+  <div class="current-word" id="wordDisplay">_ _ _ _ _</div>
+  
+  <div class="tiles-grid" id="tilesGrid"></div>
+
+  <div class="controls">
+    <button class="btn btn-del" id="deleteBtn">⌫ DELETE</button>
+    <button class="btn btn-check" id="checkBtn">✅ CHECK</button>
+    <button class="btn btn-next" id="nextBtn">🍉 NEXT FOOD</button>
+    <button class="btn btn-reset" id="resetGameBtn">🏆 RESET GAME</button>
+  </div>
+</div>
+
+<script>
+  // ---------- COMPLETE FOOD & DRINK EMOJI LIST (no repeats, all real emojis) ----------
+  // Based on the user's provided list (fruits, vegetables, grains, dairy, meat, seafood, snacks, desserts, drinks)
+  const rawFoods = [
+    // Fruits 🍏
+    "🍎", "apple", "🍏", "green apple", "🍐", "pear", "🍊", "orange", "🍋", "lemon", 
+    "🍌", "banana", "🍉", "watermelon", "🍇", "grapes", "🍓", "strawberry", "🫐", "blueberries",
+    "🍈", "melon", "🍒", "cherries", "🍑", "peach", "🥭", "mango", "🍍", "pineapple", 
+    "🥝", "kiwi", "🍅", "tomato", "🫒", "olive", "🥥", "coconut",
+    // Vegetables 🥕
+    "🥑", "avocado", "🍆", "eggplant", "🥔", "potato", "🥕", "carrot", "🌽", "corn", 
+    "🌶️", "pepper", "🫑", "bell pepper", "🥒", "cucumber", "🥬", "leafy greens", "🥦", "broccoli", 
+    "🧄", "garlic", "🧅", "onion", "🍄", "mushroom", "🫘", "beans",
+    // Grains & Bread 🍞
+    "🍞", "bread", "🥖", "baguette", "🥐", "croissant", "🥨", "pretzel", "🥯", "bagel", 
+    "🧇", "waffle", "🥞", "pancake", "🫓", "flatbread",
+    // Dairy & Eggs 🧀
+    "🧀", "cheese", "🥚", "egg", "🍳", "fried egg", "🧈", "butter", "🥛", "glass of milk",
+    // Meat & Protein 🍖
+    "🥓", "bacon", "🥩", "steak", "🍗", "poultry leg", "🍖", "meat on bone", "🌭", "hot dog",
+    "🍔", "burger", "🍟", "fries", "🍕", "pizza", "🥪", "sandwich", "🥙", "stuffed flatbread",
+    "🧆", "falafel", "🌮", "taco", "🌯", "burrito", "🫔", "tamale",
+    // Seafood 🍣
+    "🦪", "oyster", "🍤", "shrimp", "🍣", "sushi", "🍱", "bento box", "🍛", "curry rice",
+    "🍜", "noodles", "🍝", "spaghetti", "🍲", "hot pot", "🍥", "fish cake",
+    // Snacks & Sides 🍿
+    "🍿", "popcorn", "🧂", "salt", "🥫", "canned food",
+    // Desserts & Sweets 🍰
+    "🍦", "ice cream", "🍧", "shaved ice", "🍨", "ice cream sundae", "🍩", "donut", 
+    "🍪", "cookie", "🎂", "birthday cake", "🍰", "cake slice", "🧁", "cupcake", 
+    "🍫", "chocolate bar", "🍬", "candy", "🍭", "lollipop", "🧊", "ice cube", 
+    "🍮", "custard", "🥧", "pie",
+    // Drinks 🥤
+    "🍼", "baby bottle", "🥛", "glass of milk", "☕", "hot beverage", "🍵", "teacup", 
+    "🧃", "juice box", "🥤", "cup with straw", "🧋", "bubble tea", "🍶", "sake", 
+    "🍺", "beer mug", "🍻", "clinking beer mugs", "🥂", "clinking glasses", "🍷", "wine glass", 
+    "🥃", "tumbler glass", "🍸", "cocktail glass", "🍹", "tropical drink", "🧉", "mate drink"
+  ];
+
+  // Convert raw list into array of {emoji, name} objects, removing duplicates by emoji+name combo
+  const allFoods = [];
+  for (let i = 0; i < rawFoods.length; i += 2) {
+    if (i + 1 < rawFoods.length) {
+      allFoods.push({ emoji: rawFoods[i], name: rawFoods[i + 1] });
+    }
+  }
+
+  // 🚀 Step 2 — Deduplicate properly using emoji+name as key (as requested)
+  const uniqueFoods = [];
+  const seen = new Set();
+  for (const food of allFoods) {
+    const key = food.emoji + "|" + food.name;
+    if (!seen.has(key)) {
+      seen.add(key);
+      uniqueFoods.push(food);
+    }
+  }
+
+  // Level distribution based on word length (excluding spaces for multi-word names)
+  // Easy: length <= 5 (excluding spaces)
+  // Medium: length 6-8
+  // Hard: length >= 9 or contains space (multi-word)
+  const easyFoods = uniqueFoods.filter(f => f.name.replace(/ /g, '').length <= 5);
+  const mediumFoods = uniqueFoods.filter(f => {
+    const len = f.name.replace(/ /g, '').length;
+    return len >= 6 && len <= 8;
+  });
+  const hardFoods = uniqueFoods.filter(f => {
+    const len = f.name.replace(/ /g, '').length;
+    return len >= 9 || f.name.includes(' ');
+  });
+
+  // Ensure we have enough variety; take up to 14 per level for randomness but prevent repeats
+  const levels = [
+    { 
+      name: "Easy", 
+      foods: easyFoods.slice(0, 14),
+      extra: 2, 
+      required: 5 
+    },
+    { 
+      name: "Medium", 
+      foods: mediumFoods.slice(0, 14),
+      extra: 3, 
+      required: 5 
+    },
+    { 
+      name: "Hard", 
+      foods: hardFoods.slice(0, 12),
+      extra: 4, 
+      required: 4 
+    }
+  ];
+
+  // 🚀 Step 3 — Track used foods per level to prevent repeats during gameplay
+  let usedFoodsPerLevel = [new Set(), new Set(), new Set()];
+
+  // Helper to get food object by name
+  function getFoodByName(name) {
+    return uniqueFoods.find(f => f.name === name);
+  }
+
+  // Game state
+  let currentLevelIdx = 0;
+  let score = [0, 0, 0];
+  let unlocked = [true, false, false];
+  let targetWord = "";
+  let currentSpelling = [];
+  let currentTiles = [];
+  let isLocked = false;
+  let gameComplete = false;
+
+  // DOM elements
+  const foodEmojiSpan = document.getElementById('foodEmoji');
+  const wordDisplaySpan = document.getElementById('wordDisplay');
+  const tilesGrid = document.getElementById('tilesGrid');
+  const progressInfo = document.getElementById('progressInfo');
+  const correctPopupDiv = document.getElementById('correctPopup');
+  const victoryPopupDiv = document.getElementById('victoryPopup');
+
+  // Helper: random letter a-z
+  function getRandomLetter() {
+    const letters = "abcdefghijklmnopqrstuvwxyz";
+    return letters[Math.floor(Math.random() * letters.length)];
+  }
+
+  function shuffleArray(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function buildTileSet(word, extraCount) {
+    // Remove spaces for tile building (multi-word foods like "ice cream" become "icecream")
+    const cleanWord = word.replace(/ /g, '');
+    const letters = cleanWord.split('');
+    const extras = [];
+    for (let i = 0; i < extraCount; i++) extras.push(getRandomLetter());
+    const pool = [...letters, ...extras];
+    return shuffleArray(pool);
+  }
+
+  function checkVictory() {
+    if (gameComplete) return true;
+    const easyDone = score[0] >= levels[0].required;
+    const mediumDone = score[1] >= levels[1].required;
+    const hardDone = score[2] >= levels[2].required;
+    if (easyDone && mediumDone && hardDone) {
+      gameComplete = true;
+      victoryPopupDiv.innerHTML = `🏆🎉 GRAND VICTORY! 🎉🏆<br>🍕🍔🍦 You completed ALL 3 levels! 🍣🥗🍪<br>⭐ Food Word Master! ⭐<br><span style="font-size:0.9rem;">Press "RESET GAME" to play again!</span>`;
+      victoryPopupDiv.classList.add('show');
+      setTimeout(() => victoryPopupDiv.classList.remove('show'), 4500);
+      return true;
+    }
+    return false;
+  }
+
+  function updateUIAndUnlocks() {
+    if (currentLevelIdx === 0 && score[0] >= levels[0].required) unlocked[1] = true;
+    if (currentLevelIdx === 1 && score[1] >= levels[1].required) unlocked[2] = true;
+    
+    for (let i = 0; i < 3; i++) {
+      const btn = document.getElementById(`btn${i}`);
+      if (!btn) continue;
+      if (unlocked[i]) {
+        btn.disabled = false;
+        if (i > 0 && btn.innerText.includes('🔒')) btn.innerText = levels[i].name.toUpperCase();
+      } else {
+        btn.disabled = true;
+        if (i === 1 && !unlocked[1]) btn.innerText = "🔒 MEDIUM";
+        if (i === 2 && !unlocked[2]) btn.innerText = "🔒 HARD";
+      }
+    }
+    
+    const currentReq = levels[currentLevelIdx].required;
+    const currentScore = score[currentLevelIdx];
+    if (currentLevelIdx < 2 && !unlocked[currentLevelIdx + 1]) {
+      progressInfo.innerHTML = `⭐ Level ${levels[currentLevelIdx].name}: ${currentScore}/${currentReq} correct → Unlock ${levels[currentLevelIdx+1].name}! ⭐`;
+    } else {
+      progressInfo.innerHTML = `🌟 Level ${levels[currentLevelIdx].name} Mastered! (${currentScore} foods spelled) 🌟`;
+    }
+    if (gameComplete) progressInfo.innerHTML = "🏆 ALL LEVELS COMPLETE! VICTORY! 🏆";
+  }
+
+  // 🚀 New selection logic with repeat prevention (Step 3)
+  function loadNewFood() {
+    if (gameComplete) {
+      wordDisplaySpan.textContent = "🏆 VICTORY! Press RESET";
+      tilesGrid.innerHTML = "";
+      return;
+    }
+    isLocked = false;
+    const levelData = levels[currentLevelIdx];
+    const foodList = levelData.foods;
+    const usedSet = usedFoodsPerLevel[currentLevelIdx];
+    
+    // Reset used set if all foods have been tried in this level
+    if (usedSet.size === foodList.length) {
+      usedSet.clear();
+    }
+    
+    // Filter available foods (not used yet)
+    let availableFoods = foodList.filter(f => !usedSet.has(f.name));
+    if (availableFoods.length === 0) {
+      // Fallback: if somehow empty, reset and take all
+      usedSet.clear();
+      availableFoods = [...foodList];
+    }
+    
+    const randomFood = availableFoods[Math.floor(Math.random() * availableFoods.length)];
+    usedSet.add(randomFood.name);
+    
+    targetWord = randomFood.name.toLowerCase();
+    currentSpelling = [];
+    const extraCount = levelData.extra;
+    currentTiles = buildTileSet(targetWord, extraCount);
+    foodEmojiSpan.textContent = randomFood.emoji;
+    renderWordDisplay();
+    renderTiles();
+  }
+
+  function renderWordDisplay() {
+    // Show underscores for each letter (ignoring spaces for display, but preserve spacing in target)
+    // For words with spaces, we show spaces as visible indicator
+    let display = "";
+    const cleanTarget = targetWord.replace(/ /g, '');
+    for (let i = 0; i < cleanTarget.length; i++) {
+      if (i < currentSpelling.length) {
+        display += currentSpelling[i].toUpperCase();
+      } else {
+        display += "_";
+      }
+      if (i !== cleanTarget.length - 1) display += " ";
+    }
+    wordDisplaySpan.textContent = display || "_____";
+    // Optional: show length hint separately? Already progress shows.
+  }
+
+  function renderTiles() {
+    tilesGrid.innerHTML = "";
+    if (!currentTiles.length && !isLocked) {
+      const msg = document.createElement('div');
+      msg.textContent = "✨ No tiles left? Press CLEAR or NEXT FOOD ✨";
+      msg.style.padding = "10px";
+      tilesGrid.appendChild(msg);
+      return;
+    }
+    for (let i = 0; i < currentTiles.length; i++) {
+      const letter = currentTiles[i];
+      const tileBtn = document.createElement('button');
+      tileBtn.className = 'tile';
+      if (isLocked) tileBtn.style.opacity = "0.6";
+      tileBtn.textContent = letter.toUpperCase();
+      tileBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (gameComplete) {
+          showPopupMessage("🏆 Game complete! Press RESET to play again.", false);
+          return;
+        }
+        if (isLocked) {
+          showPopupMessage("🎉 Already correct! Press NEXT FOOD.", false);
+          return;
+        }
+        const cleanTargetLen = targetWord.replace(/ /g, '').length;
+        if (currentSpelling.length >= cleanTargetLen) {
+          showPopupMessage(`⚠️ Word has ${cleanTargetLen} letters! Use DELETE.`, true);
+          return;
+        }
+        const clickedLetter = letter;
+        currentSpelling.push(clickedLetter);
+        currentTiles.splice(i, 1);
+        renderWordDisplay();
+        renderTiles();
+        if (currentSpelling.length === cleanTargetLen) {
+          showPopupMessage("🎯 Word complete! Press CHECK.", false);
+        }
+      });
+      tilesGrid.appendChild(tileBtn);
+    }
+  }
+
+  function deleteLastLetter() {
+    if (gameComplete) {
+      showPopupMessage("Game complete, press RESET to continue.", false);
+      return;
+    }
+    if (isLocked) {
+      showPopupMessage("Already correct! Press NEXT FOOD.", false);
+      return;
+    }
+    if (currentSpelling.length === 0) return;
+    const removed = currentSpelling.pop();
+    currentTiles.push(removed);
+    renderWordDisplay();
+    renderTiles();
+  }
+
+  function checkSpelling() {
+    if (gameComplete) {
+      showPopupMessage("🏆 You already won! Press RESET GAME to play again.", false);
+      return;
+    }
+    if (isLocked) {
+      showPopupMessage("You already got this one! Press NEXT FOOD.", false);
+      return;
+    }
+    const builtWord = currentSpelling.join('').toLowerCase();
+    // Compare with targetWord ignoring spaces (for multi-word foods like "ice cream")
+    const compareTarget = targetWord.replace(/ /g, '');
+    if (builtWord === compareTarget) {
+      isLocked = true;
+      score[currentLevelIdx]++;
+      updateUIAndUnlocks();
+      showPopupMessage(`🎉 PERFECT! "${targetWord.toUpperCase()}" is correct! 🎉`, false);
+      const allCompleted = (score[0] >= levels[0].required && score[1] >= levels[1].required && score[2] >= levels[2].required);
+      if (allCompleted && !gameComplete) {
+        checkVictory();
+        renderTiles();
+        wordDisplaySpan.textContent = "🏆 VICTORY! 🏆";
+      } else {
+        renderTiles();
+      }
+    } else {
+      wordDisplaySpan.style.color = 'red';
+      setTimeout(() => wordDisplaySpan.style.color = '#5a3e1b', 400);
+      showPopupMessage(`❌ "${builtWord.toUpperCase() || '???'}" is not correct. Try again!`, true);
+    }
+  }
+
+  function showPopupMessage(msg, isError) {
+    const popup = correctPopupDiv;
+    popup.style.background = isError ? "#c0392b" : "#2e7d32";
+    popup.innerHTML = msg;
+    popup.classList.add('show');
+    setTimeout(() => popup.classList.remove('show'), 2000);
+  }
+
+  function nextFood() {
+    if (gameComplete) {
+      showPopupMessage("Game is victorious! Press RESET GAME to start over.", false);
+      return;
+    }
+    loadNewFood();
+  }
+
+  function resetGame() {
+    gameComplete = false;
+    score = [0, 0, 0];
+    unlocked = [true, false, false];
+    currentLevelIdx = 0;
+    isLocked = false;
+    // Reset used foods tracking for each level
+    usedFoodsPerLevel = [new Set(), new Set(), new Set()];
+    
+    for (let i = 0; i < 3; i++) {
+      const btn = document.getElementById(`btn${i}`);
+      if (i === 0) {
+        btn.disabled = false;
+        btn.classList.add('active');
+        if (btn.innerText.includes('🔒')) btn.innerText = "🌱 EASY";
+      } else {
+        btn.disabled = true;
+        if (i === 1) btn.innerText = "🔒 MEDIUM";
+        if (i === 2) btn.innerText = "🔒 HARD";
+        btn.classList.remove('active');
+      }
+    }
+    document.querySelectorAll('.level-btn').forEach((btn, idx) => {
+      if (idx === 0) btn.classList.add('active');
+      else btn.classList.remove('active');
+    });
+    updateUIAndUnlocks();
+    loadNewFood();
+    showPopupMessage("🔄 Game reset! Spell foods to unlock levels! 🔄", false);
+  }
+
+  function setLevel(levelIndex) {
+    if (gameComplete) {
+      showPopupMessage("Game is complete! Press RESET GAME to play again.", false);
+      return;
+    }
+    if (!unlocked[levelIndex]) {
+      showPopupMessage(`🔒 ${levels[levelIndex].name} level is locked! Complete previous level first.`, true);
+      return;
+    }
+    currentLevelIdx = levelIndex;
+    document.querySelectorAll('.level-btn').forEach((btn, idx) => {
+      if (idx === levelIndex) btn.classList.add('active');
+      else btn.classList.remove('active');
+    });
+    updateUIAndUnlocks();
+    loadNewFood();
+  }
+
+  // Event listeners
+  document.getElementById('checkBtn').addEventListener('click', checkSpelling);
+  document.getElementById('deleteBtn').addEventListener('click', deleteLastLetter);
+  document.getElementById('nextBtn').addEventListener('click', nextFood);
+  document.getElementById('resetGameBtn').addEventListener('click', resetGame);
+  document.getElementById('btn0').addEventListener('click', () => setLevel(0));
+  document.getElementById('btn1').addEventListener('click', () => setLevel(1));
+  document.getElementById('btn2').addEventListener('click', () => setLevel(2));
+  
+  // Initial load
+  resetGame();
+</script>
+</body>
+</html>

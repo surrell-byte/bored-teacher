@@ -1,0 +1,49 @@
+body {
+  font-family: 'Segoe UI', sans-serif;
+  text-align: center;
+  background: linear-gradient(135deg, #0f172a, #1e3a8a);
+  color: white;
+  padding: 20px;
+}
+
+h1 {
+  margin-bottom: 10px;
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(3, 90px);
+  gap: 12px;
+  justify-content: center;
+  margin: 25px auto;
+}
+
+.fruit {
+  width: 90px;
+  height: 90px;
+  font-size: 40px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.fruit:hover {
+  transform: scale(1.05);
+}
+
+.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.correct {
+  background: #22c55e;
+}
+
+.wrong {
+  background: #ef4444;
+}

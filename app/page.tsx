@@ -1,65 +1,120 @@
-import Image from "next/image";
+'use client';
+// app/page.tsx — Splash screen + auth redirect (replaces index.html)
 
-export default function Home() {
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { onAuthStateChanged } from '@/lib/firebase';
+
+export default function SplashPage() {
+  const router = useRouter();
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const isGuest = localStorage.getItem('guestUser') === 'true';
+    if (isGuest) { router.replace('/hub'); return; }
+
+    let resolved = false;
+
+    // Safety net: if Firebase is slow, go to auth
+    const fallback = setTimeout(() => {
+      if (resolved) return;
+      resolved = true;
+      runSplash(() => router.replace('/auth'));
+    }, 2800);
+
+    const unsub = onAuthStateChanged((user) => {
+      if (resolved) return;
+      resolved = true;
+      clearTimeout(fallback);
+      if (user) {
+        router.replace('/hub');
+      } else {
+        runSplash(() => router.replace('/auth'));
+      }
+    });
+
+    function runSplash(done: () => void) {
+      // Animate progress bar then redirect
+      setTimeout(() => setProgress(100), 100);
+      setTimeout(done, 1800);
+    }
+
+    return () => { unsub(); clearTimeout(fallback); };
+  }, [router]);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+    <div className="splash-wrapper">
+      <style suppressHydrationWarning>{`
+        .splash-wrapper {
+          position: fixed; inset: 0;
+          display: flex; flex-direction: column;
+          align-items: center; justify-content: center;
+          background: var(--bg, #1a4d2e);
+          gap: 0;
+        }
+        .splash-icon {
+          font-size: 5.4rem;
+          margin-bottom: 18px;
+          filter: drop-shadow(0 8px 24px rgba(0,0,0,0.4));
+          animation: iconPop 0.65s cubic-bezier(0.34,1.4,0.64,1) 0.05s both;
+        }
+        .splash-title {
+          font-family: var(--font-display, 'Syne', sans-serif);
+          font-size: clamp(2.4rem, 7vw, 3.8rem);
+          font-weight: 800;
+          color: #f0ede0;
+          letter-spacing: 0.03em;
+          margin-bottom: 8px;
+          animation: fadeUp 0.5s ease 0.32s both;
+        }
+        .splash-sub {
+          display: flex; align-items: center; gap: 10px;
+          margin-bottom: 44px;
+          animation: fadeUp 0.5s ease 0.5s both;
+          opacity: 0;
+        }
+        .splash-sub span {
+          font-size: 0.78rem; font-weight: 800;
+          letter-spacing: 0.18em; text-transform: uppercase;
+          color: #7ec8a0;
+        }
+        .splash-dot { width: 3px; height: 3px; border-radius: 50%; background: rgba(126,200,160,0.45); }
+        .splash-track {
+          width: min(220px, 55vw); height: 2px;
+          background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden;
+          animation: trackIn 0.4s ease 0.65s both;
+          opacity: 0;
+        }
+        .splash-bar {
+          height: 100%; width: 0%; border-radius: 2px;
+          background: linear-gradient(90deg, #7ec8a0, #f5c842);
+          transition: width 1.55s cubic-bezier(0.22,0.61,0.36,1);
+        }
+        @keyframes iconPop {
+          0%   { opacity: 0; transform: scale(0.4) rotate(-12deg); }
+          65%  { opacity: 1; transform: scale(1.08) rotate(4deg); }
+          100% { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(16px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes trackIn {
+          from { opacity: 0; transform: scaleX(0.6); }
+          to   { opacity: 1; transform: scaleX(1); }
+        }
+      `}</style>
+
+      <span className="splash-icon">🎓</span>
+      <span className="splash-title">ESL Game Hub</span>
+      <div className="splash-sub">
+        <span>Learn</span><span className="splash-dot" />
+        <span>Play</span><span className="splash-dot" />
+        <span>Level Up</span>
+      </div>
+      <div className="splash-track">
+        <div className="splash-bar" style={{ width: `${progress}%` }} />
+      </div>
     </div>
   );
 }

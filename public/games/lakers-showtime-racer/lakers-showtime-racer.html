@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>🏀 LAKERS SHOWTIME RACER | Snaking Track</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      user-select: none;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(145deg, #1a1a2e 0%, #0a0a15 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
+      padding: 2rem;
+    }
+
+    .game-container {
+      max-width: 1100px;
+      width: 100%;
+      background: rgba(85, 37, 131, 0.3);
+      backdrop-filter: blur(4px);
+      border-radius: 3rem;
+      padding: 1.5rem;
+      box-shadow: 0 25px 45px rgba(0,0,0,0.5), inset 0 1px 1px rgba(253, 185, 39, 0.3);
+      border: 2px solid #FDB927;
+    }
+
+    /* Players Panel */
+    .players-panel {
+      background: rgba(0,0,0,0.6);
+      border-radius: 2rem;
+      padding: 1.2rem;
+      margin-bottom: 2rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+      border: 1px solid #FDB927;
+    }
+
+    .player-card {
+      background: linear-gradient(135deg, #2a1e3a, #1a1128);
+      border-radius: 1.8rem;
+      padding: 0.7rem 1.2rem;
+      min-width: 180px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.5);
+      transition: all 0.2s;
+      border-left: 4px solid #FDB927;
+    }
+
+    .player-card.active-turn {
+      background: linear-gradient(135deg, #3e2a5a, #2a1e3e);
+      box-shadow: 0 0 0 2px #FDB927, 0 10px 20px black;
+      transform: scale(1.02);
+    }
+
+    .avatar-selector {
+      display: flex;
+      gap: 5px;
+      background: #000000aa;
+      padding: 4px 8px;
+      border-radius: 60px;
+      flex-wrap: wrap;
+    }
+
+    .avatar-btn {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      transition: 0.1s;
+      border-radius: 50%;
+      padding: 4px;
+    }
+
+    .avatar-btn:hover {
+      transform: scale(1.2);
+      background: #FDB92755;
+    }
+
+    .player-info {
+      flex: 1;
+    }
+
+    .player-emoji-big {
+      font-size: 2rem;
+      filter: drop-shadow(2px 4px 6px black);
+    }
+
+    .frozen-badge {
+      background: #7bc5ff;
+      color: #013;
+      font-size: 0.7rem;
+      border-radius: 30px;
+      padding: 2px 8px;
+      font-weight: bold;
+      margin-left: 8px;
+    }
+
+    /* Dice & Controls */
+    .dice-area {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      align-items: center;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .dice-button {
+      background: radial-gradient(circle at 30% 20%, #FDB927, #d48f1b);
+      width: 90px;
+      height: 90px;
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 12px 0 #8b5a00;
+      transition: 0.08s linear;
+      border: none;
+      color: #2d1b00;
+    }
+
+    .dice-button:active {
+      transform: translateY(4px);
+      box-shadow: 0 6px 0 #8b5a00;
+    }
+
+    .dice-button.disabled {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    .reset-btn {
+      background: #2a3b44;
+      border: none;
+      padding: 0.7rem 1.5rem;
+      border-radius: 3rem;
+      font-weight: bold;
+      color: #FDB927;
+      cursor: pointer;
+      transition: 0.2s;
+      box-shadow: 0 4px 8px black;
+    }
+
+    .turn-indicator {
+      background: #000000aa;
+      backdrop-filter: blur(8px);
+      padding: 0.6rem 1.4rem;
+      border-radius: 60px;
+      font-weight: bold;
+      font-size: 1.2rem;
+      color: #FDB927;
+    }
+
+    /* ========== NEW SNAKING BOARD STYLES ========== */
+    .board-viewport {
+      width: 100%;
+      background: #4d7a23; /* Grass Green */
+      padding: 30px;
+      border-radius: 40px;
+      border: 12px solid #2d4a15;
+      box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
+    }
+
+    .board-track {
+      display: grid !important;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 12px;
+      padding: 10px;
+      width: 100% !important;
+    }
+
+    .tile {
+      aspect-ratio: 1/1;
+      width: 100% !important;
+      background: linear-gradient(145deg, #3a3a3a, #222);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      font-weight: bold;
+      box-shadow: 0 8px 12px rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,215,0,0.3);
+    }
+
+    /* Red/White Racing Kerbs (stripes at top) */
+    .tile::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 6px;
+      background: repeating-linear-gradient(90deg, #d32f2f, #d32f2f 10px, #fff 10px, #fff 20px);
+      border-radius: 10px 10px 0 0;
+      opacity: 0.9;
+    }
+
+    /* Special Tile Colors */
+    .tile[data-type="start"] { background: linear-gradient(145deg, #552583, #3a1b5a); border: 2px solid #FDB927; }
+    .tile[data-type="finish"] { background: radial-gradient(circle, #FDB927, #d48f1b); border: 2px solid gold; }
+    .tile[data-type="mushroom"] { background: linear-gradient(145deg, #5cb85c, #3e8e41); box-shadow: 0 0 8px #8bc34a; }
+    .tile[data-type="ice"] { background: linear-gradient(145deg, #80deea, #4fc3f7); box-shadow: 0 0 8px #7bc5ff; }
+    .tile[data-type="bomb"] { background: linear-gradient(145deg, #d9534f, #c9302c); box-shadow: 0 0 8px #ff5e4a; }
+
+    .tile-label {
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: #fff;
+      text-shadow: 0 1px 2px black;
+    }
+
+    .tile-icon {
+      font-size: 1.4rem;
+      filter: drop-shadow(2px 2px 2px black);
+    }
+
+    .avatars-on-tile {
+      display: flex;
+      gap: 4px;
+      justify-content: center;
+      margin-top: 4px;
+      font-size: 1.1rem;
+      background: #00000066;
+      border-radius: 30px;
+      padding: 2px 6px;
+    }
+
+    /* Animations */
+    @keyframes bouncePop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); background: #ffdd99; }
+      100% { transform: scale(1); }
+    }
+    .tile-mushroom-burst { animation: bouncePop 0.3s ease; }
+
+    @keyframes shakeBomb {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+      100% { transform: translateX(0); }
+    }
+    .tile-bomb-shake { animation: shakeBomb 0.2s cubic-bezier(0.36, 0.07, 0.19, 0.97) both; }
+
+    .message-log {
+      background: #0a121cee;
+      border-radius: 2rem;
+      padding: 0.8rem 1.5rem;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #FDB927;
+      text-align: center;
+    }
+
+    @media (max-width: 780px) {
+      .board-viewport { padding: 15px; }
+      .tile-icon { font-size: 1rem; }
+      .tile-label { font-size: 0.7rem; }
+      .avatars-on-tile { font-size: 0.9rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="game-container">
+  <div class="players-panel" id="playersPanel"></div>
+
+  <div class="dice-area">
+    <button class="reset-btn" id="resetGameBtn">🔄 RESTART RACE</button>
+    <button class="dice-button" id="rollDiceBtn">🎲</button>
+    <div class="turn-indicator" id="turnIndicator">🏀 LAKERS BALL</div>
+  </div>
+
+  <!-- SNAKING BOARD VIEWPORT -->
+  <div class="board-viewport">
+    <div class="board-track" id="boardTrack"></div>
+  </div>
+
+  <div class="message-log" id="gameMessage">✨ Choose your avatar! Roll dice to start ✨</div>
+</div>
+
+<script>
+  // ==================== ORIGINAL LINEAR BOARD (0..32) ====================
+  const boardRaw = [
+    "start", 1, 2, 3, 4,
+    "mushroom", 6, 7, 8,
+    "ice", 10, 11, 12, 13, 14, 15,
+    "mushroom", 17, 18, 19, 20, 21,
+    "bomb", 23, 24, 25,
+    "ice", 27, 28, 29,
+    "bomb", 31,
+    "finish"
+  ];
+  const finishIndex = boardRaw.length - 1; // = 32
+
+  // Snaking visual order: 7 columns, rows alternate direction
+  // Row0: L→R (indices 0..6)
+  // Row1: R→L (indices 13 down to 7)
+  // Row2: L→R (14..20)
+  // Row3: R→L (27 down to 21)
+  // Row4: L→R (28..32)
+  const visualOrder = [
+    0, 1, 2, 3, 4, 5, 6,          // Row 0
+    13, 12, 11, 10, 9, 8, 7,      // Row 1 (reversed)
+    14, 15, 16, 17, 18, 19, 20,   // Row 2
+    27, 26, 25, 24, 23, 22, 21,   // Row 3 (reversed)
+    28, 29, 30, 31, 32            // Row 4 (partial, but grid will wrap)
+  ];
+
+  function getTileDisplay(idx) {
+    const val = boardRaw[idx];
+    if (idx === 0) return { label: "START", icon: "🏁" };
+    if (idx === finishIndex) return { label: "🏆", icon: "🎯" };
+    if (typeof val === 'number') return { label: val, icon: "📍" };
+    if (val === "mushroom") return { label: "🍄", icon: "⚡" };
+    if (val === "ice") return { label: "❄️", icon: "🧊" };
+    if (val === "bomb") return { label: "💣", icon: "💥" };
+    return { label: "?", icon: "🔹" };
+  }
+
+  function getTileType(idx) {
+    if (idx === finishIndex) return "finish";
+    const val = boardRaw[idx];
+    if (typeof val === 'string') return val;
+    return "normal";
+  }
+
+  // Avatar list
+  const AVATAR_LIST = ["🏀", "👟", "🧑‍🚀", "🐱", "🐸", "🐼", "🧙‍♂️"];
+
+  // Global state
+  let players = [];
+  let currentPlayerIdx = 0;
+  let gameActive = true;
+  let isMoving = false;
+  let animationInterval = null;
+  let winnerDeclared = false;
+
+  const boardTrack = document.getElementById('boardTrack');
+  const playersPanel = document.getElementById('playersPanel');
+  const rollDiceBtn = document.getElementById('rollDiceBtn');
+  const resetBtn = document.getElementById('resetGameBtn');
+  const turnIndicator = document.getElementById('turnIndicator');
+  const gameMessageDiv = document.getElementById('gameMessage');
+
+  function setMessage(msg, isError = false) {
+    gameMessageDiv.innerHTML = msg;
+    gameMessageDiv.style.color = isError ? "#ffb7a0" : "#FDB927";
+    setTimeout(() => {
+      if (gameMessageDiv.innerHTML === msg) gameMessageDiv.style.color = "#FDB927";
+    }, 2500);
+  }
+
+  // Render board using snaking visualOrder
+  function renderBoard() {
+    boardTrack.innerHTML = '';
+    for (let i = 0; i < visualOrder.length; i++) {
+      const tileIdx = visualOrder[i];
+      const type = getTileType(tileIdx);
+      const { label, icon } = getTileDisplay(tileIdx);
+      const tileDiv = document.createElement('div');
+      tileDiv.className = 'tile';
+      tileDiv.setAttribute('data-type', type);
+      tileDiv.setAttribute('data-idx', tileIdx);
+      tileDiv.innerHTML = `
+        <div class="tile-icon">${icon}</div>
+        <div class="tile-label">${label}</div>
+        <div class="avatars-on-tile" id="tile-avatars-${tileIdx}"></div>
+      `;
+      boardTrack.appendChild(tileDiv);
+    }
+    refreshAvatars();
+  }
+
+  function refreshAvatars() {
+    // Clear all avatar containers
+    for (let i = 0; i <= finishIndex; i++) {
+      const container = document.getElementById(`tile-avatars-${i}`);
+      if (container) container.innerHTML = '';
+    }
+    players.forEach(player => {
+      const pos = player.position;
+      if (pos >= 0 && pos <= finishIndex) {
+        const container = document.getElementById(`tile-avatars-${pos}`);
+        if (container) {
+          const span = document.createElement('span');
+          span.style.fontSize = '1.2rem';
+          span.style.filter = 'drop-shadow(0 2px 2px black)';
+          span.style.margin = '0 2px';
+          span.textContent = player.emoji;
+          if (player.frozen) span.style.opacity = '0.6';
+          container.appendChild(span);
+        }
+      }
+    });
+  }
+
+  function renderPlayersPanel() {
+    playersPanel.innerHTML = '';
+    players.forEach((player, idx) => {
+      const card = document.createElement('div');
+      card.className = `player-card ${(!gameActive ? '' : (currentPlayerIdx === idx && !winnerDeclared) ? 'active-turn' : '')}`;
+      
+      const selectorDiv = document.createElement('div');
+      selectorDiv.className = 'avatar-selector';
+      AVATAR_LIST.forEach(emoji => {
+        const btn = document.createElement('button');
+        btn.textContent = emoji;
+        btn.className = 'avatar-btn';
+        btn.onclick = (e) => {
+          e.stopPropagation();
+          if (!gameActive || isMoving) {
+            setMessage("⏳ Game in progress, cannot change avatar!", false);
+            return;
+          }
+          players[idx].emoji = emoji;
+          renderPlayersPanel();
+          renderBoard();
+          setMessage(`${players[idx].emoji} is ready to race!`, false);
+        };
+        if (player.emoji === emoji) btn.style.background = "#FDB927";
+        selectorDiv.appendChild(btn);
+      });
+
+      const infoDiv = document.createElement('div');
+      infoDiv.className = 'player-info';
+      infoDiv.innerHTML = `
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="player-emoji-big">${player.emoji}</span>
+          <span>Racer ${idx+1}</span>
+          ${player.frozen ? '<span class="frozen-badge">❄️ FROZEN</span>' : ''}
+        </div>
+        <div style="font-size:0.75rem;">🏁 pos ${player.position}/${finishIndex}</div>
+      `;
+      card.appendChild(selectorDiv);
+      card.appendChild(infoDiv);
+      playersPanel.appendChild(card);
+    });
+
+    if (!gameActive && winnerDeclared) {
+      turnIndicator.innerHTML = `🏆 GAME OVER - WINNER DECLARED 🏆`;
+    } else if (isMoving) {
+      turnIndicator.innerHTML = `🏀 MOVING...`;
+    } else if (gameActive && players.length && !winnerDeclared) {
+      const curr = players[currentPlayerIdx];
+      turnIndicator.innerHTML = `${curr.emoji}'s TURN ${curr.frozen ? '❄️ (FROZEN - skip)' : '🎲 ROLL DICE'}`;
+    }
+  }
+
+  function addTileAnimation(tileIdx, type) {
+    // Find tile by data-idx attribute
+    const tile = document.querySelector(`.tile[data-idx="${tileIdx}"]`);
+    if (tile) {
+      if (type === 'mushroom') {
+        tile.classList.add('tile-mushroom-burst');
+        setTimeout(() => tile.classList.remove('tile-mushroom-burst'), 400);
+      } else if (type === 'bomb') {
+        tile.classList.add('tile-bomb-shake');
+        setTimeout(() => tile.classList.remove('tile-bomb-shake'), 300);
+      } else if (type === 'ice') {
+        tile.style.transform = 'scale(0.98)';
+        setTimeout(() => tile.style.transform = '', 200);
+      }
+    }
+  }
+
+  // Recursive tile effect engine
+  function applyTileEffectsChain(player, playerIdx) {
+    let maxIter = 10;
+    let iter = 0;
+    while (iter < maxIter) {
+      if (player.position >= finishIndex) {
+        if (checkWin(player, playerIdx)) return true;
+        break;
+      }
+      const tileVal = boardRaw[player.position];
+      let changed = false;
+
+      if (tileVal === "mushroom") {
+        changed = true;
+        const oldPos = player.position;
+        player.position = Math.min(finishIndex, player.position + 3);
+        setMessage(`🍄 MUSHROOM BOOST! +3 steps → ${player.emoji} jumps to tile ${player.position} 🍄`, false);
+        addTileAnimation(oldPos, 'mushroom');
+        renderBoard(); renderPlayersPanel();
+        if (player.position >= finishIndex && checkWin(player, playerIdx)) return true;
+      }
+      else if (tileVal === "ice") {
+        changed = true;
+        if (!player.frozen) {
+          player.frozen = 1;
+          setMessage(`❄️ ICE! ${player.emoji} is FROZEN! Next turn skipped ❄️`, false);
+        } else {
+          setMessage(`❄️ Ice again, but already frozen!`, false);
+        }
+        addTileAnimation(player.position, 'ice');
+      }
+      else if (tileVal === "bomb") {
+        changed = true;
+        const before = player.position;
+        player.position = Math.max(0, player.position - 1);
+        setMessage(`💣 BOMB! ${player.emoji} bounces back to tile ${player.position} 💣`, false);
+        addTileAnimation(before, 'bomb');
+        renderBoard(); renderPlayersPanel();
+      }
+
+      if (!changed) break;
+      renderBoard(); renderPlayersPanel();
+      if (player.position >= finishIndex && checkWin(player, playerIdx)) return true;
+      iter++;
+    }
+    return false;
+  }
+
+  function checkWin(player, playerIdx) {
+    if (player.position >= finishIndex && !winnerDeclared && gameActive) {
+      gameActive = false;
+      winnerDeclared = true;
+      setMessage(`🏆✨ ${player.emoji} REACHES THE FINISH! LAKERS WIN! ✨🏆`, false);
+      turnIndicator.innerHTML = `🎉 CHAMPION: ${player.emoji} 🎉`;
+      if (animationInterval) clearInterval(animationInterval);
+      isMoving = false;
+      renderPlayersPanel();
+      renderBoard();
+      return true;
+    }
+    return false;
+  }
+
+  // Smooth step-by-step movement
+  function animateMovement(player, targetPos, playerIdx, callback) {
+    let current = player.position;
+    if (current === targetPos) {
+      callback();
+      return;
+    }
+    const direction = current < targetPos ? 1 : -1;
+    const steps = Math.abs(targetPos - current);
+    let stepCount = 0;
+    animationInterval = setInterval(() => {
+      if (stepCount >= steps) {
+        clearInterval(animationInterval);
+        animationInterval = null;
+        player.position = targetPos;
+        renderBoard();
+        renderPlayersPanel();
+        const ended = applyTileEffectsChain(player, playerIdx);
+        renderBoard();
+        renderPlayersPanel();
+        if (!ended && gameActive && !winnerDeclared) {
+          if (player.position >= finishIndex) checkWin(player, playerIdx);
+          if (gameActive && !winnerDeclared) nextTurn();
+        } else if (ended || winnerDeclared) {
+          isMoving = false;
+          renderPlayersPanel();
+        } else {
+          if (gameActive && !winnerDeclared) nextTurn();
+        }
+        if (callback) callback();
+        isMoving = false;
+        renderPlayersPanel();
+        return;
+      }
+      player.position += direction;
+      renderBoard();
+      renderPlayersPanel();
+      stepCount++;
+    }, 200);
+  }
+
+  function handleMove(player, diceValue, playerIdx) {
+    if (winnerDeclared || !gameActive) return;
+    let rawTarget = player.position + diceValue;
+    let finalTarget = Math.min(rawTarget, finishIndex);
+    setMessage(`${player.emoji} rolls ${diceValue}! Moving ${diceValue} steps...`, false);
+    animateMovement(player, finalTarget, playerIdx, () => {});
+  }
+
+  function rollAndMove() {
+    if (!gameActive || winnerDeclared) {
+      setMessage("Game over! Press RESTART.", true);
+      return;
+    }
+    if (isMoving) {
+      setMessage("⏳ Movement in progress...", true);
+      return;
+    }
+    const player = players[currentPlayerIdx];
+    if (!player) return;
+
+    if (player.frozen) {
+      setMessage(`❄️ ${player.emoji} is FROZEN! Turn skipped ❄️`, false);
+      player.frozen = 0;
+      renderPlayersPanel();
+      renderBoard();
+      nextTurn();
+      return;
+    }
+
+    const diceValue = Math.floor(Math.random() * 6) + 1;
+    rollDiceBtn.style.transform = "scale(0.95)";
+    setTimeout(() => rollDiceBtn.style.transform = "", 100);
+    const originalText = rollDiceBtn.innerHTML;
+    rollDiceBtn.innerHTML = `🎲 ${diceValue}`;
+    setTimeout(() => { if (!isMoving) rollDiceBtn.innerHTML = originalText; }, 700);
+
+    isMoving = true;
+    renderPlayersPanel();
+    handleMove(player, diceValue, currentPlayerIdx);
+  }
+
+  function nextTurn() {
+    if (!gameActive || winnerDeclared) {
+      isMoving = false;
+      renderPlayersPanel();
+      return;
+    }
+    if (isMoving) return;
+    currentPlayerIdx = (currentPlayerIdx + 1) % players.length;
+    renderPlayersPanel();
+    renderBoard();
+    setMessage(`${players[currentPlayerIdx].emoji}'s turn — Roll the dice!`, false);
+    isMoving = false;
+    if (players[currentPlayerIdx].position >= finishIndex) {
+      checkWin(players[currentPlayerIdx], currentPlayerIdx);
+    }
+  }
+
+  function resetGame() {
+    if (animationInterval) {
+      clearInterval(animationInterval);
+      animationInterval = null;
+    }
+    isMoving = false;
+    winnerDeclared = false;
+    gameActive = true;
+    players.forEach(p => {
+      p.position = 0;
+      p.frozen = 0;
+    });
+    currentPlayerIdx = 0;
+    renderBoard();
+    renderPlayersPanel();
+    setMessage("🏁 Race restarted! First to finish wins! 🏁", false);
+    rollDiceBtn.innerHTML = "🎲";
+  }
+
+  function initGame() {
+    players = [
+      { emoji: "🏀", position: 0, frozen: 0 },
+      { emoji: "👟", position: 0, frozen: 0 }
+    ];
+    currentPlayerIdx = 0;
+    gameActive = true;
+    winnerDeclared = false;
+    isMoving = false;
+    if (animationInterval) clearInterval(animationInterval);
+    renderBoard();
+    renderPlayersPanel();
+    setMessage("✨ Lakers Showtime! Pick your avatar and roll! ✨", false);
+  }
+
+  function addPlayer() {
+    if (players.length >= 4) {
+      setMessage("Max 4 racers on the court!", true);
+      return;
+    }
+    if (!gameActive && winnerDeclared) resetGame();
+    if (isMoving) return;
+    players.push({ emoji: "🐸", position: 0, frozen: 0 });
+    if (!gameActive) { gameActive = true; winnerDeclared = false; }
+    renderBoard();
+    renderPlayersPanel();
+    setMessage(`➕ New racer joins the Lakers!`, false);
+  }
+
+  function removePlayer() {
+    if (players.length <= 1) {
+      setMessage("Need at least 1 racer!", true);
+      return;
+    }
+    if (isMoving) return;
+    players.pop();
+    if (currentPlayerIdx >= players.length) currentPlayerIdx = 0;
+    if (!gameActive) resetGame();
+    renderBoard();
+    renderPlayersPanel();
+    setMessage(`➖ A racer leaves the court.`, false);
+  }
+
+  function addExtraControls() {
+    const diceArea = document.querySelector('.dice-area');
+    const addBtn = document.createElement('button');
+    addBtn.textContent = '➕ ADD RACER';
+    addBtn.className = 'reset-btn';
+    addBtn.style.background = '#3c6e47';
+    addBtn.onclick = addPlayer;
+    const removeBtn = document.createElement('button');
+    removeBtn.textContent = '➖ REMOVE';
+    removeBtn.className = 'reset-btn';
+    removeBtn.style.background = '#964b3a';
+    removeBtn.onclick = removePlayer;
+    diceArea.appendChild(addBtn);
+    diceArea.appendChild(removeBtn);
+  }
+
+  rollDiceBtn.onclick = () => {
+    if (!gameActive && winnerDeclared) {
+      setMessage("Race finished! Press RESTART", true);
+      return;
+    }
+    if (isMoving) return;
+    rollAndMove();
+  };
+  resetBtn.onclick = () => {
+    if (isMoving && animationInterval) clearInterval(animationInterval);
+    isMoving = false;
+    resetGame();
+  };
+
+  initGame();
+  addExtraControls();
+</script>
+</body>
+</html>

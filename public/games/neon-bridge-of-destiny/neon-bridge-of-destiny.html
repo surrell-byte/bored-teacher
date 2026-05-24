@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Neon Bridge of Destiny | Ghost Token & Screen Shake</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            min-height: 100vh;
+            background: radial-gradient(circle at 20% 30%, #0a0f1e, #010308);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', 'Orbitron', 'Courier New', monospace;
+            padding: 20px;
+        }
+
+        /* main game card */
+        #game-container {
+            background: rgba(10, 20, 30, 0.7);
+            backdrop-filter: blur(4px);
+            border-radius: 3rem;
+            padding: 1.5rem 2rem 2rem 2rem;
+            box-shadow: 0 0 40px rgba(0, 255, 255, 0.3), 0 10px 25px rgba(0,0,0,0.6);
+            border: 1px solid rgba(0, 255, 255, 0.5);
+            transition: all 0.2s;
+        }
+
+        /* neon status panel */
+        #status {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin-bottom: 1.2rem;
+            padding: 12px 20px;
+            background: #0a111fcc;
+            border-radius: 60px;
+            width: 100%;
+            color: #0ff;
+            text-shadow: 0 0 5px #0ff, 0 0 12px #00ccff;
+            border: 1px solid #0ff;
+            box-shadow: 0 0 12px rgba(0, 255, 255, 0.4);
+            font-family: 'Orbitron', monospace;
+        }
+
+        /* LIVES SECTION - SQUAD ICONS */
+        .lives-panel {
+            display: flex;
+            justify-content: space-between;
+            gap: 30px;
+            margin-bottom: 25px;
+            background: #03060c99;
+            padding: 12px 20px;
+            border-radius: 60px;
+            border: 1px solid #0ff3;
+            backdrop-filter: blur(2px);
+        }
+        .player-lives {
+            flex: 1;
+            text-align: center;
+            font-family: 'Orbitron', monospace;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        .player-lives span {
+            display: block;
+            color: #0ff;
+            text-shadow: 0 0 4px cyan;
+            margin-bottom: 6px;
+        }
+        .lives-icons {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .life-icon {
+            font-size: 1.8rem;
+            filter: drop-shadow(0 0 4px #0ff);
+            transition: 0.2s;
+        }
+        .life-icon.lost {
+            opacity: 0.2;
+            filter: grayscale(1) drop-shadow(0 0 2px red);
+            transform: scale(0.8);
+        }
+        .p1-lives .life-icon { color: #00e0ff; }
+        .p2-lives .life-icon { color: #ff66cc; text-shadow: 0 0 5px #ff44aa; }
+
+        /* bridge area: column-reverse so row 0 (bottom) appears first */
+        #bridge {
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 14px;
+            padding: 12px 8px;
+            margin-top: 8px;
+        }
+
+        .row {
+            display: flex;
+            justify-content: center;
+            gap: 28px;
+            position: relative;
+            transition: 0.1s;
+            padding: 4px;
+            border-radius: 20px;
+        }
+
+        .row.current-row {
+            background: rgba(0, 255, 255, 0.1);
+            box-shadow: 0 0 12px rgba(0,255,255,0.3);
+            border-radius: 20px;
+        }
+
+        /* NEON TILES with numbers */
+        .tile {
+            width: 95px;
+            height: 58px;
+            background: rgba(0, 255, 255, 0.12);
+            border: 2.5px solid #0ff;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 6px rgba(0, 255, 255, 0.3);
+            backdrop-filter: blur(2px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            font-family: monospace;
+            color: #0ff;
+            text-shadow: 0 0 5px cyan;
+        }
+
+        .tile:hover {
+            background: rgba(0, 255, 255, 0.45);
+            box-shadow: 0 0 18px #0ff, 0 0 5px #0ff;
+            transform: scale(1.02);
+            border-color: #b0ffff;
+        }
+
+        .tile:active {
+            transform: scale(0.94);
+            filter: brightness(1.4);
+        }
+
+        /* SAFE STEP - PERSISTENT GLOW (MEMORY) */
+        .tile.safe-step {
+            background: rgba(0, 255, 136, 0.5) !important;
+            border-color: #aaffdd !important;
+            box-shadow: 0 0 20px #00ff88, inset 0 0 8px #00ffaa !important;
+            animation: pulseSafe 1.8s infinite;
+        }
+
+        @keyframes pulseSafe {
+            0% { transform: scale(1); text-shadow: 0 0 2px #0f0; }
+            50% { transform: scale(1.02); text-shadow: 0 0 12px #0f0; }
+            100% { transform: scale(1); text-shadow: 0 0 2px #0f0; }
+        }
+
+        /* ACTIVE PLAYER TOKEN - GHOST CHARACTER */
+        .tile.active-player {
+            border-color: #fff !important;
+            box-shadow: 0 0 25px #fff, inset 0 0 10px #fff !important;
+            background: rgba(255, 255, 255, 0.2) !important;
+        }
+        /* Optional: player-specific tint for extra flair */
+        .p1-turn .tile.active-player {
+            border-color: #00e0ff !important;
+            box-shadow: 0 0 25px #00e0ff, inset 0 0 10px #00e0ff !important;
+        }
+        .p2-turn .tile.active-player {
+            border-color: #ff66cc !important;
+            box-shadow: 0 0 25px #ff66cc, inset 0 0 10px #ff66cc !important;
+        }
+
+        /* BROKEN TILE - SHAKE + FALL ANIMATION */
+        .tile.broken {
+            background: #ff0055 !important;
+            border-color: #ff0055 !important;
+            animation: shake 0.25s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+            transform: translateY(60px) scale(0.3) rotate(25deg);
+            opacity: 0;
+            transition: all 0.7s cubic-bezier(0.6, -0.28, 0.735, 0.045);
+            pointer-events: none;
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-7px); }
+            50% { transform: translateX(7px); }
+            75% { transform: translateX(-4px); }
+            100% { transform: translateX(0); }
+        }
+
+        /* SCREEN SHAKE ANIMATION (on death) */
+        @keyframes screenShake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            50% { transform: translate(-1px, 2px) rotate(1deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+
+        .shake-screen {
+            animation: screenShake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+        }
+
+        /* control button */
+        .control-bar {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        #reset-game-btn {
+            background: rgba(0, 20, 30, 0.9);
+            border: 2px solid #0ff;
+            color: #0ff;
+            font-size: 1.2rem;
+            font-weight: bold;
+            font-family: 'Orbitron', monospace;
+            padding: 10px 28px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.25s;
+            letter-spacing: 2px;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 0 8px cyan;
+        }
+
+        #reset-game-btn:hover {
+            background: #0ff22a20;
+            box-shadow: 0 0 20px #0ff, 0 0 5px cyan;
+            color: #bfffff;
+            transform: scale(0.98);
+        }
+
+        @media (max-width: 650px) {
+            .tile { width: 70px; height: 50px; font-size: 1.3rem; }
+            .row { gap: 18px; }
+            .life-icon { font-size: 1.4rem; }
+            #status { font-size: 1.1rem; }
+        }
+        @media (max-width: 500px) {
+            .tile { width: 55px; height: 42px; font-size: 1.1rem; }
+            .row { gap: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="status">🌀 PLAYER 1'S TURN 🌀 <span style="font-size:0.8rem;">(row 0/8)</span></div>
+    
+    <!-- LIVES / SQUAD DISPLAY -->
+    <div class="lives-panel">
+        <div class="player-lives p1-lives" id="p1-lives">
+            <span>🔹 PLAYER 1 SQUAD 🔹</span>
+            <div class="lives-icons" id="p1-icons"></div>
+        </div>
+        <div class="player-lives p2-lives" id="p2-lives">
+            <span>🔸 PLAYER 2 SQUAD 🔸</span>
+            <div class="lives-icons" id="p2-icons"></div>
+        </div>
+    </div>
+
+    <div id="bridge"></div>
+    <div class="control-bar">
+        <button id="reset-game-btn">⟳ NEW BRIDGE / RESET</button>
+    </div>
+</div>
+
+<script>
+    // ---------- GAME CONFIGURATION ----------
+    const rowsCount = 8;
+    let solution = [];              // secret path per row: 0 = left, 1 = right
+    let currentStep = 0;           // row index the current player is about to step on (0 = bottom)
+    let currentPlayer = 1;         // 1 or 2
+    let gameActive = true;
+    let deathTimeout = null;        // timeout for fall animation
+    
+    // Lives system (each player starts with 4)
+    let lives = { 1: 4, 2: 4 };
+    const MAX_LIVES = 4;
+    
+    // DOM refs
+    const bridgeContainer = document.getElementById('bridge');
+    const statusDiv = document.getElementById('status');
+    let tileElements = [];          // 2D array [row][side]
+    
+    // lives UI elements
+    const p1IconsDiv = document.getElementById('p1-icons');
+    const p2IconsDiv = document.getElementById('p2-icons');
+    
+    // Helper: update player-turn class on container for ghost token coloring
+    function updatePlayerTurnClass() {
+        const container = document.getElementById('game-container');
+        container.classList.remove('p1-turn', 'p2-turn');
+        if (gameActive) {
+            container.classList.add(currentPlayer === 1 ? 'p1-turn' : 'p2-turn');
+        }
+    }
+    
+    // ---------- UPDATE LIVES UI (squad icons) ----------
+    function updateLivesUI() {
+        p1IconsDiv.innerHTML = '';
+        p2IconsDiv.innerHTML = '';
+        for (let i = 0; i < MAX_LIVES; i++) {
+            const icon1 = document.createElement('div');
+            icon1.className = 'life-icon';
+            icon1.textContent = '👥';
+            if (i >= lives[1]) icon1.classList.add('lost');
+            p1IconsDiv.appendChild(icon1);
+            
+            const icon2 = document.createElement('div');
+            icon2.className = 'life-icon';
+            icon2.textContent = '👥';
+            if (i >= lives[2]) icon2.classList.add('lost');
+            p2IconsDiv.appendChild(icon2);
+        }
+    }
+    
+    // ---------- UPDATE STATUS (player turn, step, lives) ----------
+    function updateStatusMessage() {
+        if (!gameActive) return;
+        const rowDisplay = currentStep + 1;
+        statusDiv.innerHTML = `⚡ PLAYER ${currentPlayer}'S TURN ⚡  <span style="font-size:0.85rem;">(row ${rowDisplay}/${rowsCount})  |  ❤️ ${lives[currentPlayer]} lives left</span>`;
+        updatePlayerTurnClass();
+    }
+    
+    // ---------- HIGHLIGHT CURRENT ROW & UPDATE ACTIVE PLAYER TOKEN ----------
+    function highlightCurrentRow() {
+        const rows = document.querySelectorAll('.row');
+        rows.forEach(row => row.classList.remove('current-row'));
+        if (!gameActive) return;
+        if (currentStep < rowsCount && rows[currentStep]) {
+            rows[currentStep].classList.add('current-row');
+        }
+        // Update active-player token: shows the tile the player is currently standing on (the safe tile from previous step, or starting position)
+        updateActivePlayerToken();
+    }
+    
+    // Remove any existing active-player class, then place it on the tile that represents current progress
+    // The current player "stands" on the last safe tile (if any). For step 0, no tile is stood on (before first move)
+    function updateActivePlayerToken() {
+        // Remove active-player class from all tiles
+        document.querySelectorAll('.tile').forEach(t => t.classList.remove('active-player'));
+        if (!gameActive) return;
+        // If currentStep > 0, that means the player has successfully stepped onto row (currentStep-1)
+        // So we highlight the tile of that row (the safe one)
+        if (currentStep > 0) {
+            const prevRow = currentStep - 1;
+            const safeSide = solution[prevRow];
+            // Ensure tile exists
+            if (tileElements[prevRow] && tileElements[prevRow][safeSide]) {
+                tileElements[prevRow][safeSide].classList.add('active-player');
+            }
+        } else {
+            // At start (step 0): we could optionally show a ghost at the bottom edge, but not required.
+            // For clarity, we do nothing. The user knows they haven't stepped yet.
+        }
+    }
+    
+    // ---------- CLEAN BROKEN TILES ONLY (after fall, keep safe tiles memory) ----------
+    function cleanBrokenTilesOnly() {
+        const brokenTiles = document.querySelectorAll('.tile.broken');
+        brokenTiles.forEach(tile => {
+            tile.classList.remove('broken');
+            tile.style.opacity = '';
+            tile.style.transform = '';
+            tile.style.pointerEvents = '';
+        });
+    }
+    
+    // ---------- FULL VISUAL RESET (for new game: remove safe-step + broken + active-player) ----------
+    function fullVisualReset() {
+        for (let r = 0; r < rowsCount; r++) {
+            for (let s = 0; s < 2; s++) {
+                const tile = tileElements[r][s];
+                if (tile) {
+                    tile.classList.remove('broken', 'safe-step', 'active-player');
+                    tile.style.opacity = '';
+                    tile.style.transform = '';
+                    tile.style.pointerEvents = '';
+                }
+            }
+        }
+        highlightCurrentRow();
+        updateActivePlayerToken();
+    }
+    
+    // ---------- DECLARE WINNER ----------
+    function declareWinner(winnerId) {
+        gameActive = false;
+        if (deathTimeout) clearTimeout(deathTimeout);
+        statusDiv.innerHTML = `🏆✨ PLAYER ${winnerId} REACHES THE TOP! ✨🏆<br><span style="font-size:0.8rem;">★ PRESS 'NEW BRIDGE' TO PLAY ★</span>`;
+        const rows = document.querySelectorAll('.row');
+        rows.forEach(row => row.classList.remove('current-row'));
+        document.querySelectorAll('.tile').forEach(t => t.classList.remove('active-player'));
+        updatePlayerTurnClass();
+    }
+    
+    // ---------- GAME OVER DUE TO ZERO LIVES ----------
+    function gameOverBecauseNoLives() {
+        gameActive = false;
+        if (deathTimeout) clearTimeout(deathTimeout);
+        const winner = (currentPlayer === 1) ? 2 : 1;
+        statusDiv.innerHTML = `💀 GAME OVER 💀<br>PLAYER ${currentPlayer} HAS NO SQUAD LEFT!<br>🏆 PLAYER ${winner} WINS BY DEFAULT 🏆`;
+        const rows = document.querySelectorAll('.row');
+        rows.forEach(row => row.classList.remove('current-row'));
+        document.querySelectorAll('.tile').forEach(t => t.classList.remove('active-player'));
+        updatePlayerTurnClass();
+    }
+    
+    // ---------- RESET TURN AFTER FALL (switch player, reset step, keep safe tiles) ----------
+    function switchTurnAfterFall() {
+        currentStep = 0;
+        currentPlayer = (currentPlayer === 1) ? 2 : 1;
+        cleanBrokenTilesOnly();
+        gameActive = true;
+        updateStatusMessage();
+        highlightCurrentRow();
+        updateActivePlayerToken();
+        if (lives[currentPlayer] <= 0) {
+            gameActive = false;
+            gameOverBecauseNoLives();
+        }
+    }
+    
+    // ---------- HANDLE FALL (loss of life, screen shake, animation) ----------
+    function handleFall(tileElement) {
+        gameActive = false;
+        tileElement.classList.add('broken');
+        
+        // Screen shake effect on the game container
+        const container = document.getElementById('game-container');
+        container.classList.add('shake-screen');
+        setTimeout(() => container.classList.remove('shake-screen'), 400);
+        
+        // Reduce life for current player
+        lives[currentPlayer]--;
+        updateLivesUI();
+        
+        // dramatic message
+        statusDiv.innerHTML = `<span style="color: #ff0055; text-shadow: 0 0 8px red;">💀 PLAYER ${currentPlayer} FELL! SQUAD MEMBER LOST! 💀</span>`;
+        
+        // check if player has lives left
+        if (lives[currentPlayer] <= 0) {
+            if (deathTimeout) clearTimeout(deathTimeout);
+            deathTimeout = setTimeout(() => {
+                gameActive = false;
+                gameOverBecauseNoLives();
+            }, 1300);
+            return;
+        }
+        
+        // schedule switch turn after death animation
+        if (deathTimeout) clearTimeout(deathTimeout);
+        deathTimeout = setTimeout(() => {
+            switchTurnAfterFall();
+        }, 1400);
+    }
+    
+    // ---------- HANDLE SUCCESSFUL JUMP (with token update) ----------
+    function handleSuccess(tileElement) {
+        // Mark tile as safe (permanent memory)
+        tileElement.classList.add('safe-step');
+        currentStep++;
+        
+        // Update the active-player token: now the player stands on this tile (if not game finished)
+        // Remove previous active-player and set new one on this tile
+        document.querySelectorAll('.tile').forEach(t => t.classList.remove('active-player'));
+        if (currentStep < rowsCount) {
+            // Only show token if game not finished yet (the player is on this safe tile)
+            tileElement.classList.add('active-player');
+        } else {
+            // if finished, we don't show token (game will end)
+        }
+        
+        updateStatusMessage();
+        
+        // check win condition
+        if (currentStep === rowsCount) {
+            gameActive = false;
+            if (deathTimeout) clearTimeout(deathTimeout);
+            declareWinner(currentPlayer);
+        } else {
+            highlightCurrentRow();
+        }
+    }
+    
+    // ---------- MAIN CLICK HANDLER ----------
+    function handleJump(rowIdx, side, tileElement) {
+        if (!gameActive) return;
+        if (rowIdx !== currentStep) return;
+        
+        const isSafe = (side === solution[rowIdx]);
+        
+        if (isSafe) {
+            handleSuccess(tileElement);
+        } else {
+            handleFall(tileElement);
+        }
+    }
+    
+    // ---------- BUILD BRIDGE WITH NUMBERS ----------
+    function buildBridge() {
+        bridgeContainer.innerHTML = '';
+        tileElements = [];
+        for (let i = 0; i < rowsCount; i++) {
+            const rowDiv = document.createElement('div');
+            rowDiv.className = 'row';
+            const tileRow = [];
+            for (let side = 0; side <= 1; side++) {
+                const tile = document.createElement('div');
+                tile.className = 'tile';
+                tile.textContent = (side + 1).toString();
+                tile.addEventListener('click', (function(r, s, el) {
+                    return () => handleJump(r, s, el);
+                })(i, side, tile));
+                rowDiv.appendChild(tile);
+                tileRow.push(tile);
+            }
+            bridgeContainer.appendChild(rowDiv);
+            tileElements.push(tileRow);
+        }
+    }
+    
+    // ---------- FULL GAME RESET (NEW BRIDGE, fresh lives, fresh solution) ----------
+    function fullGameReset() {
+        if (deathTimeout) {
+            clearTimeout(deathTimeout);
+            deathTimeout = null;
+        }
+        solution = Array.from({ length: rowsCount }, () => Math.floor(Math.random() * 2));
+        gameActive = true;
+        currentStep = 0;
+        currentPlayer = 1;
+        lives = { 1: MAX_LIVES, 2: MAX_LIVES };
+        updateLivesUI();
+        buildBridge();
+        fullVisualReset();
+        updateStatusMessage();
+        highlightCurrentRow();
+        updateActivePlayerToken();
+        console.log("🔄 NEW GAME - Safe path:", solution);
+    }
+    
+    // ---------- INITIALIZE GAME ----------
+    function initGame() {
+        solution = Array.from({ length: rowsCount }, () => Math.floor(Math.random() * 2));
+        lives = { 1: MAX_LIVES, 2: MAX_LIVES };
+        currentStep = 0;
+        currentPlayer = 1;
+        gameActive = true;
+        buildBridge();
+        updateLivesUI();
+        fullVisualReset();
+        updateStatusMessage();
+        highlightCurrentRow();
+        updateActivePlayerToken();
+    }
+    
+    // attach reset button
+    const resetBtn = document.getElementById('reset-game-btn');
+    resetBtn.addEventListener('click', () => {
+        fullGameReset();
+    });
+    
+    // start the game
+    initGame();
+</script>
+</body>
+</html>

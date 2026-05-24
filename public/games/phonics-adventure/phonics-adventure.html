@@ -1,0 +1,1436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌟 ESL Phonics Adventure - 26 Letters, 4 Levels!</title>
+    <style>
+        :root {
+            --bg: #f0f4ff;
+            --card: #ffffff;
+            --primary: #5b6af0;
+            --success: #34c759;
+            --danger: #ff3b30;
+            --warning: #ff9500;
+            --accent: #ff6b9d;
+            --text: #2c3e50;
+            --light-text: #6b7c93;
+            --shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.12);
+            --radius: 20px;
+            --radius-sm: 12px;
+            --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            --bounce: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'SF Pro Display', 'Helvetica Neue', system-ui, sans-serif;
+            background: linear-gradient(135deg, #e8eef8 0%, #f0f4ff 30%, #fdf2f8 60%, #fff8f0 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            background-attachment: fixed;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 680px;
+            position: relative;
+        }
+
+        /* Header */
+        .game-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .game-header .title {
+            font-size: clamp(1.6rem, 4vw, 2.2rem);
+            font-weight: 800;
+            color: #3b3fef;
+            letter-spacing: -0.5px;
+            text-shadow: 0 2px 8px rgba(59, 63, 239, 0.15);
+        }
+        .game-header .title span {
+            display: inline-block;
+            animation: titleBounce 2s infinite;
+        }
+        .game-header .title span:nth-child(1) {
+            animation-delay: 0s;
+        }
+        .game-header .title span:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+        .game-header .title span:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+        .game-header .title span:nth-child(4) {
+            animation-delay: 0.3s;
+        }
+        @keyframes titleBounce {
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+            20% {
+                transform: translateY(-8px);
+            }
+            40% {
+                transform: translateY(0);
+            }
+        }
+        .star-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 1.1rem;
+            color: #ff9500;
+            margin-top: 4px;
+            font-weight: 600;
+        }
+        .star-bar .star-icon {
+            font-size: 1.4rem;
+            animation: starPulse 1.5s infinite;
+        }
+        @keyframes starPulse {
+            0%,
+            100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.3);
+            }
+        }
+
+        /* Screens */
+        .screen {
+            display: none;
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 28px 24px;
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+            animation: fadeSlideIn 0.35s ease;
+            min-height: 380px;
+        }
+        .screen.active {
+            display: block;
+        }
+        @keyframes fadeSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Letter Grid */
+        .letter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
+            gap: 10px;
+            margin-top: 16px;
+        }
+        .letter-btn {
+            aspect-ratio: 1;
+            border-radius: var(--radius-sm);
+            border: 2px solid #e8ecf4;
+            background: #fafbfd;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .letter-btn:hover {
+            background: #eef1ff;
+            border-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(91, 106, 240, 0.2);
+        }
+        .letter-btn:active {
+            transform: scale(0.94);
+            transition: 0.1s;
+        }
+        .letter-btn.completed {
+            background: #e8fce8;
+            border-color: #34c759;
+            color: #1d7a35;
+        }
+        .letter-btn.completed::after {
+            content: '⭐';
+            position: absolute;
+            top: -4px;
+            right: -2px;
+            font-size: 0.7rem;
+        }
+        .letter-btn.current-letter {
+            background: #fffbe6;
+            border-color: #ff9500;
+            box-shadow: 0 0 0 4px rgba(255, 149, 0, 0.2);
+            animation: glowPulse 1.2s infinite;
+        }
+        @keyframes glowPulse {
+            0%,
+            100% {
+                box-shadow: 0 0 0 4px rgba(255, 149, 0, 0.2);
+            }
+            50% {
+                box-shadow: 0 0 0 10px rgba(255, 149, 0, 0.05);
+            }
+        }
+
+        /* Level indicator */
+        .level-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #5b6af0, #7b68ee);
+            color: #fff;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 14px rgba(91, 106, 240, 0.3);
+        }
+        .level-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+        .level-subtitle {
+            font-size: 0.95rem;
+            color: var(--light-text);
+            margin-bottom: 16px;
+        }
+
+        /* Emoji display */
+        .emoji-display {
+            font-size: 5rem;
+            margin: 16px auto;
+            animation: emojiPop 0.5s var(--bounce);
+            line-height: 1;
+        }
+        @keyframes emojiPop {
+            0% {
+                transform: scale(0.2) rotate(-20deg);
+                opacity: 0;
+            }
+            60% {
+                transform: scale(1.15) rotate(5deg);
+            }
+            100% {
+                transform: scale(1) rotate(0);
+                opacity: 1;
+            }
+        }
+
+        /* Choice buttons */
+        .choices-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 16px;
+        }
+        .choice-btn {
+            padding: 14px 24px;
+            border-radius: var(--radius-sm);
+            border: 3px solid #e8ecf4;
+            background: #fafbfd;
+            font-size: 1.15rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            min-width: 100px;
+            color: var(--text);
+            position: relative;
+        }
+        .choice-btn:hover {
+            border-color: var(--primary);
+            background: #f5f6ff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+        }
+        .choice-btn:active {
+            transform: scale(0.95);
+        }
+        .choice-btn.correct-flash {
+            background: #d4f5dd !important;
+            border-color: #34c759 !important;
+            animation: correctPop 0.5s var(--bounce);
+        }
+        .choice-btn.wrong-flash {
+            background: #ffe0e0 !important;
+            border-color: #ff3b30 !important;
+            animation: shake 0.5s;
+        }
+        @keyframes correctPop {
+            0% {
+                transform: scale(1);
+            }
+            40% {
+                transform: scale(1.12);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        @keyframes shake {
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+            20% {
+                transform: translateX(-8px);
+            }
+            40% {
+                transform: translateX(8px);
+            }
+            60% {
+                transform: translateX(-6px);
+            }
+            80% {
+                transform: translateX(4px);
+            }
+        }
+
+        /* Spelling boxes */
+        .spelling-area {
+            margin: 20px auto;
+        }
+        .boxes-row {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .spell-box {
+            width: 50px;
+            height: 56px;
+            border: 3px dashed #c8cdd8;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--text);
+            background: #fafbfd;
+            cursor: pointer;
+            transition: var(--transition);
+            text-transform: uppercase;
+        }
+        .spell-box.filled {
+            border-style: solid;
+            border-color: #5b6af0;
+            background: #f5f6ff;
+            animation: boxFill 0.3s var(--bounce);
+        }
+        .spell-box.correct-box {
+            border-color: #34c759 !important;
+            background: #e8fce8 !important;
+        }
+        .spell-box.wrong-box {
+            border-color: #ff3b30 !important;
+            background: #ffe0e0 !important;
+        }
+        @keyframes boxFill {
+            0% {
+                transform: scale(0.8);
+            }
+            60% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        .tile-bank {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        .letter-tile {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-sm);
+            background: linear-gradient(180deg, #fff 0%, #f0f2f8 100%);
+            border: 2px solid #d8dce6;
+            font-size: 1.3rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
+            text-transform: uppercase;
+        }
+        .letter-tile:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+            border-color: #5b6af0;
+        }
+        .letter-tile:active {
+            transform: scale(0.9);
+            transition: 0.1s;
+        }
+        .letter-tile.used {
+            opacity: 0.3;
+            pointer-events: none;
+            transform: scale(0.85);
+            background: #e8e8e8;
+            border-color: #ddd;
+        }
+
+        /* Flashcard grid for level 3 */
+        .flashcard-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+            margin-top: 16px;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .flashcard {
+            aspect-ratio: 1;
+            border-radius: var(--radius-sm);
+            border: 3px solid #e8ecf4;
+            background: #fafbfd;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .flashcard:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border-color: #5b6af0;
+        }
+        .flashcard:active {
+            transform: scale(0.94);
+        }
+        .flashcard .fc-label {
+            font-size: 0.75rem;
+            color: #999;
+            margin-top: 2px;
+            font-weight: 500;
+        }
+        .flashcard.correct-pick {
+            border-color: #34c759 !important;
+            background: #e8fce8 !important;
+            box-shadow: 0 0 0 8px rgba(52, 199, 89, 0.2);
+        }
+        .flashcard.wrong-pick {
+            border-color: #ff3b30 !important;
+            background: #ffe0e0 !important;
+            animation: shake 0.5s;
+        }
+
+        /* Level 4 - Phonics Hunt */
+        .hunt-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 16px;
+            max-width: 440px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .hunt-card {
+            aspect-ratio: 1;
+            border-radius: var(--radius-sm);
+            border: 3px solid #e8ecf4;
+            background: #fafbfd;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            position: relative;
+        }
+        .hunt-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        .hunt-card:active {
+            transform: scale(0.93);
+        }
+        .hunt-card.selected-correct {
+            border-color: #34c759 !important;
+            background: #e8fce8 !important;
+            box-shadow: 0 0 0 6px rgba(52, 199, 89, 0.2);
+        }
+        .hunt-card.selected-correct::after {
+            content: '✓';
+            position: absolute;
+            top: 6px;
+            right: 10px;
+            font-size: 1.4rem;
+            font-weight: 900;
+            color: #34c759;
+        }
+        .hunt-card.selected-wrong {
+            border-color: #ff3b30 !important;
+            background: #ffe0e0 !important;
+            animation: shake 0.5s;
+        }
+        .hunt-progress {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--light-text);
+            margin-top: 10px;
+        }
+        .hunt-progress span {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            padding: 12px 28px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+            transition: var(--transition);
+            letter-spacing: 0.3px;
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 6px 18px rgba(91, 106, 240, 0.35);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(91, 106, 240, 0.45);
+        }
+        .btn-success {
+            background: var(--success);
+            color: #fff;
+            box-shadow: 0 6px 18px rgba(52, 199, 89, 0.35);
+        }
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(52, 199, 89, 0.45);
+        }
+        .btn-outline {
+            background: #fff;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+        .btn-sm {
+            padding: 8px 18px;
+            font-size: 0.85rem;
+        }
+        .btn:active {
+            transform: scale(0.94);
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* Celebration */
+        .celebration {
+            animation: celebBounce 0.6s var(--bounce);
+        }
+        @keyframes celebBounce {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+            70% {
+                transform: scale(1.08);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        .confetti {
+            font-size: 2rem;
+            display: inline-block;
+            animation: confettiFall 1.5s infinite;
+        }
+        @keyframes confettiFall {
+            0% {
+                transform: translateY(-30px) rotate(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(40px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        .confetti:nth-child(odd) {
+            animation-delay: 0.3s;
+        }
+        .confetti:nth-child(even) {
+            animation-delay: 0.7s;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .screen {
+                padding: 20px 14px;
+                min-height: 340px;
+            }
+            .emoji-display {
+                font-size: 3.5rem;
+            }
+            .spell-box {
+                width: 38px;
+                height: 44px;
+                font-size: 1.3rem;
+            }
+            .letter-tile {
+                width: 38px;
+                height: 38px;
+                font-size: 1.1rem;
+            }
+            .hunt-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px;
+            }
+            .hunt-card {
+                font-size: 2.2rem;
+            }
+            .flashcard-grid {
+                gap: 8px;
+            }
+            .flashcard {
+                font-size: 2.5rem;
+            }
+            .choice-btn {
+                padding: 10px 16px;
+                font-size: 1rem;
+                min-width: 80px;
+            }
+            .letter-grid {
+                grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
+                gap: 6px;
+            }
+            .letter-btn {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <div class="game-header">
+            <div class="title">
+                <span>🌟</span><span>P</span><span>h</span><span>o</span>nics Adventure
+            </div>
+            <div class="star-bar">
+                <span class="star-icon">⭐</span> Total Stars: <strong id="totalStars">0</strong> / 104
+            </div>
+        </div>
+
+        <!-- Screen: Letter Selection -->
+        <div class="screen active" id="screen-home">
+            <h2 style="margin-bottom:4px;">📚 Pick a Letter!</h2>
+            <p style="color:#6b7c93;font-size:0.9rem;">Complete all 4 levels for each letter</p>
+            <div class="letter-grid" id="letterGrid"></div>
+        </div>
+
+        <!-- Screen: Level 1 - Multiple Choice -->
+        <div class="screen" id="screen-level1">
+            <div class="level-badge">🎯 Level 1</div>
+            <h3 class="level-title">What is it?</h3>
+            <div class="emoji-display" id="l1Emoji"></div>
+            <p style="color:#6b7c93;font-size:0.9rem;">Choose the correct word</p>
+            <div class="choices-row" id="l1Choices"></div>
+        </div>
+
+        <!-- Screen: Level 2 - Spelling -->
+        <div class="screen" id="screen-level2">
+            <div class="level-badge">✏️ Level 2</div>
+            <h3 class="level-title">Spell the Word!</h3>
+            <div class="emoji-display" id="l2Emoji"></div>
+            <div class="spelling-area">
+                <div class="boxes-row" id="spellBoxes"></div>
+                <div class="tile-bank" id="tileBank"></div>
+            </div>
+            <button class="btn btn-outline btn-sm" id="btnResetSpell" style="margin-top:10px;">🔄 Reset</button>
+        </div>
+
+        <!-- Screen: Level 3 - Which one is a...? -->
+        <div class="screen" id="screen-level3">
+            <div class="level-badge">🔍 Level 3</div>
+            <h3 class="level-title" id="l3Question">Which one is a ______?</h3>
+            <div class="flashcard-grid" id="l3Flashcards"></div>
+        </div>
+
+        <!-- Screen: Level 4 - Phonics Hunt -->
+        <div class="screen" id="screen-level4">
+            <div class="level-badge">🏆 Level 4 - Special!</div>
+            <h3 class="level-title">🔎 Phonics Hunt</h3>
+            <p style="color:#6b7c93;font-size:0.9rem;" id="l4Instruction">Find ALL items that start with the letter!</p>
+            <div class="hunt-grid" id="huntGrid"></div>
+            <p class="hunt-progress" id="huntProgress">Found: <span>0</span> / <span id="huntTotal">0</span></p>
+        </div>
+
+        <!-- Screen: Celebration -->
+        <div class="screen" id="screen-celebration">
+            <div class="celebration">
+                <div style="font-size:4rem;">🎉</div>
+                <h2 id="celebTitle">Amazing!</h2>
+                <p id="celebMsg" style="color:#6b7c93;"></p>
+                <div id="celebStars" style="font-size:2rem;margin:12px 0;"></div>
+                <button class="btn btn-primary" id="btnNextLetter">➡️ Next Letter</button>
+                <button class="btn btn-outline btn-sm" id="btnBackHome" style="margin-left:8px;">🏠 All Letters</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // ──────────────────────────────────────
+            // 📚 MASTER VOCABULARY DATA
+            // ──────────────────────────────────────
+            const letterData = {
+                'A': { word: 'apple', emoji: '🍎', extras: [
+                        ['ant', '🐜'],
+                        ['alligator', '🐊']
+                    ] },
+                'B': { word: 'ball', emoji: '⚽', extras: [
+                        ['bear', '🐻'],
+                        ['bird', '🐦']
+                    ] },
+                'C': { word: 'cat', emoji: '🐱', extras: [
+                        ['cow', '🐮'],
+                        ['car', '🚗']
+                    ] },
+                'D': { word: 'dog', emoji: '🐶', extras: [
+                        ['duck', '🦆'],
+                        ['deer', '🦌']
+                    ] },
+                'E': { word: 'egg', emoji: '🥚', extras: [
+                        ['elephant', '🐘'],
+                        ['ear', '👂']
+                    ] },
+                'F': { word: 'fish', emoji: '🐟', extras: [
+                        ['fox', '🦊'],
+                        ['flower', '🌸']
+                    ] },
+                'G': { word: 'goat', emoji: '🐐', extras: [
+                        ['grapes', '🍇'],
+                        ['guitar', '🎸']
+                    ] },
+                'H': { word: 'hat', emoji: '🎩', extras: [
+                        ['horse', '🐴'],
+                        ['house', '🏠']
+                    ] },
+                'I': { word: 'igloo', emoji: '🛖', extras: [
+                        ['insect', '🐛'],
+                        ['ice', '🧊']
+                    ] },
+                'J': { word: 'jam', emoji: '🍯', extras: [
+                        ['jet', '✈️'],
+                        ['juice', '🧃']
+                    ] },
+                'K': { word: 'kite', emoji: '🪁', extras: [
+                        ['key', '🔑'],
+                        ['king', '👑']
+                    ] },
+                'L': { word: 'lion', emoji: '🦁', extras: [
+                        ['leaf', '🍃'],
+                        ['lamp', '💡']
+                    ] },
+                'M': { word: 'moon', emoji: '🌙', extras: [
+                        ['mouse', '🐭'],
+                        ['milk', '🥛']
+                    ] },
+                'N': { word: 'nest', emoji: '🪺', extras: [
+                        ['nose', '👃'],
+                        ['net', '🥅']
+                    ] },
+                'O': { word: 'orange', emoji: '🍊', extras: [
+                        ['owl', '🦉'],
+                        ['octopus', '🐙']
+                    ] },
+                'P': { word: 'pig', emoji: '🐷', extras: [
+                        ['pear', '🍐'],
+                        ['pizza', '🍕']
+                    ] },
+                'Q': { word: 'queen', emoji: '👸', extras: [
+                        ['quail', '🐦'],
+                        ['quilt', '🟪']
+                    ] },
+                'R': { word: 'rabbit', emoji: '🐰', extras: [
+                        ['rain', '🌧️'],
+                        ['ring', '💍']
+                    ] },
+                'S': { word: 'sun', emoji: '☀️', extras: [
+                        ['star', '⭐'],
+                        ['snake', '🐍']
+                    ] },
+                'T': { word: 'tree', emoji: '🌳', extras: [
+                        ['tiger', '🐯'],
+                        ['truck', '🚛']
+                    ] },
+                'U': { word: 'umbrella', emoji: '☂️', extras: [
+                        ['unicorn', '🦄'],
+                        ['ufo', '🛸']
+                    ] },
+                'V': { word: 'van', emoji: '🚐', extras: [
+                        ['vase', '🏺'],
+                        ['volcano', '🌋']
+                    ] },
+                'W': { word: 'whale', emoji: '🐋', extras: [
+                        ['wolf', '🐺'],
+                        ['watermelon', '🍉']
+                    ] },
+                'X': { word: 'box', emoji: '📦', extras: [
+                        ['fox', '🦊'],
+                        ['axe', '🪓']
+                    ] },
+                'Y': { word: 'yarn', emoji: '🧶', extras: [
+                        ['yoyo', '🪀'],
+                        ['yogurt', '🍶']
+                    ] },
+                'Z': { word: 'zebra', emoji: '🦓', extras: [
+                        ['zoo', '🏛️'],
+                        ['zero', '0️⃣']
+                    ] },
+            };
+
+            // Build a flat list of all {letter, word, emoji} for distractor selection
+            const allEntries = [];
+            for (const [letter, data] of Object.entries(letterData)) {
+                allEntries.push({ letter, word: data.word, emoji: data.emoji });
+                for (const [w, e] of data.extras) {
+                    allEntries.push({ letter, word: w, emoji: e });
+                }
+            }
+
+            // ──────────────────────────────────────
+            // 🎮 GAME STATE
+            // ──────────────────────────────────────
+            const state = {
+                currentLetter: null,
+                currentLevel: 1,
+                completedLetters: {}, // { 'A': [true, true, true, true] } - 4 levels completed
+                totalStars: 0,
+                level4Selected: new Set(),
+                level4CorrectCount: 0,
+                level4TotalNeeded: 0,
+                spellBoxes: [],
+                spellTileUsage: {},
+            };
+
+            // ──────────────────────────────────────
+            // 🖥️ SCREEN MANAGEMENT
+            // ──────────────────────────────────────
+            const screens = {
+                home: document.getElementById('screen-home'),
+                level1: document.getElementById('screen-level1'),
+                level2: document.getElementById('screen-level2'),
+                level3: document.getElementById('screen-level3'),
+                level4: document.getElementById('screen-level4'),
+                celebration: document.getElementById('screen-celebration'),
+            };
+
+            function showScreen(screenName) {
+                Object.values(screens).forEach(s => s.classList.remove('active'));
+                if (screens[screenName]) {
+                    screens[screenName].classList.add('active');
+                    // Re-trigger animation
+                    screens[screenName].style.animation = 'none';
+                    screens[screenName].offsetHeight;
+                    screens[screenName].style.animation = '';
+                }
+            }
+
+            // ──────────────────────────────────────
+            // 🏠 HOME SCREEN - LETTER GRID
+            // ──────────────────────────────────────
+            function renderLetterGrid() {
+                const grid = document.getElementById('letterGrid');
+                grid.innerHTML = '';
+                const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+                letters.forEach(letter => {
+                    const btn = document.createElement('button');
+                    btn.className = 'letter-btn';
+                    btn.textContent = letter;
+                    if (state.completedLetters[letter] && state.completedLetters[letter]
+                        .every(l => l)) {
+                        btn.classList.add('completed');
+                    }
+                    if (state.currentLetter === letter && state.currentLevel > 0 && !(state
+                            .completedLetters[letter] && state.completedLetters[letter].every(
+                            l => l))) {
+                        btn.classList.add('current-letter');
+                    }
+                    btn.addEventListener('click', () => startLetter(letter));
+                    grid.appendChild(btn);
+                });
+            }
+
+            function updateStarDisplay() {
+                document.getElementById('totalStars').textContent = state.totalStars;
+            }
+
+            function startLetter(letter) {
+                state.currentLetter = letter;
+                state.currentLevel = 1;
+                if (!state.completedLetters[letter]) {
+                    state.completedLetters[letter] = [false, false, false, false];
+                }
+                renderLetterGrid();
+                loadLevel(1);
+            }
+
+            // ──────────────────────────────────────
+            // 📊 HELPER FUNCTIONS
+            // ──────────────────────────────────────
+            function getData(letter) {
+                return letterData[letter];
+            }
+
+            function getRandomDistractors(targetLetter, count, excludeWords = []) {
+                const pool = allEntries.filter(e =>
+                    e.letter !== targetLetter && !excludeWords.includes(e.word)
+                );
+                const shuffled = [...pool].sort(() => Math.random() - 0.5);
+                const result = [];
+                const usedWords = new Set(excludeWords);
+                for (const entry of shuffled) {
+                    if (result.length >= count) break;
+                    if (!usedWords.has(entry.word)) {
+                        result.push(entry);
+                        usedWords.add(entry.word);
+                    }
+                }
+                return result;
+            }
+
+            function playTone(freq, duration, type = 'sine') {
+                try {
+                    const ctx = new(window.AudioContext || window.webkitAudioContext)();
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, ctx.currentTime);
+                    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(ctx.currentTime);
+                    osc.stop(ctx.currentTime + duration);
+                } catch (e) {
+                    // Audio not available
+                }
+            }
+
+            function playCorrectSound() { playTone(660, 0.15, 'sine');
+                setTimeout(() => playTone(880, 0.2, 'sine'), 150); }
+
+            function playWrongSound() { playTone(180, 0.3, 'square'); }
+
+            function playCelebrationSound() {
+                playTone(523, 0.12);
+                setTimeout(() => playTone(659, 0.12), 120);
+                setTimeout(() => playTone(784, 0.12), 240);
+                setTimeout(() => playTone(1047, 0.25), 360);
+            }
+
+            // ──────────────────────────────────────
+            // 📝 LEVEL LOADING
+            // ──────────────────────────────────────
+            function loadLevel(level) {
+                state.currentLevel = level;
+                state.level4Selected = new Set();
+                state.level4CorrectCount = 0;
+                state.spellBoxes = [];
+                state.spellTileUsage = {};
+
+                switch (level) {
+                    case 1:
+                        loadLevel1();
+                        break;
+                    case 2:
+                        loadLevel2();
+                        break;
+                    case 3:
+                        loadLevel3();
+                        break;
+                    case 4:
+                        loadLevel4();
+                        break;
+                }
+                renderLetterGrid();
+            }
+
+            // ──────────────────────────
+            // 🎯 LEVEL 1: Multiple Choice
+            // ──────────────────────────
+            function loadLevel1() {
+                showScreen('level1');
+                const data = getData(state.currentLetter);
+                const correct = { word: data.word, emoji: data.emoji };
+                const distractors = getRandomDistractors(state.currentLetter, 2, [data.word]);
+                const choices = [correct, ...distractors].sort(() => Math.random() - 0.5);
+
+                document.getElementById('l1Emoji').textContent = data.emoji;
+                const choicesContainer = document.getElementById('l1Choices');
+                choicesContainer.innerHTML = '';
+
+                choices.forEach(choice => {
+                    const btn = document.createElement('button');
+                    btn.className = 'choice-btn';
+                    btn.textContent = choice.word;
+                    btn.addEventListener('click', () => handleLevel1Answer(btn, choice.word ===
+                        data.word, choicesContainer));
+                    choicesContainer.appendChild(btn);
+                });
+            }
+
+            function handleLevel1Answer(btn, isCorrect, container) {
+                const allBtns = container.querySelectorAll('.choice-btn');
+                allBtns.forEach(b => b.style.pointerEvents = 'none');
+
+                if (isCorrect) {
+                    btn.classList.add('correct-flash');
+                    playCorrectSound();
+                    markLevelComplete(state.currentLetter, 1);
+                    setTimeout(() => loadLevel(2), 900);
+                } else {
+                    btn.classList.add('wrong-flash');
+                    playWrongSound();
+                    // Highlight the correct one
+                    const data = getData(state.currentLetter);
+                    allBtns.forEach(b => {
+                        if (b.textContent === data.word) {
+                            setTimeout(() => b.classList.add('correct-flash'), 300);
+                        }
+                    });
+                    setTimeout(() => {
+                        allBtns.forEach(b => {
+                            b.style.pointerEvents = 'auto';
+                            b.classList.remove('wrong-flash', 'correct-flash');
+                        });
+                    }, 1000);
+                }
+            }
+
+            // ──────────────────────────
+            // ✏️ LEVEL 2: Spelling
+            // ──────────────────────────
+            function loadLevel2() {
+                showScreen('level2');
+                const data = getData(state.currentLetter);
+                const word = data.word.toLowerCase();
+                const wordLetters = word.split('');
+
+                document.getElementById('l2Emoji').textContent = data.emoji;
+
+                // Create extra letters for tile bank
+                const extraLetters = [];
+                const alphabet = 'abcdefghijklmnopqrstuvwxyz';
+                const wordSet = new Set(wordLetters);
+                const availableForExtra = alphabet.split('').filter(l => !wordSet.has(l));
+                const shuffledExtras = availableForExtra.sort(() => Math.random() - 0.5);
+                const numExtras = Math.min(4, Math.max(2, Math.floor(word.length * 1.2)));
+                for (let i = 0; i < numExtras; i++) {
+                    extraLetters.push(shuffledExtras[i] || 'x');
+                }
+
+                // Combine and shuffle all tiles
+                const allTiles = [...wordLetters, ...extraLetters];
+                const shuffledTiles = allTiles.sort(() => Math.random() - 0.5);
+
+                // Assign unique IDs to tiles
+                const tilesWithId = shuffledTiles.map((letter, index) => ({
+                    id: `tile-${index}`,
+                    letter: letter,
+                    used: false,
+                }));
+
+                state.spellBoxes = new Array(word.length).fill(null);
+                state.spellTileUsage = {};
+                tilesWithId.forEach(t => { state.spellTileUsage[t.id] = false; });
+                state._spellTiles = tilesWithId;
+                state._spellWord = word;
+
+                renderSpellingUI();
+            }
+
+            function renderSpellingUI() {
+                const boxesRow = document.getElementById('spellBoxes');
+                const tileBank = document.getElementById('tileBank');
+                boxesRow.innerHTML = '';
+                tileBank.innerHTML = '';
+
+                // Render boxes
+                state.spellBoxes.forEach((letter, index) => {
+                    const box = document.createElement('div');
+                    box.className = 'spell-box' + (letter ? ' filled' : '');
+                    box.textContent = letter || '';
+                    box.dataset.boxIndex = index;
+                    if (letter) {
+                        box.addEventListener('click', () => removeLetterFromBox(index));
+                    }
+                    boxesRow.appendChild(box);
+                });
+
+                // Render tiles
+                state._spellTiles.forEach(tile => {
+                    const tileEl = document.createElement('button');
+                    tileEl.className = 'letter-tile' + (tile.used ? ' used' : '');
+                    tileEl.textContent = tile.letter.toUpperCase();
+                    tileEl.dataset.tileId = tile.id;
+                    if (!tile.used) {
+                        tileEl.addEventListener('click', () => placeLetterFromTile(tile.id));
+                    }
+                    tileBank.appendChild(tileEl);
+                });
+            }
+
+            function placeLetterFromTile(tileId) {
+                const tile = state._spellTiles.find(t => t.id === tileId);
+                if (!tile || tile.used) return;
+
+                // Find first empty box
+                const emptyIndex = state.spellBoxes.findIndex(b => b === null);
+                if (emptyIndex === -1) return;
+
+                tile.used = true;
+                state.spellTileUsage[tileId] = true;
+                state.spellBoxes[emptyIndex] = tile.letter;
+                renderSpellingUI();
+
+                // Check if all boxes filled
+                if (state.spellBoxes.every(b => b !== null)) {
+                    checkSpelling();
+                }
+
+                playTone(440, 0.08, 'sine');
+            }
+
+            function removeLetterFromBox(boxIndex) {
+                const letter = state.spellBoxes[boxIndex];
+                if (!letter) return;
+
+                // Find the tile that provided this letter and free it
+                const tile = state._spellTiles.find(t => t.used && t.letter === letter);
+                if (tile) {
+                    tile.used = false;
+                    state.spellTileUsage[tile.id] = false;
+                }
+                state.spellBoxes[boxIndex] = null;
+                renderSpellingUI();
+                playTone(300, 0.06, 'sine');
+            }
+
+            function checkSpelling() {
+                const spelled = state.spellBoxes.join('');
+                const correct = state._spellWord;
+
+                if (spelled === correct) {
+                    // Correct!
+                    const boxes = document.querySelectorAll('#spellBoxes .spell-box');
+                    boxes.forEach(b => b.classList.add('correct-box'));
+                    playCorrectSound();
+                    markLevelComplete(state.currentLetter, 2);
+                    setTimeout(() => loadLevel(3), 900);
+                } else {
+                    // Wrong - shake and reset
+                    const boxes = document.querySelectorAll('#spellBoxes .spell-box');
+                    boxes.forEach(b => b.classList.add('wrong-box'));
+                    playWrongSound();
+                    setTimeout(() => {
+                        state.spellBoxes = new Array(state._spellWord.length).fill(null);
+                        state._spellTiles.forEach(t => { t.used = false;
+                            state.spellTileUsage[t.id] = false; });
+                        renderSpellingUI();
+                    }, 600);
+                }
+            }
+
+            document.getElementById('btnResetSpell').addEventListener('click', () => {
+                if (state.currentLevel === 2 && state._spellWord) {
+                    state.spellBoxes = new Array(state._spellWord.length).fill(null);
+                    state._spellTiles.forEach(t => { t.used = false;
+                        state.spellTileUsage[t.id] = false; });
+                    renderSpellingUI();
+                    playTone(350, 0.08, 'sine');
+                }
+            });
+
+            // ──────────────────────────
+            // 🔍 LEVEL 3: Which one is a...?
+            // ──────────────────────────
+            function loadLevel3() {
+                showScreen('level3');
+                const data = getData(state.currentLetter);
+                const correct = { word: data.word, emoji: data.emoji };
+                const distractors = getRandomDistractors(state.currentLetter, 3, [data.word]);
+                const options = [correct, ...distractors].sort(() => Math.random() - 0.5);
+
+                document.getElementById('l3Question').textContent = `Which one is a ${data.word}?`;
+                const grid = document.getElementById('l3Flashcards');
+                grid.innerHTML = '';
+
+                state._l3CorrectEmoji = data.emoji;
+
+                options.forEach(opt => {
+                    const card = document.createElement('div');
+                    card.className = 'flashcard';
+                    card.innerHTML = `${opt.emoji}<span class="fc-label"></span>`;
+                    card.addEventListener('click', () => handleLevel3Answer(card, opt.emoji === data
+                        .emoji, grid));
+                    grid.appendChild(card);
+                });
+            }
+
+            function handleLevel3Answer(card, isCorrect, grid) {
+                const allCards = grid.querySelectorAll('.flashcard');
+                allCards.forEach(c => c.style.pointerEvents = 'none');
+
+                if (isCorrect) {
+                    card.classList.add('correct-pick');
+                    playCorrectSound();
+                    markLevelComplete(state.currentLetter, 3);
+                    setTimeout(() => loadLevel(4), 900);
+                } else {
+                    card.classList.add('wrong-pick');
+                    playWrongSound();
+                    // Highlight correct
+                    allCards.forEach(c => {
+                        if (c.querySelector('span') && c.innerHTML.includes(state._l3CorrectEmoji)) {
+                            setTimeout(() => c.classList.add('correct-pick'), 350);
+                        }
+                    });
+                    setTimeout(() => {
+                        allCards.forEach(c => {
+                            c.style.pointerEvents = 'auto';
+                            c.classList.remove('wrong-pick', 'correct-pick');
+                        });
+                    }, 1000);
+                }
+            }
+
+            // ──────────────────────────
+            // 🏆 LEVEL 4: Phonics Hunt (Special)
+            // ──────────────────────────
+            function loadLevel4() {
+                showScreen('level4');
+                const data = getData(state.currentLetter);
+                const targetLetter = state.currentLetter;
+
+                // Items that start with the target letter
+                const targetItems = [
+                    { word: data.word, emoji: data.emoji, isTarget: true },
+                ];
+                for (const [w, e] of data.extras) {
+                    targetItems.push({ word: w, emoji: e, isTarget: true });
+                }
+
+                // Distractor items (don't start with target letter)
+                const distractors = getRandomDistractors(targetLetter, targetItems.length, targetItems.map(
+                    t => t.word));
+
+                const allItems = [...targetItems, ...distractors.map(d => ({
+                    word: d.word,
+                    emoji: d.emoji,
+                    isTarget: false
+                }))];
+                const shuffledItems = allItems.sort(() => Math.random() - 0.5);
+
+                state.level4Selected = new Set();
+                state.level4CorrectCount = 0;
+                state.level4TotalNeeded = targetItems.length;
+                state._l4Items = shuffledItems;
+
+                document.getElementById('l4Instruction').textContent =
+                    `Find ALL items that start with the letter "${targetLetter}"! (${targetItems.length} to find)`;
+                document.getElementById('huntTotal').textContent = targetItems.length;
+                document.getElementById('huntProgress').querySelector('span').textContent = '0';
+
+                const grid = document.getElementById('huntGrid');
+                grid.innerHTML = '';
+
+                shuffledItems.forEach((item, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'hunt-card';
+                    card.innerHTML = item.emoji;
+                    card.dataset.index = index;
+                    card.dataset.isTarget = item.isTarget ? '1' : '0';
+                    card.addEventListener('click', () => handleLevel4Click(card, item, index));
+                    grid.appendChild(card);
+                });
+            }
+
+            function handleLevel4Click(card, item, index) {
+                const key = index;
+                if (state.level4Selected.has(key)) return; // Already selected
+
+                if (item.isTarget) {
+                    // Correct pick!
+                    state.level4Selected.add(key);
+                    state.level4CorrectCount++;
+                    card.classList.add('selected-correct');
+                    card.style.pointerEvents = 'none';
+                    playTone(520, 0.1, 'sine');
+                    document.getElementById('huntProgress').querySelector('span').textContent =
+                        state.level4CorrectCount;
+
+                    // Check if all targets found
+                    if (state.level4CorrectCount >= state.level4TotalNeeded) {
+                        playCorrectSound();
+                        markLevelComplete(state.currentLetter, 4);
+                        setTimeout(() => showCelebration(), 700);
+                    }
+                } else {
+                    // Wrong pick
+                    card.classList.add('selected-wrong');
+                    playWrongSound();
+                    setTimeout(() => {
+                        card.classList.remove('selected-wrong');
+                    }, 500);
+                }
+            }
+
+            // ──────────────────────────
+            // 🎉 CELEBRATION
+            // ──────────────────────────
+            function showCelebration() {
+                showScreen('celebration');
+                const letter = state.currentLetter;
+                const data = getData(letter);
+                const completed = state.completedLetters[letter];
+                const starsEarned = completed ? completed.filter(Boolean).length : 4;
+
+                document.getElementById('celebTitle').textContent = `🎉 Letter ${letter} Complete!`;
+                document.getElementById('celebMsg').textContent =
+                    `You mastered "${data.word}" ${data.emoji} — all 4 levels done!`;
+                const starsDiv = document.getElementById('celebStars');
+                starsDiv.innerHTML = '';
+                for (let i = 0; i < 4; i++) {
+                    const star = document.createElement('span');
+                    star.textContent = i < starsEarned ? '⭐' : '☆';
+                    star.style.fontSize = '2.5rem';
+                    star.style.margin = '0 4px';
+                    if (i < starsEarned) star.classList.add('confetti');
+                    starsDiv.appendChild(star);
+                }
+
+                playCelebrationSound();
+                updateStarDisplay();
+                renderLetterGrid();
+            }
+
+            document.getElementById('btnNextLetter').addEventListener('click', () => {
+                const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+                const currentIndex = letters.indexOf(state.currentLetter);
+                const nextIndex = (currentIndex + 1) % 26;
+                startLetter(letters[nextIndex]);
+            });
+
+            document.getElementById('btnBackHome').addEventListener('click', () => {
+                state.currentLevel = 0;
+                renderLetterGrid();
+                showScreen('home');
+                updateStarDisplay();
+            });
+
+            // ──────────────────────────
+            // ⭐ MARK LEVEL COMPLETE
+            // ──────────────────────────
+            function markLevelComplete(letter, level) {
+                if (!state.completedLetters[letter]) {
+                    state.completedLetters[letter] = [false, false, false, false];
+                }
+                if (!state.completedLetters[letter][level - 1]) {
+                    state.completedLetters[letter][level - 1] = true;
+                    state.totalStars++;
+                }
+                updateStarDisplay();
+                renderLetterGrid();
+            }
+
+            // ──────────────────────────
+            // 🚀 INITIALIZE
+            // ──────────────────────────
+            function init() {
+                renderLetterGrid();
+                updateStarDisplay();
+                showScreen('home');
+                // Pre-load any completed state from localStorage if desired
+                try {
+                    const saved = localStorage.getItem('eslPhonicsGame');
+                    if (saved) {
+                        const parsed = JSON.parse(saved);
+                        state.completedLetters = parsed.completedLetters || {};
+                        state.totalStars = parsed.totalStars || 0;
+                        updateStarDisplay();
+                        renderLetterGrid();
+                    }
+                } catch (e) { /* ignore */ }
+            }
+
+            // Save progress
+            function saveProgress() {
+                try {
+                    localStorage.setItem('eslPhonicsGame', JSON.stringify({
+                        completedLetters: state.completedLetters,
+                        totalStars: state.totalStars,
+                    }));
+                } catch (e) { /* ignore */ }
+            }
+
+            // Auto-save on level complete
+            const originalMarkComplete = markLevelComplete;
+            markLevelComplete = function(letter, level) {
+                originalMarkComplete(letter, level);
+                saveProgress();
+            };
+
+            init();
+
+            console.log('🌟 ESL Phonics Adventure Ready!');
+            console.log('📚 26 Letters × 4 Levels = 104 Challenges');
+            console.log('🎯 Level 1: Multiple Choice | ✏️ Level 2: Spelling');
+            console.log('🔍 Level 3: Flashcard Quiz | 🏆 Level 4: Phonics Hunt');
+            console.log('💡 Click any letter to start!');
+        })();
+    </script>
+</body>
+</html>

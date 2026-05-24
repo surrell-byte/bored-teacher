@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Find My Food · Premium Edition</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0f;
+    --surface: #141416;
+    --surface2: #1c1c20;
+    --surface3: #252529;
+    --border: rgba(255,255,255,0.07);
+    --border-bright: rgba(255,255,255,0.15);
+    --text: #f0ede8;
+    --text-muted: rgba(240,237,232,0.45);
+    --text-dim: rgba(240,237,232,0.25);
+    --accent: #e8c97a;
+    --accent2: #d4b86a;
+    --accent-glow: rgba(232,201,122,0.18);
+    --accent-glow2: rgba(232,201,122,0.08);
+    --green: #6fcf97;
+    --green-glow: rgba(111,207,151,0.2);
+    --red: #eb5757;
+    --card-back: linear-gradient(145deg, #1e1e24, #141418);
+    --radius-sm: 10px;
+    --radius-md: 18px;
+    --radius-lg: 28px;
+    --radius-xl: 40px;
+    --shadow: 0 24px 64px rgba(0,0,0,0.5);
+    --shadow-sm: 0 8px 24px rgba(0,0,0,0.35);
+  }
+
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+
+  /* ── LIGHT MODE OVERRIDES ── */
+  [data-theme="light"] {
+    --bg: #f4f1eb;
+    --surface: #ffffff;
+    --surface2: #f0ede6;
+    --surface3: #e4e0d8;
+    --border: rgba(0,0,0,0.08);
+    --border-bright: rgba(0,0,0,0.16);
+    --text: #1a1814;
+    --text-muted: rgba(26,24,20,0.5);
+    --text-dim: rgba(26,24,20,0.3);
+    --accent: #b8962a;
+    --accent2: #a07d1a;
+    --accent-glow: rgba(184,150,42,0.15);
+    --accent-glow2: rgba(184,150,42,0.08);
+    --green: #1a7a45;
+    --green-glow: rgba(26,122,69,0.15);
+    --red: #c0392b;
+    --card-back: linear-gradient(145deg, #ede9e0, #f4f1eb);
+    --shadow: 0 24px 64px rgba(0,0,0,0.12);
+    --shadow-sm: 0 8px 24px rgba(0,0,0,0.08);
+  }
+  [data-theme="light"] body::before { opacity: 0.25; }
+  [data-theme="light"] .ambient-1 {
+    background: radial-gradient(circle, rgba(184,150,42,0.08) 0%, transparent 70%);
+  }
+  [data-theme="light"] .ambient-2 {
+    background: radial-gradient(circle, rgba(26,122,69,0.05) 0%, transparent 70%);
+  }
+
+  /* ── THEME TOGGLE BUTTON ── */
+  .theme-toggle {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 1000;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--border-bright);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    box-shadow: var(--shadow-sm);
+    transition: background 0.25s, border-color 0.25s, box-shadow 0.25s, transform 0.2s;
+  }
+  .theme-toggle:hover {
+    transform: scale(1.1);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+  .theme-toggle:active { transform: scale(0.95); }
+
+  /* ── UTILITY ── */
+  .hidden { display: none !important; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    user-select: none;
+    overflow-x: hidden;
+    transition: background 0.3s, color 0.3s;
+  }
+  .card, .score-card, .turn-bar, .avatar-btn, .fancy-input,
+  .tutorial-hint, .die-modal, .final-score-item, .logo-badge,
+  .tile-front, .tile-back, .progress-track, .match-popup {
+    transition: background 0.3s, border-color 0.3s, box-shadow 0.3s, color 0.3s;
+  }
+
+  /* ── NOISE GRAIN OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.6;
+  }
+
+  /* ── AMBIENT GLOW ── */
+  .ambient {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(120px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .ambient-1 {
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(232,201,122,0.06) 0%, transparent 70%);
+    top: -200px; right: -200px;
+    animation: drift1 20s ease-in-out infinite;
+  }
+  .ambient-2 {
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(111,207,151,0.04) 0%, transparent 70%);
+    bottom: -200px; left: -100px;
+    animation: drift2 25s ease-in-out infinite;
+  }
+  @keyframes drift1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-40px,30px)} }
+  @keyframes drift2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(30px,-40px)} }
+
+  /* ── SCREENS ── */
+  .screen { display:none; width:100%; max-width:560px; position:relative; z-index:10; }
+  .screen.active { display:block; animation: screenIn 0.5s cubic-bezier(0.23,1,0.32,1) both; }
+  @keyframes screenIn {
+    from { opacity:0; transform:translateY(24px) scale(0.97); }
+    to   { opacity:1; transform:translateY(0) scale(1); }
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 36px 32px;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+  }
+
+  /* ── LOGO / HEADER ── */
+  .logo-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border-bright);
+    border-radius: 100px;
+    padding: 8px 18px;
+    margin-bottom: 28px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 3.4rem;
+    font-weight: 900;
+    line-height: 1.05;
+    background: linear-gradient(135deg, #f0ede8 30%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+  }
+  .hero-sub {
+    color: var(--text-muted);
+    font-size: 1rem;
+    font-weight: 400;
+    margin-bottom: 36px;
+    line-height: 1.5;
+  }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 32px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 100px;
+    cursor: pointer;
+    transition: all 0.22s cubic-bezier(0.23,1,0.32,1);
+    letter-spacing: 0.01em;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0);
+    transition: background 0.2s;
+  }
+  .btn:hover::after { background: rgba(255,255,255,0.08); }
+  .btn:active { transform: scale(0.97); }
+
+  .btn-gold {
+    background: linear-gradient(135deg, var(--accent) 0%, #c4a45a 100%);
+    color: #1a1400;
+    box-shadow: 0 4px 24px rgba(232,201,122,0.35), 0 1px 0 rgba(255,255,255,0.2) inset;
+  }
+  .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(232,201,122,0.45); }
+
+  .btn-outline {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border-bright);
+  }
+  .btn-outline:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
+
+  .btn-ghost {
+    background: var(--surface2);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    font-size: 0.85rem;
+    padding: 10px 20px;
+  }
+  .btn-ghost:hover { color: var(--text); border-color: var(--border-bright); }
+
+  .btn-green {
+    background: linear-gradient(135deg, #6fcf97 0%, #43b070 100%);
+    color: #0a1f12;
+    box-shadow: 0 4px 24px var(--green-glow);
+  }
+  .btn-green:hover { transform: translateY(-2px); box-shadow: 0 8px 32px var(--green-glow); }
+
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 8px;
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 24px 0;
+  }
+
+  /* ── SECTION LABEL ── */
+  .section-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 14px;
+  }
+
+  /* ── THEME GRID ── */
+  .theme-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+  .theme-swatch {
+    aspect-ratio: 1;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .theme-swatch::after {
+    content: '✓';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: white;
+    opacity: 0;
+    transition: opacity 0.2s;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+  }
+  .theme-swatch.selected { border-color: white; box-shadow: 0 0 0 3px rgba(255,255,255,0.25); }
+  .theme-swatch.selected::after { opacity: 1; }
+  .theme-swatch:hover { transform: scale(1.08); }
+
+  /* ── AVATAR SELECTION ── */
+  .player-setup {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    text-align: left;
+  }
+  .input-group label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .fancy-input {
+    width: 100%;
+    padding: 14px 18px;
+    background: var(--surface2);
+    border: 1px solid var(--border-bright);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .fancy-input::placeholder { color: var(--text-dim); }
+  .fancy-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow2); }
+
+  .avatar-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .avatar-btn {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 2px solid var(--border);
+    font-size: 1.6rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    padding: 0;
+    line-height: 1;
+    font-family: inherit;
+  }
+  .avatar-btn:hover { border-color: var(--border-bright); transform: scale(1.1); }
+  .avatar-btn.selected {
+    border-color: var(--accent);
+    background: var(--accent-glow);
+    box-shadow: 0 0 0 3px var(--accent-glow2);
+  }
+
+  /* ── PLAYER HEADER CARD ── */
+  .player-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 20px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    margin-bottom: 8px;
+  }
+  .player-header .ph-avatar {
+    font-size: 2rem;
+    width: 48px; height: 48px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--surface3);
+    border-radius: 50%;
+    border: 2px solid var(--border-bright);
+  }
+  .player-header .ph-name { font-weight: 600; font-size: 1.1rem; }
+  .player-header .ph-tag {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  /* ── SCOREBOARD ── */
+  .scoreboard {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .score-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    transition: all 0.3s cubic-bezier(0.23,1,0.32,1);
+    position: relative;
+    overflow: hidden;
+  }
+  .score-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--accent-glow), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .score-card.active {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent), 0 8px 32px var(--accent-glow);
+  }
+  .score-card.active::before { opacity: 1; }
+  .sc-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    position: relative;
+    z-index: 1;
+  }
+  .sc-avatar { font-size: 1.4rem; }
+  .sc-name { font-weight: 600; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sc-score {
+    font-family: 'DM Mono', monospace;
+    font-size: 2rem;
+    font-weight: 500;
+    color: var(--accent);
+    line-height: 1;
+    position: relative;
+    z-index: 1;
+  }
+  .sc-label {
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── TURN INDICATOR ── */
+  .turn-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 10px 18px;
+    margin-bottom: 14px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    justify-content: center;
+  }
+  .turn-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    animation: pulse-dot 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse-dot {
+    0%,100% { opacity:1; transform:scale(1); }
+    50%      { opacity:0.5; transform:scale(0.7); }
+  }
+
+  /* ── MATCH POPUP ── */
+  .match-popup {
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.95rem;
+    min-height: 28px;
+    margin-bottom: 12px;
+    color: var(--green);
+    letter-spacing: 0.01em;
+    transition: all 0.3s;
+  }
+  .match-popup.mismatch { color: var(--red); }
+
+  /* ── GAME GRID ── */
+  .grid {
+    display: grid;
+    gap: 10px;
+    width: 100%;
+    margin: 0 auto;
+  }
+  .grid-4x4 {
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    aspect-ratio: 1;
+    max-width: 440px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .grid-3x2 {
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    aspect-ratio: 3/2;
+    max-width: 330px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* ── TILE ── */
+  .tile {
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .tile:not(.flipped):not(.matched):hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.35);
+  }
+
+  /* INNER — rotates to reveal back face */
+  .tile-inner {
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+    transform-style: preserve-3d;
+    transition: transform 0.5s cubic-bezier(0.23,1,0.32,1);
+  }
+  .tile.flipped .tile-inner { transform: rotateY(180deg); }
+
+  /* SHARED face styles */
+  .tile-front, .tile-back {
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  /* FRONT face */
+  .tile-front {
+    background: var(--surface2);
+    border: 1px solid var(--border-bright);
+    color: rgba(255,255,255,0.85);
+    font-family: 'DM Mono', monospace;
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.35);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 8px 18px rgba(0,0,0,0.25);
+    overflow: hidden;
+    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s, color 0.2s;
+  }
+  .tile-front::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.06), transparent 60%);
+    pointer-events: none;
+  }
+  .tile:not(.flipped):not(.matched):hover .tile-front {
+    border-color: var(--accent);
+    background: var(--surface3);
+    color: var(--accent);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 8px 24px rgba(0,0,0,0.3), 0 0 0 1px var(--accent);
+  }
+
+  /* BACK face — pre-rotated so the flip reveals it */
+  .tile-back {
+    background: var(--surface2);
+    border: 1px solid var(--border-bright);
+    transform: rotateY(180deg);
+    flex-direction: column;
+    gap: 4px;
+    padding: 6px;
+  }
+  .tile-back .emoji { font-size: 2rem; }
+  .tile-back .word {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  /* MATCHED — animate the tile element itself, not the inner */
+  .tile.matched .tile-back {
+    background: var(--surface3);
+    border-color: var(--green);
+    box-shadow: 0 0 0 1px var(--green), 0 4px 20px var(--green-glow);
+  }
+  .tile.matched .tile-back .word { color: var(--green); }
+  .tile.matched { animation: matchPop 0.45s cubic-bezier(0.23,1,0.32,1); }
+  @keyframes matchPop {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.1); }
+    100% { transform: scale(1); }
+  }
+
+  /* WRONG-SHAKE — animate the tile element itself */
+  .tile.wrong-shake { animation: shake 0.5s ease both; }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20%     { transform: translateX(-6px); }
+    40%     { transform: translateX(6px); }
+    60%     { transform: translateX(-4px); }
+    80%     { transform: translateX(4px); }
+  }
+
+  .tile.locked  { pointer-events: none; }
+  .tile.matched { pointer-events: none; }
+
+  /* ── TUTORIAL ── */
+  .tutorial-hint {
+    background: var(--surface2);
+    border: 1px solid var(--border-bright);
+    border-radius: var(--radius-md);
+    padding: 16px 20px;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+  }
+  .tutorial-hint strong { color: var(--accent); font-weight: 600; }
+  .tutorial-done-banner {
+    display: none;
+    background: linear-gradient(135deg, rgba(111,207,151,0.12), rgba(111,207,151,0.04));
+    border: 1px solid rgba(111,207,151,0.3);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    text-align: center;
+    margin-top: 20px;
+  }
+  .tutorial-done-banner .done-emoji { font-size: 2rem; margin-bottom: 8px; }
+  .tutorial-done-banner p { color: var(--green); font-weight: 600; margin-bottom: 16px; }
+
+  /* ── DIE OVERLAY ── */
+  .die-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease;
+  }
+  .die-overlay.hidden { display: none; }
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+  .die-modal {
+    background: var(--surface);
+    border: 1px solid var(--border-bright);
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    max-width: 340px;
+    width: 90%;
+    text-align: center;
+    box-shadow: var(--shadow);
+    animation: scaleIn 0.4s cubic-bezier(0.23,1,0.32,1);
+    position: relative;
+  }
+  .die-modal::before {
+    content: '';
+    position: absolute;
+    top:0; left:0; right:0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  }
+  @keyframes scaleIn { from{transform:scale(0.85);opacity:0} to{transform:scale(1);opacity:1} }
+
+  .die-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: var(--accent);
+  }
+  .die-subtitle { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px; }
+  .die-face {
+    font-size: 5rem;
+    display: block;
+    background: var(--surface2);
+    border: 1px solid var(--border-bright);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    margin: 0 auto 20px;
+    width: fit-content;
+    min-width: 100px;
+    transition: transform 0.1s;
+  }
+  .die-face.rolling { animation: dieRoll 0.08s linear infinite; }
+  @keyframes dieRoll { 0%{transform:rotate(-3deg)} 50%{transform:rotate(3deg)} 100%{transform:rotate(-3deg)} }
+  .die-result {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    min-height: 22px;
+    margin-bottom: 16px;
+  }
+
+  /* ── END SCREEN ── */
+  .winner-display {
+    text-align: center;
+    padding: 20px 0;
+  }
+  .winner-crown { font-size: 3rem; margin-bottom: 10px; display: block; }
+  .winner-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--text) 30%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .winner-sub { color: var(--text-muted); margin-top: 6px; }
+  .final-scores {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 20px 0;
+  }
+  .final-score-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 14px;
+    text-align: center;
+  }
+  .final-score-item.winner-item {
+    border-color: var(--accent);
+    background: var(--accent-glow2);
+  }
+  .fsi-avatar { font-size: 1.8rem; }
+  .fsi-name { font-size: 0.85rem; font-weight: 600; margin: 4px 0; }
+  .fsi-score { font-family:'DM Mono',monospace; font-size:1.8rem; color:var(--accent); font-weight:500; }
+
+  /* ── PROGRESS BAR ── */
+  .progress-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    font-weight: 500;
+    font-family: 'DM Mono', monospace;
+  }
+  .progress-track {
+    flex: 1;
+    height: 4px;
+    background: var(--surface3);
+    border-radius: 100px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    border-radius: 100px;
+    transition: width 0.6s cubic-bezier(0.23,1,0.32,1);
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 400px) {
+    .card { padding: 24px 18px; }
+    .hero-title { font-size: 2.6rem; }
+    .grid-4x4 { gap: 7px; }
+    .tile-back .emoji { font-size: 1.6rem; }
+    .tile-back .word { font-size: 0.58rem; }
+  }
+
+  /* ── WELCOME SCREEN EXTRAS ── */
+  .pair-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 28px;
+  }
+  .pair-chip {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 6px 14px;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    animation: chipFloat 3s ease-in-out infinite;
+  }
+  .pair-chip:nth-child(2) { animation-delay: 0.4s; }
+  .pair-chip:nth-child(3) { animation-delay: 0.8s; }
+  .pair-chip:nth-child(4) { animation-delay: 1.2s; }
+  .pair-chip:nth-child(5) { animation-delay: 1.6s; }
+  @keyframes chipFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+  .pair-chip .connector { color: var(--text-dim); font-size: 0.7rem; }
+</style>
+</head>
+<body>
+<!-- ══ THEME TOGGLE ══ -->
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle light/dark mode" title="Toggle light/dark mode">🌙</button>
+
+<div class="ambient ambient-1"></div>
+<div class="ambient ambient-2"></div>
+
+<!-- ══ WELCOME ══ -->
+<div class="screen active" id="welcomeScreen">
+  <div class="card">
+    <div style="text-align:center">
+      <div class="logo-badge">🌿 Two-Player Edition</div>
+      <h1 class="hero-title">Find My<br>Food</h1>
+      <p class="hero-sub">Match each animal with the food it loves.<br>Compete with a friend to see who knows best.</p>
+      <div class="pair-preview">
+        <div class="pair-chip">🐕<span class="connector">×</span>🦴</div>
+        <div class="pair-chip">🐱<span class="connector">×</span>🐟</div>
+        <div class="pair-chip">🐰<span class="connector">×</span>🥕</div>
+        <div class="pair-chip">🐵<span class="connector">×</span>🍌</div>
+        <div class="pair-chip">🐴<span class="connector">×</span>🍎</div>
+      </div>
+      <button class="btn btn-gold" id="btnStartWelcome">Begin Playing →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ THEME ══ -->
+<div class="screen" id="themeScreen">
+  <div class="card">
+    <div class="logo-badge" style="margin-bottom:20px">Step 1 of 4</div>
+    <h2 style="font-family:'Playfair Display',serif;font-size:1.8rem;margin-bottom:6px">Choose Your Palette</h2>
+    <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:24px">This colours the card faces during the game.</p>
+    <div class="section-label">Select a theme</div>
+    <div class="theme-grid" id="themeGrid"></div>
+    <div class="btn-row">
+      <button class="btn btn-gold" id="btnConfirmTheme">Continue →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PLAYER 1 ══ -->
+<div class="screen" id="player1InputScreen">
+  <div class="card">
+    <div class="logo-badge" style="margin-bottom:20px">Step 2 of 4</div>
+    <h2 style="font-family:'Playfair Display',serif;font-size:1.8rem;margin-bottom:20px">Player One</h2>
+    <div class="player-setup">
+      <div class="input-group">
+        <label>Your Name</label>
+        <input class="fancy-input" type="text" id="player1Name" placeholder="Enter name…" maxlength="15" autocomplete="off">
+      </div>
+      <div class="input-group">
+        <label>Choose Avatar</label>
+        <div class="avatar-row" id="p1AvatarOptions">
+          <button type="button" class="avatar-btn selected" data-avatar="🐶">🐶</button>
+          <button type="button" class="avatar-btn" data-avatar="🐱">🐱</button>
+          <button type="button" class="avatar-btn" data-avatar="🐰">🐰</button>
+          <button type="button" class="avatar-btn" data-avatar="🐵">🐵</button>
+          <button type="button" class="avatar-btn" data-avatar="🦁">🦁</button>
+          <button type="button" class="avatar-btn" data-avatar="🐦">🐦</button>
+        </div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="btn-row">
+      <button class="btn btn-gold" id="btnPlayer1Next">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PLAYER 2 ══ -->
+<div class="screen" id="player2InputScreen">
+  <div class="card">
+    <div class="logo-badge" style="margin-bottom:20px">Step 3 of 4</div>
+    <h2 style="font-family:'Playfair Display',serif;font-size:1.8rem;margin-bottom:20px">Player Two</h2>
+    <div class="player-setup">
+      <div class="input-group">
+        <label>Your Name</label>
+        <input class="fancy-input" type="text" id="player2Name" placeholder="Enter name…" maxlength="15" autocomplete="off">
+      </div>
+      <div class="input-group">
+        <label>Choose Avatar</label>
+        <div class="avatar-row" id="p2AvatarOptions">
+          <button type="button" class="avatar-btn selected" data-avatar="🐼">🐼</button>
+          <button type="button" class="avatar-btn" data-avatar="🐨">🐨</button>
+          <button type="button" class="avatar-btn" data-avatar="🐸">🐸</button>
+          <button type="button" class="avatar-btn" data-avatar="🦊">🦊</button>
+          <button type="button" class="avatar-btn" data-avatar="🐮">🐮</button>
+          <button type="button" class="avatar-btn" data-avatar="🐷">🐷</button>
+        </div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="btn-row">
+      <button class="btn btn-gold" id="btnPlayer2Next">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TUTORIAL ══ -->
+<div class="screen" id="tutorialScreen">
+  <div class="card">
+    <div class="logo-badge" style="margin-bottom:20px">Step 4 of 4 · Practice Round</div>
+    <h2 style="font-family:'Playfair Display',serif;font-size:1.8rem;margin-bottom:16px">How It Works</h2>
+    <div class="tutorial-hint">
+      <strong>Flip two cards</strong> to reveal an animal and its matching food.<br>
+      Find all pairs before your opponent! Try the 3-pair practice below.
+    </div>
+    <div class="grid grid-3x2" id="tutorialGrid" style="max-width:320px;margin:0 auto;"></div>
+    <div class="tutorial-done-banner" id="tutorialDone">
+      <div class="done-emoji">✨</div>
+      <p>You've got it! Time for the real game.</p>
+      <button class="btn btn-green" id="btnStartGame">Start Full Game →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MAIN GAME ══ -->
+<div class="screen" id="gameScreen">
+  <div class="card">
+    <div class="scoreboard" id="scoreboard">
+      <div class="score-card active" id="player1ScoreBox">
+        <div class="sc-top">
+          <span class="sc-avatar" id="p1Avatar"></span>
+          <span class="sc-name" id="p1NameDisplay"></span>
+        </div>
+        <div class="sc-score" id="p1Pairs">0</div>
+        <div class="sc-label">pairs found</div>
+      </div>
+      <div class="score-card" id="player2ScoreBox">
+        <div class="sc-top">
+          <span class="sc-avatar" id="p2Avatar"></span>
+          <span class="sc-name" id="p2NameDisplay"></span>
+        </div>
+        <div class="sc-score" id="p2Pairs">0</div>
+        <div class="sc-label">pairs found</div>
+      </div>
+    </div>
+    <div class="turn-bar">
+      <div class="turn-dot"></div>
+      <span id="turnIndicator">Loading…</span>
+    </div>
+    <div class="progress-row">
+      <span id="progressText">0 / 8 pairs</span>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill" style="width:0%"></div>
+      </div>
+    </div>
+    <div class="match-popup" id="matchPopup"></div>
+    <div class="grid grid-4x4" id="gameGrid"></div>
+    <div style="text-align:center;margin-top:16px">
+      <button class="btn btn-ghost" id="btnReset">↺ New Game</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ END SCREEN ══ -->
+<div class="screen" id="endScreen">
+  <div class="card">
+    <div class="winner-display" id="winnerDisplay"></div>
+    <div class="final-scores" id="finalScores"></div>
+    <div class="btn-row">
+      <button class="btn btn-gold" id="btnPlayAgain">Play Again →</button>
+      <button class="btn btn-outline" id="btnChangeSetup">Change Players</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ DIE OVERLAY ══ -->
+<div class="die-overlay hidden" id="dieOverlay">
+  <div class="die-modal">
+    <div class="die-title">Tiebreaker!</div>
+    <div class="die-subtitle" id="dieSubtitle">Both players scored equally.</div>
+    <div class="section-label" id="diePrompt" style="margin-bottom:12px">PLAYER 1 — ROLL THE DIE</div>
+    <div class="die-face" id="dieFace">⚀</div>
+    <div class="die-result" id="dieResult"></div>
+    <div class="btn-row">
+      <button class="btn btn-outline" id="btnDieStart">Start Rolling</button>
+      <button class="btn btn-gold" id="btnDieStop">Stop!</button>
+    </div>
+    <button class="btn btn-green hidden" id="btnDieContinue" style="margin-top:12px;width:100%">See Result →</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  // ── THEMES ──
+  const THEMES = {
+    gold:    { front:'linear-gradient(135deg,#c4a45a,#e8c97a)', border:'rgba(232,201,122,0.4)' },
+    emerald: { front:'linear-gradient(135deg,#2ecc71,#1abc9c)', border:'rgba(46,204,113,0.4)' },
+    sapphire:{ front:'linear-gradient(135deg,#3498db,#2980b9)', border:'rgba(52,152,219,0.4)' },
+    rose:    { front:'linear-gradient(135deg,#e91e63,#c2185b)', border:'rgba(233,30,99,0.4)' },
+    amethyst:{ front:'linear-gradient(135deg,#9b59b6,#8e44ad)', border:'rgba(155,89,182,0.4)' },
+    coral:   { front:'linear-gradient(135deg,#e74c3c,#c0392b)', border:'rgba(231,76,60,0.4)' },
+    slate:   { front:'linear-gradient(135deg,#607d8b,#455a64)', border:'rgba(96,125,139,0.4)' },
+    bronze:  { front:'linear-gradient(135deg,#cd7f32,#a0522d)', border:'rgba(205,127,50,0.4)' },
+    silver:  { front:'linear-gradient(135deg,#bdc3c7,#95a5a6)', border:'rgba(189,195,199,0.4)' },
+    midnight:{ front:'linear-gradient(135deg,#2c3e50,#1a252f)', border:'rgba(44,62,80,0.4)' },
+  };
+  const THEME_EMOJIS = {
+    gold:'✨', emerald:'🌿', sapphire:'💎', rose:'🌹', amethyst:'💜',
+    coral:'🔥', slate:'🌊', bronze:'🏆', silver:'🌙', midnight:'🌌'
+  };
+  let activeTheme = 'gold';
+
+  function applyTheme(name) {
+    activeTheme = name;
+    const t = THEMES[name];
+    document.documentElement.style.setProperty('--tile-front', t.front);
+    document.documentElement.style.setProperty('--tile-front-border', t.border);
+  }
+
+  // ── ADD CSS VAR ──
+  const extraStyle = document.createElement('style');
+  extraStyle.textContent = `
+    :root { --tile-front: linear-gradient(135deg,#c4a45a,#e8c97a); --tile-front-border: rgba(232,201,122,0.4); }
+    .tile-front { background: var(--tile-front) !important; border-color: var(--tile-front-border) !important; color: white !important; }
+  `;
+  document.head.appendChild(extraStyle);
+
+  // ── GAME DATA ──
+  const FULL_PAIRS = [
+    { animal:'🐕', animalWord:'DOG',    food:'🦴', foodWord:'BONE',      name:'Dog & Bone' },
+    { animal:'🐴', animalWord:'HORSE',  food:'🍎', foodWord:'APPLE',     name:'Horse & Apple' },
+    { animal:'🐱', animalWord:'CAT',    food:'🐟', foodWord:'FISH',      name:'Cat & Fish' },
+    { animal:'🐭', animalWord:'MOUSE',  food:'🧀', foodWord:'CHEESE',    name:'Mouse & Cheese' },
+    { animal:'🐦', animalWord:'BIRD',   food:'🪱', foodWord:'WORM',      name:'Bird & Worm' },
+    { animal:'🦁', animalWord:'LION',   food:'🍗', foodWord:'DRUMSTICK', name:'Lion & Drumstick' },
+    { animal:'🐰', animalWord:'RABBIT', food:'🥕', foodWord:'CARROT',    name:'Rabbit & Carrot' },
+    { animal:'🐵', animalWord:'MONKEY', food:'🍌', foodWord:'BANANA',    name:'Monkey & Banana' }
+  ];
+  const TUTORIAL_PAIRS = FULL_PAIRS.slice(0,3);
+
+  // ── SCREEN MANAGEMENT ──
+  const SCREENS = ['welcomeScreen','themeScreen','player1InputScreen','player2InputScreen','tutorialScreen','gameScreen','endScreen'];
+  function showScreen(id) {
+    SCREENS.forEach(s => document.getElementById(s).classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  // ── BUILD THEME GRID ──
+  const themeGrid = document.getElementById('themeGrid');
+  Object.entries(THEMES).forEach(([name, t]) => {
+    const swatch = document.createElement('div');
+    swatch.className = 'theme-swatch' + (name==='gold'?' selected':'');
+    swatch.style.background = t.front;
+    swatch.title = name;
+    swatch.dataset.theme = name;
+    swatch.innerHTML = `<span style="font-size:1.4rem;position:relative;z-index:1">${THEME_EMOJIS[name]}</span>`;
+    swatch.style.display = 'flex';
+    swatch.style.alignItems = 'center';
+    swatch.style.justifyContent = 'center';
+    swatch.addEventListener('click', () => {
+      themeGrid.querySelectorAll('.theme-swatch').forEach(s=>s.classList.remove('selected'));
+      swatch.classList.add('selected');
+      applyTheme(name);
+    });
+    themeGrid.appendChild(swatch);
+  });
+
+  // ── PLAYER STATE ──
+  let p1Name = 'Player 1', p1Avatar = '🐶';
+  let p2Name = 'Player 2', p2Avatar = '🐼';
+
+  function setupAvatarPicker(containerId, onSelect, defaultAvatar) {
+    let selected = defaultAvatar;
+    const container = document.getElementById(containerId);
+    container.querySelectorAll('.avatar-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        container.querySelectorAll('.avatar-btn').forEach(b=>b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selected = btn.dataset.avatar;
+        onSelect(selected);
+      });
+    });
+  }
+  setupAvatarPicker('p1AvatarOptions', av => p1Avatar = av, '🐶');
+  setupAvatarPicker('p2AvatarOptions', av => p2Avatar = av, '🐼');
+
+  // ── WELCOME → THEME ──
+  document.getElementById('btnStartWelcome').addEventListener('click', () => {
+    applyTheme('gold');
+    showScreen('themeScreen');
+  });
+  document.getElementById('btnConfirmTheme').addEventListener('click', () => showScreen('player1InputScreen'));
+
+  document.getElementById('btnPlayer1Next').addEventListener('click', () => {
+    p1Name = document.getElementById('player1Name').value.trim() || 'Player 1';
+    showScreen('player2InputScreen');
+  });
+  document.getElementById('btnPlayer2Next').addEventListener('click', () => {
+    p2Name = document.getElementById('player2Name').value.trim() || 'Player 2';
+    showScreen('tutorialScreen');
+    startTutorial();
+  });
+
+  // ── TUTORIAL ──
+  function startTutorial() {
+    document.getElementById('tutorialDone').style.display = 'none';
+    buildGame('tutorialGrid', TUTORIAL_PAIRS, {
+      isTutorial: true,
+      onComplete: () => { document.getElementById('tutorialDone').style.display='block'; }
+    });
+  }
+  document.getElementById('btnStartGame').addEventListener('click', () => {
+    showScreen('gameScreen');
+    startMainGame();
+  });
+
+  // ── BOARD BUILDER ──
+  function shuffle(arr) {
+    const a = [...arr];
+    for (let i=a.length-1;i>0;i--) { const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+    return a;
+  }
+
+  function buildGame(containerId, pairs, opts={}) {
+    const container = document.getElementById(containerId);
+    const cells = shuffle([
+      ...pairs.map((p,id)=>({emoji:p.animal,word:p.animalWord,type:'animal',pairId:id,pairName:p.name})),
+      ...pairs.map((p,id)=>({emoji:p.food,  word:p.foodWord,  type:'food',  pairId:id,pairName:p.name}))
+    ]);
+    let first=null, second=null, locked=false, matched=0;
+
+    function render() {
+      container.innerHTML='';
+      cells.forEach((cell,idx)=>{
+        const tile = document.createElement('div');
+        tile.className = 'tile';
+        tile.dataset.index = idx;
+
+        const inner = document.createElement('div'); inner.className='tile-inner';
+        const front = document.createElement('div'); front.className='tile-front';
+        front.textContent = String(idx+1).padStart(2,'0');
+
+        const back = document.createElement('div'); back.className='tile-back';
+        const emoji = document.createElement('div'); emoji.className='emoji'; emoji.textContent=cell.emoji;
+        const word = document.createElement('div'); word.className='word'; word.textContent=cell.word;
+        back.appendChild(emoji); back.appendChild(word);
+
+        inner.appendChild(front); inner.appendChild(back);
+        tile.appendChild(inner);
+        tile.addEventListener('click', ()=>handleClick(idx));
+        container.appendChild(tile);
+      });
+      updateVisuals();
+    }
+
+    function updateVisuals() {
+      container.querySelectorAll('.tile').forEach(tile=>{
+        const idx=parseInt(tile.dataset.index);
+        const cell=cells[idx];
+        tile.classList.remove('flipped','matched','wrong-shake','locked');
+        if (cell.matched) tile.classList.add('flipped','matched');
+        else if (idx===first||idx===second) tile.classList.add('flipped');
+        if (locked && !cell.matched) tile.classList.add('locked');
+      });
+    }
+
+    function handleClick(idx) {
+      if (locked || cells[idx].matched) return;
+      if (first===null) { first=idx; updateVisuals(); return; }
+      if (idx===first) { first=null; updateVisuals(); return; }
+      if (second!==null) return;
+      second=idx; locked=true; updateVisuals(); checkMatch();
+    }
+
+    function checkMatch() {
+      const c1=cells[first], c2=cells[second];
+      const isMatch = c1.pairId===c2.pairId && c1.type!==c2.type;
+      if (isMatch) {
+        c1.matched=true; c2.matched=true; matched++;
+        if (opts.onPairFound) opts.onPairFound(c1.pairName);
+        // Always switch turn — even on a correct match
+        setTimeout(()=>{
+          first=null; second=null; locked=false;
+          if(opts.onSwitchTurn) opts.onSwitchTurn();
+          updateVisuals();
+          if (matched===pairs.length && opts.onComplete) opts.onComplete();
+        }, 900);
+      } else {
+        const t1=container.querySelector(`[data-index="${first}"]`);
+        const t2=container.querySelector(`[data-index="${second}"]`);
+        if (opts.onMismatch) opts.onMismatch();
+        if(t1) t1.classList.add('wrong-shake');
+        if(t2) t2.classList.add('wrong-shake');
+        setTimeout(()=>{
+          if(t1) t1.classList.remove('wrong-shake');
+          if(t2) t2.classList.remove('wrong-shake');
+          first=null; second=null; locked=false;
+          if(opts.onSwitchTurn) opts.onSwitchTurn();
+          updateVisuals();
+        }, 900);
+      }
+    }
+
+    render();
+    return { reset: ()=>{ matched=0; first=null; second=null; locked=false; cells.forEach(c=>c.matched=false); render(); } };
+  }
+
+  // ── MAIN GAME ──
+  let currentPlayer=1, scores={1:0,2:0}, totalPairs=8, matchedPairs=0;
+
+  function startMainGame() {
+    currentPlayer=1; scores={1:0,2:0}; matchedPairs=0;
+    document.getElementById('p1Avatar').textContent=p1Avatar;
+    document.getElementById('p2Avatar').textContent=p2Avatar;
+    document.getElementById('p1NameDisplay').textContent=p1Name;
+    document.getElementById('p2NameDisplay').textContent=p2Name;
+    document.getElementById('p1Pairs').textContent='0';
+    document.getElementById('p2Pairs').textContent='0';
+    updateGameUI();
+
+    buildGame('gameGrid', FULL_PAIRS, {
+      onPairFound: (name) => {
+        scores[currentPlayer]++;
+        matchedPairs++;
+        document.getElementById('p1Pairs').textContent=scores[1];
+        document.getElementById('p2Pairs').textContent=scores[2];
+        updateProgress();
+        showMatchPopup(`${name} — matched! +1 for ${currentPlayer===1?p1Name:p2Name}`, false);
+      },
+      onMismatch: () => {
+        showMatchPopup('No match — turn switches!', true);
+      },
+      onSwitchTurn: () => {
+        currentPlayer = currentPlayer===1?2:1;
+        updateGameUI();
+      },
+      onComplete: () => {
+        setTimeout(showEndScreen, 500);
+      }
+    });
+    updateProgress();
+    document.getElementById('matchPopup').textContent='';
+  }
+
+  function updateProgress() {
+    const pct = (matchedPairs/totalPairs)*100;
+    document.getElementById('progressFill').style.width=pct+'%';
+    document.getElementById('progressText').textContent=`${matchedPairs} / ${totalPairs} pairs`;
+  }
+
+  let popupTimeout;
+  function showMatchPopup(msg, isMismatch) {
+    const el=document.getElementById('matchPopup');
+    clearTimeout(popupTimeout);
+    el.textContent=msg;
+    el.className='match-popup'+(isMismatch?' mismatch':'');
+    popupTimeout=setTimeout(()=>{ el.textContent=''; }, 2200);
+  }
+
+  function updateGameUI() {
+    const name = currentPlayer===1?p1Name:p2Name;
+    document.getElementById('turnIndicator').textContent=`${name}'s turn`;
+    document.getElementById('player1ScoreBox').classList.toggle('active', currentPlayer===1);
+    document.getElementById('player2ScoreBox').classList.toggle('active', currentPlayer===2);
+  }
+
+  function showEndScreen() {
+    const s1=scores[1], s2=scores[2];
+    const winnerDisplay=document.getElementById('winnerDisplay');
+    const finalScores=document.getElementById('finalScores');
+
+    if (s1!==s2) {
+      const winnerName=s1>s2?p1Name:p2Name;
+      const winnerAvatar=s1>s2?p1Avatar:p2Avatar;
+      winnerDisplay.innerHTML=`
+        <span class="winner-crown">🏆</span>
+        <div class="winner-name">${winnerName} wins!</div>
+        <div class="winner-sub" style="color:var(--text-muted);margin-top:8px">${winnerAvatar} · ${Math.max(s1,s2)} pairs found</div>
+      `;
+    } else {
+      winnerDisplay.innerHTML=`
+        <span class="winner-crown">🤝</span>
+        <div class="winner-name">It's a Tie!</div>
+        <div class="winner-sub" style="color:var(--text-muted);margin-top:8px">Tiebreaker die roll required</div>
+      `;
+    }
+
+    finalScores.innerHTML=`
+      <div class="final-score-item${s1>s2?' winner-item':''}">
+        <div class="fsi-avatar">${p1Avatar}</div>
+        <div class="fsi-name">${p1Name}</div>
+        <div class="fsi-score">${s1}</div>
+      </div>
+      <div class="final-score-item${s2>s1?' winner-item':''}">
+        <div class="fsi-avatar">${p2Avatar}</div>
+        <div class="fsi-name">${p2Name}</div>
+        <div class="fsi-score">${s2}</div>
+      </div>
+    `;
+
+    showScreen('endScreen');
+
+    if (s1===s2) {
+      setTimeout(() => {
+        document.getElementById('dieOverlay').classList.remove('hidden');
+        startDie();
+      }, 600);
+    }
+  }
+
+  document.getElementById('btnPlayAgain').addEventListener('click', () => {
+    showScreen('gameScreen');
+    startMainGame();
+  });
+  document.getElementById('btnChangeSetup').addEventListener('click', () => showScreen('themeScreen'));
+  document.getElementById('btnReset').addEventListener('click', () => startMainGame());
+
+  // ── DIE TIEBREAKER ──
+  let dieInterval=null, diePhase=1, dieRolls={};
+  const FACES=['⚀','⚁','⚂','⚃','⚄','⚅'];
+  const FACEVALS={'⚀':1,'⚁':2,'⚂':3,'⚃':4,'⚄':5,'⚅':6};
+
+  function startDie() {
+    diePhase=1; dieRolls={};
+    document.getElementById('diePrompt').textContent=`${p1Name.toUpperCase()} — ROLL THE DIE`;
+    document.getElementById('dieFace').textContent='⚀';
+    document.getElementById('dieResult').textContent='';
+    document.getElementById('btnDieContinue').classList.add('hidden');
+    if(dieInterval) clearInterval(dieInterval);
+    dieInterval=null;
+  }
+
+  document.getElementById('btnDieStart').addEventListener('click', ()=>{
+    if(dieInterval) return;
+    document.getElementById('btnDieStart').disabled = true;
+    const face=document.getElementById('dieFace');
+    face.classList.add('rolling');
+    dieInterval=setInterval(()=>{ face.textContent=FACES[Math.floor(Math.random()*6)]; }, 80);
+  });
+
+  document.getElementById('btnDieStop').addEventListener('click', ()=>{
+    if(!dieInterval) return;
+    clearInterval(dieInterval); dieInterval=null;
+    document.getElementById('btnDieStart').disabled = false;
+    const face=document.getElementById('dieFace');
+    face.classList.remove('rolling');
+    const val=FACEVALS[face.textContent];
+    if(diePhase===1){
+      dieRolls.p1=val;
+      document.getElementById('dieResult').textContent=`${p1Name} rolled ${val}`;
+      diePhase=2;
+      document.getElementById('diePrompt').textContent=`${p2Name.toUpperCase()} — ROLL THE DIE`;
+      face.textContent='⚀';
+    } else if(diePhase===2){
+      dieRolls.p2=val;
+      const prev=document.getElementById('dieResult').textContent;
+      document.getElementById('dieResult').textContent=prev+`  ·  ${p2Name} rolled ${val}`;
+      document.getElementById('btnDieContinue').classList.remove('hidden');
+      diePhase=3;
+    }
+  });
+
+  document.getElementById('btnDieContinue').addEventListener('click', ()=>{
+    const p1v=dieRolls.p1, p2v=dieRolls.p2;
+    document.getElementById('dieOverlay').classList.add('hidden');
+    if(p1v===p2v){
+      setTimeout(()=>{
+        document.getElementById('dieOverlay').classList.remove('hidden');
+        document.getElementById('dieSubtitle').textContent='Still tied! Roll again.';
+        startDie();
+      }, 400);
+      return;
+    }
+    const winnerName=p1v>p2v?p1Name:p2Name;
+    document.getElementById('winnerDisplay').innerHTML=`
+      <span class="winner-crown">🎲</span>
+      <div class="winner-name">${winnerName} wins the tiebreaker!</div>
+      <div class="winner-sub" style="color:var(--text-muted);margin-top:8px">By die roll · ${p1v} vs ${p2v}</div>
+    `;
+  });
+
+  // ── LIGHT/DARK TOGGLE ──
+  let isDark = true;
+  const toggleBtn = document.getElementById('themeToggle');
+  function applyColorMode() {
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    toggleBtn.textContent = isDark ? '🌙' : '☀️';
+    toggleBtn.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+  }
+  toggleBtn.addEventListener('click', () => {
+    isDark = !isDark;
+    applyColorMode();
+  });
+  applyColorMode();
+
+  // ── INIT ──
+  applyTheme('gold');
+})();
+</script>
+</body>
+</html>

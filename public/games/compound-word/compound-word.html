@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Compound Word Game | Real Picture Clues</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      user-select: none;
+    }
+
+    body {
+      font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      background: linear-gradient(145deg, #f5f7fc 0%, #e9eef4 100%);
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .game-container {
+      max-width: 750px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(2px);
+      border-radius: 60px;
+      box-shadow: 0 25px 45px rgba(0, 0, 0, 0.2), 0 2px 6px rgba(0, 0, 0, 0.05);
+      padding: 25px 20px 35px;
+      text-align: center;
+      transition: all 0.2s ease;
+    }
+
+    h2 {
+      font-size: 1.9rem;
+      background: linear-gradient(135deg, #1f3b4c, #2b5c6f);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      margin: 0 0 8px 0;
+      letter-spacing: -0.5px;
+      font-weight: 800;
+    }
+
+    .sub {
+      color: #4a6272;
+      margin-bottom: 20px;
+      font-weight: 500;
+      border-bottom: 2px dotted #bdd4e2;
+      display: inline-block;
+      padding-bottom: 5px;
+    }
+
+    .score-panel {
+      background: #ffffffcc;
+      backdrop-filter: blur(4px);
+      border-radius: 100px;
+      display: inline-flex;
+      align-items: baseline;
+      gap: 12px;
+      padding: 8px 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      font-weight: bold;
+      border: 1px solid #cbdbe2;
+    }
+
+    .score-label {
+      font-size: 1.2rem;
+      color: #1e3b4a;
+    }
+
+    .score-value {
+      font-size: 1.8rem;
+      font-weight: 800;
+      background: #1f3b4c;
+      color: white;
+      padding: 0 12px;
+      border-radius: 40px;
+      line-height: 1.4;
+      min-width: 70px;
+      display: inline-block;
+      letter-spacing: 1px;
+    }
+
+    .image-row {
+      display: flex;
+      justify-content: center;
+      gap: 35px;
+      flex-wrap: wrap;
+      margin: 15px 0 15px;
+      background: #f8fafd;
+      padding: 20px 15px;
+      border-radius: 48px;
+      box-shadow: inset 0 1px 4px #0001, 0 10px 20px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    .img-card {
+      background: white;
+      border-radius: 32px;
+      padding: 12px;
+      box-shadow: 0 12px 22px rgba(0, 0, 0, 0.12);
+      transition: transform 0.2s;
+    }
+
+    .img-card:hover {
+      transform: scale(1.02);
+    }
+
+    img {
+      width: 130px;
+      height: 130px;
+      object-fit: contain;
+      border-radius: 28px;
+      background: #ffffff;
+      display: block;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+    }
+
+    .choices-area {
+      margin: 20px 0 20px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 14px;
+    }
+
+    .choice-btn {
+      background: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-radius: 60px;
+      color: #1e3b4c;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 5px 0 #b0c4ce;
+      background: #fefefe;
+      width: 140px;
+      letter-spacing: 0.5px;
+    }
+
+    .choice-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 7px 0 #9bb7c4;
+      background: #eef3fc;
+    }
+
+    .choice-btn:active:not(:disabled) {
+      transform: translateY(3px);
+      box-shadow: 0 2px 0 #b0c4ce;
+    }
+
+    .choice-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .action-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin: 10px 0 15px;
+    }
+
+    .next-btn, .playagain-btn {
+      border: none;
+      padding: 12px 28px;
+      font-size: 1rem;
+      font-weight: bold;
+      border-radius: 40px;
+      cursor: pointer;
+      transition: 0.2s;
+      background: #2b5c6f;
+      color: white;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+      min-width: 130px;
+    }
+
+    .next-btn:disabled {
+      background: #99b7c4;
+      cursor: default;
+      opacity: 0.6;
+      transform: none;
+    }
+
+    .playagain-btn {
+      background: #4a6a3b;
+    }
+
+    .playagain-btn:hover {
+      background: #2f5420;
+      transform: scale(0.97);
+    }
+
+    .next-btn:not(:disabled):hover {
+      background: #164552;
+      transform: translateY(-2px);
+    }
+
+    .result-area {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin: 15px 0 5px;
+      padding: 10px 18px;
+      border-radius: 50px;
+      background: #f0f4fa;
+      display: inline-block;
+      width: auto;
+      min-width: 220px;
+    }
+
+    footer {
+      font-size: 0.7rem;
+      margin-top: 15px;
+      color: #6f8f9c;
+    }
+
+    @media (max-width: 550px) {
+      img { width: 100px; height: 100px; }
+      .choice-btn { width: 110px; font-size: 0.9rem; padding: 8px 12px; }
+      .game-container { padding: 18px; }
+      .image-row { gap: 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="game-container">
+  <h2>📸 PICTURE CLUES · COMPOUND WORD</h2>
+  <div class="sub">🔍 two real images = one smart word</div>
+
+  <div class="score-panel">
+    <span class="score-label">🏆 SCORE</span>
+    <span class="score-value" id="scoreDisplay">0</span>
+    <span style="font-size:1rem;">/ <span id="totalQuestionsSpan">0</span></span>
+  </div>
+
+  <div class="image-row">
+    <div class="img-card"><img id="img1" src="" alt="first picture clue"></div>
+    <div class="img-card"><img id="img2" src="" alt="second picture clue"></div>
+  </div>
+
+  <div id="choices" class="choices-area"></div>
+
+  <div id="result" class="result-area">✨ Which compound word fits both pictures? ✨</div>
+
+  <div class="action-buttons">
+    <button id="nextBtn" class="next-btn" disabled>➡️ NEXT</button>
+    <button id="playAgainBtn" class="playagain-btn" style="display: none;">🔄 PLAY AGAIN</button>
+  </div>
+  <footer>⭐ Click correct answer → NEXT unlocks → complete all levels</footer>
+</div>
+
+<script>
+  // --------------------------------------------------------------
+  //  ACTUAL PICTURES: CUSTOM EMBEDDED SVG ICONS (clear, colorful, fun)
+  //  Each image is a real drawing, no broken links, perfect for guessing.
+  // --------------------------------------------------------------
+  
+  // ----- helper: create data URI from SVG string -----
+  function makeSvgUri(svgString) {
+    return 'data:image/svg+xml,' + encodeURIComponent(svgString);
+  }
+
+  // 1. SUN icon: bright yellow with warm rays
+  const sunSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="24" fill="#FFB74D" stroke="#E65100" stroke-width="2"/><g stroke="#FF9800" stroke-width="3" stroke-linecap="round"><line x1="50" y1="12" x2="50" y2="22"/><line x1="50" y1="78" x2="50" y2="88"/><line x1="12" y1="50" x2="22" y2="50"/><line x1="78" y1="50" x2="88" y2="50"/><line x1="23" y1="23" x2="30" y2="30"/><line x1="70" y1="70" x2="77" y2="77"/><line x1="77" y1="23" x2="70" y2="30"/><line x1="30" y1="70" x2="23" y2="77"/></g><circle cx="50" cy="50" r="10" fill="#FFE082"/></svg>`;
+  
+  // 2. GLASSES: stylish eyewear
+  const glassesSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="12" y="38" width="28" height="22" rx="10" fill="#37474F" stroke="#263238" stroke-width="2"/><rect x="60" y="38" width="28" height="22" rx="10" fill="#37474F" stroke="#263238" stroke-width="2"/><path d="M40 48 L60 48" stroke="#263238" stroke-width="3"/><path d="M26 60 L18 76" stroke="#546E7A" stroke-width="3" stroke-linecap="round"/><path d="M74 60 L82 76" stroke="#546E7A" stroke-width="3" stroke-linecap="round"/><circle cx="26" cy="48" r="3" fill="#B0BEC5"/><circle cx="74" cy="48" r="3" fill="#B0BEC5"/></svg>`;
+  
+  // 3. RAIN: cloud with falling drops
+  const rainSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M28 52 C20 52 18 44 24 38 C22 30 32 26 38 32 C42 22 58 22 62 32 C68 26 78 30 76 38 C82 44 80 52 72 52 Z" fill="#90CAF9" stroke="#1565C0" stroke-width="2"/><path d="M42 68 L44 78 M50 65 L52 78 M58 68 L60 78 M34 70 L36 78 M66 70 L68 78" stroke="#29B6F6" stroke-width="2.5" stroke-linecap="round"/><circle cx="45" cy="62" r="2" fill="#0288D1"/><circle cx="55" cy="62" r="2" fill="#0288D1"/></svg>`;
+  
+  // 4. BOW (ribbon/bow)
+  const bowSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M50 42 L50 68" stroke="#D32F2F" stroke-width="5"/><path d="M24 42 C18 34 26 24 36 28 C44 32 48 38 50 42 C52 38 56 32 64 28 C74 24 82 34 76 42 C68 50 56 54 50 52 C44 54 32 50 24 42Z" fill="#E53935"/><path d="M36 28 L30 18 M64 28 L70 18" stroke="#B71C1C" stroke-width="2.5" fill="none"/><circle cx="50" cy="62" r="6" fill="#FFCDD2"/></svg>`;
+  
+  // 5. BUTTER: delicious butter pat
+  const butterSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="28" y="34" width="44" height="40" rx="6" fill="#FFD54F" stroke="#F57F17" stroke-width="2"/><rect x="34" y="40" width="12" height="8" fill="#FFF59D"/><rect x="52" y="40" width="12" height="8" fill="#FFF59D"/><rect x="34" y="54" width="12" height="8" fill="#FFF59D"/><rect x="52" y="54" width="12" height="8" fill="#FFF59D"/><path d="M28 34 L20 28 L26 22 L34 30" fill="#FFB300"/></svg>`;
+  
+  // 6. FLY: cute insect
+  const flySvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><ellipse cx="50" cy="58" rx="16" ry="12" fill="#4E342E"/><circle cx="50" cy="46" r="14" fill="#5D4037"/><circle cx="42" cy="43" r="4" fill="#BDBDBD"/><circle cx="58" cy="43" r="4" fill="#BDBDBD"/><ellipse cx="36" cy="50" rx="12" ry="6" fill="#AEEA00" opacity="0.7" transform="rotate(-20 36 50)"/><ellipse cx="64" cy="50" rx="12" ry="6" fill="#AEEA00" opacity="0.7" transform="rotate(20 64 50)"/><path d="M50 58 L50 72 M46 70 L50 78 M54 70 L50 78" stroke="#3E2723" stroke-width="2"/></svg>`;
+  
+  // 7. TOOTH: shiny white tooth
+  const toothSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M35 28 C32 35 30 46 34 58 C38 70 44 78 50 80 C56 78 62 70 66 58 C70 46 68 35 65 28 C60 24 54 22 50 22 C46 22 40 24 35 28Z" fill="#FFFFFF" stroke="#90A4AE" stroke-width="2"/><path d="M42 35 L44 55 M58 35 L56 55 M50 30 L50 50" stroke="#CFD8DC" stroke-width="2"/></svg>`;
+  
+  // 8. TOOTHBRUSH: brush with handle
+  const brushSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="38" y="28" width="24" height="14" rx="4" fill="#42A5F5"/><rect x="42" y="22" width="16" height="8" fill="#90CAF9"/><rect x="48" y="18" width="4" height="8" fill="#1E88E5"/><rect x="52" y="18" width="4" height="8" fill="#1E88E5"/><rect x="44" y="18" width="4" height="8" fill="#1E88E5"/><path d="M58 42 L72 70 L68 74 L50 46 Z" fill="#FFB74D" stroke="#E65100" stroke-width="2"/></svg>`;
+  
+  // 9. RAINBOW already uses rain + bow icons, perfect.
+  // 10. SUNGLASSES uses sun + glasses.
+  // 11. BUTTERFLY uses butter + fly.
+  // 12. TOOTHBRUSH uses tooth + brush.
+  
+  // Map each concept to its data URI
+  const pictureMap = {
+    sun: makeSvgUri(sunSvg),
+    glasses: makeSvgUri(glassesSvg),
+    rain: makeSvgUri(rainSvg),
+    bow: makeSvgUri(bowSvg),
+    butter: makeSvgUri(butterSvg),
+    fly: makeSvgUri(flySvg),
+    tooth: makeSvgUri(toothSvg),
+    brush: makeSvgUri(brushSvg)
+  };
+  
+  // ---------- COMPOUND WORD BANK with ACTUAL IMAGES ----------
+  const questions = [
+    {
+      img1Key: "sun",
+      img2Key: "glasses",
+      answer: "sunglasses",
+      options: ["sunhat", "sunglasses", "sunlight", "sunblock"]
+    },
+    {
+      img1Key: "rain",
+      img2Key: "bow",
+      answer: "rainbow",
+      options: ["raincoat", "rainbow", "raindrop", "rainstorm"]
+    },
+    {
+      img1Key: "butter",
+      img2Key: "fly",
+      answer: "butterfly",
+      options: ["buttercup", "butterfly", "buttermilk", "butterbean"]
+    },
+    {
+      img1Key: "tooth",
+      img2Key: "brush",
+      answer: "toothbrush",
+      options: ["toothpaste", "toothpick", "toothbrush", "toothache"]
+    }
+  ];
+  
+  // ---------- GLOBAL STATE ----------
+  let currentIndex = 0;
+  let playerScore = 0;
+  let isQuestionCorrectAnswered = false;
+  let gameActive = true;
+  const totalQuestions = questions.length;
+  
+  // DOM elements
+  const img1El = document.getElementById("img1");
+  const img2El = document.getElementById("img2");
+  const choicesDiv = document.getElementById("choices");
+  const resultDiv = document.getElementById("result");
+  const nextBtn = document.getElementById("nextBtn");
+  const playAgainBtn = document.getElementById("playAgainBtn");
+  const scoreDisplaySpan = document.getElementById("scoreDisplay");
+  const totalQuestionsSpan = document.getElementById("totalQuestionsSpan");
+  
+  // helper: update score UI
+  function updateScoreUI() {
+    scoreDisplaySpan.textContent = playerScore;
+    totalQuestionsSpan.textContent = totalQuestions;
+  }
+  
+  // Disable / enable answer buttons
+  function setChoicesEnabled(enabled) {
+    const allBtns = document.querySelectorAll('.choice-btn');
+    allBtns.forEach(btn => {
+      if (enabled) btn.removeAttribute('disabled');
+      else btn.setAttribute('disabled', 'disabled');
+    });
+  }
+  
+  // Render multiple choice buttons dynamically
+  function renderChoiceButtons(optionsList, correctAnswer) {
+    choicesDiv.innerHTML = "";
+    optionsList.forEach(opt => {
+      const btn = document.createElement("button");
+      btn.textContent = opt;
+      btn.classList.add("choice-btn");
+      btn.addEventListener("click", () => {
+        if (!gameActive || isQuestionCorrectAnswered) {
+          if (!gameActive) resultDiv.innerHTML = "🏁 Game finished! Press PLAY AGAIN.";
+          else if (isQuestionCorrectAnswered) resultDiv.innerHTML = "✅ Already correct! Press NEXT.";
+          return;
+        }
+        handleAnswer(opt, correctAnswer);
+      });
+      choicesDiv.appendChild(btn);
+    });
+  }
+  
+  // Answer logic: increment score only once, enable next on correct
+  function handleAnswer(selected, correct) {
+    if (isQuestionCorrectAnswered || !gameActive) return;
+    
+    if (selected === correct) {
+      // correct answer
+      playerScore++;
+      updateScoreUI();
+      isQuestionCorrectAnswered = true;
+      resultDiv.innerHTML = "🎉 PERFECT! 🎉<br> That's the compound word! Click NEXT.";
+      resultDiv.style.background = "#d4ecd8";
+      setChoicesEnabled(false);
+      nextBtn.disabled = false;
+    } else {
+      // wrong answer
+      resultDiv.innerHTML = "❌ Not the compound word. Try again! ❌";
+      resultDiv.style.background = "#ffe0e0";
+      nextBtn.disabled = true;
+      // keep choices active for retry
+      setTimeout(() => {
+        if (!isQuestionCorrectAnswered && resultDiv.style.background !== "#d4ecd8") {
+          resultDiv.style.background = "#f0f4fa";
+        }
+      }, 700);
+    }
+  }
+  
+  // Load current question: update images, options, reset flags
+  function loadQuestion() {
+    if (currentIndex >= totalQuestions) {
+      finishGame();
+      return;
+    }
+    
+    const q = questions[currentIndex];
+    // set actual pictures using mapped SVGs
+    img1El.src = pictureMap[q.img1Key];
+    img2El.src = pictureMap[q.img2Key];
+    
+    // make sure alt attributes are descriptive
+    img1El.alt = `picture: ${q.img1Key}`;
+    img2El.alt = `picture: ${q.img2Key}`;
+    
+    // reset state for new question
+    isQuestionCorrectAnswered = false;
+    gameActive = true;
+    nextBtn.disabled = true;
+    resultDiv.style.background = "#f0f4fa";
+    resultDiv.innerHTML = "🔍 Which word combines these two pictures?";
+    
+    // render fresh choice buttons
+    renderChoiceButtons(q.options, q.answer);
+    setChoicesEnabled(true);
+    
+    // ensure play again button hidden when playing normally
+    playAgainBtn.style.display = 'none';
+    nextBtn.style.display = 'inline-block';
+  }
+  
+  // Next button action
+  function onNext() {
+    if (!isQuestionCorrectAnswered) {
+      resultDiv.innerHTML = "⚠️ Answer the current question first! ⚠️";
+      resultDiv.style.background = "#fff0c0";
+      return;
+    }
+    if (!gameActive) return;
+    
+    if (currentIndex + 1 < totalQuestions) {
+      currentIndex++;
+      loadQuestion();
+    } else {
+      finishGame();
+    }
+  }
+  
+  // End of game: show final score and replay button
+  function finishGame() {
+    gameActive = false;
+    isQuestionCorrectAnswered = true;
+    setChoicesEnabled(false);
+    nextBtn.disabled = true;
+    nextBtn.style.display = 'none';
+    playAgainBtn.style.display = 'inline-block';
+    
+    const perfect = playerScore === totalQuestions ? "🌟 PERFECT SCORE! 🌟" : "👍 Well played!";
+    resultDiv.innerHTML = `🏁 GAME COMPLETE 🏁<br> 📊 Final Score: ${playerScore} / ${totalQuestions} 📊<br>${perfect}<br>✨ Press PLAY AGAIN to challenge yourself! ✨`;
+    resultDiv.style.background = "#cae3e8";
+  }
+  
+  // Full game reset
+  function resetAndPlayAgain() {
+    currentIndex = 0;
+    playerScore = 0;
+    isQuestionCorrectAnswered = false;
+    gameActive = true;
+    updateScoreUI();
+    
+    playAgainBtn.style.display = 'none';
+    nextBtn.style.display = 'inline-block';
+    nextBtn.disabled = true;
+    resultDiv.style.background = "#f0f4fa";
+    resultDiv.innerHTML = "✨ New game! Match the pictures to the compound word ✨";
+    
+    loadQuestion();  // reload first question with fresh state
+  }
+  
+  // Set total questions and initial load
+  function initGame() {
+    totalQuestionsSpan.textContent = totalQuestions;
+    playerScore = 0;
+    currentIndex = 0;
+    updateScoreUI();
+    loadQuestion();
+    nextBtn.disabled = true;
+    playAgainBtn.style.display = 'none';
+    nextBtn.style.display = 'inline-block';
+  }
+  
+  // Attach event listeners
+  nextBtn.addEventListener("click", onNext);
+  playAgainBtn.addEventListener("click", resetAndPlayAgain);
+  
+  // Edge: ensure images never show broken, but all SVGs are embedded.
+  img1El.onerror = () => { img1El.src = pictureMap.sun; }; // fallback never needed but safe
+  img2El.onerror = () => { img2El.src = pictureMap.glasses; };
+  
+  // start game
+  initGame();
+</script>
+</body>
+</html>
