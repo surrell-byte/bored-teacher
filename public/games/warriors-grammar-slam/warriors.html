@@ -447,6 +447,310 @@
       100% { background: #fff5e6; }
     }
   </style>
+<!--
+  ═══════════════════════════════════════════════════════════════
+  BORED TEACHER — GAME BRIDGE SNIPPET  v1.0
+  ═══════════════════════════════════════════════════════════════
+  PASTE THIS ENTIRE BLOCK just before </head> in every game file.
+
+  USAGE — call this when the game ends:
+  ─────────────────────────────────────
+  GameBridge.submitScore({
+    gameId:    'blockfight',   // ← use the key from constants.ts
+    score:     1200,           // ← raw score number
+    accuracy:  85,             // ← percentage 0-100 (use 100 if no %)
+    questions: 20,             // ← total questions answered (use 1 if N/A)
+  });
+
+  GAME ID REFERENCE:
+  ─────────────────────────────────────
+  unicorn · warriors · compound · animal · wordmatch · memory
+  missingfruit · animalclass · blockfight · colourclash · compoundword
+  crimsonduel · deepseaReveal · emojimatch · emojispelling · familyquest
+  farmquiz · farmgame · findmyfood · flagmaster · foodwordhunt
+  fruitwordhunt · lakersracer · neonbridge · oceanquest · pacman
+  phonicsadventure · phonicsworld · shuttlecock · tornado · wgrandprix · wordfusion
+  ═══════════════════════════════════════════════════════════════
+-->
+<style>
+  /* ── Back to Hub button (top-left, always visible) ── */
+  #gb-back {
+    position: fixed; top: 12px; left: 12px; z-index: 99999;
+    background: rgba(0,0,0,0.55); backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.18); border-radius: 999px;
+    color: #fff; font-family: system-ui, sans-serif;
+    font-size: 0.78rem; font-weight: 700;
+    padding: 7px 14px; cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+    transition: background 0.18s, transform 0.15s;
+    text-decoration: none; letter-spacing: 0.03em;
+  }
+  #gb-back:hover { background: rgba(0,0,0,0.75); transform: translateY(-1px); }
+  #gb-back:active { transform: scale(0.95); }
+
+  /* ── Mute button (top-right, only shown if game has audio) ── */
+  #gb-mute {
+    position: fixed; top: 12px; right: 12px; z-index: 99999;
+    background: rgba(0,0,0,0.55); backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.18); border-radius: 999px;
+    color: #fff; font-family: system-ui, sans-serif;
+    font-size: 0.78rem; font-weight: 700;
+    padding: 7px 14px; cursor: pointer;
+    display: none; align-items: center; gap: 6px;
+    transition: background 0.18s, transform 0.15s;
+  }
+  #gb-mute:hover { background: rgba(0,0,0,0.75); transform: translateY(-1px); }
+
+  /* ── Score submission overlay ── */
+  #gb-overlay {
+    display: none;
+    position: fixed; inset: 0; z-index: 999999;
+    background: rgba(0,0,0,0.72); backdrop-filter: blur(12px);
+    align-items: center; justify-content: center;
+    font-family: system-ui, sans-serif;
+    animation: gb-fadein 0.3s ease both;
+  }
+  #gb-overlay.show { display: flex; }
+  #gb-card {
+    background: linear-gradient(145deg, #1e3320, #243d2a);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 24px; padding: 36px 40px;
+    text-align: center; max-width: 360px; width: 90%;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+    animation: gb-popup 0.4s cubic-bezier(0.34,1.4,0.64,1) both;
+  }
+  #gb-card .gb-emoji { font-size: 3.2rem; margin-bottom: 12px; display: block; }
+  #gb-card h2 {
+    color: #f0ede0; font-size: 1.5rem; font-weight: 800;
+    margin: 0 0 6px; letter-spacing: 0.02em;
+  }
+  #gb-card .gb-sub {
+    color: rgba(240,237,224,0.55); font-size: 0.85rem; margin-bottom: 24px;
+  }
+  #gb-score-row {
+    display: flex; justify-content: center; gap: 20px; margin-bottom: 28px;
+  }
+  .gb-stat { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .gb-stat-val {
+    font-size: 1.6rem; font-weight: 800; color: #f5c842;
+    line-height: 1;
+  }
+  .gb-stat-lbl {
+    font-size: 0.62rem; text-transform: uppercase;
+    letter-spacing: 0.1em; color: rgba(240,237,224,0.45);
+    font-weight: 700;
+  }
+  #gb-xp-badge {
+    background: rgba(93,189,181,0.15); border: 1px solid rgba(93,189,181,0.3);
+    border-radius: 999px; color: #5dbdb5;
+    font-size: 0.82rem; font-weight: 800;
+    padding: 6px 18px; margin-bottom: 22px; display: inline-block;
+  }
+  #gb-hub-btn {
+    display: block; width: 100%;
+    background: linear-gradient(135deg, #f5c842, #5dbdb5);
+    border: none; border-radius: 14px;
+    color: #111; font-family: system-ui, sans-serif;
+    font-size: 0.95rem; font-weight: 800;
+    padding: 14px; cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    margin-bottom: 10px;
+  }
+  #gb-hub-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.3); }
+  #gb-hub-btn:active { transform: scale(0.96); }
+  #gb-replay-btn {
+    display: block; width: 100%;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.18); border-radius: 14px;
+    color: rgba(240,237,224,0.7); font-family: system-ui, sans-serif;
+    font-size: 0.88rem; font-weight: 700;
+    padding: 12px; cursor: pointer;
+    transition: border-color 0.18s, color 0.18s;
+  }
+  #gb-replay-btn:hover { border-color: rgba(255,255,255,0.35); color: #f0ede0; }
+
+  @keyframes gb-fadein {
+    from { opacity: 0; } to { opacity: 1; }
+  }
+  @keyframes gb-popup {
+    from { opacity: 0; transform: scale(0.88) translateY(20px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+</style>
+
+<!-- Back to Hub button -->
+<a id="gb-back" href="/hub">🏠 Hub</a>
+
+<!-- Mute toggle (auto-shown if game has audio) -->
+<button id="gb-mute" onclick="GameBridge.toggleMute()">🔊 Sound</button>
+
+<!-- Score submission overlay -->
+<div id="gb-overlay">
+  <div id="gb-card">
+    <span class="gb-emoji" id="gb-emoji">🎉</span>
+    <h2 id="gb-title">Game Complete!</h2>
+    <p class="gb-sub" id="gb-sub">Great work — your score has been saved.</p>
+    <div id="gb-score-row">
+      <div class="gb-stat">
+        <span class="gb-stat-val" id="gb-score-val">0</span>
+        <span class="gb-stat-lbl">Score</span>
+      </div>
+      <div class="gb-stat">
+        <span class="gb-stat-val" id="gb-acc-val">—</span>
+        <span class="gb-stat-lbl">Accuracy</span>
+      </div>
+      <div class="gb-stat">
+        <span class="gb-stat-val" id="gb-xp-val">+0</span>
+        <span class="gb-stat-lbl">XP</span>
+      </div>
+    </div>
+    <div id="gb-xp-badge">⭐ Score saved to your Hub profile</div>
+    <button id="gb-hub-btn" onclick="GameBridge.goHub()">🏠 Return to Hub</button>
+    <button id="gb-replay-btn" onclick="GameBridge.replay()">🔄 Play Again</button>
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  var HUB_URL = '/hub';
+  var LS_KEY  = 'eslhub_data';
+  var _muted  = false;
+
+  // ── Detect audio elements and show mute button ───────────────
+  window.addEventListener('DOMContentLoaded', function() {
+    var audioEls = document.querySelectorAll('audio, video');
+    if (audioEls.length > 0) {
+      document.getElementById('gb-mute').style.display = 'flex';
+    }
+    // Respect hub's sound setting
+    try {
+      var data = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+      if (data.sound === false) {
+        _muted = true;
+        _applyMute(true);
+        document.getElementById('gb-mute').textContent = '🔇 Muted';
+      }
+    } catch(e) {}
+  });
+
+  function _applyMute(muted) {
+    var audioEls = document.querySelectorAll('audio, video');
+    audioEls.forEach(function(el) { el.muted = muted; });
+    // Also set global flag many games check
+    if (typeof window.soundEnabled !== 'undefined') window.soundEnabled = !muted;
+    if (typeof window.audioEnabled !== 'undefined') window.audioEnabled = !muted;
+    if (typeof window.muteSound   !== 'undefined') window.muteSound    = muted;
+  }
+
+  // ── XP calculation ───────────────────────────────────────────
+  function _calcXP(score, accuracy) {
+    var base = Math.min(Math.floor(score / 10), 30);
+    var accBonus = accuracy >= 90 ? 20 : accuracy >= 70 ? 10 : accuracy >= 50 ? 5 : 0;
+    return Math.max(base + accBonus, 5); // minimum 5 XP for completing
+  }
+
+  // ── Save score to localStorage (eslhub_data) ─────────────────
+  function _saveScore(gameId, score, accuracy, questions) {
+    try {
+      var raw  = localStorage.getItem(LS_KEY);
+      var data = raw ? JSON.parse(raw) : {};
+      if (!data.games) data.games = {};
+      var prev = data.games[gameId] || { highScore: 0, completions: 0, lastAccuracy: 0, totalQuestions: 100 };
+
+      data.games[gameId] = {
+        highScore:      Math.max(prev.highScore || 0, score),
+        completions:    (prev.completions || 0) + 1,
+        lastAccuracy:   accuracy,
+        totalQuestions: questions || 100,
+      };
+
+      // Add XP + coins
+      var xpEarned = _calcXP(score, accuracy);
+      data.xp     = (data.xp     || 0) + xpEarned;
+      data.coins  = (data.coins  || 0) + Math.floor(xpEarned / 2);
+      data.lastGame = gameId;
+
+      // Level up check
+      var level = data.level || 1;
+      var xp    = data.xp;
+      function xpForLevel(l) { return 100 + (l - 1) * 50; }
+      while (xp >= xpForLevel(level)) { xp -= xpForLevel(level); level++; }
+      data.level = level;
+      data.xp    = xp;
+
+      localStorage.setItem(LS_KEY, JSON.stringify(data));
+      return xpEarned;
+    } catch(e) {
+      console.warn('GameBridge: could not save score', e);
+      return 0;
+    }
+  }
+
+  // ── Public API ───────────────────────────────────────────────
+  window.GameBridge = {
+
+    submitScore: function(opts) {
+      var gameId    = opts.gameId    || 'unknown';
+      var score     = opts.score     || 0;
+      var accuracy  = opts.accuracy  != null ? opts.accuracy  : 100;
+      var questions = opts.questions != null ? opts.questions : 1;
+
+      var xpEarned = _saveScore(gameId, score, accuracy, questions);
+
+      // Also notify parent frame if embedded in iframe
+      try {
+        window.parent.postMessage({
+          type:     'gameComplete',
+          gameId:   gameId,
+          score:    score,
+          accuracy: accuracy,
+          xp:       xpEarned,
+        }, '*');
+      } catch(e) {}
+
+      // Update overlay UI
+      document.getElementById('gb-score-val').textContent = score.toLocaleString();
+      document.getElementById('gb-acc-val').textContent   = accuracy < 100 ? accuracy + '%' : '✓';
+      document.getElementById('gb-xp-val').textContent    = '+' + xpEarned;
+
+      // Pick emoji based on performance
+      var emoji = accuracy >= 90 ? '🏆' : accuracy >= 70 ? '🎉' : accuracy >= 50 ? '👍' : '💪';
+      document.getElementById('gb-emoji').textContent = emoji;
+
+      // Show overlay
+      var overlay = document.getElementById('gb-overlay');
+      overlay.classList.add('show');
+    },
+
+    toggleMute: function() {
+      _muted = !_muted;
+      _applyMute(_muted);
+      var btn = document.getElementById('gb-mute');
+      btn.textContent = _muted ? '🔇 Muted' : '🔊 Sound';
+      try {
+        var data = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+        data.sound = !_muted;
+        localStorage.setItem(LS_KEY, JSON.stringify(data));
+      } catch(e) {}
+    },
+
+    goHub: function() {
+      window.location.href = HUB_URL;
+    },
+
+    replay: function() {
+      document.getElementById('gb-overlay').classList.remove('show');
+      window.location.reload();
+    },
+
+    isMuted: function() { return _muted; },
+  };
+
+})();
+</script>
+
 </head>
 <body>
 
