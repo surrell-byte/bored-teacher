@@ -164,7 +164,7 @@ export default function LeaderboardPage() {
                     <td style={{ padding: '12px 16px', fontSize: '1.1rem' }}>{MEDALS[i] ?? `${i + 1}`}</td>
                     <td style={{ padding: '12px 16px', fontWeight: 700 }}>{p.name}</td>
                     <td style={{ padding: '12px 16px', fontFamily: 'var(--font-display, Syne)', fontWeight: 800, color: 'var(--gold)' }}>
-                      {display ?? '—'}{activeGame !== 'all' && display ? '%' : ''}
+                      {display || '—'}{activeGame !== 'all' && display ? '%' : ''}
                     </td>
                     <td style={{ padding: '12px 16px', color: 'var(--muted)' }}>{p.score.avg}%</td>
                     <td style={{ padding: '12px 16px', color: 'var(--muted)' }}>{p.score.gamesPlayed}</td>
