@@ -18,18 +18,21 @@ export default function Navbar() {
 
   const isGuest = typeof window !== 'undefined' && localStorage.getItem('guestUser') === 'true';
 
-  // Close dropdown on outside click
+  // Close dropdown on outside click (mouse + touch)
   useEffect(() => {
-    function handler(e: MouseEvent) {
+    function handler(e: MouseEvent | TouchEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setShowDropdown(false);
       }
     }
     document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    document.addEventListener('touchstart', handler);
+    return () => {
+      document.removeEventListener('mousedown', handler);
+      document.removeEventListener('touchstart', handler);
+    };
   }, []);
 
-  // Close mobile menu on route change
   useEffect(() => { setMobileOpen(false); }, []);
 
   async function handleLogout() {
@@ -67,8 +70,12 @@ export default function Navbar() {
 
         {/* Right side — profile dropdown + hamburger */}
         <div className="nav-right">
-          {/* Profile dropdown */}
-          <div className="profile-dropdown-wrap" ref={dropdownRef}>
+          {/* Profile dropdown — position:relative is the anchor */}
+          <div
+            className="profile-dropdown-wrap"
+            ref={dropdownRef}
+            style={{ position: 'relative' }}
+          >
             <button
               className="pill-btn player-chip"
               onClick={() => setShowDropdown(d => !d)}
@@ -76,11 +83,22 @@ export default function Navbar() {
               aria-haspopup="true"
               aria-label={`Profile menu for ${state.name}`}
             >
-              {state.avatar} {state.name} <span style={{ fontSize: '0.6rem', opacity: 0.6, marginLeft: 2 }}>▾</span>
+              {state.avatar} {state.name}{' '}
+              <span style={{ fontSize: '0.6rem', opacity: 0.6, marginLeft: 2 }}>▾</span>
             </button>
 
             {showDropdown && (
-              <div className="profile-dropdown dropdown-animated" role="menu">
+              <div
+                className="profile-dropdown dropdown-animated"
+                role="menu"
+                style={{
+                  position: 'absolute',
+                  top: 'calc(100% + 8px)',
+                  right: 0,
+                  zIndex: 9999,
+                  minWidth: 220,
+                }}
+              >
                 <button
                   className="dropdown-item"
                   role="menuitem"
