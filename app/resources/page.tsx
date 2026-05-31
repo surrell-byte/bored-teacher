@@ -8,36 +8,27 @@ import Navbar from '@/components/Navbar';
 import Toast from '@/components/Toast';
 
 interface Resource {
-  id: string;
-  icon: string;
-  title: string;
-  desc: string;
-  tag: string;
-  tagColor: string;
-  link?: string;
+  id: string; icon: string; title: string; desc: string;
+  tag: string; tagColor: string; link?: string;
   type: 'guide' | 'video' | 'worksheet' | 'tool' | 'tip';
 }
 
 const RESOURCES: Resource[] = [
-  // Teaching guides
-  { id: 'r1',  icon: '📖', title: 'ESL Game Hub — Teacher Guide',         desc: 'Overview of every game, suggested age groups, and classroom integration tips.',                        tag: 'Guide',     tagColor: 'tag-bio',     type: 'guide' },
-  { id: 'r2',  icon: '🗂️', title: 'Vocabulary Game Strategies',            desc: 'How to use Unicorn Trophy Run, Word Match, and Emoji Match to build core vocabulary.',              tag: 'Vocab',     tagColor: 'tag-vocab',   type: 'guide' },
-  { id: 'r3',  icon: '✏️', title: 'Grammar Games in the Classroom',        desc: 'Pair Warriors Grammar Slam and Neon Bridge of Destiny with grammar lessons for maximum impact.',      tag: 'Grammar',   tagColor: 'tag-grammar', type: 'guide' },
-  { id: 'r4',  icon: '🔬', title: 'Science + ESL Cross-Curricular Pack',   desc: 'Lesson plans linking Animal Kingdom Quest, Ocean Quest and Animal Class Quest to science units.',    tag: 'Science',   tagColor: 'tag-bio',     type: 'guide' },
-  { id: 'r5',  icon: '🔤', title: 'Phonics Integration Guide',             desc: 'Use Phonics Adventure and Phonics World as warm-up activities aligned to phonics programme stages.', tag: 'Phonics',   tagColor: 'tag-words',   type: 'guide' },
-  // Tips
-  { id: 't1',  icon: '💡', title: 'Setting Up the Leaderboard',            desc: 'Import your class list, assign students to accounts, and sync scores automatically.',               tag: 'Tip',       tagColor: 'tag-grammar', type: 'tip' },
-  { id: 't2',  icon: '🏆', title: 'Running a Games Tournament',            desc: 'Step-by-step guide to hosting a 30-minute in-class games tournament using the Hub.',               tag: 'Tip',       tagColor: 'tag-grammar', type: 'tip' },
-  { id: 't3',  icon: '📊', title: 'Reading Trophy Room Data',              desc: 'How to interpret badge progress and tier levels to identify struggling vs. advanced learners.',      tag: 'Tip',       tagColor: 'tag-grammar', type: 'tip' },
-  { id: 't4',  icon: '🎯', title: 'Differentiation with Games',            desc: 'Assign Starter games to beginners and Competitive games to advanced students simultaneously.',       tag: 'Tip',       tagColor: 'tag-grammar', type: 'tip' },
-  // Worksheets
-  { id: 'w1',  icon: '📄', title: 'Compound Word Worksheet (Printable)',   desc: 'Supports Compound Word Quest — 20 compound word pairs for student practice.',                      tag: 'Worksheet', tagColor: 'tag-words',   type: 'worksheet' },
-  { id: 'w2',  icon: '📄', title: 'Farm Animal Vocabulary Sheet',          desc: 'Pre-teach vocabulary before students play Farm Animal Quiz and Farm Game.',                         tag: 'Worksheet', tagColor: 'tag-vocab',   type: 'worksheet' },
-  { id: 'w3',  icon: '📄', title: 'Flags of the World — Reference Card',   desc: 'A printable cheat-sheet to scaffold students before Flagmaster.',                                  tag: 'Worksheet', tagColor: 'tag-bio',     type: 'worksheet' },
-  { id: 'w4',  icon: '📄', title: 'Ocean Creature Classification Grid',    desc: 'Supports Ocean Quest and Deep Sea Reveal — classify 24 sea creatures by type.',                    tag: 'Worksheet', tagColor: 'tag-bio',     type: 'worksheet' },
-  // Tools
-  { id: 'c1',  icon: '🛠️', title: 'Custom Word List Builder',             desc: 'Paste in any word list and the hub will generate a matching Word Match game (coming soon).',       tag: 'Tool',      tagColor: 'tag-vocab',   type: 'tool' },
-  { id: 'c2',  icon: '📥', title: 'Export Leaderboard to CSV',             desc: 'Download your class leaderboard as a spreadsheet to share with parents or administration.',        tag: 'Tool',      tagColor: 'tag-grammar', type: 'tool' },
+  { id: 'r1', icon: '📖', title: 'ESL Game Hub — Teacher Guide',         desc: 'Overview of every game, suggested age groups, and classroom integration tips.',                        tag: 'Guide',     tagColor: 'tag-bio',     type: 'guide' },
+  { id: 'r2', icon: '🗂️', title: 'Vocabulary Game Strategies',            desc: 'How to use Unicorn Trophy Run, Word Match, and Emoji Match to build core vocabulary.',              tag: 'Vocab',     tagColor: 'tag-vocab',   type: 'guide' },
+  { id: 'r3', icon: '✏️', title: 'Grammar Games in the Classroom',        desc: 'Pair Warriors Grammar Slam and Neon Bridge of Destiny with grammar lessons for maximum impact.',      tag: 'Grammar',   tagColor: 'tag-grammar', type: 'guide' },
+  { id: 'r4', icon: '🔬', title: 'Science + ESL Cross-Curricular Pack',   desc: 'Lesson plans linking Animal Kingdom Quest, Ocean Quest and Animal Class Quest to science units.',    tag: 'Science',   tagColor: 'tag-bio',     type: 'guide' },
+  { id: 'r5', icon: '🔤', title: 'Phonics Integration Guide',             desc: 'Use Phonics Adventure and Phonics World as warm-up activities aligned to phonics programme stages.', tag: 'Phonics',   tagColor: 'tag-words',   type: 'guide' },
+  { id: 't1', icon: '💡', title: 'Setting Up the Leaderboard',            desc: 'Import your class list, assign students to accounts, and sync scores automatically.',               tag: 'Tip',       tagColor: 'tag-grammar', type: 'tip' },
+  { id: 't2', icon: '🏆', title: 'Running a Games Tournament',            desc: 'Step-by-step guide to hosting a 30-minute in-class games tournament using the Hub.',               tag: 'Tip',       tagColor: 'tag-grammar', type: 'tip' },
+  { id: 't3', icon: '📊', title: 'Reading Trophy Room Data',              desc: 'How to interpret badge progress and tier levels to identify struggling vs. advanced learners.',      tag: 'Tip',       tagColor: 'tag-grammar', type: 'tip' },
+  { id: 't4', icon: '🎯', title: 'Differentiation with Games',            desc: 'Assign Starter games to beginners and Competitive games to advanced students simultaneously.',       tag: 'Tip',       tagColor: 'tag-grammar', type: 'tip' },
+  { id: 'w1', icon: '📄', title: 'Compound Word Worksheet (Printable)',   desc: 'Supports Compound Word Quest — 20 compound word pairs for student practice.',                      tag: 'Worksheet', tagColor: 'tag-words',   type: 'worksheet' },
+  { id: 'w2', icon: '📄', title: 'Farm Animal Vocabulary Sheet',          desc: 'Pre-teach vocabulary before students play Farm Animal Quiz and Farm Game.',                         tag: 'Worksheet', tagColor: 'tag-vocab',   type: 'worksheet' },
+  { id: 'w3', icon: '📄', title: 'Flags of the World — Reference Card',   desc: 'A printable cheat-sheet to scaffold students before Flagmaster.',                                  tag: 'Worksheet', tagColor: 'tag-bio',     type: 'worksheet' },
+  { id: 'w4', icon: '📄', title: 'Ocean Creature Classification Grid',    desc: 'Supports Ocean Quest and Deep Sea Reveal — classify 24 sea creatures by type.',                    tag: 'Worksheet', tagColor: 'tag-bio',     type: 'worksheet' },
+  { id: 'c1', icon: '🛠️', title: 'Custom Word List Builder',             desc: 'Paste in any word list and the hub will generate a matching Word Match game (coming soon).',       tag: 'Tool',      tagColor: 'tag-vocab',   type: 'tool' },
+  { id: 'c2', icon: '📥', title: 'Export Leaderboard to CSV',             desc: 'Download your class leaderboard as a spreadsheet to share with parents or administration.',        tag: 'Tool',      tagColor: 'tag-grammar', type: 'tool' },
 ];
 
 const TAGS = ['All', 'Guide', 'Tip', 'Worksheet', 'Tool', 'Vocab', 'Grammar', 'Science', 'Phonics', 'Words'];
@@ -71,12 +62,12 @@ export default function ResourcesPage() {
   if (!ready) return null;
 
   return (
-    <div style={{ maxWidth: 1100, margin: '0 auto', padding: 'clamp(14px,3vw,28px) clamp(14px,3vw,24px) 80px', position: 'relative', zIndex: 1 }}>
+    <div style={{ maxWidth: 1100, margin: '0 auto', padding: 'clamp(14px,3vw,28px) clamp(14px,3vw,24px) 80px' }}>
       <Navbar />
       <Toast />
 
       {/* ── Hero ──────────────────────────────────────────── */}
-      <div className="shell-card" style={{ padding: '36px 40px', marginBottom: 24, borderRadius: 32 }}>
+      <div className="shell-card" style={{ padding: 'clamp(20px, 4vw, 40px)', marginBottom: 24, borderRadius: 32 }}>
         <div style={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.2em', color: 'var(--gold)', marginBottom: 8 }}>
           📚 Teaching Resources
         </div>
@@ -87,10 +78,11 @@ export default function ResourcesPage() {
           Lesson guides, worksheets, tips, and classroom tools to help you get the most from ESL Game Hub.
         </p>
         <div style={{ display: 'flex', gap: 24, marginTop: 20, flexWrap: 'wrap' }}>
-          {[['📖', RESOURCES.filter(r => r.type === 'guide').length, 'Guides'],
-            ['💡', RESOURCES.filter(r => r.type === 'tip').length, 'Tips'],
+          {[
+            ['📖', RESOURCES.filter(r => r.type === 'guide').length,     'Guides'],
+            ['💡', RESOURCES.filter(r => r.type === 'tip').length,       'Tips'],
             ['📄', RESOURCES.filter(r => r.type === 'worksheet').length, 'Worksheets'],
-            ['🛠️', RESOURCES.filter(r => r.type === 'tool').length, 'Tools'],
+            ['🛠️', RESOURCES.filter(r => r.type === 'tool').length,      'Tools'],
           ].map(([icon, count, label]) => (
             <div key={label as string}>
               <div style={{ fontFamily: 'var(--font-display, Syne)', fontWeight: 800, fontSize: '1.8rem', color: 'var(--gold)', lineHeight: 1 }}>{count}</div>
@@ -101,8 +93,8 @@ export default function ResourcesPage() {
       </div>
 
       {/* ── Filter bar ────────────────────────────────────── */}
-      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 20, alignItems: 'center' }}>
-        <div style={{ position: 'relative', flex: '1 1 220px' }}>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 20, alignItems: 'center' }}>
+        <div style={{ position: 'relative', flex: '1 1 200px', minWidth: 0 }}>
           <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)', pointerEvents: 'none' }}>🔍</span>
           <input
             type="search" value={search} onChange={e => setSearch(e.target.value)}
@@ -115,16 +107,17 @@ export default function ResourcesPage() {
             }}
           />
         </div>
-        {TAGS.map(t => (
-          <button
-            key={t}
-            onClick={() => setTag(t)}
-            className={`pill-btn${tag === t ? ' active' : ''}`}
-            style={tag === t ? { background: 'var(--gold)', color: '#fff', borderColor: 'var(--gold)' } : {}}
-          >
-            {t}
-          </button>
-        ))}
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {TAGS.map(t => (
+            <button
+              key={t}
+              onClick={() => setTag(t)}
+              className={`pill-btn${tag === t ? ' active' : ''}`}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* ── Resource grid ─────────────────────────────────── */}
@@ -136,9 +129,9 @@ export default function ResourcesPage() {
           <button className="pill-btn" onClick={() => { setSearch(''); setTag('All'); }} style={{ marginTop: 16 }}>Clear filters</button>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 14 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14 }}>
           {filtered.map(r => (
-            <div key={r.id} className="shell-card" style={{ padding: '20px', borderRadius: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div key={r.id} className="shell-card" style={{ padding: 'clamp(14px, 2vw, 20px)', borderRadius: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <span style={{ fontSize: '1.8rem' }}>{r.icon}</span>
                 <span className={`card-tag ${r.tagColor}`} style={{ fontSize: '0.68rem', padding: '3px 10px' }}>{r.tag}</span>
