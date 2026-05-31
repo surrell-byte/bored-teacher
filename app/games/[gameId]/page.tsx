@@ -105,7 +105,7 @@ export default function GamePage() {
   }
 
   return (
-    <div style={{ position: 'fixed', inset: 0, display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
+    <div style={{ position: 'fixed', inset: 0, display: 'flex', flexDirection: 'column', background: 'var(--bg)', overflow: 'hidden' }}>
       {/* Thin topbar */}
       <div style={{
         height: 52, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -137,7 +137,7 @@ export default function GamePage() {
         ref={iframeRef}
         src={`/${gameUrl}`}
         title={gameName}
-        style={{ flex: 1, border: 'none', width: '100%' }}
+        style={{ flex: '1 1 0', minHeight: 0, border: 'none', width: '100%', display: 'block' }}
         onLoad={() => setLoading(false)}
         allow="autoplay"
       />

@@ -185,6 +185,8 @@ body.theme-lime {
 
 /* ══════════════════════════════════════════════════════════════
    BASE
+   FIX: Full height chain so fixed/flex layouts work everywhere.
+   #__next is the Next.js root div — must be 100% tall.
 ══════════════════════════════════════════════════════════════ */
 html, body {
   height: 100%;
@@ -194,6 +196,12 @@ html, body {
   -webkit-font-smoothing: antialiased;
   scroll-behavior: smooth;
 }
+
+/* Next.js root wrapper must propagate full height */
+#__next { height: 100%; }
+
+/* Global iframe baseline — removes the inline gap browsers add */
+iframe { display: block; }
 
 a { color: inherit; }
 
@@ -356,6 +364,15 @@ a { color: inherit; }
   .mobile-menu { display: flex; }
 }
 
+/* FIX: Player chip truncates on narrow screens so it never
+   pushes the hamburger button off-screen. */
+.player-chip {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .pill-btn {
   display: inline-flex;
   align-items: center;
@@ -374,8 +391,6 @@ a { color: inherit; }
 }
 .pill-btn:hover { border-color: var(--border-bright); transform: translateY(-1px); }
 .pill-btn.active { background: var(--gold); color: #111; border-color: var(--gold); }
-
-.player-chip { gap: 6px; }
 
 .theme-select {
   padding: 6px 10px;
@@ -689,6 +704,13 @@ a { color: inherit; }
 }
 @media (max-width: 640px) {
   .lb-hero { grid-template-columns: 1fr; }
+  /* FIX: Tighten podium on small screens so it doesn't clip */
+  .lb-podium { padding: 12px 8px 0; gap: 4px; }
+  .podium-slot { min-width: 60px; }
+  .podium-avatar { width: 40px; height: 40px; font-size: 0.82rem; }
+  .podium-avatar.rank-1 { width: 48px; height: 48px; font-size: 0.92rem; }
+  /* FIX: Hero panel padding reduces on small screens */
+  .lb-hero-panel { padding: 24px 20px; }
 }
 
 .lb-hero-panel {
@@ -867,6 +889,24 @@ a { color: inherit; }
 }
 .lb-input::placeholder { color: var(--muted); }
 
+/* FIX: Table scroll wrapper — prevents full-page horizontal
+   overflow on mobile when the leaderboard table is too wide. */
+.lb-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* FIX: Hide less critical columns on very small screens */
+@media (max-width: 480px) {
+  .lb-table-wrap th:nth-child(4),
+  .lb-table-wrap td:nth-child(4),
+  .lb-table-wrap th:nth-child(5),
+  .lb-table-wrap td:nth-child(5) {
+    display: none;
+  }
+}
+
 /* ══════════════════════════════════════════════════════════════
    TROPHY PAGE
 ══════════════════════════════════════════════════════════════ */
@@ -897,6 +937,23 @@ a { color: inherit; }
   letter-spacing: 0.1em;
   color: var(--muted);
   font-weight: 700;
+}
+
+/* FIX: Trophy hero grid collapses to single column on mobile.
+   Replaces the hardcoded inline gridTemplateColumns in page.tsx */
+.trophy-hero-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+}
+@media (max-width: 600px) {
+  .trophy-hero-grid {
+    grid-template-columns: 1fr;
+  }
+  .trophy-tier-display {
+    flex-direction: row !important;
+    justify-content: flex-start;
+    gap: 16px !important;
+  }
 }
 
 .badge-card { transition: transform 0.15s, opacity 0.15s; }
@@ -965,6 +1022,12 @@ a { color: inherit; }
 }
 @media (max-width: 700px) {
   .hub-hero { grid-template-columns: 1fr; }
+  /* FIX: Stats card lays out horizontally when stacked */
+  .hub-hero .shell-card:last-child {
+    flex-direction: row;
+    flex-wrap: wrap;
+    min-width: unset;
+  }
 }
 
 .hub-stats-bar {
@@ -1019,6 +1082,18 @@ a { color: inherit; }
   flex-wrap: wrap;
   align-items: center;
   margin-bottom: 18px;
+}
+
+/* FIX: On very small screens, search+sort take the top row and
+   the Manage Players button stretches full width below them. */
+@media (max-width: 500px) {
+  .hub-filter-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+  }
+  .hub-filter-row .pill-btn:last-child {
+    grid-column: 1 / -1;
+  }
 }
 
 .hub-search {
@@ -1134,8 +1209,12 @@ a { color: inherit; }
 }
 
 /* ── Page transitions ───────────────────────────────────── */
+/* FIX: height:100% + overflow:hidden so the PageTransition
+   wrapper div never collapses and starves iframe flex layout. */
 .page-enter {
   opacity: 1;
+  height: 100%;
+  overflow: hidden;
 }
 .page-enter-active {
   animation: pageEnter 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
@@ -1258,7 +1337,6 @@ a { color: inherit; }
 
 /* ══════════════════════════════════════════════════════════════
    ACCESSIBILITY — FOCUS VISIBLE
-   Only show focus ring when navigating by keyboard, not on click.
 ══════════════════════════════════════════════════════════════ */
 :focus-visible {
   outline: 2px solid var(--teal);
@@ -1266,7 +1344,6 @@ a { color: inherit; }
   border-radius: 6px;
 }
 
-/* Remove default outline (replaced by :focus-visible above) */
 *:focus:not(:focus-visible) { outline: none; }
 
 .pill-btn:focus-visible,
@@ -1363,7 +1440,6 @@ a { color: inherit; }
   .hub-filters-collapsible.open {
     display: flex;
   }
-  /* On mobile, wrap tag tabs so they wrap instead of scroll */
   .hub-tag-tabs {
     flex-wrap: wrap !important;
     overflow-x: visible !important;
