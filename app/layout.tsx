@@ -1,8 +1,10 @@
 // app/layout.tsx
 import type { Metadata } from 'next';
+import { type ReactNode } from 'react';
 import './globals.css';
 import { GameProvider } from '@/lib/gameState';
 import PageTransition from '@/components/PageTransition';
+import AppShell from '@/components/AppShell';
 
 export const metadata: Metadata = {
   title: 'ESL Game Hub',
@@ -10,14 +12,16 @@ export const metadata: Metadata = {
   icons: { icon: '/favicon.ico' },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body>
         <GameProvider>
-          <PageTransition>
-            {children}
-          </PageTransition>
+          <AppShell>
+            <PageTransition>
+              {children}
+            </PageTransition>
+          </AppShell>
         </GameProvider>
       </body>
     </html>

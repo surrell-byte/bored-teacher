@@ -6,8 +6,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { onAuthStateChanged } from '@/lib/firebase';
 import { useGame } from '@/lib/gameState';
-import Toast from '@/components/Toast';
-import Navbar from '@/components/Navbar';
 import {
   getSortedLeaderboard, addPlayersToLeaderboard, removePlayer, clearLeaderboard,
   saveLeaderboard, parseCSVToNames, syncCurrentPlayerToLeaderboard,
@@ -76,8 +74,6 @@ export default function LeaderboardPage() {
 
   return (
     <div className="lb-page">
-      <Navbar />
-      <Toast />
 
       {/* ── Hero ──────────────────────────────────────────── */}
       <div style={{

@@ -149,7 +149,7 @@ export const GAME_BAR_COLOR: Record<string, string> = {
 };
 
 export const GAME_URLS: Record<string, string> = {
-  unicorn: 'games/unicorn-trophy-run/unicorn.html',
+  unicorn: 'games/unicorn-run/unicorn.html',
   warriors: 'games/warriors-grammar-slam/warriors.html',
   compound: 'games/compound-word-quest/compound.html',
   animal: 'games/animal-kingdom-quest/animal.html',
@@ -159,13 +159,13 @@ export const GAME_URLS: Record<string, string> = {
   animalclass: 'games/animal-class-quest/animal-class-quest.html',
   blockfight: 'games/block-fight/block-fight.html',
   colourclash: 'games/colour-clash/colour-clash.html',
-  compoundword: 'games/compound-word/compoud-word.html',
+  compoundword: 'games/compound-word/compound-word.html',
   crimsonduel: 'games/crimson-color-duel/crimson-color-duel-premium.html',
   deepseaReveal: 'games/deep-sea-reveal/deep-sea-reveal.html',
   emojimatch: 'games/emoji-match/emoji-match.html',
   emojispelling: 'games/emoji-spelling-game/emoji_spelling_game.html',
   familyquest: 'games/family-quest/family-quest-premium.html',
-  farmquiz: 'games/farm-animal-quiz/index.html',
+  // farmquiz HTML file is missing — public/games/farm-animal-quiz/ folder is empty
   farmgame: 'games/farm-game/farm-game-v1.html',
   findmyfood: 'games/find-my-food/find-my-food-premium.html',
   flagmaster: 'games/flagmaster/flagmaster-premium.html',

@@ -5,8 +5,6 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged } from '@/lib/firebase';
 import { useGame } from '@/lib/gameState';
-import Navbar from '@/components/Navbar';
-import Toast from '@/components/Toast';
 import { GAME_KEYS } from '@/lib/constants';
 import type { HubState } from '@/lib/gameState';
 
@@ -111,8 +109,6 @@ export default function TrophyPage() {
 
   return (
     <div className="trophy-page">
-      <Navbar />
-      <Toast />
 
       {/* ── Hero ──────────────────────────────────────────── */}
       <div className="shell-card" style={{

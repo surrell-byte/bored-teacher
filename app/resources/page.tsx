@@ -4,8 +4,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged } from '@/lib/firebase';
-import Navbar from '@/components/Navbar';
-import Toast from '@/components/Toast';
 
 interface Resource {
   id: string; icon: string; title: string; desc: string;
@@ -63,8 +61,6 @@ export default function ResourcesPage() {
 
   return (
     <div style={{ maxWidth: 1100, margin: '0 auto', padding: 'clamp(14px,3vw,28px) clamp(14px,3vw,24px) 80px' }}>
-      <Navbar />
-      <Toast />
 
       {/* ── Hero ──────────────────────────────────────────── */}
       <div className="shell-card" style={{ padding: 'clamp(20px, 4vw, 40px)', marginBottom: 24, borderRadius: 32 }}>

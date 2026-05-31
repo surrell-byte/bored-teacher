@@ -9,8 +9,6 @@ import {
   GAME_KEYS, GAME_NAMES, GAME_ICONS, GAME_TAGS, GAME_DIFFICULTY,
 } from '@/lib/constants';
 import GameCard from '@/components/GameCard';
-import Navbar from '@/components/Navbar';
-import Toast from '@/components/Toast';
 import ManagePlayersModal from '@/components/ManagePlayersModal';
 
 const TAG_FILTERS = [
@@ -95,8 +93,6 @@ export default function HubPage() {
 
   return (
     <div className="hub-page">
-      <Navbar />
-      <Toast />
 
       {/* ── Hero / stats bar ──────────────────────────────── */}
       <div style={{
