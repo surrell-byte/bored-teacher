@@ -4,6 +4,7 @@
 import { createContext, useContext, useState, useEffect, useRef, useCallback, ReactNode } from 'react';
 import { auth, onAuthStateChanged, saveUserState, loadUserState } from '@/lib/firebase';
 import { GAME_KEYS } from '@/lib/constants';
+import { getEarnedIds, getNewlyUnlocked, type Achievement } from '@/lib/achievements';
 
 // ── Types ─────────────────────────────────────────────────────
 
@@ -49,6 +50,10 @@ interface GameContextValue {
   showToast: (msg: string) => void;
   toast: string;
   checkDailyReward: () => void;
+  // Achievements — derived, never stored
+  earnedAchievementIds: Set<string>;
+  pendingAchievement: Achievement | null;
+  clearPendingAchievement: () => void;
 }
 
 const GameContext = createContext<GameContextValue | null>(null);
@@ -116,11 +121,43 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const fbTimerRef            = useRef<ReturnType<typeof setTimeout> | null>(null);
   const uidRef                = useRef<string | null>(null);
 
+  // Achievement tracking — derived from state, never persisted
+  const [earnedAchievementIds, setEarnedIds] = useState<Set<string>>(new Set());
+  const [pendingAchievement, setPending]      = useState<Achievement | null>(null);
+  const achievementQueue                      = useRef<Achievement[]>([]);
+  const showingAchievement                    = useRef(false);
+
+  function drainQueue() {
+    if (showingAchievement.current || achievementQueue.current.length === 0) return;
+    showingAchievement.current = true;
+    setPending(achievementQueue.current.shift()!);
+  }
+
+  function clearPendingAchievement() {
+    setPending(null);
+    showingAchievement.current = false;
+    // Small delay so the closing animation plays before the next popup
+    setTimeout(drainQueue, 200);
+  }
+
+  /** Call after any state mutation that could unlock achievements. */
+  function checkAchievements(prev: HubState, next: HubState) {
+    const before = getEarnedIds(prev);
+    const after  = getEarnedIds(next);
+    setEarnedIds(after);
+    const newOnes = getNewlyUnlocked(before, after);
+    if (newOnes.length > 0) {
+      achievementQueue.current.push(...newOnes);
+      drainQueue();
+    }
+  }
+
   // Load from localStorage once on mount (client only)
   useEffect(() => {
     const s = loadLocal();
     setStateRaw(s);
     applyThemeClass(s.theme);
+    setEarnedIds(getEarnedIds(s));
   }, []);
 
   // Firebase auth state listener
@@ -135,6 +172,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('eslhub_data', JSON.stringify(merged));
         setStateRaw(merged);
         applyThemeClass(merged.theme);
+        setEarnedIds(getEarnedIds(merged));
       }
     });
     return unsub;
@@ -166,6 +204,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         games: { ...prev.games, [gameId]: { ...(prev.games[gameId] || DEFAULT_GAME), ...stats } },
       };
       persist(next);
+      checkAchievements(prev, next);
       return next;
     });
   }, []);
@@ -180,6 +219,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       }
       const next = { ...prev, xp: newXp, level: newLevel };
       persist(next);
+      checkAchievements(prev, next);
       return next;
     });
   }, []);
@@ -204,13 +244,14 @@ export function GameProvider({ children }: { children: ReactNode }) {
       const streak = prev.lastLogin === yesterday ? (prev.loginStreak || 0) + 1 : 1;
       const next   = { ...prev, coins: prev.coins + coins, lastLogin: today, loginStreak: streak };
       persist(next);
+      checkAchievements(prev, next);
       setTimeout(() => showToast(`🎁 Daily reward: +${coins} coins! Come back tomorrow for more.`), 300);
       return next;
     });
   }, [showToast]);
 
   return (
-    <GameContext.Provider value={{ state, setState, updateGameStats, addXP, applyTheme, showToast, toast, checkDailyReward }}>
+    <GameContext.Provider value={{ state, setState, updateGameStats, addXP, applyTheme, showToast, toast, checkDailyReward, earnedAchievementIds, pendingAchievement, clearPendingAchievement }}>
       {children}
     </GameContext.Provider>
   );

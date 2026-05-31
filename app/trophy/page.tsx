@@ -5,63 +5,11 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged } from '@/lib/firebase';
 import { useGame } from '@/lib/gameState';
-import { GAME_KEYS } from '@/lib/constants';
+import { ACHIEVEMENT_CATEGORIES } from '@/lib/achievements';
 import type { HubState } from '@/lib/gameState';
 
-function gameTotal(s: HubState, field: 'completions') {
-  return Object.values(s.games).reduce((a, g) => a + (g[field] || 0), 0);
-}
 
-interface Badge {
-  id: string; icon: string; color: string; name: string; desc: string;
-  check: (s: HubState) => boolean;
-}
-interface BadgeCategory { label: string; badges: Badge[] }
 
-const BADGE_CATEGORIES: BadgeCategory[] = [
-  {
-    label: '🎮 Gameplay',
-    badges: [
-      { id: 'first_play',   icon: '🎮', color: 'var(--teal)',   name: 'First Steps',       desc: 'Complete your first game',         check: s => gameTotal(s, 'completions') >= 1 },
-      { id: 'play_5',       icon: '🗂️', color: 'var(--blue)',   name: 'Getting Started',   desc: 'Complete 5 different games',       check: s => Object.values(s.games).filter(g => g.completions > 0).length >= 5 },
-      { id: 'play_10',      icon: '📚', color: 'var(--blue)',   name: 'Dedicated',          desc: 'Complete 10 different games',      check: s => Object.values(s.games).filter(g => g.completions > 0).length >= 10 },
-      { id: 'play_all',     icon: '🌍', color: 'var(--gold)',   name: 'All-Rounder',        desc: 'Play every single game',           check: s => GAME_KEYS.every(k => (s.games[k]?.completions ?? 0) > 0) },
-      { id: 'complete_50',  icon: '🏅', color: 'var(--coral)',  name: 'Champion',           desc: '50 total game completions',        check: s => gameTotal(s, 'completions') >= 50 },
-      { id: 'complete_100', icon: '💫', color: 'var(--gold)',   name: 'Legend',             desc: '100 total game completions',       check: s => gameTotal(s, 'completions') >= 100 },
-    ],
-  },
-  {
-    label: '🎯 Accuracy',
-    badges: [
-      { id: 'acc_70',  icon: '🎯', color: 'var(--green)',  name: 'Decent Shot',       desc: '70%+ accuracy in any game',        check: s => Object.values(s.games).some(g => g.highScore >= 70) },
-      { id: 'acc_80',  icon: '🔥', color: 'var(--coral)',  name: 'Sharp',             desc: '80%+ accuracy in any game',        check: s => Object.values(s.games).some(g => g.highScore >= 80) },
-      { id: 'acc_90',  icon: '⚡', color: 'var(--gold)',   name: 'On Fire',           desc: '90%+ accuracy in any game',        check: s => Object.values(s.games).some(g => g.highScore >= 90) },
-      { id: 'perfect', icon: '💯', color: 'var(--gold)',   name: 'Perfectionist',     desc: '100% accuracy in any game',        check: s => Object.values(s.games).some(g => g.highScore >= 100) },
-      { id: 'avg_80',  icon: '📊', color: 'var(--teal)',   name: 'Consistently Good', desc: '80%+ avg accuracy (5+ games)',     check: s => { const sc = Object.values(s.games).filter(g => g.highScore > 0); return sc.length >= 5 && sc.reduce((a, g) => a + g.highScore, 0) / sc.length >= 80; } },
-    ],
-  },
-  {
-    label: '⭐ Progression',
-    badges: [
-      { id: 'level_5',   icon: '⭐', color: 'var(--green)',  name: 'Rising Star',  desc: 'Reach Level 5',       check: s => s.level >= 5 },
-      { id: 'level_10',  icon: '🌟', color: 'var(--blue)',   name: 'Veteran',      desc: 'Reach Level 10',      check: s => s.level >= 10 },
-      { id: 'level_20',  icon: '🏆', color: 'var(--gold)',   name: 'Elite',        desc: 'Reach Level 20',      check: s => s.level >= 20 },
-      { id: 'coins_500', icon: '🪙', color: 'var(--gold)',   name: 'Coin Hoarder', desc: 'Collect 500 coins',   check: s => s.coins >= 500 },
-      { id: 'streak_7',  icon: '🔥', color: 'var(--coral)',  name: 'Week Warrior', desc: '7-day login streak',  check: s => (s.loginStreak || 0) >= 7 },
-      { id: 'streak_30', icon: '🌈', color: 'var(--purple)', name: 'Monthly',      desc: '30-day login streak', check: s => (s.loginStreak || 0) >= 30 },
-    ],
-  },
-  {
-    label: '🌟 Mastery',
-    badges: [
-      { id: 'master_vocab',   icon: '📖', color: 'var(--blue)',   name: 'Word Master',    desc: '85%+ in any vocab game',      check: s => ['unicorn','wordmatch','colourclash','emojimatch','familyquest'].some(k => (s.games[k]?.highScore ?? 0) >= 85) },
-      { id: 'master_grammar', icon: '✍️', color: 'var(--green)',  name: 'Grammar Guru',   desc: '85%+ in any grammar game',    check: s => ['warriors','neonbridge','memory'].some(k => (s.games[k]?.highScore ?? 0) >= 85) },
-      { id: 'master_science', icon: '🔬', color: 'var(--teal)',   name: 'Science Whiz',   desc: '85%+ in any science game',    check: s => ['animal','animalclass','oceanquest','deepseaReveal','farmquiz'].some(k => (s.games[k]?.highScore ?? 0) >= 85) },
-      { id: 'master_phonics', icon: '🔊', color: 'var(--coral)',  name: 'Phonics Pro',    desc: '85%+ in any phonics game',    check: s => ['phonicsadventure','phonicsworld'].some(k => (s.games[k]?.highScore ?? 0) >= 85) },
-      { id: 'polymath',       icon: '🧠', color: 'var(--gold)',   name: 'Polymath',       desc: '85%+ in 10+ different games', check: s => Object.values(s.games).filter(g => g.highScore >= 85).length >= 10 },
-    ],
-  },
-];
 
 const TIERS = [
   { name: 'Beginner', icon: '🌱', min: 0,    max: 500,  sub: 'Keep playing!' },
@@ -78,7 +26,7 @@ function getTier(totalScore: number) {
 
 export default function TrophyPage() {
   const router = useRouter();
-  const { state } = useGame();
+  const { state, earnedAchievementIds } = useGame();
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -99,11 +47,9 @@ export default function TrophyPage() {
     ? Math.min(100, Math.round(((totalScore - tier.min) / (nextTier.min - tier.min)) * 100))
     : 100;
 
-  const allEarned = new Set(
-    BADGE_CATEGORIES.flatMap(cat => cat.badges.filter(b => b.check(state)).map(b => b.id))
-  );
+  const allEarned   = earnedAchievementIds;
   const earnedCount = allEarned.size;
-  const totalBadges = BADGE_CATEGORIES.flatMap(c => c.badges).length;
+  const totalBadges = ACHIEVEMENT_CATEGORIES.flatMap(c => c.achievements).length;
 
   if (!ready) return null;
 
@@ -151,36 +97,36 @@ export default function TrophyPage() {
         </div>
       </div>
 
-      {/* ── Badge categories ──────────────────────────────── */}
-      {BADGE_CATEGORIES.map(cat => {
-        const catEarned = cat.badges.filter(b => allEarned.has(b.id)).length;
+      {/* ── Achievement categories ────────────────────────── */}
+      {ACHIEVEMENT_CATEGORIES.map(cat => {
+        const catEarned = cat.achievements.filter(a => allEarned.has(a.id)).length;
         return (
           <div key={cat.label} className="shell-card" style={{ padding: 'clamp(16px, 3vw, 24px)', marginBottom: 16 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
               <div style={{ fontFamily: 'var(--font-display, Syne)', fontWeight: 800, fontSize: '1rem' }}>{cat.label}</div>
-              <div style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>{catEarned} / {cat.badges.length}</div>
+              <div style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>{catEarned} / {cat.achievements.length}</div>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 10 }}>
-              {cat.badges.map(b => {
-                const earned = allEarned.has(b.id);
+              {cat.achievements.map(a => {
+                const earned = allEarned.has(a.id);
                 return (
                   <div
-                    key={b.id}
+                    key={a.id}
                     className={`badge-card ${earned ? 'earned' : 'locked'}`}
                     style={{
                       padding: 'clamp(12px, 2vw, 16px)',
                       borderRadius: 16,
                       textAlign: 'center',
-                      border: `1.5px solid ${earned ? b.color : 'var(--border)'}`,
-                      background: earned ? `color-mix(in srgb, ${b.color} 10%, transparent)` : 'var(--surface-soft)',
+                      border: `1.5px solid ${earned ? a.color : 'var(--border)'}`,
+                      background: earned ? `color-mix(in srgb, ${a.color} 10%, transparent)` : 'var(--surface-soft)',
                       opacity: earned ? 1 : 0.5,
                       transition: 'opacity 0.2s',
                     }}
                   >
-                    <div style={{ fontSize: '2rem', marginBottom: 6, filter: earned ? 'none' : 'grayscale(1)' }}>{b.icon}</div>
-                    <div style={{ fontWeight: 700, fontSize: '0.82rem', marginBottom: 3, color: earned ? 'var(--text)' : 'var(--muted)' }}>{b.name}</div>
-                    <div style={{ fontSize: '0.68rem', color: 'var(--muted)' }}>{b.desc}</div>
-                    {earned && <div style={{ marginTop: 6, fontSize: '0.68rem', color: b.color, fontWeight: 700 }}>✓ Earned</div>}
+                    <div style={{ fontSize: '2rem', marginBottom: 6, filter: earned ? 'none' : 'grayscale(1)' }}>{a.icon}</div>
+                    <div style={{ fontWeight: 700, fontSize: '0.82rem', marginBottom: 3, color: earned ? 'var(--text)' : 'var(--muted)' }}>{a.title}</div>
+                    <div style={{ fontSize: '0.68rem', color: 'var(--muted)' }}>{a.description}</div>
+                    {earned && <div style={{ marginTop: 6, fontSize: '0.68rem', color: a.color, fontWeight: 700 }}>✓ Earned</div>}
                   </div>
                 );
               })}

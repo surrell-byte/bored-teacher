@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 import ProfileModal from './ProfileModal';
 
 export default function Navbar() {
-  const { state, applyTheme } = useGame();
+  const { state, applyTheme, earnedAchievementIds } = useGame();
   const router = useRouter();
   const [showProfile, setShowProfile] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -62,6 +62,9 @@ export default function Navbar() {
           </Link>
           <Link href="/trophy" className="pill-btn" style={{ textDecoration: 'none' }}>
             🎖️ Trophy Room
+            {earnedAchievementIds.size > 0 && (
+              <span className="nav-achievement-count">{earnedAchievementIds.size}</span>
+            )}
           </Link>
           <Link href="/resources" className="pill-btn" style={{ textDecoration: 'none' }}>
             📚 Resources
