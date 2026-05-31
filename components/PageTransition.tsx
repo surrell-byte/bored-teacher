@@ -19,7 +19,7 @@ export default function PageTransition({ children }: { children: ReactNode }) {
   }, [pathname]);
 
   return (
-    <div ref={ref} className="page-enter">
+    <div ref={ref} className="page-enter" style={{ minHeight: '100%' }}>
       {children}
     </div>
   );
