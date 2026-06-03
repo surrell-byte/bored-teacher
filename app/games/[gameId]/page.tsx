@@ -1,23 +1,33 @@
 'use client';
-// app/games/[gameId]/page.tsx
-// Wraps legacy HTML game files in a full-screen iframe.
-// The game communicates back via postMessage when complete.
 
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, lazy, useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { useGame, xpForLevel } from '@/lib/gameState';
-import { GAME_NAMES, GAME_ICONS, GAME_URLS, GAME_KEYS } from '@/lib/constants';
+import { useGame } from '@/lib/gameState';
+import { auth, saveStudentScore } from '@/lib/firebase';
+import { syncCurrentPlayerToLeaderboard } from '@/lib/leaderboard';
+import { GAME_NAMES, GAME_ICONS, GAME_URLS } from '@/lib/constants';
 
+// ── React game component props and registry ──
+type GameComponentProps = {
+  onComplete: (score: number, accuracy: number) => void;
+};
+
+const GAME_COMPONENTS: Record<string, React.LazyExoticComponent<React.ComponentType<GameComponentProps>> | undefined> = {
+  unicorn:  lazy(() => import('@/public/games/unicorn-run/UnicornRun.jsx')),
+  warriors: lazy(() => import('@/public/games/warriors-grammar-slam/WarriorsGrammarSlam.jsx')),
+  memory:   lazy(() => import('@/public/games/memory-game/MemoryMatch.jsx')),
+};
+
+// ── Types ─────────────────────────────────────────────────────
 interface GameResult {
   score: number;
   accuracy: number;
   gameId: string;
 }
 
-function ResultModal({
-  result, gameName, onContinue,
-}: {
+// ── Result modal (unchanged from original) ────────────────────
+function ResultModal({ result, gameName, onContinue }: {
   result: GameResult; gameName: string; onContinue: () => void;
 }) {
   const xpEarned    = Math.round(result.accuracy / 2);
@@ -25,7 +35,6 @@ function ResultModal({
   const pct         = Math.min(100, result.accuracy);
   const color       = pct >= 80 ? 'var(--green)' : pct >= 60 ? 'var(--gold)' : 'var(--red)';
   const feedback    = pct >= 90 ? '🌟 Outstanding!' : pct >= 80 ? '🔥 Excellent work!' : pct >= 70 ? '👍 Good job!' : pct >= 50 ? '💪 Keep practising!' : '📚 Review the material and try again.';
-
   return (
     <div className="modal-backdrop open" role="dialog" aria-modal aria-labelledby="perfTitle">
       <div className="modal">
@@ -48,52 +57,63 @@ function ResultModal({
   );
 }
 
+// ── Page ──────────────────────────────────────────────────────
 export default function GamePage() {
-  const router   = useRouter();
-  const params   = useParams();
-  const gameId   = (params?.gameId as string) ?? '';
+  const router  = useRouter();
+  const params  = useParams();
+  const gameId  = (params?.gameId as string) ?? '';
   const { state, setState, updateGameStats, addXP } = useGame();
 
-  const iframeRef   = useRef<HTMLIFrameElement>(null);
-  const [result, setResult] = useState<GameResult | null>(null);
+  const [result, setResult]   = useState<GameResult | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const gameName = GAME_NAMES[gameId] ?? 'Game';
-  const gameIcon = GAME_ICONS[gameId] ?? '🎮';
-  const gameUrl  = GAME_URLS[gameId];
+  const gameName  = GAME_NAMES[gameId] ?? 'Game';
+  const gameIcon  = GAME_ICONS[gameId] ?? '🎮';
+  const GameComp  = GAME_COMPONENTS[gameId];
+  const legacyUrl = GAME_URLS[gameId];
 
-  // Listen for postMessage from game iframes
+  // ── onComplete: called by React game components ──
+  function handleComplete(score: number, accuracy: number) {
+    const acc  = Math.min(100, Math.max(0, accuracy));
+    const scr  = score;
+    const prev = state.games[gameId] ?? { highScore: 0, completions: 0, lastAccuracy: 0, totalQuestions: 100 };
+    updateGameStats(gameId, {
+      highScore:    Math.max(prev.highScore, scr),
+      completions:  prev.completions + 1,
+      lastAccuracy: acc,
+    });
+    addXP(Math.round(acc / 2));
+    setState({ lastGame: gameId, coins: state.coins + Math.round(acc / 10) });
+    syncCurrentPlayerToLeaderboard();
+    if (auth.currentUser) {
+      saveStudentScore(auth.currentUser.uid, state.name, state.games).catch(() => {});
+    }
+    setResult({ score: scr, accuracy: acc, gameId });
+  }
+
+  // ── postMessage: legacy iframe games ──
   useEffect(() => {
+    if (GameComp) return; // skip listener if using React component
     function onMessage(e: MessageEvent) {
       if (!e.data || typeof e.data !== 'object') return;
       const { type, score, accuracy, gameId: gid } = e.data;
       if (type === 'gameComplete' || type === 'eslhub_result') {
-        const acc  = Math.min(100, Math.max(0, Number(accuracy) || 0));
-        const scr  = Number(score) || acc;
-        const rid  = (gid as string) || gameId;
-
-        // Update stats
-        const prev = state.games[rid] ?? { highScore: 0, completions: 0, lastAccuracy: 0, totalQuestions: 100 };
-        updateGameStats(rid, {
-          highScore:    Math.max(prev.highScore, scr),
-          completions:  prev.completions + 1,
-          lastAccuracy: acc,
-        });
-        addXP(Math.round(acc / 2));
-        setState({ lastGame: rid, coins: state.coins + Math.round(acc / 10) });
-        setResult({ score: scr, accuracy: acc, gameId: rid });
+        const acc = Math.min(100, Math.max(0, Number(accuracy) || 0));
+        const scr = Number(score) || acc;
+        const rid = (gid as string) || gameId;
+        handleComplete(scr, acc);
       }
     }
     window.addEventListener('message', onMessage);
     return () => window.removeEventListener('message', onMessage);
-  }, [gameId, state, updateGameStats, addXP, setState]);
+  }, [gameId, GameComp]);
 
   function handleContinue() {
     setResult(null);
     router.push('/hub');
   }
 
-  if (!gameUrl) {
+  if (!GameComp && !legacyUrl) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', gap: 16, color: 'var(--text)' }}>
         <div style={{ fontSize: '3rem' }}>🎮</div>
@@ -106,7 +126,7 @@ export default function GamePage() {
 
   return (
     <div style={{ position: 'fixed', inset: 0, display: 'flex', flexDirection: 'column', background: 'var(--bg)', overflow: 'hidden' }}>
-      {/* Thin topbar */}
+      {/* Topbar */}
       <div style={{
         height: 52, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '0 16px', borderBottom: '1px solid var(--border)',
@@ -122,27 +142,40 @@ export default function GamePage() {
         </div>
       </div>
 
-      {/* Loading overlay */}
-      {loading && (
-        <div style={{ position: 'absolute', inset: 0, zIndex: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', pointerEvents: 'none' }}>
-          <div style={{ textAlign: 'center', color: 'var(--muted)' }}>
-            <div style={{ fontSize: '3rem', marginBottom: 12 }}>{gameIcon}</div>
-            <div style={{ fontFamily: 'var(--font-display, Syne)', fontWeight: 800 }}>Loading {gameName}…</div>
+      {/* Game area */}
+      {GameComp ? (
+        <Suspense fallback={
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)' }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '3rem', marginBottom: 12 }}>{gameIcon}</div>
+              <div style={{ fontFamily: 'var(--font-display, Syne)', fontWeight: 800 }}>Loading {gameName}…</div>
+            </div>
           </div>
-        </div>
+        }>
+          <div style={{ flex: '1 1 0', minHeight: 0, overflow: 'auto' }}>
+            <GameComp onComplete={handleComplete} />
+          </div>
+        </Suspense>
+      ) : (
+        <>
+          {loading && (
+            <div style={{ position: 'absolute', inset: 0, zIndex: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', pointerEvents: 'none' }}>
+              <div style={{ textAlign: 'center', color: 'var(--muted)' }}>
+                <div style={{ fontSize: '3rem', marginBottom: 12 }}>{gameIcon}</div>
+                <div style={{ fontFamily: 'var(--font-display, Syne)', fontWeight: 800 }}>Loading {gameName}…</div>
+              </div>
+            </div>
+          )}
+          <iframe
+            src={`/${legacyUrl}`}
+            title={gameName}
+            style={{ flex: '1 1 0', minHeight: 0, border: 'none', width: '100%', display: 'block' }}
+            onLoad={() => setLoading(false)}
+            allow="autoplay"
+          />
+        </>
       )}
 
-      {/* Game iframe */}
-      <iframe
-        ref={iframeRef}
-        src={`/${gameUrl}`}
-        title={gameName}
-        style={{ flex: '1 1 0', minHeight: 0, border: 'none', width: '100%', display: 'block' }}
-        onLoad={() => setLoading(false)}
-        allow="autoplay"
-      />
-
-      {/* Result modal */}
       {result && <ResultModal result={result} gameName={gameName} onContinue={handleContinue} />}
     </div>
   );

@@ -41,7 +41,7 @@ const QUESTIONS_DB = {
 
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
 
-export default function UnicornRun() {
+export default function UnicornRun({ onComplete }) {
   const [screen, setScreen] = useState("start");
   const [playerName, setPlayerName] = useState("");
   const [level, setLevel] = useState(1);
@@ -82,8 +82,10 @@ export default function UnicornRun() {
   const next = () => {
     if (lives <= 0) return;
     if (idx + 1 >= questions.length) {
-      const next = level + 1;
-      if (QUESTIONS_DB[next]) setUnlocked(u => ({ ...u, [next]: true }));
+      const nextLvl = level + 1;
+      if (QUESTIONS_DB[nextLvl]) setUnlocked(u => ({ ...u, [nextLvl]: true }));
+      const accuracy = Math.round((score / (questions.length * 10)) * 100);
+      onComplete?.(score, accuracy);
       setScreen("complete");
     } else {
       setIdx(i => i + 1);

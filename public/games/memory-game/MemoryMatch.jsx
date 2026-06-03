@@ -13,7 +13,7 @@ function shuffle(arr) {
   return [...arr].sort(() => Math.random() - 0.5);
 }
 
-export default function MemoryMatch() {
+export default function MemoryMatch({ onComplete }) {
   const [cards, setCards] = useState([]);
   const [flipped, setFlipped] = useState([]);
   const [matched, setMatched] = useState(new Set());
@@ -40,20 +40,28 @@ export default function MemoryMatch() {
 
     if (next.length === 2) {
       setLocked(true);
-      setMoves(m => m + 1);
-      const [a, b] = next.map(idx => cards[idx]);
-      if (a.word === b.word) {
-        setMatched(prev => {
-          const s = new Set(prev);
-          s.add(next[0]); s.add(next[1]);
-          if (s.size === cards.length) setWon(true);
-          return s;
-        });
-        setFlipped([]);
-        setLocked(false);
-      } else {
-        setTimeout(() => { setFlipped([]); setLocked(false); }, 900);
-      }
+      setMoves(m => {
+        const newMoves = m + 1;
+        const [a, b] = next.map(idx => cards[idx]);
+        if (a.word === b.word) {
+          setMatched(prev => {
+            const s = new Set(prev);
+            s.add(next[0]); s.add(next[1]);
+            if (s.size === cards.length) {
+              setWon(true);
+              const totalPairs = cards.length / 2;
+              const accuracy = Math.max(0, Math.round(100 - ((newMoves - totalPairs) / totalPairs) * 50));
+              setTimeout(() => onComplete?.(accuracy, accuracy), 800);
+            }
+            return s;
+          });
+          setFlipped([]);
+          setLocked(false);
+        } else {
+          setTimeout(() => { setFlipped([]); setLocked(false); }, 900);
+        }
+        return newMoves;
+      });
     }
   };
 

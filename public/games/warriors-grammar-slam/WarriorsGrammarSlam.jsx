@@ -41,7 +41,7 @@ const QUESTIONS_DB = {
 
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
 
-export default function WarriorsGrammarSlam() {
+export default function WarriorsGrammarSlam({ onComplete }) {
   const [screen, setScreen] = useState("start");
   const [playerName, setPlayerName] = useState("");
   const [level, setLevel] = useState(1);
@@ -83,6 +83,8 @@ export default function WarriorsGrammarSlam() {
     if (idx + 1 >= questions.length) {
       const nextLvl = level + 1;
       if (QUESTIONS_DB[nextLvl]) setUnlocked(u => ({ ...u, [nextLvl]: true }));
+      const accuracy = Math.round((score / (questions.length * 10)) * 100);
+      onComplete?.(score, accuracy);
       setScreen("complete");
     } else {
       setIdx(i => i + 1);
@@ -189,12 +191,10 @@ export default function WarriorsGrammarSlam() {
           </div>
         )}
 
-        {/* Progress bar */}
         <div style={{ height: 6, background: "#1e293b", borderRadius: 999, marginBottom: 20, overflow: "hidden" }}>
           <div style={{ height: "100%", width: `${(idx / questions.length) * 100}%`, background: LEVEL_COLORS[level], borderRadius: 999, transition: "width 0.3s" }} />
         </div>
 
-        {/* Question card */}
         <div style={{
           background: "rgba(255,255,255,0.06)", borderRadius: 24, padding: 28, textAlign: "center",
           marginBottom: 20, border: "1px solid rgba(255,255,255,0.1)",
@@ -205,7 +205,6 @@ export default function WarriorsGrammarSlam() {
           </p>
         </div>
 
-        {/* Options */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
           {current.options.map(opt => {
             const isCorrect = answered && opt === current.correct;
