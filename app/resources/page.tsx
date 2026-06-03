@@ -132,8 +132,8 @@ export default function ResourcesPage() {
                 <span style={{ fontSize: '1.8rem' }}>{r.icon}</span>
                 <span className={`card-tag ${r.tagColor}`} style={{ fontSize: '0.68rem', padding: '3px 10px' }}>{r.tag}</span>
               </div>
-              <div style={{ fontWeight: 700, fontSize: '0.93rem', lineHeight: 1.4 }}>{r.title}</div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--muted)', lineHeight: 1.6, flex: 1 }}>{r.desc}</div>
+              <div style={{ fontWeight: 700, fontSize: '0.93rem', lineHeight: 1.4 }} className="resource-card-title">{r.title}</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--muted)', lineHeight: 1.6, flex: 1 }} className="resource-card-desc">{r.desc}</div>
               {r.link ? (
                 <a href={r.link} target="_blank" rel="noreferrer" className="pill-btn" style={{ textDecoration: 'none', textAlign: 'center', fontSize: '0.8rem' }}>
                   Open →
