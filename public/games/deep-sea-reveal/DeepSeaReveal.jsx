@@ -160,7 +160,7 @@ export default function DeepSeaReveal() {
     const pts = Math.round(pct * (zoneData?.basePoints || 100) * multiplier) + perfBonus;
     setScore(s => s + pts);
     if (isPerf) setStreak(s => s + 1); else setStreak(0);
-    setFeedback({ correct, total: seq.length, pts, seq });
+    setFeedback({ correct, total: seq.length, pts, seq: creature.seq });
     setPhase("feedback");
   }, [zoneData, multiplier]);
 
