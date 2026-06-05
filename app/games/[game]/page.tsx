@@ -7,6 +7,9 @@ import { useGame } from '@/lib/gameState';
 import { auth, saveStudentScore } from '@/lib/firebase';
 import { syncCurrentPlayerToLeaderboard } from '@/lib/leaderboard';
 import { GAME_NAMES, GAME_ICONS, GAME_URLS } from '@/lib/constants';
+import { useControls } from '@/hooks/useControls';
+import DesktopControls from '@/components/game/DesktopControls';
+import MobileControls from '@/components/game/MobileControls';
 
 // ── React game component props and registry ──
 type GameComponentProps = {
@@ -14,37 +17,37 @@ type GameComponentProps = {
 };
 
 const GAME_COMPONENTS: Record<string, React.LazyExoticComponent<React.ComponentType<GameComponentProps>> | undefined> = {
-  unicorn:    lazy(() => import('@/public/games/unicorn-run/UnicornRun.jsx')),
-  warriors:   lazy(() => import('@/public/games/warriors-grammar-slam/WarriorsGrammarSlam.jsx')),
-  memory:     lazy(() => import('@/public/games/memory-game/MemoryMatch.jsx')),
-  compound:   lazy(() => import('@/public/games/compound-word-quest/CompoundWordQuest.jsx')),
-  animal:     lazy(() => import('@/public/games/animal-kingdom-quest/AnimalKingdomQuest.jsx')),
-  wordmatch:  lazy(() => import('@/public/games/word-match/WordMatch.jsx')),
-  missingfruit: lazy(() => import('@/public/games/missing-fruit/MissingFruit.jsx')),
-  animalclass: lazy(() => import('@/public/games/animal-class-quest/AnimalClassQuest.jsx')),
-  blockfight: lazy(() => import('@/public/games/block-fight/BlockFight.jsx')),
-  colourclash: lazy(() => import('@/public/games/colour-clash/ColourClash.jsx')),
-  compoundword: lazy(() => import('@/public/games/compound-word/CompoundWord.jsx')),
-  crimsonduel: lazy(() => import('@/public/games/crimson-color-duel/CrimsonColorDuel.jsx')),
-  deepseaReveal: lazy(() => import('@/public/games/deep-sea-reveal/DeepSeaReveal.jsx')),
-  emojimatch: lazy(() => import('@/public/games/emoji-match/EmojiMatch.jsx')),
-  emojispelling: lazy(() => import('@/public/games/emoji-spelling-game/EmojiSpellingMaster.jsx')),
-  familyquest: lazy(() => import('@/public/games/family-quest/FamilyQuest.jsx')),
-  farmgame: lazy(() => import('@/public/games/farm-game/FarmGame.jsx')),
-  findmyfood: lazy(() => import('@/public/games/find-my-food/FindMyFood.jsx')),
-  flagmaster: lazy(() => import('@/public/games/flagmaster/Flagmaster.jsx')),
-  foodwordhunt: lazy(() => import('@/public/games/food-word-hunt/FoodWordHunt.jsx')),
-  fruitwordhunt: lazy(() => import('@/public/games/fruit-word-hunt/FruitWordHunt.jsx')),
-  lakersracer: lazy(() => import('@/public/games/lakers-showtime-racer/LakersShowtimeRacer.jsx')),
-  neonbridge: lazy(() => import('@/public/games/neon-bridge-of-destiny/NeonBridgeOfDestiny.jsx')),
-  oceanquest: lazy(() => import('@/public/games/ocean-quest/OceanQuest.jsx')),
-  pacman: lazy(() => import('@/public/games/pac-man/PacMan.jsx')),
-  phonicsadventure: lazy(() => import('@/public/games/phonics-adventure/PhonicAdventure.jsx')),
-  phonicsworld: lazy(() => import('@/public/games/phonics-world/PhonicWorld.jsx')),
-  shuttlecock: lazy(() => import('@/public/games/shuttlecock-smash/ShuttlecockSmash.jsx')),
-  tornado: lazy(() => import('@/public/games/tornado/Tornado.jsx')),
-  wgrandprix: lazy(() => import('@/public/games/w-grand-prix/WGrandPrix.jsx')),
-  wordfusion: lazy(() => import('@/public/games/word-fusion/WordFusion.jsx')),
+  unicorn:    lazy(() => import('@/games/unicorn-run/UnicornRun.jsx')),
+  warriors:   lazy(() => import('@/games/warriors-grammar-slam/WarriorsGrammarSlam.jsx')),
+  memory:     lazy(() => import('@/games/memory-game/MemoryMatch.jsx')),
+  compound:   lazy(() => import('@/games/compound-word-quest/CompoundWordQuest.jsx')),
+  animal:     lazy(() => import('@/games/animal-kingdom-quest/AnimalKingdomQuest.jsx')),
+  wordmatch:  lazy(() => import('@/games/word-match/WordMatch.jsx')),
+  missingfruit: lazy(() => import('@/games/missing-fruit/MissingFruit.jsx')),
+  animalclass: lazy(() => import('@/games/animal-class-quest/AnimalClassQuest.jsx')),
+  blockfight: lazy(() => import('@/games/block-fight/BlockFight')),
+  colourclash: lazy(() => import('@/games/colour-clash/ColourClash.jsx')),
+  compoundword: lazy(() => import('@/games/compound-word/CompoundWord.jsx')),
+  crimsonduel: lazy(() => import('@/games/crimson-color-duel/CrimsonColorDuel.jsx')),
+  deepseaReveal: lazy(() => import('@/games/deep-sea-reveal/DeepSeaReveal.jsx')),
+  emojimatch: lazy(() => import('@/games/emoji-match/EmojiMatch.jsx')),
+  emojispelling: lazy(() => import('@/games/emoji-spelling-game/EmojiSpellingMaster.jsx')),
+  familyquest: lazy(() => import('@/games/family-quest/FamilyQuest.jsx')),
+  farmgame: lazy(() => import('@/games/farm-game/FarmGame.jsx')),
+  findmyfood: lazy(() => import('@/games/find-my-food/FindMyFood.jsx')),
+  flagmaster: lazy(() => import('@/games/flagmaster/Flagmaster.jsx')),
+  foodwordhunt: lazy(() => import('@/games/food-word-hunt/FoodWordHunt.jsx')),
+  fruitwordhunt: lazy(() => import('@/games/fruit-word-hunt/FruitWordHunt.jsx')),
+  lakersracer: lazy(() => import('@/games/lakers-showtime-racer/LakersShowtimeRacer.jsx')),
+  neonbridge: lazy(() => import('@/games/neon-bridge-of-destiny/NeonBridgeOfDestiny.jsx')),
+  oceanquest: lazy(() => import('@/games/ocean-quest/OceanQuest.jsx')),
+  pacman: lazy(() => import('@/games/pac-man/PacMan.jsx')),
+  phonicsadventure: lazy(() => import('@/games/phonics-adventure/PhonicAdventure.jsx')),
+  phonicsworld: lazy(() => import('@/games/phonics-world/PhonicWorld.jsx')),
+  shuttlecock: lazy(() => import('@/games/shuttlecock-smash/ShuttlecockSmash.jsx')),
+  tornado: lazy(() => import('@/games/tornado/Tornado.jsx')),
+  wgrandprix: lazy(() => import('@/games/w-grand-prix/WGrandPrix.jsx')),
+  wordfusion: lazy(() => import('@/games/word-fusion/WordFusion.jsx')),
 };
 
 // ── Types ─────────────────────────────────────────────────────
@@ -89,8 +92,9 @@ function ResultModal({ result, gameName, onContinue }: {
 export default function GamePage() {
   const router  = useRouter();
   const params  = useParams();
-  const gameId  = (params?.gameId as string) ?? '';
+  const gameId  = (params?.game as string) ?? '';
   const { state, setState, updateGameStats, addXP } = useGame();
+  const { isMobile } = useControls();
 
   const [result, setResult]   = useState<GameResult | null>(null);
   const [loading, setLoading] = useState(true);
@@ -203,6 +207,10 @@ export default function GamePage() {
           />
         </>
       )}
+
+      <div style={{ position: 'fixed', left: 16, right: 16, bottom: 16, zIndex: 9, pointerEvents: 'none' }}>
+        {isMobile ? <MobileControls /> : <DesktopControls />}
+      </div>
 
       {result && <ResultModal result={result} gameName={gameName} onContinue={handleContinue} />}
     </div>

@@ -4,7 +4,7 @@
 import { usePathname } from 'next/navigation';
 import { type ReactNode } from 'react';
 import Navbar from './Navbar';
-import Toast from './Toast';
+import Toast from './ui/Toast';
 import AchievementToast from './AchievementToast';
 import { useGame } from '@/lib/gameState';
 

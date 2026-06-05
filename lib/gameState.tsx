@@ -39,6 +39,9 @@ const DEFAULT_STATE: HubState = {
   games: Object.fromEntries(GAME_KEYS.map(k => [k, { ...DEFAULT_GAME }])),
 };
 
+const LOCAL_KEY = 'eslhub_data';
+const BACKUP_KEY = 'eslhub_data_backup';
+
 // ── Context ───────────────────────────────────────────────────
 
 interface GameContextValue {
@@ -73,28 +76,69 @@ export async function logOut() {
 
 function loadLocal(): HubState {
   try {
-    const saved = localStorage.getItem('eslhub_data');
-    if (!saved) return DEFAULT_STATE;
-    const parsed = JSON.parse(saved);
-    return {
-      ...DEFAULT_STATE,
-      ...parsed,
-      games: { ...DEFAULT_STATE.games, ...parsed.games },
-    };
+    const saved = localStorage.getItem(LOCAL_KEY);
+    const backup = localStorage.getItem(BACKUP_KEY);
+    const parsed = saved ? normalizeState(JSON.parse(saved)) : DEFAULT_STATE;
+    const parsedBackup = backup ? normalizeState(JSON.parse(backup)) : null;
+    return parsedBackup && isRicherState(parsedBackup, parsed) ? parsedBackup : parsed;
   } catch { return DEFAULT_STATE; }
 }
 
+function normalizeState(value: Partial<HubState>): HubState {
+  return {
+    ...DEFAULT_STATE,
+    ...value,
+    games: { ...DEFAULT_STATE.games, ...(value.games || {}) },
+  };
+}
+
+function totalXp(state: Partial<HubState>) {
+  const level = state.level || 1;
+  let total = state.xp || 0;
+  for (let lvl = 1; lvl < level; lvl++) total += xpForLevel(lvl);
+  return total;
+}
+
+function progressScore(state: Partial<HubState>) {
+  const games = state.games || {};
+  return Object.values(games).reduce((sum, game) => {
+    return sum + (game?.highScore || 0) + (game?.completions || 0) * 25;
+  }, totalXp(state) + (state.coins || 0));
+}
+
+function isRicherState(candidate: HubState, current: HubState) {
+  return progressScore(candidate) > progressScore(current);
+}
+
+function backupLocalState() {
+  try {
+    const saved = localStorage.getItem(LOCAL_KEY);
+    if (saved && progressScore(JSON.parse(saved)) > 0) {
+      localStorage.setItem(BACKUP_KEY, saved);
+    }
+  } catch {}
+}
+
+function chooseProfileValue(remoteValue: string | undefined, localValue: string, defaultValue: string) {
+  if (localValue && localValue !== defaultValue) return localValue;
+  return remoteValue || localValue;
+}
+
 function mergeRemote(local: HubState, remote: Partial<HubState>): HubState {
+  const localTotalXp = totalXp(local);
+  const remoteTotalXp = totalXp(remote);
+  const useRemoteXp = remoteTotalXp > localTotalXp;
+
   const merged: HubState = {
     ...local,
-    name:        remote.name        || local.name,
-    username:    remote.username    || local.username,
-    avatar:      remote.avatar      || local.avatar,
-    theme:       remote.theme       || local.theme,
-    xp:          remote.xp          ?? local.xp,
-    level:       remote.level       ?? local.level,
-    coins:       remote.coins       ?? local.coins,
-    loginStreak: remote.loginStreak ?? local.loginStreak,
+    name:        chooseProfileValue(remote.name, local.name, DEFAULT_STATE.name),
+    username:    chooseProfileValue(remote.username, local.username, DEFAULT_STATE.username),
+    avatar:      chooseProfileValue(remote.avatar, local.avatar, DEFAULT_STATE.avatar),
+    theme:       chooseProfileValue(remote.theme, local.theme, DEFAULT_STATE.theme),
+    xp:          useRemoteXp ? (remote.xp ?? local.xp) : local.xp,
+    level:       useRemoteXp ? (remote.level ?? local.level) : local.level,
+    coins:       Math.max(local.coins || 0, remote.coins || 0),
+    loginStreak: Math.max(local.loginStreak || 0, remote.loginStreak || 0),
     lastGame:    remote.lastGame    || local.lastGame,
     lastLogin:   remote.lastLogin   || local.lastLogin,
     sound:       remote.sound       !== undefined ? remote.sound : local.sound,
@@ -166,20 +210,24 @@ export function GameProvider({ children }: { children: ReactNode }) {
       if (!user) { uidRef.current = null; return; }
       uidRef.current = user.uid;
       const remote = await loadUserState(user.uid);
+      backupLocalState();
+      const local = loadLocal();
       if (remote) {
-        const local   = loadLocal();
         const merged  = mergeRemote(local, remote as Partial<HubState>);
-        localStorage.setItem('eslhub_data', JSON.stringify(merged));
+        localStorage.setItem(LOCAL_KEY, JSON.stringify(merged));
+        saveUserState(user.uid, merged).catch(() => {});
         setStateRaw(merged);
         applyThemeClass(merged.theme);
         setEarnedIds(getEarnedIds(merged));
+      } else if (progressScore(local) > 0) {
+        saveUserState(user.uid, local).catch(() => {});
       }
     });
     return unsub;
   }, []);
 
   function persist(s: HubState) {
-    localStorage.setItem('eslhub_data', JSON.stringify(s));
+    localStorage.setItem(LOCAL_KEY, JSON.stringify(s));
     // Debounced Firestore write
     if (uidRef.current) {
       if (fbTimerRef.current) clearTimeout(fbTimerRef.current);
