@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { useGame } from "@/lib/gameState";
 
 const FAMILY = [
   { word:"grandfather", emoji:"👴", q:"Who is he?",      desc:"I am your mother's father." },
@@ -50,12 +51,14 @@ function Tile({ member, onClick, revealed, correct, wrong, dimmed }) {
 }
 
 export default function FamilyQuest() {
+  const { completeGame } = useGame();
   const [screen, setScreen] = useState("menu"); // menu | mode | mcq | spell | tree | result
   const [mode, setMode] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [qIdx, setQIdx] = useState(0);
   const [score, setScore] = useState(0);
   const [combo, setCombo] = useState(0);
+  const [correctCount, setCorrectCount] = useState(0);
   const [selected, setSelected] = useState(null);
   const [answered, setAnswered] = useState(false);
   const [spellInput, setSpellInput] = useState("");
@@ -69,6 +72,7 @@ export default function FamilyQuest() {
     setMode(m);
     setScore(0);
     setCombo(0);
+    setCorrectCount(0);
     setQIdx(0);
     setSelected(null);
     setAnswered(false);
@@ -95,12 +99,20 @@ export default function FamilyQuest() {
     if (word === current.word) {
       setScore(s => s + 10 + (combo >= 2 ? 5 : 0));
       setCombo(c => c + 1);
+      setCorrectCount(c => c + 1);
     } else {
       setCombo(0);
     }
   };
   const mcqNext = () => {
-    if (qIdx + 1 >= questions.length) { setScreen("result"); return; }
+    if (qIdx + 1 >= questions.length) {
+      setCorrectCount(final => {
+        const accuracy = Math.round((final / questions.length) * 100);
+        completeGame('family-quest', accuracy, questions.length);
+        return final;
+      });
+      setScreen("result"); return; 
+    }
     setQIdx(i => i + 1);
     setSelected(null);
     setAnswered(false);
@@ -110,10 +122,17 @@ export default function FamilyQuest() {
   const spellCheck = () => {
     const correct = spellInput.trim().toLowerCase() === current.word;
     setSpellResult(correct ? "correct" : "wrong");
-    if (correct) { setScore(s => s + 15); setCombo(c => c + 1); }
+    if (correct) { setScore(s => s + 15); setCombo(c => c + 1); setCorrectCount(c => c + 1); }
     else setCombo(0);
     setTimeout(() => {
-      if (qIdx + 1 >= questions.length) { setScreen("result"); return; }
+      if (qIdx + 1 >= questions.length) {
+        setCorrectCount(final => {
+          const accuracy = Math.round((final / questions.length) * 100);
+          completeGame('family-quest', accuracy, questions.length);
+          return final;
+        });
+        setScreen("result"); return;
+      }
       setQIdx(i => i + 1);
       setSpellInput("");
       setSpellResult(null);
@@ -149,9 +168,17 @@ export default function FamilyQuest() {
       setTreeMatched(next);
       setTreeFeedback("correct");
       setScore(s => s + 10);
+      setCorrectCount(c => c + 1);
       setTimeout(() => {
         setTreeFeedback(null);
-        if (treeDescIdx + 1 >= FAMILY.length) { setScreen("result"); }
+        if (treeDescIdx + 1 >= FAMILY.length) { 
+          setCorrectCount(final => {
+            const accuracy = Math.round((final / FAMILY.length) * 100);
+            completeGame('family-quest', accuracy, FAMILY.length);
+            return final;
+          });
+          setScreen("result"); 
+        }
         else setTreeDescIdx(i => i + 1);
       }, 700);
     } else {

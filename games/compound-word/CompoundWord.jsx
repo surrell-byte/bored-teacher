@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { useGame } from "@/lib/gameState";
 
 const QUESTIONS = [
   { e1:"☀️", w1:"sun", e2:"🌸", w2:"flower", answer:"sunflower", options:["sunflower","sunlight","sunbeam","sunhat"], hint:"A tall plant that faces the sun" },
@@ -21,9 +22,11 @@ const QUESTIONS = [
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
 
 export default function CompoundWord() {
+  const { completeGame } = useGame();
   const [questions] = useState(() => shuffle(QUESTIONS));
   const [idx, setIdx] = useState(0);
   const [score, setScore] = useState(0);
+  const [correctCount, setCorrectCount] = useState(0);
   const [selected, setSelected] = useState(null);
   const [answered, setAnswered] = useState(false);
   const [showHint, setShowHint] = useState(false);
@@ -35,19 +38,27 @@ export default function CompoundWord() {
     if (answered) return;
     setSelected(opt);
     setAnswered(true);
-    if (opt === current.answer) setScore(s => s + 10);
+    if (opt === current.answer) {
+      setScore(s => s + 10);
+      setCorrectCount(c => c + 1);
+    }
   };
 
   const next = useCallback(() => {
-    if (idx + 1 >= questions.length) { setDone(true); return; }
+    if (idx + 1 >= questions.length) {
+      const accuracy = Math.round((correctCount / questions.length) * 100);
+      completeGame('compound-word', accuracy, questions.length);
+      setDone(true);
+      return;
+    }
     setIdx(i => i + 1);
     setSelected(null);
     setAnswered(false);
     setShowHint(false);
-  }, [idx, questions.length]);
+  }, [idx, questions.length, correctCount, completeGame]);
 
   const restart = () => {
-    setIdx(0); setScore(0); setSelected(null);
+    setIdx(0); setScore(0); setCorrectCount(0); setSelected(null);
     setAnswered(false); setShowHint(false); setDone(false);
   };
 

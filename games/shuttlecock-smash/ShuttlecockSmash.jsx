@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 
 const QUESTIONS_DB = {
   1: [
@@ -29,7 +29,7 @@ const QUESTIONS_DB = {
 
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
 
-export default function ShuttlecockSmash() {
+export default function ShuttlecockSmash({ onComplete }) {
   const [screen, setScreen] = useState("start");
   const [playerName, setPlayerName] = useState("");
   const [level, setLevel] = useState(1);
@@ -37,14 +37,31 @@ export default function ShuttlecockSmash() {
   const [questions, setQuestions] = useState([]);
   const [idx, setIdx] = useState(0);
   const [score, setScore] = useState(0);
+  const [correctCount, setCorrectCount] = useState(0);
   const [selected, setSelected] = useState(null);
   const [answered, setAnswered] = useState(false);
+
+  // Load progress on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("shuttlecock-smash-v1");
+    if (saved) {
+      try {
+        setUnlocked(JSON.parse(saved));
+      } catch (e) { console.error("Failed to load progress", e); }
+    }
+  }, []);
+
+  // Auto-save progress
+  useEffect(() => {
+    localStorage.setItem("shuttlecock-smash-v1", JSON.stringify(unlocked));
+  }, [unlocked]);
 
   const startLevel = useCallback((lvl) => {
     setLevel(lvl);
     setQuestions(shuffle(QUESTIONS_DB[lvl]));
     setIdx(0);
     setScore(0);
+    setCorrectCount(0);
     setSelected(null);
     setAnswered(false);
     setScreen("game");
@@ -56,12 +73,17 @@ export default function ShuttlecockSmash() {
     if (answered) return;
     setSelected(opt);
     setAnswered(true);
-    if (opt === current.correct) setScore(s => s + 10);
+    if (opt === current.correct) {
+      setScore(s => s + 10);
+      setCorrectCount(c => c + 1);
+    }
   };
 
   const next = () => {
     if (idx + 1 >= questions.length) {
       if (level === 1) setUnlocked(u => ({ ...u, 2: true }));
+      const accuracy = Math.round((correctCount / questions.length) * 100);
+      onComplete?.(score, accuracy);
       setScreen("complete");
     } else {
       setIdx(i => i + 1);

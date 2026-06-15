@@ -1,15 +1,18 @@
 import { useState, useEffect, useCallback } from "react";
 
 const FRUITS = ["🍎","🍌","🍇","🍊","🍓","🍉","🍍","🥝","🍑"];
+const MAX_ROUNDS = 5;
 
-export default function MissingFruit() {
+export default function MissingFruit({ onComplete }) {
   const [fruits, setFruits] = useState([]);
   const [missingIdx, setMissingIdx] = useState(-1);
-  const [phase, setPhase] = useState("memorise"); // memorise | guess | result
+  const [phase, setPhase] = useState("memorise"); // memorise | guess | result | complete
   const [result, setResult] = useState(null);
   const [score, setScore] = useState(0);
   const [round, setRound] = useState(0);
+  const [mistakes, setMistakes] = useState(0);
   const [wrong, setWrong] = useState(new Set());
+  const [finished, setFinished] = useState(false);
 
   const startRound = useCallback(() => {
     const shuffled = [...FRUITS].sort(() => Math.random() - 0.5);
@@ -32,12 +35,45 @@ export default function MissingFruit() {
       setPhase("result");
     } else {
       setWrong(prev => new Set([...prev, idx]));
+      setMistakes(m => m + 1);
       setResult("wrong");
       setTimeout(() => setResult(null), 700);
     }
   };
 
-  const next = () => { setRound(r => r + 1); startRound(); };
+  const next = () => { 
+    if (round + 1 >= MAX_ROUNDS) {
+      const accuracy = Math.round((MAX_ROUNDS / (MAX_ROUNDS + mistakes)) * 100);
+      onComplete?.(score, accuracy);
+      setPhase("complete");
+      setFinished(true);
+    } else {
+      setRound(r => r + 1); 
+      startRound(); 
+    }
+  };
+
+  if (finished) return (
+    <div style={{
+      minHeight: "100vh", display: "flex", flexDirection: "column",
+      alignItems: "center", justifyContent: "center",
+      background: "linear-gradient(135deg,#fef3c7,#fed7aa)",
+      fontFamily: "'Segoe UI', sans-serif", padding: 24, textAlign: "center",
+    }}>
+      <div style={{ fontSize: "4rem", marginBottom: 12 }}>🏆</div>
+      <h2 style={{ fontSize: "2.2rem", color: "#92400e", marginBottom: 8 }}>Game Complete!</h2>
+      <p style={{ color: "#b45309", fontSize: "1.3rem", marginBottom: 24 }}>
+        Final Score: <strong>{score}</strong><br/>
+        Accuracy: <strong>{Math.round((MAX_ROUNDS / (MAX_ROUNDS + mistakes)) * 100)}%</strong>
+      </p>
+      <button onClick={() => { setScore(0); setRound(0); setMistakes(0); setFinished(false); startRound(); }} style={{
+        padding: "16px 42px", borderRadius: 999, border: "none",
+        background: "linear-gradient(135deg,#22c55e,#16a34a)",
+        color: "#fff", fontWeight: 800, fontSize: "1.1rem", cursor: "pointer",
+        boxShadow: "0 4px 16px #22c55e44",
+      }}>🔄 Play Again</button>
+    </div>
+  );
 
   return (
     <div style={{

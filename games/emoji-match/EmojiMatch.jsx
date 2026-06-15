@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
+import { useGame } from "@/lib/gameState";
 
 const EMOJI_POOL = ["🦓","🐬","🦈","🐈","🥐","🐅","🍕","🦒","🐙","🦋","🐧","🍓","🌸","🦁","🦊","🐻","🍦","🎸"];
 
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
 
 export default function EmojiMatch() {
+  const { completeGame } = useGame();
   const [cards, setCards] = useState([]);
   const [flipped, setFlipped] = useState([]);
   const [matched, setMatched] = useState(new Set());
@@ -38,7 +40,13 @@ export default function EmojiMatch() {
         setMatched(prev => {
           const s = new Set(prev);
           s.add(next[0]); s.add(next[1]);
-          if (s.size === cards.length) setTimeout(() => setWon(true), 300);
+          if (s.size === cards.length) {
+            setTimeout(() => {
+              setWon(true);
+              const accuracy = Math.max(0, 100 - (moves - pairs) * 10);
+              completeGame('emoji-match', accuracy, pairs);
+            }, 300);
+          }
           return s;
         });
         setFlipped([]);

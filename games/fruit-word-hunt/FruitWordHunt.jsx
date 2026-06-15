@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 
 const ALL_FRUITS = [
   { emoji: "🍎", name: "apple" }, { emoji: "🍐", name: "pear" },
@@ -19,7 +19,14 @@ const LEVELS = [
 
 const LEVEL_COLORS = ["#22c55e","#f59e0b","#ef4444"];
 
-function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
+function shuffle(arr) {
+  const result = [...arr];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
 function randomLetter() { return "abcdefghijklmnopqrstuvwxyz"[Math.floor(Math.random() * 26)]; }
 
 function buildTiles(word, extra) {
@@ -30,16 +37,34 @@ function buildTiles(word, extra) {
 
 function getFruit(name) { return ALL_FRUITS.find(f => f.name === name); }
 
-export default function FruitWordHunt() {
+export default function FruitWordHunt({ onComplete }) {
   const [screen, setScreen] = useState("menu");
   const [levelIdx, setLevelIdx] = useState(0);
   const [unlocked, setUnlocked] = useState([true, false, false]);
   const [fruitIdx, setFruitIdx] = useState(0);
   const [score, setScore] = useState([0, 0, 0]);
+  const [mistakes, setMistakes] = useState(0);
   const [tiles, setTiles] = useState([]);
   const [typed, setTyped] = useState([]);
   const [feedback, setFeedback] = useState("");
   const [levelComplete, setLevelComplete] = useState(false);
+
+  // Load progress on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("fruit-word-hunt-v1");
+    if (saved) {
+      try {
+        const { unlocked: u, score: s } = JSON.parse(saved);
+        if (u) setUnlocked(u);
+        if (s) setScore(s);
+      } catch (e) { console.error("Failed to load progress", e); }
+    }
+  }, []);
+
+  // Auto-save progress whenever unlocked levels or scores change
+  useEffect(() => {
+    localStorage.setItem("fruit-word-hunt-v1", JSON.stringify({ unlocked, score }));
+  }, [unlocked, score]);
 
   const loadFruit = useCallback((lvlIdx, fIdx, tiles0 = null) => {
     const lvl = LEVELS[lvlIdx];
@@ -53,6 +78,7 @@ export default function FruitWordHunt() {
     setLevelIdx(lvlIdx);
     setFruitIdx(0);
     setLevelComplete(false);
+    setMistakes(0);
     loadFruit(lvlIdx, 0);
     setScreen("game");
   }, [loadFruit]);
@@ -73,22 +99,26 @@ export default function FruitWordHunt() {
       const guess = nextTyped.map(x => x.letter).join("");
       if (guess === currentFruitName) {
         setFeedback("correct");
-        const newScore = score.map((s, i) => i === levelIdx ? s + 10 : s);
-        setScore(newScore);
+        setScore(prev => prev.map((s, i) => i === levelIdx ? s + 10 : s));
         setTimeout(() => {
-          const nextFruitIdx = fruitIdx + 1;
-          if (nextFruitIdx >= currentLevel.fruits.length) {
-            // Level done
-            const nextLvlIdx = levelIdx + 1;
-            if (nextLvlIdx < LEVELS.length) setUnlocked(u => u.map((v, i) => i === nextLvlIdx ? true : v));
-            setLevelComplete(true);
-          } else {
-            setFruitIdx(nextFruitIdx);
-            loadFruit(levelIdx, nextFruitIdx);
-          }
+          setFruitIdx(prevIdx => {
+            const nextIdx = prevIdx + 1;
+            if (nextIdx >= currentLevel.fruits.length) {
+              setUnlocked(u => u.map((v, i) => i === levelIdx + 1 ? true : v));
+              const accuracy = Math.round((currentLevel.fruits.length / (currentLevel.fruits.length + mistakes)) * 100);
+              // Report completion to the global system
+              onComplete?.(currentLevel.fruits.length * 10, accuracy);
+              setLevelComplete(true);
+              return prevIdx;
+            } else {
+              loadFruit(levelIdx, nextIdx);
+              return nextIdx;
+            }
+          });
         }, 1000);
       } else {
         setFeedback("wrong");
+        setMistakes(prev => prev + 1);
         setTimeout(() => {
           setTiles(prev => prev.map(t => ({ ...t, used: false })));
           setTyped([]);
@@ -170,6 +200,11 @@ export default function FruitWordHunt() {
       background: "linear-gradient(135deg,#fef2f2,#fff7ed,#fef9c3)",
       fontFamily: "'Segoe UI', sans-serif", padding: 24,
     }}>
+      <button onClick={() => setScreen("menu")} style={{
+        position: "absolute", top: 20, left: 20, background: "none", border: "none",
+        fontSize: "1.8rem", cursor: "pointer", color: "#64748b", padding: 8
+      }}>✕</button>
+
       <div style={{ width: "100%", maxWidth: 480 }}>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
           <span style={{ background: LEVEL_COLORS[levelIdx], padding: "4px 14px", borderRadius: 999, color: "#fff", fontWeight: 700 }}>{currentLevel.name}</span>

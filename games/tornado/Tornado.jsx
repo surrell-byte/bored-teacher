@@ -19,7 +19,6 @@ const TILE_POOL = [
 
 function buildTiles() {
   const pool = [];
-  // Fill a 4x4 = 16 grid with randomized tiles
   while (pool.length < 16) {
     pool.push(...TILE_POOL.map(t => ({ ...t })));
   }
@@ -31,15 +30,14 @@ const TEAM_THEMES = [
   { label:"Team Red",  avatar:"🐲", color:"#ef4444", bg:"#7f1d1d" },
 ];
 
-export default function Tornado() {
+export default function Tornado({ onComplete }) {
   const [screen, setScreen] = useState("setup");
   const [teamNames, setTeamNames] = useState(["Team Blue","Team Red"]);
-  const [avatars, setAvatars] = useState(["🦁","🐲"]);
   const [tiles, setTiles] = useState([]);
   const [scores, setScores] = useState([0, 0]);
-  const [cp, setCp] = useState(0); // current player 0 or 1
-  const [revealed, setRevealed] = useState([]); // array of {idx, tile, team}
-  const [flash, setFlash] = useState(null); // {msg, color}
+  const [cp, setCp] = useState(0); 
+  const [revealed, setRevealed] = useState([]); 
+  const [flash, setFlash] = useState(null); 
   const [roundOver, setRoundOver] = useState(false);
 
   const startGame = () => {
@@ -64,7 +62,6 @@ export default function Tornado() {
     let msg = "", color = "#4ade80";
 
     if (tile.value === "steal") {
-      // Steal half of opponent's points
       const opp = 1 - cp;
       const stolen = Math.floor(scores[opp] / 2);
       const newScores = [...scores];
@@ -90,18 +87,20 @@ export default function Tornado() {
       setFlash(null);
       if (newRevealed.length >= tiles.length) {
         setRoundOver(true);
+        // Report to system - using winner's score for achievement check
+        const winnerScore = Math.max(...scores);
+        onComplete?.(winnerScore, 100);
       } else {
         setCp(p => 1 - p);
       }
     }, 1200);
-  }, [revealed, flash, tiles, cp, scores, teamNames]);
+  }, [revealed, flash, tiles, cp, scores, teamNames, onComplete]);
 
   const newRound = () => {
     setTiles(buildTiles());
     setRevealed([]);
     setFlash(null);
     setRoundOver(false);
-    // Keep scores, switch who goes first
     setCp(scores[0] > scores[1] ? 1 : 0);
   };
 
@@ -146,7 +145,6 @@ export default function Tornado() {
       background:"linear-gradient(135deg,#0f0f23,#1a0f2e)",
       fontFamily:"'Segoe UI', sans-serif", color:"#f1f5f9", padding:20,
     }}>
-      {/* Scores */}
       <div style={{ display:"flex", gap:40, marginBottom:14, alignItems:"center" }}>
         {[0,1].map(i=>(
           <div key={i} style={{ textAlign:"center" }}>
@@ -157,19 +155,15 @@ export default function Tornado() {
         ))}
       </div>
 
-      {/* Turn indicator */}
       {!roundOver && (
         <div style={{
           margin:"0 0 12px", padding:"6px 20px", borderRadius:999,
           background:`rgba(${cp===0?"59,130,246":"239,68,68"},0.15)`,
           border:`1px solid ${cp===0?col0:col1}`,
           color:cp===0?col0:col1, fontWeight:700,
-        }}>
-          {TEAM_THEMES[cp].avatar} {teamNames[cp]}'s turn — pick a tile!
-        </div>
+        }}>{TEAM_THEMES[cp].avatar} {teamNames[cp]}'s turn — pick a tile!</div>
       )}
 
-      {/* Flash feedback */}
       {flash && (
         <div style={{
           margin:"0 0 12px", padding:"10px 20px", borderRadius:12,
@@ -178,11 +172,7 @@ export default function Tornado() {
         }}>{flash.msg}</div>
       )}
 
-      {/* Tile grid */}
-      <div style={{
-        display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:8,
-        marginBottom:16,
-      }}>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:8, marginBottom:16 }}>
         {tiles.map((tile, i) => {
           const rev = revealed.find(r => r.idx === i);
           const isRevealed = !!rev;
@@ -197,23 +187,12 @@ export default function Tornado() {
                 border: isRevealed
                   ? `2px solid ${rev.tile.value==="steal"?"#f59e0b":typeof rev.tile.value==="number"&&rev.tile.value>=0?"#4ade80":"#ef4444"}`
                   : "2px solid rgba(255,255,255,0.1)",
-                transition:"all 0.2s",
-                transform: isRevealed?"scale(1.02)":"scale(1)",
+                transition:"all 0.2s", transform: isRevealed?"scale(1.02)":"scale(1)",
                 boxShadow: isRevealed && typeof rev.tile.value==="number" && rev.tile.value>=500?"0 0 16px #fbbf2466":"none",
               }}>
               {isRevealed ? (
-                <>
-                  <span style={{ fontSize:"1.6rem" }}>{rev.tile.icon}</span>
-                  <span style={{ fontSize:"0.6rem", marginTop:2, color:"#94a3b8" }}>
-                    {typeof rev.tile.value==="number"?(rev.tile.value>=0?"+":"")+rev.tile.value:"STEAL"}
-                  </span>
-                  <span style={{ fontSize:"0.5rem", color:TEAM_THEMES[rev.team].color }}>
-                    {TEAM_THEMES[rev.team].avatar}
-                  </span>
-                </>
-              ) : (
-                <span style={{ fontSize:"1.8rem" }}>❓</span>
-              )}
+                <><span style={{ fontSize:"1.6rem" }}>{rev.tile.icon}</span><span style={{ fontSize:"0.6rem", marginTop:2, color:"#94a3b8" }}>{typeof rev.tile.value==="number"?(rev.tile.value>=0?"+":"")+rev.tile.value:"STEAL"}</span><span style={{ fontSize:"0.5rem", color:TEAM_THEMES[rev.team].color }}>{TEAM_THEMES[rev.team].avatar}</span></>
+              ) : (<span style={{ fontSize:"1.8rem" }}>❓</span>)}
             </div>
           );
         })}
@@ -221,19 +200,10 @@ export default function Tornado() {
 
       {roundOver && (
         <div style={{ textAlign:"center" }}>
-          <div style={{ fontSize:"1.3rem", fontWeight:700, marginBottom:6, color:"#fbbf24" }}>
-            🏆 {scores[0]>scores[1]?teamNames[0]:scores[1]>scores[0]?teamNames[1]:"TIE"} leads!
-          </div>
+          <div style={{ fontSize:"1.3rem", fontWeight:700, marginBottom:6, color:"#fbbf24" }}>🏆 {scores[0]>scores[1]?teamNames[0]:scores[1]>scores[0]?teamNames[1]:"TIE"} leads!</div>
           <div style={{ display:"flex", gap:10, justifyContent:"center" }}>
-            <button onClick={newRound} style={{
-              padding:"12px 24px", borderRadius:999, border:"none",
-              background:"linear-gradient(135deg,#7c3aed,#6d28d9)",
-              color:"#fff", fontWeight:700, cursor:"pointer",
-            }}>🌪️ New Round</button>
-            <button onClick={() => setScreen("setup")} style={{
-              padding:"12px 24px", borderRadius:999, border:"none",
-              background:"#374151", color:"#fff", fontWeight:700, cursor:"pointer",
-            }}>🏠 Menu</button>
+            <button onClick={newRound} style={{ padding:"12px 24px", borderRadius:999, border:"none", background:"linear-gradient(135deg,#7c3aed,#6d28d9)", color:"#fff", fontWeight:700, cursor:"pointer" }}>🌪️ New Round</button>
+            <button onClick={() => setScreen("setup")} style={{ padding:"12px 24px", borderRadius:999, border:"none", background:"#374151", color:"#fff", fontWeight:700, cursor:"pointer" }}>🏠 Menu</button>
           </div>
         </div>
       )}

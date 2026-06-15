@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { useGame } from "@/lib/gameState";
 
 const EASY = [
   { name:"Frog",      emoji:"🐸", cls:"Amphibian" }, { name:"Cat",       emoji:"🐱", cls:"Mammal" },
@@ -50,6 +51,7 @@ function playBeep(type){
 }
 
 export default function AnimalClassQuest() {
+  const { completeGame } = useGame();
   const [screen, setScreen]     = useState("menu");
   const [level, setLevel]       = useState("easy");
   const [unlocked, setUnlocked] = useState({easy:true,medium:false,hard:false});
@@ -57,11 +59,12 @@ export default function AnimalClassQuest() {
   const [idx, setIdx]           = useState(0);
   const [score, setScore]       = useState(0);
   const [streak, setStreak]     = useState(0);
+  const [correctCount, setCorrectCount] = useState(0);
   const [wrongAns, setWrongAns] = useState(null);
   const [answered, setAnswered] = useState(false);
 
   const startLevel = useCallback((lvl)=>{
-    setLevel(lvl); setQs(shuffle(DB[lvl])); setIdx(0); setScore(0); setStreak(0);
+    setLevel(lvl); setQs(shuffle(DB[lvl])); setIdx(0); setScore(0); setStreak(0); setCorrectCount(0);
     setWrongAns(null); setAnswered(false); setScreen("game");
   },[]);
 
@@ -73,6 +76,7 @@ export default function AnimalClassQuest() {
     if(cls===current.cls){
       playBeep("correct");
       setScore(s=>s+(10+(streak>=2?5:0)));
+      setCorrectCount(c => c + 1);
       setStreak(s=>s+1);
     } else {
       playBeep("wrong");
@@ -86,6 +90,14 @@ export default function AnimalClassQuest() {
     if(ni>=questions.length){
       const nxt = level==="easy"?"medium":level==="medium"?"hard":null;
       if(nxt) setUnlocked(u=>({...u,[nxt]:true}));
+
+      const accuracy = Math.round((correctCount / questions.length) * 100);
+      completeGame(
+        'animal-quest',
+        accuracy,
+        questions.length
+      );
+
       setScreen("complete");
     } else {
       setIdx(ni); setAnswered(false); setWrongAns(null);

@@ -42,19 +42,37 @@ function buildQuestion(pool) {
   };
 }
 
-export default function Flagmaster() {
+export default function Flagmaster({ onComplete }) {
   const [screen, setScreen] = useState("welcome");
   const [diff, setDiff] = useState("easy");
   const [questions, setQuestions] = useState([]);
   const [idx, setIdx] = useState(0);
   const [score, setScore] = useState(0);
+  const [correctCount, setCorrectCount] = useState(0);
   const [streak, setStreak] = useState(0);
   const [selected, setSelected] = useState(null);
   const [answered, setAnswered] = useState(false);
   const [timeLeft, setTimeLeft] = useState(20);
   const [timedOut, setTimedOut] = useState(false);
+  const [bestScore, setBestScore] = useState(0);
 
   const diffDef = DIFFICULTIES.find(d => d.id === diff);
+
+  // Load achievements on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("flagmaster-best-score");
+    if (saved) setBestScore(parseInt(saved));
+  }, []);
+
+  // Auto-update best score achievement when game completes
+  useEffect(() => {
+    if (screen === "complete") {
+      if (score > bestScore) {
+        setBestScore(score);
+        localStorage.setItem("flagmaster-best-score", score.toString());
+      }
+    }
+  }, [screen, score, bestScore]);
 
   const startGame = useCallback((diffId) => {
     const d = DIFFICULTIES.find(x => x.id === diffId);
@@ -63,6 +81,7 @@ export default function Flagmaster() {
     setQuestions(pool.map(() => buildQuestion(shuffle(COUNTRIES).slice(0, d.size))));
     setIdx(0);
     setScore(0);
+    setCorrectCount(0);
     setStreak(0);
     setSelected(null);
     setAnswered(false);
@@ -91,6 +110,7 @@ export default function Flagmaster() {
     setSelected(opt);
     setAnswered(true);
     if (opt === current.name) {
+      setCorrectCount(c => c + 1);
       const bonus = streak >= 2 ? 5 : 0;
       setScore(s => s + 10 + bonus + Math.max(0, timeLeft));
       setStreak(s => s + 1);
@@ -100,7 +120,12 @@ export default function Flagmaster() {
   };
 
   const next = () => {
-    if (idx + 1 >= questions.length) { setScreen("complete"); return; }
+    if (idx + 1 >= questions.length) { 
+      const accuracy = Math.round((correctCount / questions.length) * 100);
+      onComplete?.(score, accuracy);
+      setScreen("complete"); 
+      return; 
+    }
     setIdx(i => i + 1);
     setSelected(null);
     setAnswered(false);

@@ -7,7 +7,7 @@ function generateSolution() {
   return Array.from({ length: ROWS }, () => Math.floor(Math.random() * 2));
 }
 
-export default function NeonBridgeOfDestiny() {
+export default function NeonBridgeOfDestiny({ onComplete }) {
   const [solution, setSolution] = useState(() => generateSolution());
   const [step, setStep] = useState(0);
   const [player, setPlayer] = useState(1);
@@ -18,6 +18,8 @@ export default function NeonBridgeOfDestiny() {
   const [flash, setFlash] = useState(null); // "safe" | "fall"
   const [msg, setMsg] = useState("");
   const [winner, setWinner] = useState(null);
+  const [player1CorrectChoices, setPlayer1CorrectChoices] = useState(0);
+  const [player1TotalChoices, setPlayer1TotalChoices] = useState(0);
 
   const p1Color = "#a855f7";
   const p2Color = "#06b6d4";
@@ -26,6 +28,14 @@ export default function NeonBridgeOfDestiny() {
     if (!active || flash) return;
     const correct = solution[step];
     const isCorrect = side === correct;
+
+    // Track Player 1's choices
+    if (player === 1) {
+      setPlayer1TotalChoices(prev => prev + 1);
+      if (isCorrect) {
+        setPlayer1CorrectChoices(prev => prev + 1);
+      }
+    }
 
     if (isCorrect) {
       setFlash("safe");
@@ -39,6 +49,15 @@ export default function NeonBridgeOfDestiny() {
           setWinner(player);
           setActive(false);
           setMsg(`🏆 Player ${player} crossed the bridge!`);
+          // Game ends - report for Player 1
+          if (player === 1) { // If Player 1 won
+            const finalScore = ROWS * 20; // Score adjusted to allow for achievements like "Grammar Rookie"
+            const finalAccuracy = player1TotalChoices > 0 ? Math.round((player1CorrectChoices / player1TotalChoices) * 100) : 0;
+            onComplete?.(finalScore, finalAccuracy);
+          } else { // If Player 2 won, Player 1's score is 0
+            const finalAccuracy = player1TotalChoices > 0 ? Math.round((player1CorrectChoices / player1TotalChoices) * 100) : 0;
+            onComplete?.(0, finalAccuracy);
+          }
         } else {
           setStep(nextStep);
           setPlayer(p => p === 1 ? 2 : 1);
@@ -58,13 +77,22 @@ export default function NeonBridgeOfDestiny() {
           setActive(false);
           setMsg(`🏆 Player ${player === 1 ? 2 : 1} wins! Player ${player} ran out of lives.`);
           setLives(newLives);
+          // Game ends - report for Player 1
+          if (player === 1) { // If Player 1 ran out of lives (lost)
+            const finalAccuracy = player1TotalChoices > 0 ? Math.round((player1CorrectChoices / player1TotalChoices) * 100) : 0;
+            onComplete?.(0, finalAccuracy);
+          } else { // If Player 2 ran out of lives (Player 1 won)
+            const finalScore = ROWS * 20; // Player 1 wins, so they get the full score
+            const finalAccuracy = player1TotalChoices > 0 ? Math.round((player1CorrectChoices / player1TotalChoices) * 100) : 0;
+            onComplete?.(finalScore, finalAccuracy);
+          }
         } else {
           setLives(newLives);
           setPlayer(p => p === 1 ? 2 : 1);
         }
       }, 700);
     }
-  }, [active, flash, solution, step, player, lives]);
+  }, [active, flash, solution, step, player, lives, player1CorrectChoices, player1TotalChoices, onComplete]);
 
   const reset = () => {
     setSolution(generateSolution());
@@ -77,6 +105,8 @@ export default function NeonBridgeOfDestiny() {
     setFlash(null);
     setMsg("");
     setWinner(null);
+    setPlayer1CorrectChoices(0);
+    setPlayer1TotalChoices(0);
   };
 
   const playerColor = player === 1 ? p1Color : p2Color;

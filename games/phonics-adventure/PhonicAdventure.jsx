@@ -37,13 +37,14 @@ const BG_COLORS = [
 
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
 
-export default function PhonicAdventure() {
+export default function PhonicAdventure({ onComplete }) {
   const [screen, setScreen] = useState("menu"); // menu | learn | quiz | result
   const [letterIdx, setLetterIdx] = useState(0);
   const [quizMode, setQuizMode] = useState("identify"); // identify | match
   const [quizLetters, setQuizLetters] = useState([]);
   const [qIdx, setQIdx] = useState(0);
   const [score, setScore] = useState(0);
+  const [mistakes, setMistakes] = useState(0);
   const [selected, setSelected] = useState(null);
   const [answered, setAnswered] = useState(false);
   const [completedLetters, setCompletedLetters] = useState(new Set());
@@ -58,6 +59,7 @@ export default function PhonicAdventure() {
     setQIdx(0);
     setScore(0);
     setSelected(null);
+    setMistakes(0);
     setAnswered(false);
     setScreen("quiz");
   }, []);
@@ -85,11 +87,18 @@ export default function PhonicAdventure() {
     if (opt.letter === currentQ.letter) {
       setScore(s => s + 10);
       setCompletedLetters(prev => new Set([...prev, currentQ.letter]));
+    } else {
+      setMistakes(m => m + 1);
     }
   };
 
   const quizNext = () => {
-    if (qIdx + 1 >= quizLetters.length) { setScreen("result"); return; }
+    if (qIdx + 1 >= quizLetters.length) {
+      const accuracy = Math.round(((score / 10) / quizLetters.length) * 100);
+      onComplete?.(score, accuracy);
+      setScreen("result");
+      return;
+    }
     setQIdx(i => i + 1);
     setSelected(null);
     setAnswered(false);

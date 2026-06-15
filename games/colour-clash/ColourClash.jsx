@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useGame } from "@/lib/gameState";
 
 const COLOURS = [
   { id:"red",    label:"RED",    bg:"linear-gradient(135deg,#ef4444,#b91c1c)", sound:261 },
@@ -31,6 +32,7 @@ const MODES = [
 ];
 
 export default function ColourClash() {
+  const { completeGame } = useGame();
   const [screen, setScreen] = useState("menu");
   const [mode, setMode] = useState("classic");
   const [sequence, setSequence] = useState([]);
@@ -40,6 +42,8 @@ export default function ColourClash() {
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
   const [round, setRound] = useState(0);
+  const [correctCount, setCorrectCount] = useState(0);
+  const [totalQuestions, setTotalQuestions] = useState(0);
   const phaseRef = useRef(phase);
   phaseRef.current = phase;
 
@@ -74,6 +78,8 @@ export default function ColourClash() {
     setScore(0);
     setLives(startLives);
     setRound(1);
+    setCorrectCount(0);
+    setTotalQuestions(0);
     showSequence(seq);
     setScreen("game");
   }, [colours, startLives, showSequence]);
@@ -85,6 +91,7 @@ export default function ColourClash() {
     setLit(id);
     setTimeout(() => setLit(null), 150);
 
+    setTotalQuestions(q => q + 1);
     const nextPlayer = [...playerSeq, id];
     setPlayerSeq(nextPlayer);
     const pos = nextPlayer.length - 1;
@@ -95,6 +102,14 @@ export default function ColourClash() {
       const newLives = lives - 1;
       setLives(newLives);
       if (newLives <= 0) {
+        setCorrectCount(currentCorrect => {
+          setTotalQuestions(currentTotal => {
+            const accuracy = currentTotal > 0 ? Math.round((currentCorrect / currentTotal) * 100) : 0;
+            completeGame('colour-clash', accuracy, currentTotal);
+            return currentTotal;
+          });
+          return currentCorrect;
+        });
         setPhase("gameover");
       } else {
         setPhase("wrong");
@@ -106,6 +121,7 @@ export default function ColourClash() {
       return;
     }
 
+    setCorrectCount(c => c + 1);
     if (nextPlayer.length === sequence.length) {
       // Correct full sequence
       playBeep(800, 0.1);

@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import { useGame } from "@/lib/gameState";
 
 const DATA = {
   easy: [
@@ -31,6 +32,7 @@ function getLetterPool(word) {
 }
 
 export default function EmojiSpellingMaster() {
+  const { completeGame } = useGame();
   const [screen, setScreen] = useState("start"); // start | game | over
   const [level, setLevel] = useState("easy");
   const [questions, setQuestions] = useState([]);
@@ -39,6 +41,7 @@ export default function EmojiSpellingMaster() {
   const [letterPool, setLetterPool] = useState([]);
   const [usedPoolIdx, setUsedPoolIdx] = useState(new Set());
   const [score, setScore] = useState(0);
+  const [correctCount, setCorrectCount] = useState(0);
   const [lives, setLives] = useState(5);
   const [feedback, setFeedback] = useState("");
   const [won, setWon] = useState(false);
@@ -49,6 +52,7 @@ export default function EmojiSpellingMaster() {
     setQuestions(qs);
     setQIdx(0);
     setScore(0);
+    setCorrectCount(0);
     setLives(5);
     setFeedback("");
     setWon(false);
@@ -72,10 +76,16 @@ export default function EmojiSpellingMaster() {
       if (guessed === current.word) {
         setFeedback("correct");
         setScore(s => s + 10);
+        setCorrectCount(c => c + 1);
         setTimeout(() => {
           setFeedback("");
           const nextIdx = qIdx + 1;
           if (nextIdx >= questions.length) {
+            setCorrectCount(final => {
+              const accuracy = Math.round((final / questions.length) * 100);
+              completeGame('emoji-spelling', accuracy, questions.length);
+              return final;
+            });
             setWon(true); setScreen("over");
           } else {
             setQIdx(nextIdx);
@@ -89,7 +99,17 @@ export default function EmojiSpellingMaster() {
         setFeedback("wrong");
         const newLives = lives - 1;
         setLives(newLives);
-        if (newLives <= 0) { setTimeout(() => { setWon(false); setScreen("over"); }, 800); return; }
+        if (newLives <= 0) {
+          setTimeout(() => {
+            setCorrectCount(final => {
+              const accuracy = Math.round((final / questions.length) * 100);
+              completeGame('emoji-spelling', accuracy, questions.length);
+              return final;
+            });
+            setWon(false); setScreen("over");
+          }, 800);
+          return;
+        }
         setTimeout(() => {
           setFeedback("");
           setTyped([]);

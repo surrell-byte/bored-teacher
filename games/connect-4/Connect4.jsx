@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import { useGame } from "@/lib/gameState";
 
 const ROWS = 6, COLS = 7;
 const THEMES = {
@@ -87,6 +88,7 @@ function aiMove(board, diff) {
 }
 
 export default function Connect4() {
+  const { completeGame } = useGame();
   const [screen, setScreen] = useState("menu"); // menu | setup | game
   const [mode, setMode] = useState("pvp");
   const [diff, setDiff] = useState("medium");
@@ -100,6 +102,7 @@ export default function Connect4() {
   const [winCells, setWinCells] = useState(new Set());
   const [scores, setScores] = useState({ p1: 0, p2: 0, draws: 0 });
   const [hoverCol, setHoverCol] = useState(-1);
+  const [moveCount, setMoveCount] = useState(0);
 
   const t1 = THEMES[p1Theme], t2 = THEMES[p2Theme];
   const playerColor = (p) => p === 1 ? t1.a : t2.a;
@@ -109,6 +112,7 @@ export default function Connect4() {
     setCurrent(1);
     setStatus("");
     setWinCells(new Set());
+    setMoveCount(0);
     setScreen("game");
   }, []);
 
@@ -118,17 +122,22 @@ export default function Connect4() {
     if (!nb) return;
     setBoard(nb);
 
+    const nextMoves = moveCount + 1;
+    setMoveCount(nextMoves);
+
     if (checkWin(nb, current)) {
       setWinCells(getWinCells(nb, current));
       setStatus(current === 1 ? "win1" : "win2");
       setScores(s => ({ ...s, [current === 1 ? "p1" : "p2"]: s[current === 1 ? "p1" : "p2"] + 1 }));
+      completeGame('connect-4', current === 1 ? 100 : 0, nextMoves);
     } else if (isFull(nb)) {
       setStatus("draw");
       setScores(s => ({ ...s, draws: s.draws + 1 }));
+      completeGame('connect-4', 50, nextMoves);
     } else {
       setCurrent(current === 1 ? 2 : 1);
     }
-  }, [board, current, status, mode]);
+  }, [board, current, status, mode, moveCount, completeGame]);
 
   // AI move
   useEffect(() => {
@@ -139,19 +148,25 @@ export default function Connect4() {
       const nb = dropPiece(board, col, 2);
       if (!nb) return;
       setBoard(nb);
+
+      const nextMoves = moveCount + 1;
+      setMoveCount(nextMoves);
+
       if (checkWin(nb, 2)) {
         setWinCells(getWinCells(nb, 2));
         setStatus("win2");
         setScores(s => ({ ...s, p2: s.p2 + 1 }));
+        completeGame('connect-4', 0, nextMoves);
       } else if (isFull(nb)) {
         setStatus("draw");
         setScores(s => ({ ...s, draws: s.draws + 1 }));
+        completeGame('connect-4', 50, nextMoves);
       } else {
         setCurrent(1);
       }
     }, 500);
     return () => clearTimeout(timer);
-  }, [screen, mode, current, board, diff, status]);
+  }, [screen, mode, current, board, diff, status, moveCount, completeGame]);
 
   if (screen === "menu") return (
     <div style={{

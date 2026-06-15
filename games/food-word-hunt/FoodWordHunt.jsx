@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 
 const CATEGORIES = {
   fruits: {
@@ -33,19 +33,34 @@ function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
 
 function buildPool(word, extra = 4) {
   const needed = word.split("");
-  const extras = shuffle(ALPHABET.filter(l => !needed.includes(l))).slice(0, extra);
+  const extras = Array.from({ length: extra }, () => ALPHABET[Math.floor(Math.random() * 26)]);
   return shuffle([...needed, ...extras].map((l, i) => ({ l, id: i, used: false })));
 }
 
-export default function FoodWordHunt() {
+export default function FoodWordHunt({ onComplete }) {
   const [catKey, setCatKey] = useState(null);
   const [items, setItems] = useState([]);
   const [qIdx, setQIdx] = useState(0);
   const [pool, setPool] = useState([]);
   const [typed, setTyped] = useState([]);
   const [score, setScore] = useState(0);
+  const [mistakes, setMistakes] = useState(0);
+  const [completedCats, setCompletedCats] = useState([]);
   const [feedback, setFeedback] = useState("");
   const [done, setDone] = useState(false);
+
+  // Load progress
+  useEffect(() => {
+    const saved = localStorage.getItem("food-word-hunt-v1");
+    if (saved) setCompletedCats(JSON.parse(saved));
+  }, []);
+
+  // Save progress
+  useEffect(() => {
+    if (completedCats.length > 0) {
+      localStorage.setItem("food-word-hunt-v1", JSON.stringify(completedCats));
+    }
+  }, [completedCats]);
 
   const startCategory = useCallback((key) => {
     const cat = CATEGORIES[key];
@@ -54,6 +69,7 @@ export default function FoodWordHunt() {
     setItems(shuffled);
     setQIdx(0);
     setScore(0);
+    setMistakes(0);
     setPool(buildPool(shuffled[0].n));
     setTyped([]);
     setFeedback("");
@@ -75,10 +91,16 @@ export default function FoodWordHunt() {
       const guess = nextTyped.map(x => x.l).join("");
       if (guess === current.n) {
         setFeedback("correct");
-        setScore(s => s + 10);
+        setScore(prev => prev + 10);
         setTimeout(() => {
           const next = qIdx + 1;
-          if (next >= items.length) { setDone(true); return; }
+          if (next >= items.length) {
+            const accuracy = Math.round((items.length / (items.length + mistakes)) * 100);
+            onComplete?.(score + 10, accuracy);
+            setCompletedCats(prev => Array.from(new Set([...prev, catKey])));
+            setDone(true);
+            return;
+          }
           setQIdx(next);
           setPool(buildPool(items[next].n));
           setTyped([]);
@@ -86,6 +108,7 @@ export default function FoodWordHunt() {
         }, 900);
       } else {
         setFeedback("wrong");
+        setMistakes(prev => prev + 1);
         setTimeout(() => {
           setPool(p => p.map(t => ({ ...t, used: false })));
           setTyped([]);
@@ -116,11 +139,12 @@ export default function FoodWordHunt() {
       <div style={{ display:"flex", gap:14, flexWrap:"wrap", justifyContent:"center" }}>
         {Object.entries(CATEGORIES).map(([key, cat]) => (
           <button key={key} onClick={() => startCategory(key)} style={{
-            padding:"18px 32px", borderRadius:20, border:"none",
+            padding:"18px 32px", borderRadius:20, border: completedCats.includes(key) ? "2px solid #fbbf24" : "none",
             background: cat.color, color:"#fff",
             fontWeight:800, fontSize:"1.1rem", cursor:"pointer",
             boxShadow:`0 4px 16px ${cat.color}55`,
-          }}>{cat.label}</button>
+            position: "relative"
+          }}>{cat.label} {completedCats.includes(key) && "✅"}</button>
         ))}
       </div>
     </div>
@@ -156,6 +180,11 @@ export default function FoodWordHunt() {
       background:"linear-gradient(135deg,#fff7ed,#fef3c7,#fef9c3)",
       fontFamily:"'Segoe UI', sans-serif", padding:24,
     }}>
+      <button onClick={() => setCatKey(null)} style={{
+        position: "absolute", top: 20, left: 20, background: "none", border: "none",
+        fontSize: "1.8rem", cursor: "pointer", color: "#b45309", padding: 8
+      }}>✕</button>
+
       <div style={{ width:"100%", maxWidth:480 }}>
         <div style={{ display:"flex", justifyContent:"space-between", marginBottom:14 }}>
           <span style={{ background:cat.color, color:"#fff", padding:"4px 14px", borderRadius:999, fontWeight:700 }}>{cat.label}</span>

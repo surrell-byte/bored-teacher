@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { useGame } from "@/lib/gameState";
 
 const PAIRS = [
   { animal:"🐕", animalWord:"DOG",    food:"🦴", foodWord:"BONE" },
@@ -24,6 +25,7 @@ const AVATARS = ["🐶","🐼","🦊","🐯","🐸","🐧","🦁","🐨"];
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
 
 export default function FindMyFood() {
+  const { completeGame } = useGame();
   const [screen, setScreen] = useState("welcome");
   const [theme, setTheme] = useState(0);
   const [p1, setP1] = useState({ name:"Player 1", avatar:"🐶" });
@@ -34,6 +36,7 @@ export default function FindMyFood() {
   const [locked, setLocked] = useState(false);
   const [currentPlayer, setCurrentPlayer] = useState(1);
   const [scores, setScores] = useState({ 1:0, 2:0 });
+  const [moveCount, setMoveCount] = useState(0);
   const [pairCount, setPairCount] = useState(4);
 
   const startGame = useCallback((numPairs) => {
@@ -48,6 +51,7 @@ export default function FindMyFood() {
     setLocked(false);
     setCurrentPlayer(1);
     setScores({ 1:0, 2:0 });
+    setMoveCount(0);
     setScreen("game");
   }, []);
 
@@ -59,14 +63,22 @@ export default function FindMyFood() {
 
     if (next.length === 2) {
       setLocked(true);
+      const nextMoves = moveCount + 1;
+      setMoveCount(nextMoves);
       const [a, b] = next.map(i => cards[i]);
       if (a.pairId === b.pairId) {
         const newMatched = new Set([...matched, next[0], next[1]]);
         setMatched(newMatched);
-        setScores(s => ({ ...s, [currentPlayer]: s[currentPlayer] + 10 }));
+        const nextScore = scores[currentPlayer] + 10;
+        setScores(s => ({ ...s, [currentPlayer]: nextScore }));
         setFlipped([]);
         setLocked(false);
-        if (newMatched.size === cards.length) setScreen("end");
+        if (newMatched.size === cards.length) {
+          const finalScores = { ...scores, [currentPlayer]: nextScore };
+          const accuracy = finalScores[1] > finalScores[2] ? 100 : finalScores[1] === finalScores[2] ? 50 : 0;
+          completeGame('find-my-food', accuracy, nextMoves);
+          setScreen("end");
+        }
       } else {
         setTimeout(() => {
           setFlipped([]);

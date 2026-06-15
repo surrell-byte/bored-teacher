@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { useGame } from "@/lib/gameState";
 
 const LEVELS_DB = {
   1: [
@@ -37,12 +38,14 @@ const LEVELS_DB = {
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
 
 export default function CompoundWordQuest() {
+  const { completeGame } = useGame();
   const [screen, setScreen] = useState("menu");
   const [level, setLevel] = useState(1);
   const [unlocked, setUnlocked] = useState({ 1: true, 2: false, 3: false, 4: false });
   const [questions, setQuestions] = useState([]);
   const [idx, setIdx] = useState(0);
   const [score, setScore] = useState(0);
+  const [correctCount, setCorrectCount] = useState(0);
   const [answered, setAnswered] = useState(false);
   const [selected, setSelected] = useState(null);
   const [showHint, setShowHint] = useState(false);
@@ -52,6 +55,7 @@ export default function CompoundWordQuest() {
     setQuestions(shuffle(LEVELS_DB[lvl]));
     setIdx(0);
     setScore(0);
+    setCorrectCount(0);
     setAnswered(false);
     setSelected(null);
     setShowHint(false);
@@ -64,13 +68,24 @@ export default function CompoundWordQuest() {
     if (answered) return;
     setSelected(opt);
     setAnswered(true);
-    if (opt === current.a) setScore(s => s + 10);
+    if (opt === current.a) {
+      setScore(s => s + 10);
+      setCorrectCount(c => c + 1);
+    }
   };
 
   const next = () => {
     if (idx + 1 >= questions.length) {
       const nextLvl = level + 1;
       if (LEVELS_DB[nextLvl]) setUnlocked(u => ({ ...u, [nextLvl]: true }));
+
+      const accuracy = Math.round((correctCount / questions.length) * 100);
+      completeGame(
+        'compound-quest',
+        accuracy,
+        questions.length
+      );
+
       setScreen("complete");
     } else {
       setIdx(i => i + 1);

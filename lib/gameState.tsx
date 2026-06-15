@@ -5,6 +5,7 @@ import { createContext, useContext, useState, useEffect, useRef, useCallback, Re
 import { auth, onAuthStateChanged, saveUserState, loadUserState } from '@/lib/firebase';
 import { GAME_KEYS } from '@/lib/constants';
 import { getEarnedIds, getNewlyUnlocked, type Achievement } from '@/lib/achievements';
+import { syncCurrentPlayerToLeaderboard } from '@/lib/leaderboard';
 
 // ── Types ─────────────────────────────────────────────────────
 
@@ -49,6 +50,13 @@ interface GameContextValue {
   setState: (patch: Partial<HubState>) => void;
   updateGameStats: (gameId: string, stats: Partial<GameRecord>) => void;
   addXP: (amount: number) => void;
+  completeGame: (
+    gameId: string,
+    accuracy: number,
+    totalQuestions: number,
+    xp?: number,
+    coins?: number
+  ) => void;
   applyTheme: (theme: string) => void;
   showToast: (msg: string) => void;
   toast: string;
@@ -272,6 +280,53 @@ export function GameProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const completeGame = useCallback((
+    gameId: string,
+    accuracy: number,
+    totalQuestions: number,
+    xp = accuracy,
+    coins = Math.floor(accuracy / 2)
+  ) => {
+    setStateRaw(prev => {
+      const current = prev.games[gameId] || DEFAULT_GAME;
+      let newXp = prev.xp + xp;
+      let newLevel = prev.level;
+
+      while (newXp >= xpForLevel(newLevel)) {
+        newXp -= xpForLevel(newLevel);
+        newLevel++;
+      }
+
+      const next = {
+        ...prev,
+        xp: newXp,
+        level: newLevel,
+        coins: prev.coins + coins,
+        lastGame: gameId,
+        games: {
+          ...prev.games,
+          [gameId]: {
+            ...current,
+            highScore: Math.max(current.highScore, accuracy),
+            completions: current.completions + 1,
+            lastAccuracy: accuracy,
+            totalQuestions
+          }
+        }
+      };
+
+      persist(next);
+      try { syncCurrentPlayerToLeaderboard(); } catch {}
+      checkAchievements(prev, next);
+
+      setTimeout(() => {
+        showToast(`🏆 ${accuracy}% | +${xp} XP | +${coins} coins`);
+      }, 100);
+
+      return next;
+    });
+  }, []);
+
   const applyTheme = useCallback((theme: string) => {
     applyThemeClass(theme);
     setState({ theme });
@@ -299,7 +354,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   }, [showToast]);
 
   return (
-    <GameContext.Provider value={{ state, setState, updateGameStats, addXP, applyTheme, showToast, toast, checkDailyReward, earnedAchievementIds, pendingAchievement, clearPendingAchievement }}>
+    <GameContext.Provider value={{ state, setState, updateGameStats, addXP, completeGame, applyTheme, showToast, toast, checkDailyReward, earnedAchievementIds, pendingAchievement, clearPendingAchievement }}>
       {children}
     </GameContext.Provider>
   );

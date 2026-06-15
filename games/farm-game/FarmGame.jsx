@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { useGame } from "@/lib/gameState";
 
 const ANIMALS = [
   { name:"Cow",     emoji:"🐄", sound:"Moo!",     fact:"Cows produce milk" },
@@ -31,6 +32,7 @@ function buildQuestion(targetName, allNames) {
 }
 
 export default function FarmGame() {
+  const { completeGame } = useGame();
   const [screen, setScreen] = useState("welcome");
   const [playerName, setPlayerName] = useState("");
   const [levelIdx, setLevelIdx] = useState(0);
@@ -38,6 +40,7 @@ export default function FarmGame() {
   const [questions, setQuestions] = useState([]);
   const [idx, setIdx] = useState(0);
   const [score, setScore] = useState(0);
+  const [correctCount, setCorrectCount] = useState(0);
   const [selected, setSelected] = useState(null);
   const [answered, setAnswered] = useState(false);
 
@@ -51,6 +54,7 @@ export default function FarmGame() {
     setQuestions(qs);
     setIdx(0);
     setScore(0);
+    setCorrectCount(0);
     setSelected(null);
     setAnswered(false);
     setScreen("game");
@@ -62,13 +66,24 @@ export default function FarmGame() {
     if (answered) return;
     setSelected(optName);
     setAnswered(true);
-    if (optName === current.target.name) setScore(s => s + 10);
+    if (optName === current.target.name) {
+      setScore(s => s + 10);
+      setCorrectCount(c => c + 1);
+    }
   };
 
   const next = () => {
     if (idx + 1 >= questions.length) {
       const nextLi = levelIdx + 1;
       if (nextLi < LEVELS.length) setUnlocked(u => u.map((v,i) => i===nextLi?true:v));
+
+      const accuracy = Math.round((correctCount / questions.length) * 100);
+      completeGame(
+        'farm-game',
+        accuracy,
+        questions.length
+      );
+
       setScreen("complete");
     } else {
       setIdx(i => i + 1);

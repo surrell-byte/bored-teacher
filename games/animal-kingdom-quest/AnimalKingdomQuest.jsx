@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { useGame } from "@/lib/gameState";
 
 const DB = {
   easy: [
@@ -45,12 +46,14 @@ const LEVEL_COLORS = { easy: "#22c55e", medium: "#f59e0b", hard: "#ef4444" };
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
 
 export default function AnimalKingdomQuest() {
+  const { completeGame } = useGame();
   const [screen, setScreen] = useState("menu"); // menu | game | levelUp
   const [level, setLevel] = useState("easy");
   const [unlocked, setUnlocked] = useState({ easy: true, medium: false, hard: false });
   const [questions, setQuestions] = useState([]);
   const [idx, setIdx] = useState(0);
   const [score, setScore] = useState(0);
+  const [correctCount, setCorrectCount] = useState(0);
   const [feedback, setFeedback] = useState(null); // null | "correct" | "wrong"
   const [wrongClass, setWrongClass] = useState(null);
 
@@ -59,6 +62,7 @@ export default function AnimalKingdomQuest() {
     setQuestions(shuffle(DB[lvl]));
     setIdx(0);
     setScore(0);
+    setCorrectCount(0);
     setFeedback(null);
     setScreen("game");
   }, []);
@@ -69,10 +73,17 @@ export default function AnimalKingdomQuest() {
     if (cls === current.c) {
       setFeedback("correct");
       setScore(s => s + 10);
+      setCorrectCount(c => c + 1);
       setTimeout(() => {
         setFeedback(null);
         if (idx + 1 >= questions.length) {
           // level complete
+          setCorrectCount(final => {
+            const accuracy = Math.round((final / questions.length) * 100);
+            completeGame('animal-kingdom', accuracy, questions.length);
+            return final;
+          });
+
           const next = level === "easy" ? "medium" : level === "medium" ? "hard" : null;
           if (next) setUnlocked(u => ({ ...u, [next]: true }));
           setScreen("levelUp");

@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 
 const QUESTIONS_DB = {
   1: [
@@ -49,15 +49,32 @@ export default function WarriorsGrammarSlam({ onComplete }) {
   const [questions, setQuestions] = useState([]);
   const [idx, setIdx] = useState(0);
   const [score, setScore] = useState(0);
+  const [correctCount, setCorrectCount] = useState(0);
   const [streak, setStreak] = useState(0);
   const [selected, setSelected] = useState(null);
   const [answered, setAnswered] = useState(false);
+
+  // Load progress on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("warriors-grammar-slam-v1");
+    if (saved) {
+      try {
+        setUnlocked(JSON.parse(saved));
+      } catch (e) { console.error("Failed to load progress", e); }
+    }
+  }, []);
+
+  // Auto-save progress
+  useEffect(() => {
+    localStorage.setItem("warriors-grammar-slam-v1", JSON.stringify(unlocked));
+  }, [unlocked]);
 
   const startLevel = useCallback((lvl) => {
     setLevel(lvl);
     setQuestions(shuffle(QUESTIONS_DB[lvl]));
     setIdx(0);
     setScore(0);
+    setCorrectCount(0);
     setStreak(0);
     setSelected(null);
     setAnswered(false);
@@ -73,6 +90,7 @@ export default function WarriorsGrammarSlam({ onComplete }) {
     if (opt === current.correct) {
       const pts = 10 + (streak >= 2 ? 5 : 0);
       setScore(s => s + pts);
+      setCorrectCount(c => c + 1);
       setStreak(s => s + 1);
     } else {
       setStreak(0);
@@ -83,7 +101,7 @@ export default function WarriorsGrammarSlam({ onComplete }) {
     if (idx + 1 >= questions.length) {
       const nextLvl = level + 1;
       if (QUESTIONS_DB[nextLvl]) setUnlocked(u => ({ ...u, [nextLvl]: true }));
-      const accuracy = Math.round((score / (questions.length * 10)) * 100);
+      const accuracy = Math.round((correctCount / questions.length) * 100);
       onComplete?.(score, accuracy);
       setScreen("complete");
     } else {

@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import { useGame } from "@/lib/gameState";
 
 const COLOR_ITEMS = [
   { emoji:"🐄", name:"Cow",         color:"black and white" },
@@ -51,6 +52,7 @@ const COLOR_SWATCH = {
 };
 
 export default function CrimsonColorDuel() {
+  const { completeGame } = useGame();
   const [screen, setScreen] = useState("menu"); // menu | game | result
   const [levelIdx, setLevelIdx] = useState(0);
   const [unlocked, setUnlocked] = useState([true, false, false]);
@@ -58,6 +60,7 @@ export default function CrimsonColorDuel() {
   const [qIdx, setQIdx] = useState(0);
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
+  const [correctCount, setCorrectCount] = useState(0);
   const [selected, setSelected] = useState(null);
   const [answered, setAnswered] = useState(false);
   const [timeLeft, setTimeLeft] = useState(10);
@@ -85,6 +88,7 @@ export default function CrimsonColorDuel() {
     setQIdx(0);
     setScore(0);
     setStreak(0);
+    setCorrectCount(0);
     setSelected(null);
     setAnswered(false);
     setTimeLeft(lvl.time);
@@ -101,6 +105,7 @@ export default function CrimsonColorDuel() {
     if (isCorrect) {
       setScore(s => s + 10 + (streak >= 2 ? 5 : 0));
       setStreak(s => s + 1);
+      setCorrectCount(c => c + 1);
     } else {
       setStreak(0);
     }
@@ -109,6 +114,10 @@ export default function CrimsonColorDuel() {
       if (next >= questions.length) {
         const nextLvl = levelIdx + 1;
         if (nextLvl < LEVELS.length) setUnlocked(u => u.map((v, i) => i === nextLvl ? true : v));
+
+        const accuracy = Math.round((correctCount / questions.length) * 100);
+        completeGame('crimson-color-duel', accuracy, questions.length);
+
         setScreen("result");
       } else {
         setQIdx(next);
@@ -118,7 +127,7 @@ export default function CrimsonColorDuel() {
         setTimerActive(true);
       }
     }, 900);
-  }, [answered, current, streak, qIdx, questions.length, levelIdx, level]);
+  }, [answered, current, streak, qIdx, questions.length, levelIdx, level, correctCount, completeGame]);
 
   if (screen === "menu") return (
     <div style={{

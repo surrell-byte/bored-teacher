@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from "react";
+import { useGame } from "@/lib/gameState";
 
 // Color sequence encoded as r=red, g=green, b=blue, y=yellow
 const CREATURES = {
@@ -68,6 +69,7 @@ function normalizeSeq(seq, zoneId) {
 }
 
 export default function DeepSeaReveal() {
+  const { completeGame } = useGame();
   const [screen, setScreen] = useState("title"); // title | zone | game | result
   const [zone, setZone] = useState(null);
   const [unlocked, setUnlocked] = useState({ shallow:true, twilight:false, midnight:false, hadal:false });
@@ -76,6 +78,8 @@ export default function DeepSeaReveal() {
     if (typeof window === 'undefined') return 0;
     return Number(window.localStorage.getItem('deepsea-best')) || 0;
   });
+  const [totalCorrectGuesses, setTotalCorrectGuesses] = useState(0);
+  const [totalPossibleGuesses, setTotalPossibleGuesses] = useState(0);
   const [round, setRound] = useState(0);
   const [streak, setStreak] = useState(0);
   const [creatures, setCreatures] = useState([]);
@@ -112,6 +116,8 @@ export default function DeepSeaReveal() {
     setCreatures(pool);
     setRound(0);
     setScore(0);
+    setTotalCorrectGuesses(0);
+    setTotalPossibleGuesses(0);
     setStreak(0);
     loadCreature(pool, 0, zoneId);
     setScreen("game");
@@ -158,6 +164,8 @@ export default function DeepSeaReveal() {
     const isPerf = currentGuesses.length === seq.length && pct === 1;
     const perfBonus = isPerf ? 100 : 0;
     const pts = Math.round(pct * (zoneData?.basePoints || 100) * multiplier) + perfBonus;
+    setTotalCorrectGuesses(prev => prev + correct);
+    setTotalPossibleGuesses(prev => prev + seq.length);
     setScore(s => s + pts);
     if (isPerf) setStreak(s => s + 1); else setStreak(0);
     setFeedback({ correct, total: seq.length, pts, seq: creature.seq });
@@ -183,6 +191,9 @@ export default function DeepSeaReveal() {
       if (nextZoneIdx < zoneIds.length) {
         setUnlocked(u => ({ ...u, [zoneIds[nextZoneIdx]]: true }));
       }
+      const accuracy = totalPossibleGuesses > 0 ? Math.round((totalCorrectGuesses / totalPossibleGuesses) * 100) : 0;
+      completeGame('deep-sea-reveal', accuracy, totalPossibleGuesses);
+
       setScreen("result");
     } else {
       loadCreature(creatures, nextIdx, zone);
