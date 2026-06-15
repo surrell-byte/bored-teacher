@@ -1,3 +1,4 @@
+===== app/globals.css =====
 /* ── ESL Game Hub — globals.css ──────────────────────────────── */
 
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600;700&display=swap');
@@ -189,17 +190,7 @@ body.theme-lime {
 html, body {
   min-height: 100%;
   font-family: var(--font-body);
-  background:
-    radial-gradient(
-      circle at top,
-      rgba(245,200,66,.08),
-      transparent 35%
-    ),
-    linear-gradient(
-      180deg,
-      #233b25,
-      #1e3320
-    );
+  background: var(--bg);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
   scroll-behavior: smooth;
@@ -244,16 +235,9 @@ a { color: inherit; }
   justify-content: space-between;
   padding: 0 clamp(14px, 3vw, 28px);
   height: 60px;
-
-  background: rgba(20, 32, 20, 0.82);
-
-  border-bottom: 1px solid rgba(255,255,255,0.12);
-
-  backdrop-filter: blur(20px);
-
-  box-shadow:
-    0 8px 24px rgba(0,0,0,.15);
-
+  background: var(--surface-strong);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(12px);
   gap: 12px;
 }
 
@@ -442,56 +426,26 @@ a { color: inherit; }
    SHELL CARD
 ══════════════════════════════════════════════════════════════ */
 .shell-card {
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255,255,255,0.09),
-      rgba(255,255,255,0.05)
-    );
-
-  border: 1px solid rgba(255,255,255,0.14);
-
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
   border-radius: 20px;
-
-  backdrop-filter: blur(16px);
-
-  box-shadow:
-    0 10px 30px rgba(0,0,0,.18),
-    inset 0 1px 0 rgba(255,255,255,.08);
 }
 
 /* ══════════════════════════════════════════════════════════════
    GAME CARDS
 ══════════════════════════════════════════════════════════════ */
 .game-card {
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255,255,255,.08),
-      rgba(255,255,255,.04)
-    );
-
-  border: 1px solid rgba(255,255,255,.12);
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
   border-radius: 20px;
-
   padding: 18px;
   cursor: pointer;
-
   display: flex;
   flex-direction: column;
   gap: 8px;
-
+  transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
   position: relative;
   overflow: hidden;
-
-  box-shadow:
-    0 8px 24px rgba(0,0,0,.18),
-    inset 0 1px 0 rgba(255,255,255,.05);
-
-  transition:
-    transform .25s ease,
-    box-shadow .25s ease,
-    border-color .25s ease;
 }
 .game-card::before {
   content: '';
@@ -504,12 +458,8 @@ a { color: inherit; }
 }
 .game-card:hover {
   transform: translateY(-8px) scale(1.02);
-
-  border-color: rgba(255,215,0,.35);
-
-  box-shadow:
-    0 25px 50px rgba(0,0,0,.35),
-    0 0 0 1px rgba(255,215,0,.08);
+  border-color: rgba(255,215,0,.25);
+  box-shadow: 0 25px 50px rgba(0,0,0,.35);
 }
 .game-card:hover::before { opacity: 1; }
 .game-card:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
@@ -1274,23 +1224,10 @@ a { color: inherit; }
 
 .hub-search {
   position: relative;
-
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255,255,255,.08),
-      rgba(255,255,255,.04)
-    );
-
-  border: 1px solid rgba(255,255,255,.12);
-
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 999px;
-
   backdrop-filter: blur(20px);
-
-  box-shadow:
-    0 8px 24px rgba(0,0,0,.12);
-
   flex: 1 1 200px;
 }
 .hub-search-icon {
@@ -1921,4 +1858,570 @@ a { color: inherit; }
 }
 @keyframes loadingSpin {
   to { transform: rotate(360deg); }
+}
+
+===== app/hub/page.tsx =====
+'use client';
+// app/hub/page.tsx — Main game hub
+
+import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import { onAuthStateChanged } from '@/lib/firebase';
+import { useGame, xpForLevel } from '@/lib/gameState';
+import {
+  GAME_KEYS, GAME_NAMES, GAME_ICONS, GAME_TAGS, GAME_DIFFICULTY,
+} from '@/lib/constants';
+import GameCard from '@/components/GameCard';
+import ManagePlayersModal from '@/components/ManagePlayersModal';
+
+const TAG_FILTERS = [
+  { label: '⚡ All Games', value: 'all' },
+  { label: '📖 Vocabulary',     value: 'Vocabulary' },
+  { label: '✍️ Grammar',        value: 'Grammar' },
+  { label: '🔗 Word Formation', value: 'Word Formation' },
+  { label: '🔬 Science',        value: 'Science' },
+  { label: '🔤 Phonics',        value: 'Phonics' },
+  { label: '💡 Logic',          value: 'Logic' },
+  { label: '🎨 Colours',        value: 'Colours' },
+  { label: '🚩 Geography',      value: 'Geography' },
+  { label: '📝 Spelling',       value: 'Spelling' },
+  { label: '🧠 Memory',         value: 'Memory' },
+];
+
+const DIFFICULTY_FILTERS = [
+  'All', 'Starter', 'Intermediate', 'Puzzle', 'Competitive', 'Mixed Skills', 'Arcade',
+];
+
+const SORT_OPTIONS = [
+  { label: '📋 Default', value: 'default' },
+  { label: '🏆 Best Score', value: 'score' },
+  { label: '🎮 Most Played', value: 'played' },
+  { label: '🔠 A–Z', value: 'alpha' },
+];
+
+export default function HubPage() {
+  const router = useRouter();
+  const { state, checkDailyReward, showToast } = useGame();
+
+  const [ready,  setReady]  = useState(false);
+  const [search, setSearch] = useState('');
+  const [tag,    setTag]    = useState('all');
+  const [diff,   setDiff]   = useState('All');
+  const [sort,   setSort]   = useState('default');
+  const [showManage, setShowManage] = useState(false);
+  const [showPlayed, setShowPlayed] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+
+  useEffect(() => {
+    const isGuest = localStorage.getItem('guestUser') === 'true';
+    if (isGuest) { setReady(true); checkDailyReward(); return; }
+    const unsub = onAuthStateChanged((user) => {
+      if (!user) { router.replace('/auth'); return; }
+      setReady(true);
+      checkDailyReward();
+    });
+    return unsub;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handlePlay = useCallback((gameId: string) => {
+    router.push(`/games/${gameId}`);
+  }, [router]);
+
+  const filteredGames = useMemo(() => {
+    const q = search.toLowerCase().trim();
+    let games = [...GAME_KEYS];
+    if (showPlayed) games = games.filter(k => (state.games[k]?.completions ?? 0) > 0);
+    if (tag !== 'all') games = games.filter(k => GAME_TAGS[k]?.label === tag);
+    if (diff !== 'All') games = games.filter(k => GAME_DIFFICULTY[k] === diff);
+    if (q) {
+      games = games.filter(k =>
+        GAME_NAMES[k]?.toLowerCase().includes(q) ||
+        GAME_TAGS[k]?.label?.toLowerCase().includes(q) ||
+        GAME_DIFFICULTY[k]?.toLowerCase().includes(q)
+      );
+    }
+    if (sort === 'score') games.sort((a, b) => (state.games[b]?.highScore ?? 0) - (state.games[a]?.highScore ?? 0));
+    else if (sort === 'played') games.sort((a, b) => (state.games[b]?.completions ?? 0) - (state.games[a]?.completions ?? 0));
+    else if (sort === 'alpha') games.sort((a, b) => (GAME_NAMES[a] ?? '').localeCompare(GAME_NAMES[b] ?? ''));
+    return games;
+  }, [search, tag, diff, sort, showPlayed, state.games]);
+
+  const totalPlayed = GAME_KEYS.filter(k => (state.games[k]?.completions ?? 0) > 0).length;
+  const totalScore  = Object.values(state.games).reduce((a, g) => a + (g.highScore ?? 0), 0);
+  const xpNeeded    = xpForLevel(state.level);
+  const xpPct       = Math.min(100, Math.round((state.xp / xpNeeded) * 100));
+
+  if (!ready) return null;
+
+  return (
+    <div className="hub-page">
+
+      {/* ── Hero / stats bar ──────────────────────────────── */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+        gap: 16,
+        marginTop: 20,
+        marginBottom: 22,
+      }}>
+        {/* Welcome card */}
+        <div className="shell-card" style={{ padding: 'clamp(20px, 4vw, 32px)', borderRadius: 28 }}>
+          <div style={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.2em', color: 'var(--gold)', fontWeight: 700, marginBottom: 6 }}>
+            🎮 Game Library
+          </div>
+          <h1 style={{ fontFamily: 'var(--font-display, Syne)', fontSize: 'clamp(1.4rem, 4vw, 2.6rem)', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 8 }}>
+            Welcome back, {state.name.split(' ')[0]} {state.avatar}
+          </h1>
+          <p style={{ color: 'var(--muted)', fontSize: '0.9rem', lineHeight: 1.65, maxWidth: '50ch', marginBottom: 20 }}>
+            {totalPlayed === 0
+              ? "Pick a game and start your journey. Every round sharpens your English!"
+              : `You've completed ${totalPlayed} of ${GAME_KEYS.length} games. Keep the streak going!`}
+          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
+            <span style={{ fontFamily: 'var(--font-display, Syne)', fontSize: '0.78rem', fontWeight: 800, color: 'var(--gold)', whiteSpace: 'nowrap' }}>
+              Lv {state.level}
+            </span>
+            <div className="hub-xp-bar" style={{ flex: 1 }}>
+              <div className="hub-xp-fill" style={{ width: `${xpPct}%` }} />
+            </div>
+            <span style={{ fontSize: '0.7rem', color: 'var(--muted)', whiteSpace: 'nowrap' }}>
+              {state.xp} / {xpNeeded} XP
+            </span>
+          </div>
+        </div>
+
+        {/* Quick stats */}
+        <div className="shell-card" style={{
+          padding: 'clamp(16px, 3vw, 24px)',
+          borderRadius: 28,
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: 16,
+        }}>
+          {[
+            { label: 'Games Played', val: totalPlayed,            color: 'var(--teal)',  icon: '🎮' },
+            { label: 'Total Score',  val: totalScore,             color: 'var(--gold)',  icon: '⭐' },
+            { label: 'Coins',        val: state.coins,            color: 'var(--green)', icon: '🪙' },
+            { label: 'Day Streak',   val: `${state.loginStreak || 0}🔥`, color: 'var(--coral)', icon: '📅' },
+          ].map(({ label, val, color, icon }) => (
+            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontSize: '1.2rem' }}>{icon}</span>
+              <div>
+                <div style={{ fontFamily: 'var(--font-display, Syne)', fontSize: '1.1rem', fontWeight: 800, color, lineHeight: 1 }}>{val}</div>
+                <div style={{ fontSize: '0.62rem', color: 'var(--muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 2 }}>{label}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {state.lastGame && (
+        <div className="continue-card">
+          <div className="continue-icon">
+            {GAME_ICONS[state.lastGame] ?? '🎮'}
+          </div>
+          <div className="continue-content">
+            <div className="continue-label">Continue Playing</div>
+            <div className="continue-title">
+              {GAME_NAMES[state.lastGame]}
+            </div>
+          </div>
+          <button
+            className="continue-btn"
+            onClick={() => handlePlay(state.lastGame!)}
+          >
+            Resume →
+          </button>
+        </div>
+      )}
+
+      {/* ── Filter & search row ────────────────────────────── */}
+      <div className="hub-filter-row">
+        <div className="hub-search">
+          <span className="hub-search-icon">🔍</span>
+          <input
+            type="search"
+            className="hub-search-input"
+            placeholder="Search games…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            aria-label="Search games"
+          />
+        </div>
+        <select
+          value={sort}
+          onChange={e => setSort(e.target.value)}
+          className="theme-select"
+          style={{ borderRadius: 999 }}
+          aria-label="Sort games"
+        >
+          {SORT_OPTIONS.map(o => (
+            <option key={o.value} value={o.value}>{o.label}</option>
+          ))}
+        </select>
+        <button
+          className="pill-btn"
+          onClick={() => setShowManage(true)}
+          style={{ marginLeft: 'auto' }}
+        >
+          👥 Manage Players
+        </button>
+      </div>
+
+      {/* ── Mobile filter toggle ──────────────────────────── */}
+      <button
+        className="hub-filters-toggle"
+        onClick={() => setFiltersOpen(o => !o)}
+        aria-expanded={filtersOpen}
+        aria-controls="hub-filters-collapsible"
+      >
+        <span>🎛️ Filters {(tag !== 'all' || diff !== 'All' || showPlayed) ? '•' : ''}</span>
+        <span>{filtersOpen ? '▲' : '▼'}</span>
+      </button>
+
+      <div id="hub-filters-collapsible" className={`hub-filters-collapsible${filtersOpen ? ' open' : ''}`}>
+        <div className="hub-tag-tabs" style={{
+          display: 'flex', gap: 6, flexWrap: 'nowrap', overflowX: 'auto',
+          paddingBottom: 6, scrollbarWidth: 'none',
+        }} role="group" aria-label="Filter by topic">
+          {TAG_FILTERS.map(f => (
+            <button
+              key={f.value}
+              className={`lb-tab${tag === f.value ? ' active' : ''}`}
+              onClick={() => setTag(f.value)}
+              style={{ flexShrink: 0 }}
+              aria-pressed={tag === f.value}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }} role="group" aria-label="Filter by difficulty">
+          {DIFFICULTY_FILTERS.map(d => (
+            <button
+              key={d}
+              className={`pill-btn${diff === d ? ' active' : ''}`}
+              style={{ fontSize: '0.72rem', padding: '4px 12px' }}
+              onClick={() => setDiff(d)}
+              aria-pressed={diff === d}
+            >
+              {d}
+            </button>
+          ))}
+        </div>
+
+        <button
+          className={`pill-btn${showPlayed ? ' active' : ''}`}
+          onClick={() => setShowPlayed(p => !p)}
+          aria-pressed={showPlayed}
+          style={{ alignSelf: 'flex-start' }}
+        >
+          ✓ Played only
+        </button>
+      </div>
+
+      {/* ── Game count line ───────────────────────────────── */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+        <div style={{ fontSize: '0.8rem', color: 'var(--muted)', fontWeight: 600 }}>
+          {filteredGames.length === GAME_KEYS.length
+            ? `${GAME_KEYS.length} games`
+            : `${filteredGames.length} of ${GAME_KEYS.length} games`}
+        </div>
+        {(tag !== 'all' || diff !== 'All' || search || showPlayed) && (
+          <button
+            className="pill-btn"
+            style={{ fontSize: '0.7rem', padding: '3px 10px' }}
+            onClick={() => { setTag('all'); setDiff('All'); setSearch(''); setShowPlayed(false); setFiltersOpen(false); }}
+          >
+            Clear filters
+          </button>
+        )}
+      </div>
+
+      {/* ── Game grid ─────────────────────────────────────── */}
+      {filteredGames.length === 0 ? (
+        <div className="shell-card" style={{ padding: '56px 24px', textAlign: 'center' }}>
+          <div style={{ fontSize: '3rem', marginBottom: 14 }}>🔍</div>
+          <div style={{ fontFamily: 'var(--font-display, Syne)', fontWeight: 800, fontSize: '1.1rem', marginBottom: 8 }}>
+            No games match your filters
+          </div>
+          <div style={{ color: 'var(--muted)', fontSize: '0.86rem' }}>
+            Try a different search term, tag, or difficulty level.
+          </div>
+        </div>
+      ) : (
+        <>
+          {!search && tag === 'all' && (
+            <section className="hub-section">
+              <h2 className="hub-section-title">🔥 Recommended For You</h2>
+              <div className="hub-featured-grid">
+                {filteredGames.slice(0, 4).map((gameId) => (
+                  <GameCard
+                    key={gameId}
+                    gameId={gameId}
+                    onClick={handlePlay}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
+
+          <div className="hub-game-grid">
+            {filteredGames.map((gameId, i) => (
+              <div
+                key={gameId}
+                className="card-stagger"
+                style={{ '--stagger-i': i } as React.CSSProperties}
+              >
+                <GameCard gameId={gameId} onClick={handlePlay} />
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {showManage && <ManagePlayersModal onClose={() => setShowManage(false)} />}
+    </div>
+  );
+}
+===== components/GameCard.tsx =====
+'use client';
+// components/GameCard.tsx
+
+import { useGame } from '@/lib/gameState';
+import {
+  GAME_NAMES, GAME_ICONS, GAME_TAGS, GAME_BADGE,
+  GAME_DIFFICULTY, GAME_BAR_COLOR, GAME_IMAGES,
+} from '@/lib/constants';
+
+interface Props {
+  gameId: string;
+  onClick: (gameId: string) => void;
+}
+
+export default function GameCard({ gameId, onClick }: Props) {
+  const { state } = useGame();
+  const g = state.games[gameId] ?? { highScore: 0, completions: 0, lastAccuracy: 0 };
+  const tag = GAME_TAGS[gameId] ?? { label: 'Game', color: 'tag-vocab' };
+  const badge = g.completions > 0 ? `✓ ${g.completions}x` : (GAME_BADGE[gameId] ?? '');
+
+  return (
+    <div
+      className={`game-card${g.completions > 0 ? ' active' : ''}`}
+      data-game={gameId}
+      onClick={() => onClick(gameId)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={e => e.key === 'Enter' && onClick(gameId)}
+      aria-label={`Play ${GAME_NAMES[gameId]}`}
+    >
+      <img src={GAME_IMAGES[gameId]} className="card-image" alt="" />
+      <div className="card-top">
+        <div className="card-icon">{GAME_ICONS[gameId]}</div>
+        <div className={`card-badge${g.completions > 0 ? ' active' : ''}`}>
+          {badge || GAME_BADGE[gameId]}
+        </div>
+      </div>
+
+      <div className="card-name">{GAME_NAMES[gameId]}</div>
+
+      <div className="card-footer">
+        <div className={`card-tag ${tag.color}`}>{tag.label}</div>
+        <div className="card-score">
+          Best: <span>{g.highScore > 0 ? `${g.highScore}%` : '—'}</span>
+        </div>
+      </div>
+
+      <div className="card-meta">
+        <span>{tag.label}</span>
+        <span>•</span>
+        <span>{GAME_DIFFICULTY[gameId]}</span>
+      </div>
+
+      <div className="card-play">Play →</div>
+    </div>
+  );
+}
+
+===== components/Navbar.tsx =====
+'use client';
+// components/Navbar.tsx
+
+import Link from 'next/link';
+import { useState, useEffect, useRef } from 'react';
+import { useGame, logOut } from '@/lib/gameState';
+import { THEMES } from '@/lib/constants';
+import { useRouter } from 'next/navigation';
+import ProfileModal from './ProfileModal';
+
+export default function Navbar() {
+  const { state, applyTheme, earnedAchievementIds } = useGame();
+  const router = useRouter();
+  const [showProfile, setShowProfile] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const isGuest = typeof window !== 'undefined' && localStorage.getItem('guestUser') === 'true';
+
+  // Close dropdown on outside click (mouse + touch)
+  useEffect(() => {
+    function handler(e: MouseEvent | TouchEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setShowDropdown(false);
+      }
+    }
+    document.addEventListener('mousedown', handler);
+    document.addEventListener('touchstart', handler);
+    return () => {
+      document.removeEventListener('mousedown', handler);
+      document.removeEventListener('touchstart', handler);
+    };
+  }, []);
+
+  useEffect(() => { setMobileOpen(false); }, []);
+
+  async function handleLogout() {
+    try {
+      if (!isGuest) await logOut();
+      localStorage.removeItem('guestUser');
+      localStorage.removeItem('currentUser');
+    } catch (_) {}
+    router.replace('/auth');
+  }
+
+  return (
+    <>
+      <header className="topbar">
+        {/* Logo */}
+        <div className="brand">
+          <Link href="/hub" aria-label="Go to home" style={{ display: 'inline-flex', lineHeight: 0 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/assets/images/logo.png" alt="Bored Teacher" className="brand-logo" />
+          </Link>
+        </div>
+
+        {/* Desktop nav links */}
+        <nav className="nav-links" aria-label="Main navigation">
+          <Link href="/leaderboard" className="pill-btn" style={{ textDecoration: 'none' }}>
+            🏆 Leaderboard
+          </Link>
+          <Link href="/trophy" className="pill-btn" style={{ textDecoration: 'none' }}>
+            🎖️ Trophy Room
+            {earnedAchievementIds.size > 0 && (
+              <span className="nav-achievement-count">{earnedAchievementIds.size}</span>
+            )}
+          </Link>
+          <Link href="/resources" className="pill-btn" style={{ textDecoration: 'none' }}>
+            📚 Resources
+          </Link>
+        </nav>
+
+        {/* Right side — profile dropdown + hamburger */}
+        <div className="nav-right">
+          {/* Profile dropdown — position:relative is the anchor */}
+          <div
+            className="profile-dropdown-wrap"
+            ref={dropdownRef}
+            style={{ position: 'relative' }}
+          >
+            <button
+              className="pill-btn player-chip"
+              onClick={() => setShowDropdown(d => !d)}
+              aria-expanded={showDropdown}
+              aria-haspopup="true"
+              aria-label={`Profile menu for ${state.name}`}
+            >
+              {state.avatar} {state.name}{' '}
+              <span style={{ fontSize: '0.6rem', opacity: 0.6, marginLeft: 2 }}>▾</span>
+            </button>
+
+            {showDropdown && (
+              <div
+                className="profile-dropdown dropdown-animated"
+                role="menu"
+                style={{
+                  position: 'absolute',
+                  top: 'calc(100% + 8px)',
+                  right: 0,
+                  zIndex: 9999,
+                  minWidth: 220,
+                }}
+              >
+                <button
+                  className="dropdown-item"
+                  role="menuitem"
+                  onClick={() => { setShowProfile(true); setShowDropdown(false); }}
+                >
+                  ✏️ Edit Profile
+                </button>
+
+                <div className="dropdown-divider" />
+
+                <div className="dropdown-item dropdown-theme" role="menuitem">
+                  <span>🎨 Theme</span>
+                  <select
+                    className="theme-select-inline"
+                    value={state.theme}
+                    onChange={e => applyTheme(e.target.value)}
+                    aria-label="Choose colour theme"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    {THEMES.map(t => (
+                      <option key={t.value} value={t.value}>{t.label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="dropdown-divider" />
+
+                <button
+                  className="dropdown-item dropdown-signout"
+                  role="menuitem"
+                  onClick={handleLogout}
+                >
+                  {isGuest ? '🔓 Leave Guest Mode' : '🚪 Sign Out'}
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Hamburger for mobile */}
+          <button
+            className="hamburger"
+            onClick={() => setMobileOpen(o => !o)}
+            aria-expanded={mobileOpen}
+            aria-label="Toggle navigation menu"
+          >
+            {mobileOpen ? '✕' : '☰'}
+          </button>
+        </div>
+      </header>
+
+      {/* Mobile menu */}
+      {mobileOpen && (
+        <nav className="mobile-menu" aria-label="Mobile navigation">
+          <Link href="/leaderboard" className="mobile-nav-item" onClick={() => setMobileOpen(false)}>
+            🏆 Leaderboard
+          </Link>
+          <Link href="/trophy" className="mobile-nav-item" onClick={() => setMobileOpen(false)}>
+            🎖️ Trophy Room
+          </Link>
+          <Link href="/resources" className="mobile-nav-item" onClick={() => setMobileOpen(false)}>
+            📚 Resources
+          </Link>
+          <button className="mobile-nav-item" onClick={() => { setShowProfile(true); setMobileOpen(false); }}>
+            ✏️ Edit Profile
+          </button>
+          <button className="mobile-nav-item mobile-signout" onClick={handleLogout}>
+            {isGuest ? '🔓 Leave Guest Mode' : '🚪 Sign Out'}
+          </button>
+        </nav>
+      )}
+
+      {showProfile && <ProfileModal onClose={() => setShowProfile(false)} />}
+    </>
+  );
 }
