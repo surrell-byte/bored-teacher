@@ -97,14 +97,14 @@ export default function HubPage() {
       {/* ── Hero / stats bar ──────────────────────────────── */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+        gridTemplateColumns: 'minmax(500px, 1.5fr) minmax(280px, .8fr)',
         gap: 16,
         marginTop: 20,
         marginBottom: 22,
       }}>
         {/* Welcome card */}
         <div className="shell-card" style={{ padding: 'clamp(20px, 4vw, 32px)', borderRadius: 28 }}>
-          <div style={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.2em', color: 'var(--gold)', fontWeight: 700, marginBottom: 6 }}>
+          <div className="hero-kicker">
             🎮 Game Library
           </div>
           <h1 style={{ fontFamily: 'var(--font-display, Syne)', fontSize: 'clamp(1.4rem, 4vw, 2.6rem)', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 8 }}>
@@ -120,7 +120,7 @@ export default function HubPage() {
               Lv {state.level}
             </span>
             <div className="hub-xp-bar" style={{ flex: 1 }}>
-              <div className="hub-xp-fill" style={{ width: `${xpPct}%` }} />
+              <div className="hub-xp-fill progress-fill" style={{ width: `${xpPct}%` }} />
             </div>
             <span style={{ fontSize: '0.7rem', color: 'var(--muted)', whiteSpace: 'nowrap' }}>
               {state.xp} / {xpNeeded} XP
@@ -142,11 +142,13 @@ export default function HubPage() {
             { label: 'Coins',        val: state.coins,            color: 'var(--green)', icon: '🪙' },
             { label: 'Day Streak',   val: `${state.loginStreak || 0}🔥`, color: 'var(--coral)', icon: '📅' },
           ].map(({ label, val, color, icon }) => (
-            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{ fontSize: '1.2rem' }}>{icon}</span>
-              <div>
-                <div style={{ fontFamily: 'var(--font-display, Syne)', fontSize: '1.1rem', fontWeight: 800, color, lineHeight: 1 }}>{val}</div>
-                <div style={{ fontSize: '0.62rem', color: 'var(--muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 2 }}>{label}</div>
+            <div key={label} className="hero-stat">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: '1.2rem' }}>{icon}</span>
+                <div>
+                  <div style={{ fontFamily: 'var(--font-display, Syne)', fontSize: '1.1rem', fontWeight: 800, color, lineHeight: 1 }}>{val}</div>
+                  <div style={{ fontSize: '0.62rem', color: 'var(--muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 2 }}>{label}</div>
+                </div>
               </div>
             </div>
           ))}
