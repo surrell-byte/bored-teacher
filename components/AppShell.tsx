@@ -17,16 +17,26 @@ export default function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <>
+      {showShell && (
+        <a href="#main-content" className="skip-to-content">
+          Skip to content
+        </a>
+      )}
+
       {showShell && <Navbar />}
       {showShell && <Toast />}
-      {children}
+
+      <main id="main-content">
+        {children}
+      </main>
+
       {/* Achievement popup — rendered outside the shell guard so it
           also fires on game pages when a result comes back */}
       {pendingAchievement && (
         <AchievementToast
           key={pendingAchievement.id}
           icon={pendingAchievement.icon}
-          title={pendingAchievement.title}
+          title={pendingAchievement.name}
           description={pendingAchievement.description}
           color={pendingAchievement.color}
           onDone={clearPendingAchievement}

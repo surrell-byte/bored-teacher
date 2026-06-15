@@ -41,17 +41,17 @@ export default function GameCard({ gameId, onClick }: Props) {
       <div className="card-footer">
         <div className={`card-tag ${tag.color}`}>{tag.label}</div>
         <div className="card-score">
-          Best: <span>{g.highScore > 0 ? `${g.highScore}%` : '—'}</span>
+          Best: <span className={g.highScore > 0 ? 'card-score-val' : 'card-score-empty'}>
+            {g.highScore > 0 ? `${g.highScore}%` : '—'}
+          </span>
         </div>
       </div>
 
       <div className="card-meta">
-        <span>{tag.label}</span>
-        <span>•</span>
-        <span>{GAME_DIFFICULTY[gameId]}</span>
+        <span className="card-meta-difficulty">{GAME_DIFFICULTY[gameId]}</span>
       </div>
 
-      <div className="card-play">Play →</div>
+      <div className="card-play">Play now →</div>
     </div>
   );
 }

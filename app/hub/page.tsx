@@ -12,12 +12,12 @@ import GameCard from '@/components/GameCard';
 import ManagePlayersModal from '@/components/ManagePlayersModal';
 
 const TAG_FILTERS = [
-  { label: '⚡ All Games', value: 'all' },
-  { label: '📖 Vocabulary',     value: 'Vocabulary' },
-  { label: '✍️ Grammar',        value: 'Grammar' },
-  { label: '🔗 Word Formation', value: 'Word Formation' },
-  { label: '🔬 Science',        value: 'Science' },
-  { label: '🔤 Phonics',        value: 'Phonics' },
+  { label: '⚡ All Games',     value: 'all' },
+  { label: '� Vocabulary',    value: 'Vocabulary' },
+  { label: '✍️ Grammar',       value: 'Grammar' },
+  { label: '🔗 Word Formation',value: 'Word Formation' },
+  { label: '� Science',        value: 'Science' },
+  { label: '🔤 Phonics',       value: 'Phonics' },
   { label: '💡 Logic',          value: 'Logic' },
   { label: '🎨 Colours',        value: 'Colours' },
   { label: '🚩 Geography',      value: 'Geography' },
@@ -30,10 +30,10 @@ const DIFFICULTY_FILTERS = [
 ];
 
 const SORT_OPTIONS = [
-  { label: '📋 Default', value: 'default' },
+  { label: '📋 Default',    value: 'default' },
   { label: '🏆 Best Score', value: 'score' },
-  { label: '🎮 Most Played', value: 'played' },
-  { label: '🔠 A–Z', value: 'alpha' },
+  { label: '🎮 Most Played',value: 'played' },
+  { label: '🔠 A–Z',        value: 'alpha' },
 ];
 
 export default function HubPage() {
@@ -78,16 +78,32 @@ export default function HubPage() {
         GAME_DIFFICULTY[k]?.toLowerCase().includes(q)
       );
     }
-    if (sort === 'score') games.sort((a, b) => (state.games[b]?.highScore ?? 0) - (state.games[a]?.highScore ?? 0));
-    else if (sort === 'played') games.sort((a, b) => (state.games[b]?.completions ?? 0) - (state.games[a]?.completions ?? 0));
-    else if (sort === 'alpha') games.sort((a, b) => (GAME_NAMES[a] ?? '').localeCompare(GAME_NAMES[b] ?? ''));
+    if (sort === 'score')  games.sort((a, b) => (state.games[b]?.highScore ?? 0) - (state.games[a]?.highScore ?? 0));
+    if (sort === 'played') games.sort((a, b) => (state.games[b]?.completions ?? 0) - (state.games[a]?.completions ?? 0));
+    if (sort === 'alpha')  games.sort((a, b) => (GAME_NAMES[a] ?? '').localeCompare(GAME_NAMES[b] ?? ''));
     return games;
   }, [search, tag, diff, sort, showPlayed, state.games]);
+
+  // Show genuinely unplayed games first; fall back to highest scored
+  const featuredGames = useMemo(() => {
+    const unplayed = GAME_KEYS.filter(k => (state.games[k]?.completions ?? 0) === 0);
+    return unplayed.length >= 4
+      ? unplayed.slice(0, 4)
+      : [...GAME_KEYS]
+          .sort((a, b) => (state.games[b]?.highScore ?? 0) - (state.games[a]?.highScore ?? 0))
+          .slice(0, 4);
+  }, [state.games]);
 
   const totalPlayed = GAME_KEYS.filter(k => (state.games[k]?.completions ?? 0) > 0).length;
   const totalScore  = Object.values(state.games).reduce((a, g) => a + (g.highScore ?? 0), 0);
   const xpNeeded    = xpForLevel(state.level);
   const xpPct       = Math.min(100, Math.round((state.xp / xpNeeded) * 100));
+
+  const hasActiveFilters = tag !== 'all' || diff !== 'All' || !!search || showPlayed;
+
+  function clearFilters() {
+    setTag('all'); setDiff('All'); setSearch(''); setShowPlayed(false); setFiltersOpen(false);
+  }
 
   if (!ready) return null;
 
@@ -95,47 +111,27 @@ export default function HubPage() {
     <div className="hub-page">
 
       {/* ── Hero / stats bar ──────────────────────────────── */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'minmax(500px, 1.5fr) minmax(280px, .8fr)',
-        gap: 16,
-        marginTop: 20,
-        marginBottom: 22,
-      }}>
-        {/* Welcome card */}
-        <div className="shell-card" style={{ padding: 'clamp(20px, 4vw, 32px)', borderRadius: 28 }}>
-          <div className="hero-kicker">
-            🎮 Game Library
-          </div>
-          <h1 style={{ fontFamily: 'var(--font-display, Syne)', fontSize: 'clamp(1.4rem, 4vw, 2.6rem)', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 8 }}>
+      <div className="hub-hero-grid">
+        <div className="shell-card hub-welcome-card">
+          <div className="hero-kicker">🎮 Game Library</div>
+          <h1 className="hub-welcome-title">
             Welcome back, {state.name.split(' ')[0]} {state.avatar}
           </h1>
-          <p style={{ color: 'var(--muted)', fontSize: '0.9rem', lineHeight: 1.65, maxWidth: '50ch', marginBottom: 20 }}>
+          <p className="hub-welcome-sub">
             {totalPlayed === 0
               ? "Pick a game and start your journey. Every round sharpens your English!"
               : `You've completed ${totalPlayed} of ${GAME_KEYS.length} games. Keep the streak going!`}
           </p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
-            <span style={{ fontFamily: 'var(--font-display, Syne)', fontSize: '0.78rem', fontWeight: 800, color: 'var(--gold)', whiteSpace: 'nowrap' }}>
-              Lv {state.level}
-            </span>
+          <div className="hub-xp-row">
+            <span className="hub-xp-level">Lv {state.level}</span>
             <div className="hub-xp-bar" style={{ flex: 1 }}>
               <div className="hub-xp-fill progress-fill" style={{ width: `${xpPct}%` }} />
             </div>
-            <span style={{ fontSize: '0.7rem', color: 'var(--muted)', whiteSpace: 'nowrap' }}>
-              {state.xp} / {xpNeeded} XP
-            </span>
+            <span className="hub-xp-count">{state.xp} / {xpNeeded} XP</span>
           </div>
         </div>
 
-        {/* Quick stats */}
-        <div className="shell-card" style={{
-          padding: 'clamp(16px, 3vw, 24px)',
-          borderRadius: 28,
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: 16,
-        }}>
+        <div className="shell-card hub-stats-card">
           {[
             { label: 'Games Played', val: totalPlayed,            color: 'var(--teal)',  icon: '🎮' },
             { label: 'Total Score',  val: totalScore,             color: 'var(--gold)',  icon: '⭐' },
@@ -143,11 +139,11 @@ export default function HubPage() {
             { label: 'Day Streak',   val: `${state.loginStreak || 0}🔥`, color: 'var(--coral)', icon: '📅' },
           ].map(({ label, val, color, icon }) => (
             <div key={label} className="hero-stat">
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontSize: '1.2rem' }}>{icon}</span>
+              <div className="hero-stat-inner">
+                <span className="hero-stat-icon">{icon}</span>
                 <div>
-                  <div style={{ fontFamily: 'var(--font-display, Syne)', fontSize: '1.1rem', fontWeight: 800, color, lineHeight: 1 }}>{val}</div>
-                  <div style={{ fontSize: '0.62rem', color: 'var(--muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 2 }}>{label}</div>
+                  <div className="hero-stat-val" style={{ color }}>{val}</div>
+                  <div className="hero-stat-lbl">{label}</div>
                 </div>
               </div>
             </div>
@@ -187,6 +183,11 @@ export default function HubPage() {
             onChange={e => setSearch(e.target.value)}
             aria-label="Search games"
           />
+          {search && (
+            <button className="hub-search-clear" onClick={() => setSearch('')} aria-label="Clear search">
+              ✕
+            </button>
+          )}
         </div>
         <select
           value={sort}
@@ -199,31 +200,29 @@ export default function HubPage() {
             <option key={o.value} value={o.value}>{o.label}</option>
           ))}
         </select>
-        <button
-          className="pill-btn"
-          onClick={() => setShowManage(true)}
-          style={{ marginLeft: 'auto' }}
-        >
+        <button className="pill-btn" onClick={() => setShowManage(true)} style={{ marginLeft: 'auto' }}>
           👥 Manage Players
         </button>
       </div>
 
-      {/* ── Mobile filter toggle ──────────────────────────── */}
+      {/* ── Mobile filter toggle ──────────────────────── */}
       <button
         className="hub-filters-toggle"
         onClick={() => setFiltersOpen(o => !o)}
         aria-expanded={filtersOpen}
         aria-controls="hub-filters-collapsible"
       >
-        <span>🎛️ Filters {(tag !== 'all' || diff !== 'All' || showPlayed) ? '•' : ''}</span>
+        <span>🎛️ Filters {hasActiveFilters ? '•' : ''}</span>
         <span>{filtersOpen ? '▲' : '▼'}</span>
       </button>
 
       <div id="hub-filters-collapsible" className={`hub-filters-collapsible${filtersOpen ? ' open' : ''}`}>
-        <div className="hub-tag-tabs" style={{
-          display: 'flex', gap: 6, flexWrap: 'nowrap', overflowX: 'auto',
-          paddingBottom: 6, scrollbarWidth: 'none',
-        }} role="group" aria-label="Filter by topic">
+        <div
+          className="hub-tag-tabs"
+          style={{ display: 'flex', gap: 6, flexWrap: 'nowrap', overflowX: 'auto', paddingBottom: 6, scrollbarWidth: 'none' }}
+          role="group"
+          aria-label="Filter by topic"
+        >
           {TAG_FILTERS.map(f => (
             <button
               key={f.value}
@@ -261,31 +260,30 @@ export default function HubPage() {
         </button>
       </div>
 
-      {/* ── Game count line ───────────────────────────────── */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-        <div style={{ fontSize: '0.8rem', color: 'var(--muted)', fontWeight: 600 }}>
-          {filteredGames.length === GAME_KEYS.length
-            ? `${GAME_KEYS.length} games`
-            : `${filteredGames.length} of ${GAME_KEYS.length} games`}
-        </div>
-        {(tag !== 'all' || diff !== 'All' || search || showPlayed) && (
+      {/* ── Game count ────────────────────────────────── */}
+      <div className="hub-game-count">
+        <span className="hub-game-count-num">
+          {filteredGames.length === GAME_KEYS.length ? GAME_KEYS.length : filteredGames.length}
+        </span>
+        <span>
+          {filteredGames.length === GAME_KEYS.length ? 'games' : `of ${GAME_KEYS.length} games`}
+        </span>
+        {hasActiveFilters && (
           <button
             className="pill-btn"
-            style={{ fontSize: '0.7rem', padding: '3px 10px' }}
-            onClick={() => { setTag('all'); setDiff('All'); setSearch(''); setShowPlayed(false); setFiltersOpen(false); }}
+            style={{ fontSize: '0.7rem', padding: '3px 10px', marginLeft: 'auto' }}
+            onClick={clearFilters}
           >
             Clear filters
           </button>
         )}
       </div>
 
-      {/* ── Game grid ─────────────────────────────────────── */}
+      {/* ── Game grid ─────────────────────────────────── */}
       {filteredGames.length === 0 ? (
         <div className="shell-card" style={{ padding: '56px 24px', textAlign: 'center' }}>
           <div style={{ fontSize: '3rem', marginBottom: 14 }}>🔍</div>
-          <div style={{ fontFamily: 'var(--font-display, Syne)', fontWeight: 800, fontSize: '1.1rem', marginBottom: 8 }}>
-            No games match your filters
-          </div>
+          <div className="hub-empty-title">No games match your filters</div>
           <div style={{ color: 'var(--muted)', fontSize: '0.86rem' }}>
             Try a different search term, tag, or difficulty level.
           </div>
@@ -294,14 +292,12 @@ export default function HubPage() {
         <>
           {!search && tag === 'all' && (
             <section className="hub-section">
-              <h2 className="hub-section-title">🔥 Recommended For You</h2>
+              <h2 className="hub-section-title">
+                {totalPlayed === 0 ? '🎮 Featured Games' : '🆕 New For You'}
+              </h2>
               <div className="hub-featured-grid">
-                {filteredGames.slice(0, 4).map((gameId) => (
-                  <GameCard
-                    key={gameId}
-                    gameId={gameId}
-                    onClick={handlePlay}
-                  />
+                {featuredGames.map(gameId => (
+                  <GameCard key={gameId} gameId={gameId} onClick={handlePlay} />
                 ))}
               </div>
             </section>

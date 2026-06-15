@@ -167,6 +167,22 @@ export default function Navbar() {
           <button className="mobile-nav-item" onClick={() => { setShowProfile(true); setMobileOpen(false); }}>
             ✏️ Edit Profile
           </button>
+
+          {/* Theme switcher — now on mobile too */}
+          <div className="mobile-nav-item mobile-theme-row">
+            <span>🎨 Theme</span>
+            <select
+              className="theme-select-inline"
+              value={state.theme}
+              onChange={e => applyTheme(e.target.value)}
+              aria-label="Choose colour theme"
+            >
+              {THEMES.map(t => (
+                <option key={t.value} value={t.value}>{t.label}</option>
+              ))}
+            </select>
+          </div>
+
           <button className="mobile-nav-item mobile-signout" onClick={handleLogout}>
             {isGuest ? '🔓 Leave Guest Mode' : '🚪 Sign Out'}
           </button>
