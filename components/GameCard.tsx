@@ -4,7 +4,7 @@
 import { useGame } from '@/lib/gameState';
 import {
   GAME_NAMES, GAME_ICONS, GAME_TAGS, GAME_BADGE,
-  GAME_DIFFICULTY, GAME_DESC, GAME_BAR_COLOR,
+  GAME_DIFFICULTY, GAME_BAR_COLOR, GAME_IMAGES,
 } from '@/lib/constants';
 
 interface Props {
@@ -28,6 +28,7 @@ export default function GameCard({ gameId, onClick }: Props) {
       onKeyDown={e => e.key === 'Enter' && onClick(gameId)}
       aria-label={`Play ${GAME_NAMES[gameId]}`}
     >
+      <img src={GAME_IMAGES[gameId]} className="card-image" alt="" />
       <div className="card-top">
         <div className="card-icon">{GAME_ICONS[gameId]}</div>
         <div className={`card-badge${g.completions > 0 ? ' active' : ''}`}>
@@ -36,7 +37,6 @@ export default function GameCard({ gameId, onClick }: Props) {
       </div>
 
       <div className="card-name">{GAME_NAMES[gameId]}</div>
-      <div className="card-desc">{GAME_DESC[gameId]}</div>
 
       <div className="card-footer">
         <div className={`card-tag ${tag.color}`}>{tag.label}</div>
@@ -45,20 +45,13 @@ export default function GameCard({ gameId, onClick }: Props) {
         </div>
       </div>
 
-      <div className="card-progress-bar">
-        <div
-          className="card-progress-fill"
-          style={{
-            width: `${Math.min(100, g.lastAccuracy ?? 0)}%`,
-            background: GAME_BAR_COLOR[gameId] ?? 'var(--gold)',
-          }}
-        />
+      <div className="card-meta">
+        <span>{tag.label}</span>
+        <span>•</span>
+        <span>{GAME_DIFFICULTY[gameId]}</span>
       </div>
 
-      <div className="card-launch">
-        <div className="card-difficulty">{GAME_DIFFICULTY[gameId]}</div>
-        <div className="card-cta">Play now →</div>
-      </div>
+      <div className="card-play">Play →</div>
     </div>
   );
 }

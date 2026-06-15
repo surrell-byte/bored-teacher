@@ -153,6 +153,26 @@ export default function HubPage() {
         </div>
       </div>
 
+      {state.lastGame && (
+        <div className="continue-card">
+          <div className="continue-icon">
+            {GAME_ICONS[state.lastGame] ?? '🎮'}
+          </div>
+          <div className="continue-content">
+            <div className="continue-label">Continue Playing</div>
+            <div className="continue-title">
+              {GAME_NAMES[state.lastGame]}
+            </div>
+          </div>
+          <button
+            className="continue-btn"
+            onClick={() => handlePlay(state.lastGame!)}
+          >
+            Resume →
+          </button>
+        </div>
+      )}
+
       {/* ── Filter & search row ────────────────────────────── */}
       <div className="hub-filter-row">
         <div className="hub-search">
@@ -269,29 +289,37 @@ export default function HubPage() {
           </div>
         </div>
       ) : (
-        <div className="hub-game-grid">
-          {filteredGames.map((gameId, i) => (
-            <div key={gameId} className="card-stagger" style={{ '--stagger-i': i } as React.CSSProperties}>
-              <GameCard gameId={gameId} onClick={handlePlay} />
-            </div>
-          ))}
-        </div>
+        <>
+          {!search && tag === 'all' && (
+            <section className="hub-section">
+              <h2 className="hub-section-title">🔥 Recommended For You</h2>
+              <div className="hub-featured-grid">
+                {filteredGames.slice(0, 4).map((gameId) => (
+                  <GameCard
+                    key={gameId}
+                    gameId={gameId}
+                    onClick={handlePlay}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
+
+          <div className="hub-game-grid">
+            {filteredGames.map((gameId, i) => (
+              <div
+                key={gameId}
+                className="card-stagger"
+                style={{ '--stagger-i': i } as React.CSSProperties}
+              >
+                <GameCard gameId={gameId} onClick={handlePlay} />
+              </div>
+            ))}
+          </div>
+        </>
       )}
 
       {showManage && <ManagePlayersModal onClose={() => setShowManage(false)} />}
-
-      {state.lastGame && !search && tag === 'all' && (
-        <div style={{ marginTop: 32, padding: 'clamp(14px, 3vw, 18px) clamp(14px, 3vw, 22px)', borderRadius: 18, background: 'var(--surface-strong)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '1.8rem' }}>{GAME_ICONS[state.lastGame] ?? '🎮'}</span>
-          <div style={{ flex: 1, minWidth: 140 }}>
-            <div style={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--muted)', fontWeight: 700, marginBottom: 2 }}>Continue where you left off</div>
-            <div style={{ fontFamily: 'var(--font-display, Syne)', fontWeight: 800, fontSize: '0.95rem' }}>{GAME_NAMES[state.lastGame]}</div>
-          </div>
-          <button className="pill-btn active" onClick={() => handlePlay(state.lastGame!)}>
-            Play again →
-          </button>
-        </div>
-      )}
     </div>
   );
 }

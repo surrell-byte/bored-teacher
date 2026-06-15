@@ -5,6 +5,7 @@ import './globals.css';
 import { GameProvider } from '@/lib/gameState';
 import PageTransition from '@/components/PageTransition';
 import AppShell from '@/components/AppShell';
+import AchievementPopup from '@/components/AchievementPopup';
 
 export const metadata: Metadata = {
   title: 'ESL Game Hub',
@@ -17,6 +18,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en">
       <body>
         <GameProvider>
+          <AchievementPopup />
           <AppShell>
             <PageTransition>
               {children}

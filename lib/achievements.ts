@@ -8,7 +8,7 @@ import { GAME_KEYS } from '@/lib/constants';
 
 export interface Achievement {
   id: string;
-  title: string;
+  name: string;
   icon: string;
   description: string;
   color: string;                       // CSS colour string for glow / border
@@ -30,7 +30,7 @@ export const ACHIEVEMENT_CATEGORIES: AchievementCategory[] = [
     achievements: [
       {
         id: 'first_play',
-        title: 'First Steps',
+        name: 'First Steps',
         icon: '🎮',
         color: 'var(--teal)',
         description: 'Complete your first game',
@@ -38,7 +38,7 @@ export const ACHIEVEMENT_CATEGORIES: AchievementCategory[] = [
       },
       {
         id: 'play_5',
-        title: 'Getting Started',
+        name: 'Getting Started',
         icon: '🗂️',
         color: 'var(--blue)',
         description: 'Complete 5 different games',
@@ -46,7 +46,7 @@ export const ACHIEVEMENT_CATEGORIES: AchievementCategory[] = [
       },
       {
         id: 'play_10',
-        title: 'Dedicated',
+        name: 'Dedicated',
         icon: '📚',
         color: 'var(--blue)',
         description: 'Complete 10 different games',
@@ -54,7 +54,7 @@ export const ACHIEVEMENT_CATEGORIES: AchievementCategory[] = [
       },
       {
         id: 'play_all',
-        title: 'All-Rounder',
+        name: 'All-Rounder',
         icon: '🌍',
         color: 'var(--gold)',
         description: 'Play every single game',
@@ -62,7 +62,7 @@ export const ACHIEVEMENT_CATEGORIES: AchievementCategory[] = [
       },
       {
         id: 'complete_50',
-        title: 'Champion',
+        name: 'Champion',
         icon: '🏅',
         color: 'var(--coral)',
         description: '50 total game completions',
@@ -70,7 +70,7 @@ export const ACHIEVEMENT_CATEGORIES: AchievementCategory[] = [
       },
       {
         id: 'complete_100',
-        title: 'Legend',
+        name: 'Legend',
         icon: '💫',
         color: 'var(--gold)',
         description: '100 total game completions',
@@ -83,7 +83,7 @@ export const ACHIEVEMENT_CATEGORIES: AchievementCategory[] = [
     achievements: [
       {
         id: 'acc_70',
-        title: 'Decent Shot',
+        name: 'Decent Shot',
         icon: '🎯',
         color: 'var(--green)',
         description: '70%+ accuracy in any game',
@@ -91,7 +91,7 @@ export const ACHIEVEMENT_CATEGORIES: AchievementCategory[] = [
       },
       {
         id: 'acc_80',
-        title: 'Sharp',
+        name: 'Sharp',
         icon: '🔥',
         color: 'var(--coral)',
         description: '80%+ accuracy in any game',
@@ -99,7 +99,7 @@ export const ACHIEVEMENT_CATEGORIES: AchievementCategory[] = [
       },
       {
         id: 'acc_90',
-        title: 'On Fire',
+        name: 'On Fire',
         icon: '⚡',
         color: 'var(--gold)',
         description: '90%+ accuracy in any game',
@@ -107,7 +107,7 @@ export const ACHIEVEMENT_CATEGORIES: AchievementCategory[] = [
       },
       {
         id: 'geography_legend',
-        title: 'Geography Legend',
+        name: 'Geography Legend',
         icon: '🌍',
         color: 'var(--teal)',
         description: 'Score 100% in Flagmaster',
@@ -115,7 +115,7 @@ export const ACHIEVEMENT_CATEGORIES: AchievementCategory[] = [
       },
       {
         id: 'perfect',
-        title: 'Perfectionist',
+        name: 'Perfectionist',
         icon: '💯',
         color: 'var(--gold)',
         description: '100% accuracy in any game',
@@ -123,7 +123,7 @@ export const ACHIEVEMENT_CATEGORIES: AchievementCategory[] = [
       },
       {
         id: 'avg_80',
-        title: 'Consistently Good',
+        name: 'Consistently Good',
         icon: '📊',
         color: 'var(--teal)',
         description: '80%+ avg accuracy across 5+ games',
@@ -140,7 +140,7 @@ export const ACHIEVEMENT_CATEGORIES: AchievementCategory[] = [
     achievements: [
       {
         id: 'grammar_rookie',
-        title: 'Grammar Rookie',
+        name: 'Grammar Rookie',
         icon: '🏆',
         color: 'var(--green)',
         description: 'Score 100+ points in a grammar game',
@@ -150,7 +150,7 @@ export const ACHIEVEMENT_CATEGORIES: AchievementCategory[] = [
       },
       {
         id: 'vocabulary_master',
-        title: 'Vocabulary Master',
+        name: 'Vocabulary Master',
         icon: '📚',
         color: 'var(--blue)',
         description: '85%+ in 5 or more vocabulary games',
@@ -160,7 +160,7 @@ export const ACHIEVEMENT_CATEGORIES: AchievementCategory[] = [
       },
       {
         id: 'animal_expert',
-        title: 'Animal Expert',
+        name: 'Animal Expert',
         icon: '🦁',
         color: 'var(--teal)',
         description: 'Complete Animal Kingdom Quest',
@@ -168,7 +168,7 @@ export const ACHIEVEMENT_CATEGORIES: AchievementCategory[] = [
       },
       {
         id: 'master_grammar',
-        title: 'Grammar Guru',
+        name: 'Grammar Guru',
         icon: '✍️',
         color: 'var(--green)',
         description: '85%+ in any grammar game',
@@ -178,7 +178,7 @@ export const ACHIEVEMENT_CATEGORIES: AchievementCategory[] = [
       },
       {
         id: 'master_science',
-        title: 'Science Whiz',
+        name: 'Science Whiz',
         icon: '🔬',
         color: 'var(--teal)',
         description: '85%+ in any science game',
@@ -188,7 +188,7 @@ export const ACHIEVEMENT_CATEGORIES: AchievementCategory[] = [
       },
       {
         id: 'master_phonics',
-        title: 'Phonics Pro',
+        name: 'Phonics Pro',
         icon: '🔊',
         color: 'var(--coral)',
         description: '85%+ in any phonics game',
@@ -198,7 +198,7 @@ export const ACHIEVEMENT_CATEGORIES: AchievementCategory[] = [
       },
       {
         id: 'polymath',
-        title: 'Polymath',
+        name: 'Polymath',
         icon: '🧠',
         color: 'var(--gold)',
         description: '85%+ in 10 or more different games',
@@ -211,7 +211,7 @@ export const ACHIEVEMENT_CATEGORIES: AchievementCategory[] = [
     achievements: [
       {
         id: 'streak_7',
-        title: '7-Day Streak',
+        name: '7-Day Streak',
         icon: '🔥',
         color: 'var(--coral)',
         description: 'Play for 7 consecutive days',
@@ -219,7 +219,7 @@ export const ACHIEVEMENT_CATEGORIES: AchievementCategory[] = [
       },
       {
         id: 'streak_30',
-        title: 'Monthly',
+        name: 'Monthly',
         icon: '🌈',
         color: 'var(--purple)',
         description: '30-day login streak',
@@ -227,7 +227,7 @@ export const ACHIEVEMENT_CATEGORIES: AchievementCategory[] = [
       },
       {
         id: 'level_5',
-        title: 'Rising Star',
+        name: 'Rising Star',
         icon: '⭐',
         color: 'var(--green)',
         description: 'Reach Level 5',
@@ -235,7 +235,7 @@ export const ACHIEVEMENT_CATEGORIES: AchievementCategory[] = [
       },
       {
         id: 'level_10',
-        title: 'Veteran',
+        name: 'Veteran',
         icon: '🌟',
         color: 'var(--blue)',
         description: 'Reach Level 10',
@@ -243,7 +243,7 @@ export const ACHIEVEMENT_CATEGORIES: AchievementCategory[] = [
       },
       {
         id: 'level_20',
-        title: 'Elite',
+        name: 'Elite',
         icon: '🏆',
         color: 'var(--gold)',
         description: 'Reach Level 20',
@@ -251,7 +251,7 @@ export const ACHIEVEMENT_CATEGORIES: AchievementCategory[] = [
       },
       {
         id: 'coins_500',
-        title: 'Coin Hoarder',
+        name: 'Coin Hoarder',
         icon: '🪙',
         color: 'var(--gold)',
         description: 'Collect 500 coins',
