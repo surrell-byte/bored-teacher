@@ -45,7 +45,7 @@ const LEVEL_COLORS = { easy: "#22c55e", medium: "#f59e0b", hard: "#ef4444" };
 
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
 
-export default function AnimalKingdomQuest() {
+export default function AnimalKingdomQuest({ onComplete }) {
   const { completeGame } = useGame();
   const [screen, setScreen] = useState("menu"); // menu | game | levelUp
   const [level, setLevel] = useState("easy");
@@ -81,6 +81,7 @@ export default function AnimalKingdomQuest() {
           setCorrectCount(final => {
             const accuracy = Math.round((final / questions.length) * 100);
             completeGame('animal-kingdom', accuracy, questions.length);
+            onComplete?.(accuracy, questions.length);
             return final;
           });
 

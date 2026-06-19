@@ -3,32 +3,57 @@
 
 import { useState, useEffect, FormEvent, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { signIn, signUp, resetPassword, onAuthStateChanged } from '@/lib/firebase';
+import {
+  signIn, signUp, resetPassword, onAuthStateChanged,
+  createClassCode, resolveClassCode, setUserClass,
+} from '@/lib/firebase';
 
 type Tab = 'login' | 'register';
+type Role = 'teacher' | 'student';
+type Step = 'form' | 'showCode' | 'needCode';
 
 function AuthPageInner() {
   const router       = useRouter();
   const searchParams = useSearchParams();
   const [tab, setTab]         = useState<Tab>('login');
+  const [role, setRole]       = useState<Role>('student');
   const [email, setEmail]     = useState('');
   const [password, setPwd]    = useState('');
   const [name, setName]       = useState('');
+  const [classCode, setClassCode] = useState('');
   const [error, setError]     = useState('');
   const [info, setInfo]       = useState('');
   const [loading, setLoading] = useState(false);
   const [ready, setReady]     = useState(false);
   const [showPwd, setShowPwd] = useState(false);
+  const [suppressRedirect, setSuppressRedirect] = useState(false);
 
-  // Auth guard — if already signed in, go to hub
+  // Post-registration flow state
+  const [step, setStep]                   = useState<Step>('form');
+  const [generatedCode, setGeneratedCode] = useState('');
+  const [pendingUid, setPendingUid]       = useState('');
+  const [copied, setCopied]               = useState(false);
+
+  // Auth guard — if already signed in, go to hub.
+  // Exception: ?needCode=1 means hub.tsx bounced this user here because they have
+  // no classId yet — show the recovery screen instead of looping back to /hub.
   useEffect(() => {
     if (localStorage.getItem('guestUser') === 'true') { router.replace('/hub'); return; }
+    const needsCode = searchParams.get('needCode') === '1';
     const unsub = onAuthStateChanged((user) => {
-      if (user) { router.replace('/hub'); return; }
+      if (user && needsCode) {
+        setPendingUid(user.uid);
+        setStep('needCode');
+        setSuppressRedirect(true);
+        setReady(true);
+        return;
+      }
+      if (user && !suppressRedirect) { router.replace('/hub'); return; }
       setReady(true);
     });
     return unsub;
-  }, [router]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router, suppressRedirect, searchParams]);
 
   useEffect(() => {
     if (searchParams.get('reason') === 'timeout') {
@@ -42,16 +67,71 @@ function AuthPageInner() {
     try {
       if (tab === 'login') {
         await signIn(email, password);
-      } else {
-        if (!name.trim()) { setError('Please enter your display name.'); setLoading(false); return; }
-        await signUp(email, password, name.trim());
+        router.replace('/hub');
+        return;
       }
+
+      // ── Register ──
+      if (!name.trim()) { setError('Please enter your display name.'); setLoading(false); return; }
+      if (role === 'student' && !classCode.trim()) {
+        setError('Please enter the class code your teacher gave you.');
+        setLoading(false);
+        return;
+      }
+
+      setSuppressRedirect(true);
+      const user = await signUp(email, password, name.trim());
+
+      if (role === 'teacher') {
+        const code = await createClassCode(user.uid);
+        await setUserClass(user.uid, user.uid, 'teacher');
+        setGeneratedCode(code);
+        setStep('showCode');
+        setLoading(false);
+        return;
+      }
+
+      // role === 'student'
+      const teacherUid = await resolveClassCode(classCode);
+      if (!teacherUid) {
+        setPendingUid(user.uid);
+        setStep('needCode');
+        setLoading(false);
+        return;
+      }
+      await setUserClass(user.uid, teacherUid, 'student');
+      setSuppressRedirect(false);
       router.replace('/hub');
     } catch (err: unknown) {
       setError(friendlyError(err));
-    } finally {
       setLoading(false);
     }
+  }
+
+  async function handleJoinRetry() {
+    setError(''); setLoading(true);
+    const teacherUid = await resolveClassCode(classCode);
+    if (!teacherUid) {
+      setError("Still not finding that code. Double-check with your teacher — it's case-insensitive but every character has to match.");
+      setLoading(false);
+      return;
+    }
+    await setUserClass(pendingUid, teacherUid, 'student');
+    setLoading(false);
+    setSuppressRedirect(false);
+    router.replace('/hub');
+  }
+
+  function handleCopyCode() {
+    navigator.clipboard?.writeText(generatedCode).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
+
+  function handleContinueToHub() {
+    setSuppressRedirect(false);
+    router.replace('/hub');
   }
 
   async function handleReset() {
@@ -74,94 +154,153 @@ function AuthPageInner() {
 
   return (
     <div className="auth-page">
-      {/* Corner doodles */}
       <span className="deco tl" aria-hidden>📚</span>
       <span className="deco tr" aria-hidden>🎮</span>
       <span className="deco bl" aria-hidden>✏️</span>
       <span className="deco br" aria-hidden>🏆</span>
 
       <div className="auth-card">
-        {/* Logo */}
         <div className="logo">
           <span className="logo-icon">🎓</span>
           <h1>ESL Game Hub</h1>
           <p>Learn · Play · Level Up</p>
         </div>
 
-        {/* Tabs */}
-        <div className="tabs">
-          <button
-            className={`tab-btn${tab === 'login' ? ' active' : ''}`}
-            onClick={() => { setTab('login'); setError(''); setInfo(''); }}
-          >Sign In</button>
-          <button
-            className={`tab-btn${tab === 'register' ? ' active' : ''}`}
-            onClick={() => { setTab('register'); setError(''); setInfo(''); }}
-          >Register</button>
-        </div>
-
-        {/* Messages */}
-        {error && <div className="auth-error" role="alert" aria-live="polite">{error}</div>}
-        {info  && <div className="auth-info"  role="status" aria-live="polite">{info}</div>}
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} noValidate>
-          {tab === 'register' && (
-            <div className="field">
-              <label htmlFor="name">Your Name</label>
-              <input id="name" type="text" value={name}
-                onChange={e => setName(e.target.value)}
-                placeholder="e.g. Alex Kim" autoComplete="name" required />
-            </div>
-          )}
-          <div className="field">
-            <label htmlFor="email">Email</label>
-            <input id="email" type="email" value={email}
-              onChange={e => setEmail(e.target.value)}
-              placeholder="you@school.com" autoComplete="email" required />
-          </div>
-          <div className="field">
-            <label htmlFor="password">Password</label>
-            <div style={{ position: 'relative' }}>
-              <input id="password" type={showPwd ? 'text' : 'password'} value={password}
-                onChange={e => setPwd(e.target.value)}
-                placeholder="••••••••" autoComplete={tab === 'login' ? 'current-password' : 'new-password'} required
-                style={{ paddingRight: '44px' }} />
-              <button
-                type="button"
-                onClick={() => setShowPwd(p => !p)}
-                aria-label={showPwd ? 'Hide password' : 'Show password'}
-                style={{
-                  position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
-                  background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)',
-                  fontSize: '1rem', padding: '4px', lineHeight: 1,
-                }}
-              >
-                {showPwd ? '🙈' : '👁️'}
-              </button>
-            </div>
-          </div>
-
-          <button type="submit" className="auth-submit" disabled={loading}>
-            {loading ? '⏳ Please wait…' : tab === 'login' ? '🔐 Sign In' : '🚀 Create Account'}
-          </button>
-
-          {tab === 'login' && (
-            <button type="button" className="forgot-btn" onClick={handleReset}>
-              Forgot password?
+        {/* ── Teacher: show their new class code ── */}
+        {step === 'showCode' ? (
+          <div>
+            <div className="auth-info" role="status">✅ Account created! Here's your class code:</div>
+            <div className="class-code-display">{generatedCode}</div>
+            <p className="guest-note">Share this code with your students — they'll enter it when they register.</p>
+            <button className="auth-submit" style={{ marginBottom: 10 }} onClick={handleCopyCode}>
+              {copied ? '✅ Copied!' : '📋 Copy Code'}
             </button>
+            <button className="guest-btn" onClick={handleContinueToHub}>Continue to Hub →</button>
+          </div>
+
+        /* ── Student: signup succeeded but code didn't resolve — retry just the code ── */
+        ) : step === 'needCode' ? (
+          <div>
+            <div className="auth-error" role="alert">
+              That class code wasn't recognized. Your account was created — just enter a valid code below to finish joining your class.
+            </div>
+            {error && <div className="auth-error" role="alert">{error}</div>}
+            <div className="field">
+              <label htmlFor="retryCode">Class Code</label>
+              <input
+                id="retryCode" type="text" value={classCode}
+                onChange={e => setClassCode(e.target.value.toUpperCase())}
+                placeholder="e.g. K7X9QM" autoComplete="off" maxLength={6}
+                style={{ textTransform: 'uppercase' }}
+              />
+            </div>
+            <button className="auth-submit" onClick={handleJoinRetry} disabled={loading}>
+              {loading ? '⏳ Checking…' : 'Join Class'}
+            </button>
+          </div>
+
+        ) : (
+        <>
+          {/* Tabs */}
+          <div className="tabs">
+            <button
+              className={`tab-btn${tab === 'login' ? ' active' : ''}`}
+              onClick={() => { setTab('login'); setError(''); setInfo(''); }}
+            >Sign In</button>
+            <button
+              className={`tab-btn${tab === 'register' ? ' active' : ''}`}
+              onClick={() => { setTab('register'); setError(''); setInfo(''); }}
+            >Register</button>
+          </div>
+
+          {/* Role toggle — register only */}
+          {tab === 'register' && (
+            <div className="tabs" style={{ marginBottom: '1.1rem' }}>
+              <button
+                className={`tab-btn${role === 'teacher' ? ' active' : ''}`}
+                onClick={() => setRole('teacher')}
+              >👨‍🏫 I'm a Teacher</button>
+              <button
+                className={`tab-btn${role === 'student' ? ' active' : ''}`}
+                onClick={() => setRole('student')}
+              >🎓 I'm a Student</button>
+            </div>
           )}
-        </form>
 
-        {/* Divider */}
-        <div className="auth-divider"><span>or</span></div>
+          {error && <div className="auth-error" role="alert" aria-live="polite">{error}</div>}
+          {info  && <div className="auth-info"  role="status" aria-live="polite">{info}</div>}
 
-        <button className="guest-btn" onClick={handleGuest}>
-          👤 Continue as Guest
-        </button>
-        <p className="guest-note">
-          Guest progress is saved on this device only and won't sync across browsers.
-        </p>
+          <form onSubmit={handleSubmit} noValidate>
+            {tab === 'register' && (
+              <div className="field">
+                <label htmlFor="name">Your Name</label>
+                <input id="name" type="text" value={name}
+                  onChange={e => setName(e.target.value)}
+                  placeholder="e.g. Alex Kim" autoComplete="name" required />
+              </div>
+            )}
+
+            {tab === 'register' && role === 'student' && (
+              <div className="field">
+                <label htmlFor="classCode">Class Code</label>
+                <input
+                  id="classCode" type="text" value={classCode}
+                  onChange={e => setClassCode(e.target.value.toUpperCase())}
+                  placeholder="e.g. K7X9QM" autoComplete="off" maxLength={6} required
+                  style={{ textTransform: 'uppercase' }}
+                />
+              </div>
+            )}
+
+            <div className="field">
+              <label htmlFor="email">Email</label>
+              <input id="email" type="email" value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="you@school.com" autoComplete="email" required />
+            </div>
+            <div className="field">
+              <label htmlFor="password">Password</label>
+              <div style={{ position: 'relative' }}>
+                <input id="password" type={showPwd ? 'text' : 'password'} value={password}
+                  onChange={e => setPwd(e.target.value)}
+                  placeholder="••••••••" autoComplete={tab === 'login' ? 'current-password' : 'new-password'} required
+                  style={{ paddingRight: '44px' }} />
+                <button
+                  type="button"
+                  onClick={() => setShowPwd(p => !p)}
+                  aria-label={showPwd ? 'Hide password' : 'Show password'}
+                  style={{
+                    position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
+                    background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)',
+                    fontSize: '1rem', padding: '4px', lineHeight: 1,
+                  }}
+                >
+                  {showPwd ? '🙈' : '👁️'}
+                </button>
+              </div>
+            </div>
+
+            <button type="submit" className="auth-submit" disabled={loading}>
+              {loading ? '⏳ Please wait…' : tab === 'login' ? '🔐 Sign In' : '🚀 Create Account'}
+            </button>
+
+            {tab === 'login' && (
+              <button type="button" className="forgot-btn" onClick={handleReset}>
+                Forgot password?
+              </button>
+            )}
+          </form>
+
+          <div className="auth-divider"><span>or</span></div>
+
+          <button className="guest-btn" onClick={handleGuest}>
+            👤 Continue as Guest
+          </button>
+          <p className="guest-note">
+            Guest progress is saved on this device only and won't sync across browsers.
+          </p>
+        </>
+        )}
       </div>
 
       <style>{`
@@ -287,6 +426,19 @@ function AuthPageInner() {
         .guest-note {
           text-align: center; color: var(--muted);
           font-size: .72rem; margin-top: 10px; line-height: 1.5;
+        }
+
+        .class-code-display {
+          text-align: center;
+          font-family: 'Syne', sans-serif;
+          font-size: 2.4rem; font-weight: 800;
+          letter-spacing: 0.15em;
+          color: var(--gold);
+          background: var(--surface-soft);
+          border: 2px dashed var(--border-bright);
+          border-radius: 16px;
+          padding: 18px 10px;
+          margin: 16px 0;
         }
       `}</style>
     </div>

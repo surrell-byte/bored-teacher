@@ -7,8 +7,7 @@ import Link from 'next/link';
 import { onAuthStateChanged } from '@/lib/firebase';
 import { useGame } from '@/lib/gameState';
 import {
-  getSortedLeaderboard, addPlayersToLeaderboard, removePlayer, clearLeaderboard,
-  saveLeaderboard, parseCSVToNames, syncCurrentPlayerToLeaderboard,
+  getSortedClassLeaderboard,
   type LBPlayerWithScore,
 } from '@/lib/leaderboard';
 import { GAME_KEYS, GAME_NAMES, GAME_ICONS } from '@/lib/constants';
@@ -51,19 +50,24 @@ export default function LeaderboardPage() {
 
   useEffect(() => {
     const isGuest = localStorage.getItem('guestUser') === 'true';
-    if (isGuest) { setReady(true); loadPlayers(); return; }
+    if (isGuest) { setReady(true); return; }
     const unsub = onAuthStateChanged(user => {
       if (!user) { router.replace('/auth'); return; }
       setReady(true);
-      loadPlayers();
     });
     return unsub;
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function loadPlayers() {
-    syncCurrentPlayerToLeaderboard();
-    setPlayers(getSortedLeaderboard());
+  useEffect(() => {
+    if (!ready || !state.classId) return;
+    loadPlayers();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, state.classId]);
+
+  async function loadPlayers() {
+    const data = await getSortedClassLeaderboard(state.classId);
+    setPlayers(data);
   }
 
   const totalPlayers = players.length;
@@ -134,7 +138,7 @@ export default function LeaderboardPage() {
           <div style={{ textAlign: 'center', padding: '48px 24px', color: 'var(--muted)' }}>
             <div style={{ fontSize: '2.4rem', marginBottom: 12 }}>🏆</div>
             <div style={{ fontWeight: 700, marginBottom: 6 }}>No players yet</div>
-            <div style={{ fontSize: '0.88rem' }}>Go to the Hub and click <strong>Manage Players</strong> to add your class.</div>
+            <div style={{ fontSize: '0.88rem' }}>Players will appear here automatically once your students sign up and complete a game.</div>
             <Link href="/hub" className="pill-btn" style={{ textDecoration: 'none', display: 'inline-block', marginTop: 16 }}>← Back to Hub</Link>
           </div>
         ) : activeGame !== 'all' && players.every(p => !(p.games[activeGame]?.best)) ? (

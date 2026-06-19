@@ -24,7 +24,7 @@ const AVATARS = ["🐶","🐼","🦊","🐯","🐸","🐧","🦁","🐨"];
 
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
 
-export default function FindMyFood() {
+export default function FindMyFood({ onComplete }) {
   const { completeGame } = useGame();
   const [screen, setScreen] = useState("welcome");
   const [theme, setTheme] = useState(0);
@@ -77,6 +77,7 @@ export default function FindMyFood() {
           const finalScores = { ...scores, [currentPlayer]: nextScore };
           const accuracy = finalScores[1] > finalScores[2] ? 100 : finalScores[1] === finalScores[2] ? 50 : 0;
           completeGame('find-my-food', accuracy, nextMoves);
+            onComplete?.(accuracy, nextMoves);
           setScreen("end");
         }
       } else {

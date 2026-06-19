@@ -1,5 +1,7 @@
 // lib/leaderboard.ts — Leaderboard persistence & scoring helpers
 
+import { loadAllStudentScores } from '@/lib/firebase';
+
 const LB_KEY  = 'eslhub_leaderboard';
 
 export const GAME_KEYS = [
@@ -49,6 +51,30 @@ export function getSortedLeaderboard(): LBPlayerWithScore[] {
   const lb = loadLeaderboard();
   return lb.players
     .map(p => ({ ...p, score: getPlayerScore(p) }))
+    .sort((a, b) => b.score.total - a.score.total);
+}
+
+// ── Class-scoped leaderboard, sourced from Firestore studentScores ──
+export async function getSortedClassLeaderboard(classId: string): Promise<LBPlayerWithScore[]> {
+  if (!classId) return [];
+  const docs = await loadAllStudentScores(classId);
+  return docs
+    .filter((d: any) => d.name && d.name !== 'Explorer')
+    .map((d: any) => {
+      const games = d.games || {};
+      let total = 0, count = 0;
+      for (const gk of GAME_KEYS) {
+        const best = games[gk]?.best || 0;
+        if (best > 0) { total += best; count++; }
+      }
+      return {
+        id: d.uid,
+        name: d.name,
+        addedAt: '',
+        games,
+        score: { total, avg: count > 0 ? Math.round(total / count) : 0, gamesPlayed: count },
+      } as LBPlayerWithScore;
+    })
     .sort((a, b) => b.score.total - a.score.total);
 }
 

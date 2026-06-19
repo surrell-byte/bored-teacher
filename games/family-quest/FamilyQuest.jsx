@@ -50,7 +50,7 @@ function Tile({ member, onClick, revealed, correct, wrong, dimmed }) {
   );
 }
 
-export default function FamilyQuest() {
+export default function FamilyQuest({ onComplete }) {
   const { completeGame } = useGame();
   const [screen, setScreen] = useState("menu"); // menu | mode | mcq | spell | tree | result
   const [mode, setMode] = useState(null);
@@ -109,6 +109,7 @@ export default function FamilyQuest() {
       setCorrectCount(final => {
         const accuracy = Math.round((final / questions.length) * 100);
         completeGame('family-quest', accuracy, questions.length);
+            onComplete?.(accuracy, questions.length);
         return final;
       });
       setScreen("result"); return; 
@@ -129,6 +130,7 @@ export default function FamilyQuest() {
         setCorrectCount(final => {
           const accuracy = Math.round((final / questions.length) * 100);
           completeGame('family-quest', accuracy, questions.length);
+            onComplete?.(accuracy, questions.length);
           return final;
         });
         setScreen("result"); return;
@@ -175,6 +177,7 @@ export default function FamilyQuest() {
           setCorrectCount(final => {
             const accuracy = Math.round((final / FAMILY.length) * 100);
             completeGame('family-quest', accuracy, FAMILY.length);
+            onComplete?.(accuracy, FAMILY.length);
             return final;
           });
           setScreen("result"); 

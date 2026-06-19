@@ -87,7 +87,7 @@ function aiMove(board, diff) {
   return valid[Math.floor(Math.random() * valid.length)];
 }
 
-export default function Connect4() {
+export default function Connect4({ onComplete }) {
   const { completeGame } = useGame();
   const [screen, setScreen] = useState("menu"); // menu | setup | game
   const [mode, setMode] = useState("pvp");
@@ -130,10 +130,12 @@ export default function Connect4() {
       setStatus(current === 1 ? "win1" : "win2");
       setScores(s => ({ ...s, [current === 1 ? "p1" : "p2"]: s[current === 1 ? "p1" : "p2"] + 1 }));
       completeGame('connect-4', current === 1 ? 100 : 0, nextMoves);
+            onComplete?.(current === 1 ? 100 : 0, nextMoves);
     } else if (isFull(nb)) {
       setStatus("draw");
       setScores(s => ({ ...s, draws: s.draws + 1 }));
       completeGame('connect-4', 50, nextMoves);
+            onComplete?.(50, nextMoves);
     } else {
       setCurrent(current === 1 ? 2 : 1);
     }
@@ -157,10 +159,12 @@ export default function Connect4() {
         setStatus("win2");
         setScores(s => ({ ...s, p2: s.p2 + 1 }));
         completeGame('connect-4', 0, nextMoves);
+            onComplete?.(0, nextMoves);
       } else if (isFull(nb)) {
         setStatus("draw");
         setScores(s => ({ ...s, draws: s.draws + 1 }));
         completeGame('connect-4', 50, nextMoves);
+            onComplete?.(50, nextMoves);
       } else {
         setCurrent(1);
       }

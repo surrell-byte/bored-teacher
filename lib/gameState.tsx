@@ -16,6 +16,8 @@ export interface GameRecord {
   totalQuestions: number;
 }
 
+export type Role = 'teacher' | 'student' | null;
+
 export interface HubState {
   name: string;
   username: string;
@@ -28,6 +30,8 @@ export interface HubState {
   coins: number;
   lastLogin: string;
   loginStreak: number;
+  classId: string;
+  role: Role;
   games: Record<string, GameRecord>;
 }
 
@@ -37,6 +41,7 @@ const DEFAULT_STATE: HubState = {
   name: 'Explorer', username: '', avatar: '👤', theme: 'chalkboard',
   sound: true, lastGame: null,
   xp: 0, level: 1, coins: 0, lastLogin: '', loginStreak: 0,
+  classId: '', role: null,
   games: Object.fromEntries(GAME_KEYS.map(k => [k, { ...DEFAULT_GAME }])),
 };
 
@@ -61,7 +66,6 @@ interface GameContextValue {
   showToast: (msg: string) => void;
   toast: string;
   checkDailyReward: () => void;
-  // Achievements — derived, never stored
   earnedAchievementIds: Set<string>;
   pendingAchievement: Achievement | null;
   clearPendingAchievement: () => void;
@@ -150,9 +154,11 @@ function mergeRemote(local: HubState, remote: Partial<HubState>): HubState {
     lastGame:    remote.lastGame    || local.lastGame,
     lastLogin:   remote.lastLogin   || local.lastLogin,
     sound:       remote.sound       !== undefined ? remote.sound : local.sound,
+    classId:     remote.classId || local.classId,
+    role:        remote.role ?? local.role,
     games:       { ...DEFAULT_STATE.games },
   };
-  const allKeys = new Set([...Object.keys(local.games), ...Object.keys(remote.games || {})]);
+  const allKeys = new Set([...Object.keys(local.games), ...Object.keys(remote.games ||{})]);
   for (const k of allKeys) {
     const l = local.games[k] || DEFAULT_GAME;
     const r = (remote.games || {})[k] || DEFAULT_GAME;
@@ -172,6 +178,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const toastTimerRef         = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fbTimerRef            = useRef<ReturnType<typeof setTimeout> | null>(null);
   const uidRef                = useRef<string | null>(null);
+  const stateRef              = useRef<HubState>(state);
+
+  useEffect(() => { stateRef.current = state; }, [state]);
 
   // Achievement tracking — derived from state, never persisted
   const [earnedAchievementIds, setEarnedIds] = useState<Set<string>>(new Set());
@@ -232,6 +241,27 @@ export function GameProvider({ children }: { children: ReactNode }) {
       }
     });
     return unsub;
+  }, []);
+
+  // Flush any pending debounced Firestore write immediately —
+  // covers tab close, navigation away, app backgrounding on mobile
+  useEffect(() => {
+    function flushPending() {
+      if (fbTimerRef.current && uidRef.current) {
+        clearTimeout(fbTimerRef.current);
+        fbTimerRef.current = null;
+        saveUserState(uidRef.current, stateRef.current).catch(() => {});
+      }
+    }
+    function onVisibilityChange() {
+      if (document.visibilityState === 'hidden') flushPending();
+    }
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    window.addEventListener('pagehide', flushPending);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      window.removeEventListener('pagehide', flushPending);
+    };
   }, []);
 
   function persist(s: HubState) {
@@ -348,7 +378,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       const next   = { ...prev, coins: prev.coins + coins, lastLogin: today, loginStreak: streak };
       persist(next);
       checkAchievements(prev, next);
-      setTimeout(() => showToast(`🎁 Daily reward: +${coins} coins! Come back tomorrow for more.`), 300);
+      setTimeout(() => showToast(`🎁 Daily reward: +${coins} coins! Come back tomorrowfor more.`), 300);
       return next;
     });
   }, [showToast]);

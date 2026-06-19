@@ -3,7 +3,7 @@
 
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { onAuthStateChanged } from '@/lib/firebase';
+import { onAuthStateChanged, loadUserState } from '@/lib/firebase';
 import { useGame, xpForLevel } from '@/lib/gameState';
 import {
   GAME_KEYS, GAME_NAMES, GAME_ICONS, GAME_TAGS, GAME_DIFFICULTY,
@@ -13,10 +13,10 @@ import ManagePlayersModal from '@/components/ManagePlayersModal';
 
 const TAG_FILTERS = [
   { label: '⚡ All Games',     value: 'all' },
-  { label: '� Vocabulary',    value: 'Vocabulary' },
+  { label: '📚 Vocabulary',    value: 'Vocabulary' },
   { label: '✍️ Grammar',       value: 'Grammar' },
   { label: '🔗 Word Formation',value: 'Word Formation' },
-  { label: '� Science',        value: 'Science' },
+  { label: '🔬 Science',        value: 'Science' },
   { label: '🔤 Phonics',       value: 'Phonics' },
   { label: '💡 Logic',          value: 'Logic' },
   { label: '🎨 Colours',        value: 'Colours' },
@@ -52,8 +52,15 @@ export default function HubPage() {
   useEffect(() => {
     const isGuest = localStorage.getItem('guestUser') === 'true';
     if (isGuest) { setReady(true); checkDailyReward(); return; }
-    const unsub = onAuthStateChanged((user) => {
+    const unsub = onAuthStateChanged(async (user) => {
       if (!user) { router.replace('/auth'); return; }
+      // Read classId directly from Firestore — don't rely on context state timing,
+      // since the local→remote merge in gameState.tsx may not have settled yet.
+      const remote = await loadUserState(user.uid);
+      if (!remote?.classId) {
+        router.replace('/auth?needCode=1');
+        return;
+      }
       setReady(true);
       checkDailyReward();
     });

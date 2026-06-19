@@ -37,7 +37,7 @@ const LEVELS_DB = {
 
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
 
-export default function CompoundWordQuest() {
+export default function CompoundWordQuest({ onComplete }) {
   const { completeGame } = useGame();
   const [screen, setScreen] = useState("menu");
   const [level, setLevel] = useState(1);
@@ -85,6 +85,7 @@ export default function CompoundWordQuest() {
         accuracy,
         questions.length
       );
+            onComplete?.(accuracy, questions.length);
 
       setScreen("complete");
     } else {

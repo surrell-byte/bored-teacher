@@ -68,7 +68,7 @@ function normalizeSeq(seq, zoneId) {
   return result.join("");
 }
 
-export default function DeepSeaReveal() {
+export default function DeepSeaReveal({ onComplete }) {
   const { completeGame } = useGame();
   const [screen, setScreen] = useState("title"); // title | zone | game | result
   const [zone, setZone] = useState(null);
@@ -193,6 +193,7 @@ export default function DeepSeaReveal() {
       }
       const accuracy = totalPossibleGuesses > 0 ? Math.round((totalCorrectGuesses / totalPossibleGuesses) * 100) : 0;
       completeGame('deep-sea-reveal', accuracy, totalPossibleGuesses);
+            onComplete?.(accuracy, totalPossibleGuesses);
 
       setScreen("result");
     } else {

@@ -23,7 +23,7 @@ function genQuestion(ops, max) {
   return { q:`${a} ${opSym} ${b} = ?`, answer, options };
 }
 
-export default function MonkeyTreeClimb() {
+export default function MonkeyTreeClimb({ onComplete }) {
   const [screen, setScreen] = useState("menu");
   const [lvlIdx, setLvlIdx] = useState(0);
   const [unlocked, setUnlocked] = useState([true,false,false]);
@@ -59,6 +59,7 @@ export default function MonkeyTreeClimb() {
           const nextLvl = lvlIdx + 1;
           if (nextLvl < LEVELS.length) setUnlocked(u => u.map((v,i)=>i===nextLvl?true:v));
           setDone(true);
+          onComplete?.(score + 10, 100);
         } else {
           setHeight(nextH);
           setQuestion(genQuestion(level.ops, level.max));
@@ -68,7 +69,7 @@ export default function MonkeyTreeClimb() {
       setFeedback("wrong");
       setLives(l => {
         const next = l - 1;
-        if (next <= 0) setTimeout(() => setScreen("over"), 900);
+        if (next <= 0) { setTimeout(() => setScreen("over"), 900); onComplete?.(score, Math.round((height / level.branches) * 100)); }
         return next;
       });
       setTimeout(() => {

@@ -23,7 +23,7 @@ function buildPool(name) {
   return shuffle([...needed, ...extra].map((l, i) => ({ l, id: i, used: false })));
 }
 
-export default function OceanQuest() {
+export default function OceanQuest({ onComplete }) {
   const [screen, setScreen] = useState("welcome");
   const [level, setLevel] = useState(1);
   const [questions, setQuestions] = useState([]);
@@ -94,7 +94,7 @@ export default function OceanQuest() {
   };
 
   const next = () => {
-    if (idx + 1 >= questions.length) { setScreen("complete"); return; }
+    if (idx + 1 >= questions.length) { setScreen("complete"); onComplete?.(score, Math.round((score / (questions.length * 10)) * 100)); return; }
     const nextIdx = idx + 1;
     setIdx(nextIdx);
     setAnswered(false);

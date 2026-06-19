@@ -22,6 +22,8 @@ import {
   getDoc,
   getDocs,
   collection,
+  query,
+  where,
   updateDoc,
   serverTimestamp,
 } from 'firebase/firestore';
@@ -84,6 +86,7 @@ interface UserState {
   name: string; username: string; avatar: string; theme: string;
   xp: number; level: number; coins: number; lastGame: string | null;
   lastLogin: string; loginStreak: number; sound: boolean; games: GameState;
+  classId?: string; role?: 'teacher' | 'student' | null;
 }
 
 async function createUserProfile(uid: string, name: string, email: string) {
@@ -91,7 +94,8 @@ async function createUserProfile(uid: string, name: string, email: string) {
     await setDoc(doc(db, 'users', uid), {
       name, email, username: '', avatar: '👤', theme: 'chalkboard',
       xp: 0, level: 1, coins: 0, lastGame: null, lastLogin: '', sound: true,
-      games: {}, createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
+      games: {}, classId: '', role: null,
+      createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
     });
   } catch (_) {}
 }
@@ -111,6 +115,37 @@ export async function loadUserState(uid: string): Promise<UserState | null> {
   } catch (_) { return null; }
 }
 
+// ── Class code helpers ────────────────────────────────────────
+
+function generateClassCode(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O or 1/I — avoids confusion read aloud
+  let code = '';
+  for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
+}
+
+export async function createClassCode(teacherUid: string): Promise<string> {
+  let code = generateClassCode();
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const existing = await getDoc(doc(db, 'classCodes', code));
+    if (!existing.exists()) break;
+    code = generateClassCode();
+  }
+  await setDoc(doc(db, 'classCodes', code), { teacherUid, createdAt: serverTimestamp() });
+  return code;
+}
+
+export async function resolveClassCode(code: string): Promise<string | null> {
+  try {
+    const snap = await getDoc(doc(db, 'classCodes', code.toUpperCase().trim()));
+    return snap.exists() ? (snap.data().teacherUid as string) : null;
+  } catch (_) { return null; }
+}
+
+export async function setUserClass(uid: string, classId: string, role: 'teacher' | 'student') {
+  await setDoc(doc(db, 'users', uid), { classId, role, updatedAt: serverTimestamp() }, { merge: true });
+}
+
 // ── Leaderboard helpers ──────────────────────────────────────
 
 export async function saveLeaderboardState(uid: string, data: { players: unknown[] }) {
@@ -128,20 +163,22 @@ export async function loadLeaderboardState(uid: string) {
   } catch (_) { return null; }
 }
 
-export async function saveStudentScore(uid: string, name: string, games: GameState) {
-  if (!uid || !name || name === 'Explorer') return;
+export async function saveStudentScore(uid: string, classId: string, name: string, games: GameState) {
+  if (!uid || !name || name === 'Explorer' || !classId) return;
   try {
     const converted: Record<string, { best: number; played: number }> = {};
     for (const [k, v] of Object.entries(games)) {
       converted[k] = { best: v.highScore || 0, played: v.completions || 0 };
     }
-    await setDoc(doc(db, 'studentScores', uid), { name, games: converted, updatedAt: serverTimestamp() });
+    await setDoc(doc(db, 'studentScores', uid), { classId, name, games: converted, updatedAt: serverTimestamp() });
   } catch (_) {}
 }
 
-export async function loadAllStudentScores() {
+export async function loadAllStudentScores(classId: string) {
+  if (!classId) return [];
   try {
-    const snap = await getDocs(collection(db, 'studentScores'));
+    const q = query(collection(db, 'studentScores'), where('classId', '==', classId));
+    const snap = await getDocs(q);
     return snap.docs.map(d => ({ uid: d.id, ...d.data() }));
   } catch (_) { return []; }
 }

@@ -88,7 +88,7 @@ const ISLAND_COLORS = { CH:"#f59e0b", SH:"#3b82f6", TH:"#8b5cf6", WH:"#06b6d4", 
 
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
 
-export default function PhonicWorld() {
+export default function PhonicWorld({ onComplete }) {
   const [screen, setScreen] = useState("map"); // map | game | result
   const [island, setIsland] = useState(null);
   const [unlocked, setUnlocked] = useState({ CH:true, SH:false, TH:false, WH:false, PH:false });
@@ -129,6 +129,7 @@ export default function PhonicWorld() {
       }
       setCompleted(c => ({ ...c, [island]: true }));
       setScreen("result");
+      onComplete?.(score, Math.round((score / (questions.length * 10)) * 100));
     } else {
       setQIdx(i => i + 1);
       setSelected(null);

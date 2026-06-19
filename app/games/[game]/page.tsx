@@ -65,7 +65,7 @@ function ResultModal({ result, gameName, onContinue }: {
   const coinsEarned = Math.round(result.accuracy / 10);
   const pct         = Math.min(100, result.accuracy);
   const color       = pct >= 80 ? 'var(--green)' : pct >= 60 ? 'var(--gold)' : 'var(--red)';
-  const feedback    = pct >= 90 ? '🌟 Outstanding!' : pct >= 80 ? '🔥 Excellent work!' : pct >= 70 ? '👍 Good job!' : pct >= 50 ? '💪 Keep practising!' : '📚 Review the material and try again.';
+  const feedback    = pct >= 90 ? '🌟 Outstanding!' : pct >= 80 ? '🔥 Excellent work!': pct >= 70 ? '👍 Good job!' : pct >= 50 ? '💪 Keep practising!' : '📚 Review the material and try again.';
   return (
     <div className="modal-backdrop open" role="dialog" aria-modal aria-labelledby="perfTitle">
       <div className="modal">
@@ -109,16 +109,22 @@ export default function GamePage() {
     const acc  = Math.min(100, Math.max(0, accuracy));
     const scr  = score;
     const prev = state.games[gameId] ?? { highScore: 0, completions: 0, lastAccuracy: 0, totalQuestions: 100 };
-    updateGameStats(gameId, {
+
+    const updatedRecord = {
+      ...prev,
       highScore:    Math.max(prev.highScore, scr),
       completions:  prev.completions + 1,
       lastAccuracy: acc,
-    });
+    };
+    const updatedGames = { ...state.games, [gameId]: updatedRecord };
+
+    updateGameStats(gameId, updatedRecord);
     addXP(Math.round(acc / 2));
     setState({ lastGame: gameId, coins: state.coins + Math.round(acc / 10) });
     syncCurrentPlayerToLeaderboard();
-    if (auth.currentUser) {
-      saveStudentScore(auth.currentUser.uid, state.name, state.games).catch(() => {});
+
+    if (auth.currentUser && state.classId) {
+      saveStudentScore(auth.currentUser.uid, state.classId, state.name, updatedGames).catch(() => {});
     }
     setResult({ score: scr, accuracy: acc, gameId });
   }
@@ -164,7 +170,7 @@ export default function GamePage() {
         padding: '0 16px', borderBottom: '1px solid var(--border)',
         background: 'var(--surface-strong)', flexShrink: 0, zIndex: 10,
       }}>
-        <Link href="/hub" className="lb-back-btn" style={{ textDecoration: 'none' }}>← Hub</Link>
+        <Link href="/hub" className="lb-back-btn" style={{ textDecoration: 'none' }}>←Hub</Link>
         <span style={{ fontFamily: 'var(--font-display, Syne)', fontWeight: 800, fontSize: '0.95rem' }}>
           {gameIcon} {gameName}
         </span>
@@ -191,10 +197,10 @@ export default function GamePage() {
       ) : (
         <>
           {loading && (
-            <div style={{ position: 'absolute', inset: 0, zIndex: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', pointerEvents: 'none' }}>
+            <div style={{ position: 'absolute', inset: 0, zIndex: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', pointerEvents:'none' }}>
               <div style={{ textAlign: 'center', color: 'var(--muted)' }}>
                 <div style={{ fontSize: '3rem', marginBottom: 12 }}>{gameIcon}</div>
-                <div style={{ fontFamily: 'var(--font-display, Syne)', fontWeight: 800 }}>Loading {gameName}…</div>
+                <div style={{ fontFamily: 'var(--font-display, Syne)', fontWeight: 800}}>Loading {gameName}…</div>
               </div>
             </div>
           )}

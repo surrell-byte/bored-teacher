@@ -50,7 +50,7 @@ function playBeep(type){
   }catch(e){}
 }
 
-export default function AnimalClassQuest() {
+export default function AnimalClassQuest({ onComplete }) {
   const { completeGame } = useGame();
   const [screen, setScreen]     = useState("menu");
   const [level, setLevel]       = useState("easy");
@@ -97,6 +97,7 @@ export default function AnimalClassQuest() {
         accuracy,
         questions.length
       );
+            onComplete?.(accuracy, questions.length);
 
       setScreen("complete");
     } else {

@@ -48,7 +48,7 @@ function tileStyle(idx) {
   return { bg:"#1e293b", label:String(idx) };
 }
 
-export default function LakersShowtimeRacer() {
+export default function LakersShowtimeRacer({ onComplete }) {
   const [screen, setScreen] = useState("setup");
   const [numPlayers, setNumPlayers] = useState(2);
   const [playerNames, setPlayerNames] = useState(["Player 1","Player 2","Player 3","Player 4"]);
@@ -102,6 +102,7 @@ export default function LakersShowtimeRacer() {
 
         if (pos >= FINISH) {
           setWinner(currentP);
+          onComplete?.(100, 100);
         } else {
           setCurrentP(c => (c + 1) % numPlayers);
         }

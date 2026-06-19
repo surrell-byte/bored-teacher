@@ -5,7 +5,7 @@ const EMOJI_POOL = ["🦓","🐬","🦈","🐈","🥐","🐅","🍕","🦒","�
 
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
 
-export default function EmojiMatch() {
+export default function EmojiMatch({ onComplete }) {
   const { completeGame } = useGame();
   const [cards, setCards] = useState([]);
   const [flipped, setFlipped] = useState([]);
@@ -45,6 +45,7 @@ export default function EmojiMatch() {
               setWon(true);
               const accuracy = Math.max(0, 100 - (moves - pairs) * 10);
               completeGame('emoji-match', accuracy, pairs);
+            onComplete?.(accuracy, pairs);
             }, 300);
           }
           return s;

@@ -51,7 +51,7 @@ const COLOR_SWATCH = {
   "white":"#e5e7eb","black and white":"#374151",
 };
 
-export default function CrimsonColorDuel() {
+export default function CrimsonColorDuel({ onComplete }) {
   const { completeGame } = useGame();
   const [screen, setScreen] = useState("menu"); // menu | game | result
   const [levelIdx, setLevelIdx] = useState(0);
@@ -117,6 +117,7 @@ export default function CrimsonColorDuel() {
 
         const accuracy = Math.round((correctCount / questions.length) * 100);
         completeGame('crimson-color-duel', accuracy, questions.length);
+            onComplete?.(accuracy, questions.length);
 
         setScreen("result");
       } else {

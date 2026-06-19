@@ -31,7 +31,7 @@ const MODES = [
   { id:"speed",   label:"⚡ Speed",   desc:"Fast sequences" },
 ];
 
-export default function ColourClash() {
+export default function ColourClash({ onComplete }) {
   const { completeGame } = useGame();
   const [screen, setScreen] = useState("menu");
   const [mode, setMode] = useState("classic");
@@ -106,6 +106,7 @@ export default function ColourClash() {
           setTotalQuestions(currentTotal => {
             const accuracy = currentTotal > 0 ? Math.round((currentCorrect / currentTotal) * 100) : 0;
             completeGame('colour-clash', accuracy, currentTotal);
+            onComplete?.(accuracy, currentTotal);
             return currentTotal;
           });
           return currentCorrect;

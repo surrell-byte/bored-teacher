@@ -31,7 +31,7 @@ function getLetterPool(word) {
   return shuffle([...needed, ...extra]);
 }
 
-export default function EmojiSpellingMaster() {
+export default function EmojiSpellingMaster({ onComplete }) {
   const { completeGame } = useGame();
   const [screen, setScreen] = useState("start"); // start | game | over
   const [level, setLevel] = useState("easy");
@@ -84,6 +84,7 @@ export default function EmojiSpellingMaster() {
             setCorrectCount(final => {
               const accuracy = Math.round((final / questions.length) * 100);
               completeGame('emoji-spelling', accuracy, questions.length);
+            onComplete?.(accuracy, questions.length);
               return final;
             });
             setWon(true); setScreen("over");
@@ -104,6 +105,7 @@ export default function EmojiSpellingMaster() {
             setCorrectCount(final => {
               const accuracy = Math.round((final / questions.length) * 100);
               completeGame('emoji-spelling', accuracy, questions.length);
+            onComplete?.(accuracy, questions.length);
               return final;
             });
             setWon(false); setScreen("over");

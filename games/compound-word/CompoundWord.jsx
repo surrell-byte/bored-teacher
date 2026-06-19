@@ -21,7 +21,7 @@ const QUESTIONS = [
 
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
 
-export default function CompoundWord() {
+export default function CompoundWord({ onComplete }) {
   const { completeGame } = useGame();
   const [questions] = useState(() => shuffle(QUESTIONS));
   const [idx, setIdx] = useState(0);
@@ -48,6 +48,7 @@ export default function CompoundWord() {
     if (idx + 1 >= questions.length) {
       const accuracy = Math.round((correctCount / questions.length) * 100);
       completeGame('compound-word', accuracy, questions.length);
+            onComplete?.(accuracy, questions.length);
       setDone(true);
       return;
     }

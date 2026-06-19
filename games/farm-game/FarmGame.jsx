@@ -31,7 +31,7 @@ function buildQuestion(targetName, allNames) {
   return { target, options, type };
 }
 
-export default function FarmGame() {
+export default function FarmGame({ onComplete }) {
   const { completeGame } = useGame();
   const [screen, setScreen] = useState("welcome");
   const [playerName, setPlayerName] = useState("");
@@ -83,6 +83,7 @@ export default function FarmGame() {
         accuracy,
         questions.length
       );
+            onComplete?.(accuracy, questions.length);
 
       setScreen("complete");
     } else {
