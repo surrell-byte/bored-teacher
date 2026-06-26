@@ -1,0 +1,20 @@
+:root {
+  --bg: #0A0B0E;
+  --panel: #15171F;
+  --panel-border: rgba(201, 169, 97, .16);
+  --gold: #C9A961;
+  --gold-bright: #E8C97A;
+  --gold-deep: #8C6B33;
+  --ivory: #F3EFE6;
+  --ivory-dim: #9C9690;
+  --graphite: #242630;
+  --graphite-light: #2F323D;
+  --amethyst: #7C5FA8;
+  --bg-top: rgba(201, 169, 97, .09);
+  --bg-deep: #111827;
+  --bg-deep-end: #07090f;
+  --vignette: rgba(212, 175, 55, .08);
+  --board-bg: rgba(255, 255, 255, .02);
+  --board-border: rgba(201, 169, 97, .14);
+}
+

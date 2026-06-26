@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🌿 Cannabis Man</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <div id="title">🌿 CANNABIS MAN</div>
+
+  <div id="hud">
+    <div class="stat">Score <span id="scoreEl">0</span></div>
+    <div class="stat">Level <span id="levelEl">1</span></div>
+    <div class="stat">Lives <span id="livesEl" class="lives-icons">❤️❤️❤️</span></div>
+    <div class="stat" id="highscoreStat">Best <span id="highscoreEl">0</span></div>
+    <div class="stat">Pellets <span id="pelletsEl">0</span></div>
+    <button id="muteBtn" title="Toggle sound">🔊</button>
+  </div>
+
+  <div id="gameWrapper">
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="overlay">
+      <div id="overlayTitle">READY?</div>
+      <div id="overlayMsg">ARROW KEYS OR SWIPE TO MOVE</div>
+      <button id="overlayBtn">START GAME</button>
+    </div>
+  </div>
+
+  <div id="dpad">
+    <button id="dUp">▲</button>
+    <button id="dLeft">◀</button>
+    <button id="dRight">▶</button>
+    <button id="dDown">▼</button>
+  </div>
+
+  <div id="legend">
+    <div class="legend-item"><span class="legend-dot" style="background:#7CFC00"></span>Pellet +10</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#FFD700"></span>Power-up +100</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#00FFFF"></span>Bonus +250</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#ff4444"></span>Enemy</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#cc00ff"></span>Boss</div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { onAuthStateChanged } from '@/lib/firebase';
 import { useGame } from '@/lib/gameState';
 import { ACHIEVEMENT_CATEGORIES } from '@/lib/achievements';
-import type { HubState } from '@/lib/gameState';
 
 
 
@@ -124,7 +123,7 @@ export default function TrophyPage() {
                     }}
                   >
                     <div style={{ fontSize: '2rem', marginBottom: 6, filter: earned ? 'none' : 'grayscale(1)' }}>{a.icon}</div>
-                    <div style={{ fontWeight: 700, fontSize: '0.82rem', marginBottom: 3, color: earned ? 'var(--text)' : 'var(--muted)' }} className="badge-card-title">{a.title}</div>
+                    <div style={{ fontWeight: 700, fontSize: '0.82rem', marginBottom: 3, color: earned ? 'var(--text)' : 'var(--muted)' }} className="badge-card-title">{a.name}</div>
                     <div style={{ fontSize: '0.68rem', color: 'var(--muted)' }} className="badge-card-desc">{a.description}</div>
                     {earned && <div style={{ marginTop: 6, fontSize: '0.68rem', color: a.color, fontWeight: 700 }}>✓ Earned</div>}
                   </div>

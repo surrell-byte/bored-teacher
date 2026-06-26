@@ -1,0 +1,58 @@
+@import './variables.css';
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background:
+    radial-gradient(ellipse at 50% -8%, var(--bg-top), transparent 52%),
+    radial-gradient(ellipse at center, var(--bg-deep) 0%, var(--bg-deep-end) 100%);
+  color: var(--ivory);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Inter', sans-serif;
+  overflow: hidden;
+  position: relative;
+  transition: background 1.2s ease;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at center, transparent 40%, var(--vignette) 100%);
+  pointer-events: none;
+  transition: background 1.2s ease;
+}
+
+@media (max-width: 900px) {
+  body {
+    overflow: auto;
+    align-items: flex-start;
+  }
+}
+
+.app {
+  width: 100%;
+  max-width: 1580px;
+  height: 96vh;
+  max-height: 1040px;
+  padding: 22px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  position: relative;
+}
+
+@media (max-width: 900px) {
+  .app {
+    height: auto;
+    max-height: none;
+    padding: 18px;
+  }
+}

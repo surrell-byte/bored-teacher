@@ -1,0 +1,35 @@
+.topbar { display: flex; justify-content: flex-start; align-items: center; padding: 4px 4px 0; flex-shrink: 0; }
+.brand .eyebrow { font: 600 14px/1 'Inter'; letter-spacing: .22em; color: var(--gold); text-transform: uppercase; transition: color .6s; }
+.brand h1 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 48px; letter-spacing: .01em; margin-top: 6px; color: var(--ivory); }
+
+.turn-pill {
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  background: var(--panel); border: 1px solid var(--panel-border);
+  border-radius: 14px; padding: 18px 14px;
+  font: 500 18px 'Inter'; color: var(--ivory);
+  transition: border-color .6s; width: 100%; text-align: center;
+}
+.turn-pill .dot {
+  width: 11px; height: 11px; border-radius: 50%;
+  background: var(--gold-bright); box-shadow: 0 0 10px var(--gold-bright);
+  animation: pulse 1.6s ease-in-out infinite; flex-shrink: 0;
+  transition: background .6s, box-shadow .6s;
+}
+
+.layout { flex: 1; display: grid; grid-template-columns: 2.8fr 1fr; gap: 20px; min-height: 0; }
+.board-area { display: flex; flex-direction: column; gap: 16px; min-height: 0; }
+.side { display: flex; flex-direction: column; gap: 12px; min-height: 0; overflow: hidden; }
+.side-panels { flex: 1; display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+.side-panels .account-card, .side-panels .ledger { flex: 1; min-height: 0; }
+.side-controls { display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; }
+.side-buttons { display: flex; gap: 12px; }
+.side-btn {
+  flex: 1; background: none; border: 1px solid var(--panel-border); color: var(--ivory-dim);
+  font: 600 14px 'Inter'; letter-spacing: .1em; text-transform: uppercase;
+  padding: 18px 14px; border-radius: 14px; cursor: pointer; transition: .2s;
+}
+.side-btn:hover { color: var(--gold-bright); border-color: var(--gold-deep); background: rgba(255,255,255,.03); }
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+}

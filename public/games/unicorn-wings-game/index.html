@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Unicorn Wing Races</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="game-shell" aria-label="Unicorn Wing Races">
+    <section id="welcomeScreen" class="screen welcome-screen is-active" aria-label="Welcome screen">
+      <button class="hotspot welcome-settings" data-action="settings" aria-label="Settings"></button>
+      <button class="hotspot welcome-play" data-action="play" aria-label="Play"></button>
+      <button class="hotspot welcome-help" data-action="help" aria-label="Help"></button>
+    </section>
+
+    <section id="selectScreen" class="screen select-screen" aria-label="Character selection">
+      <button class="hotspot select-back" data-action="home" aria-label="Back"></button>
+      <button class="hotspot select-settings" data-action="settings" aria-label="Settings"></button>
+      <button class="hotspot select-prev" data-action="previous-unicorn" aria-label="Previous unicorn"></button>
+      <button class="hotspot select-next" data-action="next-unicorn" aria-label="Next unicorn"></button>
+
+      <div class="select-status" aria-live="polite">
+        <span id="p1Choice">P1: Luna</span>
+        <span id="p2Choice">P2: Stella</span>
+      </div>
+
+      <button class="character-pick unicorn-card luna-card is-selected" data-unicorn="luna" aria-label="Choose Luna"></button>
+      <button class="character-pick unicorn-card stella-card" data-unicorn="stella" aria-label="Choose Stella"></button>
+      <button class="character-pick unicorn-card rosie-card" data-unicorn="rosie" aria-label="Choose Rosie"></button>
+
+      <button class="hotspot ready-button" data-action="select" aria-label="Select unicorn"></button>
+    </section>
+
+    <section id="raceScreen" class="screen race-screen" aria-label="Race board">
+      <button class="hotspot race-back" data-action="select-screen" aria-label="Back to character selection"></button>
+      <button class="hotspot race-settings" data-action="settings" aria-label="Settings"></button>
+
+      <div class="race-hud" aria-live="polite">
+        <div class="player-panel is-turn" id="p1Panel">
+          <span>Player 1</span>
+          <strong id="p1Name">Luna</strong>
+        </div>
+        <button id="rollButton" class="roll-button" type="button">
+          <span class="roll-icon" id="rollValue">GO</span>
+          <span id="rollLabel">ROLL</span>
+        </button>
+        <div class="player-panel" id="p2Panel">
+          <span>Player 2</span>
+          <strong id="p2Name">Stella</strong>
+        </div>
+      </div>
+
+      <div class="message-pill" id="raceMessage">Player 1, roll to sparkle!</div>
+      <div class="unicorn-token p1-token" id="p1Token" aria-hidden="true"></div>
+      <div class="unicorn-token p2-token" id="p2Token" aria-hidden="true"></div>
+    </section>
+
+    <section id="victoryScreen" class="screen victory-screen" aria-label="Victory screen">
+      <div class="winner-card" aria-live="polite">
+        <span id="winnerName">Player 1 wins!</span>
+      </div>
+      <button class="hotspot play-again" data-action="restart" aria-label="Play again"></button>
+      <button class="hotspot main-menu" data-action="home" aria-label="Main menu"></button>
+    </section>
+
+    <div id="modal" class="modal" aria-hidden="true">
+      <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <button class="modal-close" id="closeModal" type="button" aria-label="Close">x</button>
+        <h2 id="modalTitle">Settings</h2>
+        <div id="modalBody"></div>
+      </div>
+    </div>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

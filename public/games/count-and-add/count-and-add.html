@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Count & Add!</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Nunito',sans-serif;background:linear-gradient(180deg,#d9fff2,#f7fff5);min-height:100vh;display:flex;justify-content:center;align-items:center;padding:16px;}
+.gw{width:100%;max-width:560px;}
+
+/* Top bar */
+.gw-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:clamp(8px,2.5vw,14px);padding:0 4px;}
+.gw-score-pill{display:flex;align-items:center;gap:6px;background:#FAEEDA;border-radius:999px;padding:5px 14px;}
+.gw-score-label{font-size:12px;font-weight:800;color:#854F0B;opacity:.7;}
+.gw-score-num{font-size:clamp(16px,5vw,20px);font-weight:900;color:#BA7517;}
+.gw-streak{display:none;align-items:center;gap:4px;background:#FAECE7;border-radius:999px;padding:5px 12px;font-size:clamp(11px,3.5vw,13px);font-weight:800;color:#993C1D;}
+.gw-level-row{display:flex;align-items:center;gap:clamp(4px,1.5vw,8px);}
+.gw-stars{display:flex;gap:clamp(2px,1vw,4px);align-items:center;}
+.gw-star{font-size:clamp(14px,4vw,20px);line-height:1;transition:transform .3s;}
+.gw-star.lit{animation:star-pop .3s cubic-bezier(.34,1.56,.64,1);}
+.gw-level-badge{font-size:clamp(10px,2.8vw,12px);font-weight:900;color:#0F6E56;background:#E1F5EE;border-radius:999px;padding:3px 10px;white-space:nowrap;}
+
+/* Difficulty selector */
+.gw-diff{display:flex;gap:6px;margin-bottom:clamp(8px,2.5vw,12px);justify-content:center;}
+.gw-diff-btn{font-family:'Nunito',sans-serif;font-size:clamp(10px,3vw,13px);font-weight:800;padding:4px 12px;border-radius:999px;border:2px solid transparent;cursor:pointer;transition:all .15s;background:#E1F5EE;color:#0F6E56;-webkit-tap-highlight-color:transparent;}
+.gw-diff-btn.active{background:#0F6E56;color:#fff;border-color:#0F6E56;}
+.gw-diff-btn:hover{opacity:.85;}
+
+/* Card */
+.gw-card{background:#fff;border-radius:clamp(18px,5vw,28px);padding:clamp(16px,4.5vw,28px) clamp(14px,4vw,24px) clamp(14px,4vw,20px);border:1.5px solid #9FE1CB;box-shadow:0 8px 32px rgba(15,110,86,.08);}
+
+/* Theme banner */
+.gw-theme-banner{text-align:center;font-size:clamp(11px,3vw,13px);font-weight:800;color:#1D9E75;letter-spacing:.04em;margin-bottom:clamp(10px,3vw,16px);opacity:.75;}
+
+/* Equation */
+.gw-eq{display:flex;align-items:center;justify-content:center;gap:clamp(5px,2vw,12px);flex-wrap:wrap;margin-bottom:clamp(14px,4vw,22px);}
+.gw-group{display:grid;grid-template-columns:repeat(3,clamp(32px,9vw,52px));gap:clamp(2px,1vw,5px);justify-content:center;
+  background:#fff;
+  border:3px solid #CDEEE2;
+  border-radius:clamp(10px,3vw,16px);
+  padding:clamp(7px,2.2vw,12px);
+  min-width:clamp(96px,26vw,172px);min-height:clamp(50px,13vw,76px);align-content:center;
+  box-shadow:inset 0 2px 4px rgba(255,255,255,.8),0 4px 14px rgba(0,0,0,.05);
+  transition:box-shadow .2s;}
+.gw-group.count-hint{animation:hint-wiggle .5s cubic-bezier(.36,.07,.19,.97);border-color:#F4A860;}
+.gw-item{font-size:clamp(26px,8vw,46px);line-height:1;text-align:center;animation:pop-in .28s cubic-bezier(.34,1.56,.64,1) both;}
+.gw-op{font-size:clamp(32px,10vw,56px);font-weight:900;color:#0F6E56;flex-shrink:0;line-height:1;}
+.gw-ansbox{width:clamp(56px,16vw,84px);height:clamp(56px,16vw,84px);background:#fff;border:3px dashed #1D9E75;border-radius:clamp(12px,3.5vw,20px);display:flex;align-items:center;justify-content:center;font-size:clamp(26px,8.5vw,48px);font-weight:900;color:#1D9E75;flex-shrink:0;animation:pulse 1.6s ease-in-out infinite;}
+.gw-ansbox.answered{animation:none;}
+.gw-ansbox.correct{border-style:solid;background:#E1F5EE;color:#0F6E56;border-color:#0F6E56;transform:scale(1.1);transition:transform .22s cubic-bezier(.34,1.56,.64,1);}
+.gw-ansbox.wrong{border-style:solid;background:#FAECE7;color:#D85A30;border-color:#D85A30;animation:none;}
+
+/* Choices */
+.gw-choices{display:flex;justify-content:center;gap:clamp(10px,3.5vw,18px);}
+.gw-btn{font-family:'Nunito',sans-serif;font-size:clamp(22px,7.5vw,40px);font-weight:900;width:clamp(72px,20vw,108px);height:clamp(72px,20vw,108px);border-radius:clamp(14px,4vw,22px);border:none;background:#fff;color:#085041;cursor:pointer;box-shadow:0 5px 16px rgba(0,0,0,.10),0 1px 3px rgba(0,0,0,.06);transition:transform .15s,box-shadow .15s;display:flex;align-items:center;justify-content:center;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
+.gw-btn:hover:not(:disabled){transform:translateY(-4px);box-shadow:0 10px 26px rgba(0,0,0,.12);}
+.gw-btn:active:not(:disabled){transform:scale(.92);}
+.gw-btn:disabled{cursor:default;}
+.gw-btn.ok{background:#E1F5EE;color:#0F6E56;}
+.gw-btn.no{background:#FAECE7;color:#D85A30;animation:shake .35s cubic-bezier(.36,.07,.19,.97);}
+
+/* Bottom inside card */
+.gw-bottom{display:flex;align-items:center;justify-content:center;gap:10px;min-height:clamp(38px,10vw,50px);padding-top:clamp(10px,3vw,16px);}
+.gw-mascot{font-size:clamp(24px,7vw,34px);line-height:1;transition:transform .25s;}
+.gw-mascot.bounce{animation:mascot-bounce .4s cubic-bezier(.34,1.56,.64,1);}
+.gw-feedback{font-size:clamp(13px,4vw,17px);font-weight:800;color:#0F6E56;}
+
+/* Level-up overlay */
+.gw-levelup{display:none;position:absolute;inset:0;background:rgba(225,245,238,.92);border-radius:inherit;flex-direction:column;align-items:center;justify-content:center;gap:10px;z-index:10;border-radius:clamp(18px,5vw,28px);}
+.gw-levelup.show{display:flex;animation:fade-in .3s ease;}
+.gw-levelup-emoji{font-size:clamp(52px,15vw,80px);animation:pop-in .4s cubic-bezier(.34,1.56,.64,1);}
+.gw-levelup-title{font-size:clamp(20px,6vw,30px);font-weight:900;color:#0F6E56;text-align:center;}
+.gw-levelup-sub{font-size:clamp(13px,3.5vw,16px);font-weight:800;color:#1D9E75;text-align:center;}
+.gw-card-wrap{position:relative;}
+
+/* Finish screen */
+.gw-finish{display:none;flex-direction:column;align-items:center;gap:clamp(12px,3.5vw,20px);padding:clamp(20px,6vw,36px) clamp(14px,4vw,24px);}
+.gw-finish.show{display:flex;}
+.gw-finish-emoji{font-size:clamp(52px,16vw,80px);animation:pop-in .5s cubic-bezier(.34,1.56,.64,1);}
+.gw-finish-title{font-size:clamp(22px,7vw,32px);font-weight:900;color:#0F6E56;text-align:center;}
+.gw-finish-stars{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;font-size:clamp(20px,6vw,32px);}
+.gw-finish-sub{font-size:clamp(13px,4vw,17px);font-weight:800;color:#1D9E75;text-align:center;}
+.gw-play-again{font-family:'Nunito',sans-serif;font-size:clamp(16px,5vw,22px);font-weight:900;background:#0F6E56;color:#fff;border:none;border-radius:999px;padding:clamp(12px,3.5vw,16px) clamp(28px,8vw,48px);cursor:pointer;box-shadow:0 6px 20px rgba(15,110,86,.3);transition:transform .15s,box-shadow .15s;-webkit-tap-highlight-color:transparent;}
+.gw-play-again:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(15,110,86,.35);}
+.gw-play-again:active{transform:scale(.95);}
+
+@keyframes pop-in{0%{transform:scale(0) rotate(-12deg);opacity:0;}70%{transform:scale(1.2) rotate(4deg);}100%{transform:scale(1) rotate(0);opacity:1;}}
+@keyframes shake{0%,100%{transform:translateX(0);}20%{transform:translateX(-6px);}40%{transform:translateX(6px);}60%{transform:translateX(-4px);}80%{transform:translateX(4px);}}
+@keyframes star-pop{0%{transform:scale(0) rotate(-20deg);}70%{transform:scale(1.3) rotate(5deg);}100%{transform:scale(1) rotate(0);}}
+@keyframes mascot-bounce{0%{transform:scale(1);}40%{transform:scale(1.25) rotate(-8deg);}70%{transform:scale(.95) rotate(4deg);}100%{transform:scale(1) rotate(0);}}
+@keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.06);}}
+@keyframes hint-wiggle{0%,100%{transform:translateX(0);}20%{transform:translateX(-5px);}40%{transform:translateX(5px);}60%{transform:translateX(-3px);}80%{transform:translateX(3px);}}
+@keyframes fade-in{from{opacity:0;}to{opacity:1;}}
+</style>
+</head>
+<body>
+<div class="gw">
+  <div class="gw-topbar">
+    <div class="gw-level-row">
+      <div class="gw-stars" id="starsRow"></div>
+      <div class="gw-level-badge" id="levelBadge">Level 1</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <div class="gw-streak" id="streakPill"><span>🔥</span><span id="streakNum">0</span></div>
+      <div class="gw-score-pill">
+        <span class="gw-score-label">score</span>
+        <span class="gw-score-num" id="scoreNum">0</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="gw-diff">
+    <button class="gw-diff-btn active" data-mode="easy" onclick="setDiff(this)">🐣 Easy</button>
+    <button class="gw-diff-btn" data-mode="medium" onclick="setDiff(this)">🐥 Medium</button>
+    <button class="gw-diff-btn" data-mode="hard" onclick="setDiff(this)">🦅 Hard</button>
+  </div>
+
+  <div class="gw-card-wrap">
+    <!-- Level-up overlay -->
+    <div class="gw-levelup" id="levelupOverlay">
+      <div class="gw-levelup-emoji" id="levelupEmoji">🎉</div>
+      <div class="gw-levelup-title" id="levelupTitle">Level 2 Unlocked!</div>
+      <div class="gw-levelup-sub" id="levelupSub">Ocean world — let's go!</div>
+    </div>
+
+    <div class="gw-card" id="mainCard">
+      <div class="gw-theme-banner" id="themeBanner"></div>
+      <div class="gw-eq">
+        <div class="gw-group" id="leftGroup"></div>
+        <div class="gw-op">+</div>
+        <div class="gw-group" id="rightGroup"></div>
+        <div class="gw-op">=</div>
+        <div class="gw-ansbox" id="ansBox">?</div>
+      </div>
+      <div class="gw-choices" id="choicesEl"></div>
+      <div class="gw-bottom">
+        <div class="gw-mascot" id="mascot">🐻</div>
+        <div class="gw-feedback" id="feedbackEl">What's the answer?</div>
+      </div>
+    </div>
+
+    <!-- Finish screen (inside same card shell) -->
+    <div class="gw-card" id="finishCard" style="display:none;">
+      <div class="gw-finish show" id="finishPanel">
+        <div class="gw-finish-emoji" id="finishEmoji">🎉</div>
+        <div class="gw-finish-title" id="finishTitle">You did it!</div>
+        <div class="gw-finish-stars" id="finishStars"></div>
+        <div class="gw-finish-sub" id="finishSub"></div>
+        <button class="gw-play-again" onclick="restart()">Play Again ▶</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const THEMES = {
+  farm:      { name:"🚜 Farm World",       emoji:["🐮","🐷","🐔","🐑","🐴"] },
+  ocean:     { name:"🌊 Ocean World",      emoji:["🐙","🐠","🐬","🦀","🦑"] },
+  fruits:    { name:"🍓 Fruit World",      emoji:["🍎","🍊","🍇","🍓","🍌"] },
+  dinosaurs: { name:"🦕 Dino World",       emoji:["🦕","🦖","🥚","🐊","🦎"] },
+  space:     { name:"🚀 Space World",      emoji:["🪐","🚀","⭐","🌙","☄️"] },
+};
+const THEME_ORDER = ["farm","ocean","fruits","dinosaurs","space"];
+
+const SETTINGS = {
+  easy:   { min:1, max:5  },
+  medium: { min:1, max:10 },
+  hard:   { min:5, max:20 },
+};
+
+const MASCOTS_OK=["🐻","🦁","🐯","🐼","🦊","🐨"];
+const MASCOTS_NO=["🐰","🐸","🐧","🐭","🐱","🐮"];
+const SAYS_OK=["You did it! ⭐","Amazing! 🌟","Brilliant! 🎉","Correct! 🥳","Yes! Keep going! 💪","Superstar! ✨"];
+const SAYS_NO=["Try counting again!","Oops! Try once more.","Almost! Try again.","Count carefully!","You can do it!"];
+
+const LEVEL_SIZE = 5;
+const TOTAL_Q = 20;
+
+let score=0, streak=0, q=null, qNum=0, levelStars=0, level=1, themeIdx=0, diffMode='easy';
+
+function setDiff(btn) {
+  document.querySelectorAll('.gw-diff-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  diffMode = btn.dataset.mode;
+  restart();
+}
+
+function mkQ(){
+  const s = SETTINGS[diffMode];
+  const range = s.max - s.min + 1;
+  const a = Math.floor(Math.random()*range)+s.min;
+  const b = Math.floor(Math.random()*range)+s.min;
+  const th = THEMES[THEME_ORDER[themeIdx]];
+  const e = th.emoji[Math.floor(Math.random()*th.emoji.length)];
+  return {e, a, b, ans: a+b};
+}
+
+function drawGroup(id, e, n){
+  const el=document.getElementById(id); el.innerHTML='';
+  for(let i=0;i<n;i++){
+    const s=document.createElement('span');
+    s.className='gw-item'; s.textContent=e;
+    s.style.animationDelay=(i*.05)+'s';
+    el.appendChild(s);
+  }
+}
+
+function renderStars(){
+  const row=document.getElementById('starsRow'); row.innerHTML='';
+  for(let i=0;i<LEVEL_SIZE;i++){
+    const s=document.createElement('span');
+    s.className='gw-star'+(i<levelStars?' lit':'');
+    s.textContent=i<levelStars?'⭐':'☆';
+    row.appendChild(s);
+  }
+  document.getElementById('levelBadge').textContent='Level '+level;
+}
+
+function showQ(){
+  if(qNum >= TOTAL_Q){ showFinish(); return; }
+  qNum++;
+  q=mkQ();
+  const th = THEMES[THEME_ORDER[themeIdx]];
+  document.getElementById('themeBanner').textContent = th.name;
+  drawGroup('leftGroup',q.e,q.a);
+  drawGroup('rightGroup',q.e,q.b);
+  const ab=document.getElementById('ansBox');
+  ab.textContent='?'; ab.className='gw-ansbox';
+  document.getElementById('feedbackEl').textContent="What's the answer?";
+  const m=document.getElementById('mascot');
+  m.textContent=MASCOTS_OK[Math.floor(Math.random()*MASCOTS_OK.length)];
+  m.className='gw-mascot';
+  buildBtns(); renderStars();
+}
+
+function buildBtns(){
+  const s=new Set([q.ans]);
+  let attempts=0;
+  while(s.size<3 && attempts<50){
+    const d=q.ans+(Math.floor(Math.random()*6)-3);
+    if(d>0 && d!==q.ans) s.add(d);
+    attempts++;
+  }
+  const c=document.getElementById('choicesEl'); c.innerHTML='';
+  [...s].sort(()=>Math.random()-.5).forEach(v=>{
+    const b=document.createElement('button');
+    b.className='gw-btn'; b.textContent=v;
+    b.addEventListener('click',()=>pick(v,b));
+    c.appendChild(b);
+  });
+}
+
+function pick(val, btn){
+  document.querySelectorAll('.gw-btn').forEach(b=>b.disabled=true);
+  const ab=document.getElementById('ansBox'), fb=document.getElementById('feedbackEl');
+  const m=document.getElementById('mascot');
+  if(val===q.ans){
+    ab.textContent=val; ab.className='gw-ansbox answered correct';
+    btn.classList.add('ok'); score++; streak++; levelStars++;
+    document.getElementById('scoreNum').textContent=score;
+    document.getElementById('streakNum').textContent=streak;
+    const sp=document.getElementById('streakPill');
+    sp.style.display=streak>=2?'flex':'none';
+    fb.textContent=SAYS_OK[Math.floor(Math.random()*SAYS_OK.length)];
+    m.textContent=MASCOTS_OK[Math.floor(Math.random()*MASCOTS_OK.length)];
+    m.className='gw-mascot bounce';
+    renderStars(); burst(btn);
+
+    if(levelStars >= LEVEL_SIZE){
+      levelStars=0; level++;
+      themeIdx=Math.min(themeIdx+1, THEME_ORDER.length-1);
+      renderStars();
+      setTimeout(()=>showLevelUp(), 600);
+    } else {
+      setTimeout(showQ, 1200);
+    }
+  } else {
+    ab.className='gw-ansbox answered wrong'; btn.classList.add('no');
+    streak=0; document.getElementById('streakPill').style.display='none';
+    fb.textContent=SAYS_NO[Math.floor(Math.random()*SAYS_NO.length)];
+    m.textContent=MASCOTS_NO[Math.floor(Math.random()*MASCOTS_NO.length)];
+    m.className='gw-mascot';
+    // Hint: wiggle the groups
+    document.getElementById('leftGroup').classList.add('count-hint');
+    document.getElementById('rightGroup').classList.add('count-hint');
+    setTimeout(()=>{
+      document.querySelectorAll('.gw-btn').forEach(b=>{b.disabled=false;b.className='gw-btn';});
+      document.getElementById('ansBox').className='gw-ansbox';
+      document.getElementById('leftGroup').classList.remove('count-hint');
+      document.getElementById('rightGroup').classList.remove('count-hint');
+    },950);
+  }
+}
+
+function showLevelUp(){
+  const ol = document.getElementById('levelupOverlay');
+  const th = THEMES[THEME_ORDER[themeIdx]];
+  document.getElementById('levelupEmoji').textContent = th.emoji[0]+th.emoji[1];
+  document.getElementById('levelupTitle').textContent = 'Level '+level+' Unlocked!';
+  document.getElementById('levelupSub').textContent = th.name+' — let\'s go!';
+  ol.classList.add('show');
+  setTimeout(()=>{ ol.classList.remove('show'); showQ(); }, 2000);
+}
+
+function showFinish(){
+  document.getElementById('mainCard').style.display='none';
+  document.getElementById('finishCard').style.display='block';
+  document.getElementById('finishTitle').textContent = score >= 16 ? 'Amazing work! 🏆' : score >= 10 ? 'Great job! 🎉' : 'You did it! 🌟';
+  document.getElementById('finishEmoji').textContent = score >= 16 ? '🏆' : score >= 10 ? '🎉' : '🌟';
+  document.getElementById('finishSub').textContent = 'You got '+score+' out of '+TOTAL_Q+' correct!';
+  const fs = document.getElementById('finishStars'); fs.innerHTML='';
+  for(let i=0;i<score;i++){
+    const s=document.createElement('span'); s.textContent='⭐';
+    s.style.animationDelay=(i*.07)+'s';
+    s.style.animation='pop-in .3s cubic-bezier(.34,1.56,.64,1) both';
+    s.style.animationDelay=(i*.07)+'s';
+    fs.appendChild(s);
+  }
+}
+
+function restart(){
+  score=0; streak=0; qNum=0; levelStars=0; level=1; themeIdx=0;
+  document.getElementById('scoreNum').textContent='0';
+  document.getElementById('streakPill').style.display='none';
+  document.getElementById('mainCard').style.display='block';
+  document.getElementById('finishCard').style.display='none';
+  showQ();
+}
+
+function burst(btn){
+  const r=btn.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
+  const cols=['#FAC775','#5DCAA5','#F0997B','#9FE1CB','#ED93B1','#85B7EB'];
+  for(let i=0;i<16;i++){
+    const d=document.createElement('div');
+    const size=6+Math.random()*6;
+    d.style.cssText=`position:fixed;width:${size}px;height:${size}px;border-radius:50%;background:${cols[i%cols.length]};left:${cx}px;top:${cy}px;pointer-events:none;z-index:9999;transition:all .55s cubic-bezier(.2,.8,.4,1);`;
+    document.body.appendChild(d);
+    const a=(i/16)*Math.PI*2,dist=52+Math.random()*44;
+    setTimeout(()=>{d.style.left=(cx+Math.cos(a)*dist)+'px';d.style.top=(cy+Math.sin(a)*dist)+'px';d.style.opacity='0';d.style.transform='scale(0)';},10);
+    setTimeout(()=>d.remove(),600);
+  }
+}
+
+showQ();
+</script>
+</body>
+</html>

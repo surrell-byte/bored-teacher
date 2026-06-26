@@ -6,6 +6,7 @@ export const GAME_KEYS = [
   'emojimatch','emojispelling','familyquest','farmgame','findmyfood',
   'flagmaster','foodwordhunt','fruitwordhunt','lakersracer','neonbridge','oceanquest',
   'pacman','phonicsadventure','phonicsworld','shuttlecock','tornado','wgrandprix','wordfusion',
+  'countadd','mazechase','moneyblocks','parachutedrop','superwings','swampjump','treasurechest','unicornwings',
 ] as const;
 
 export type GameKey = (typeof GAME_KEYS)[number];
@@ -26,6 +27,10 @@ export const GAME_NAMES: Record<string, string> = {
   pacman: 'Pac-Man', phonicsadventure: 'Phonics Adventure',
   phonicsworld: 'Phonics World', shuttlecock: 'Shuttlecock Smash',
   tornado: 'Tornado', wgrandprix: 'W Grand Prix', wordfusion: 'Word Fusion',
+  countadd: 'Count & Add', mazechase: 'Maze Chase',
+  moneyblocks: 'Money Blocks', parachutedrop: 'Parachute Drop',
+  superwings: 'Super Wings Races', swampjump: 'Froggy Hop',
+  treasurechest: 'Treasure Chest Showdown', unicornwings: 'Unicorn Wing Races',
 };
 
 export const GAME_ICONS: Record<string, string> = {
@@ -37,6 +42,8 @@ export const GAME_ICONS: Record<string, string> = {
   flagmaster: '🚩', foodwordhunt: '🍕', fruitwordhunt: '🍎', lakersracer: '🏀',
   neonbridge: '🌉', oceanquest: '🐠', pacman: '👾', phonicsadventure: '📖',
   phonicsworld: '🔤', shuttlecock: '🏸', tornado: '🌪️', wgrandprix: '🏎️', wordfusion: '⚡',
+  countadd: '➕', mazechase: '🌀', moneyblocks: '💰', parachutedrop: '🪂',
+  superwings: '✈️', swampjump: '🐸', treasurechest: '🏴‍☠️', unicornwings: '🦄',
 };
 
 export const GAME_DESC: Record<string, string> = {
@@ -70,6 +77,14 @@ export const GAME_DESC: Record<string, string> = {
   tornado: 'A whirlwind vocab challenge — answer before the storm sweeps your score away.',
   wgrandprix: 'Rev up your vocabulary and race to the finish — the faster you answer, the further you go.',
   wordfusion: 'Fuse word parts together under time pressure to test morphology and vocabulary range.',
+  countadd: 'Practise quick counting and addition with bright, early-numeracy questions.',
+  mazechase: 'Navigate a maze, collect points, and dodge enemies in a fast arcade challenge.',
+  moneyblocks: 'Reveal money blocks, manage risk, and race to build the biggest total.',
+  parachutedrop: 'Roll, stop, and choose parachute values in a playful two-player number game.',
+  superwings: 'Race colourful planes around the board in a simple turn-based classroom game.',
+  swampjump: 'Hop through the swamp, time each jump, and chase a new high score.',
+  treasurechest: 'Choose treasure chests, collect rewards, and compete for the biggest hoard.',
+  unicornwings: 'Race unicorns around the board with a sparkling two-player dice challenge.',
 };
 
 export const GAME_TAGS: Record<string, { label: string; color: string }> = {
@@ -103,6 +118,14 @@ export const GAME_TAGS: Record<string, { label: string; color: string }> = {
   tornado: { label: 'Vocabulary', color: 'tag-vocab' },
   wgrandprix: { label: 'Vocabulary', color: 'tag-vocab' },
   wordfusion: { label: 'Word Formation', color: 'tag-words' },
+  countadd: { label: 'Logic', color: 'tag-bio' },
+  mazechase: { label: 'Logic', color: 'tag-bio' },
+  moneyblocks: { label: 'Logic', color: 'tag-bio' },
+  parachutedrop: { label: 'Logic', color: 'tag-bio' },
+  superwings: { label: 'Logic', color: 'tag-bio' },
+  swampjump: { label: 'Logic', color: 'tag-bio' },
+  treasurechest: { label: 'Logic', color: 'tag-bio' },
+  unicornwings: { label: 'Logic', color: 'tag-bio' },
 };
 
 export const GAME_BADGE: Record<string, string> = {
@@ -116,6 +139,9 @@ export const GAME_BADGE: Record<string, string> = {
   lakersracer: 'Race', neonbridge: 'Survive', oceanquest: 'Dive In',
   pacman: 'Arcade', phonicsadventure: 'Phonics', phonicsworld: 'Sounds',
   shuttlecock: 'Smash', tornado: 'Storm', wgrandprix: 'Race', wordfusion: 'Fuse',
+  countadd: 'Add Up', mazechase: 'Maze Run', moneyblocks: 'Money',
+  parachutedrop: 'Dice', superwings: 'Race', swampjump: 'Hop',
+  treasurechest: 'Treasure', unicornwings: 'Race',
 };
 
 export const GAME_DIFFICULTY: Record<string, string> = {
@@ -129,6 +155,9 @@ export const GAME_DIFFICULTY: Record<string, string> = {
   lakersracer: 'Competitive', neonbridge: 'Intermediate', oceanquest: 'Mixed Skills',
   pacman: 'Arcade', phonicsadventure: 'Starter', phonicsworld: 'Starter',
   shuttlecock: 'Competitive', tornado: 'Intermediate', wgrandprix: 'Competitive', wordfusion: 'Intermediate',
+  countadd: 'Starter', mazechase: 'Arcade', moneyblocks: 'Mixed Skills',
+  parachutedrop: 'Starter', superwings: 'Starter', swampjump: 'Arcade',
+  treasurechest: 'Competitive', unicornwings: 'Starter',
 };
 
 export const GAME_BAR_COLOR: Record<string, string> = {
@@ -142,6 +171,9 @@ export const GAME_BAR_COLOR: Record<string, string> = {
   lakersracer: 'var(--gold)', neonbridge: 'var(--purple)', oceanquest: 'var(--teal)',
   pacman: 'var(--gold)', phonicsadventure: 'var(--blue)', phonicsworld: 'var(--blue)',
   shuttlecock: 'var(--green)', tornado: 'var(--red)', wgrandprix: 'var(--red)', wordfusion: 'var(--purple)',
+  countadd: 'var(--green)', mazechase: 'var(--teal)', moneyblocks: 'var(--gold)',
+  parachutedrop: 'var(--blue)', superwings: 'var(--red)', swampjump: 'var(--green)',
+  treasurechest: 'var(--gold)', unicornwings: 'var(--purple)',
 };
 
 export const GAME_URLS: Record<string, string> = {
@@ -175,6 +207,14 @@ export const GAME_URLS: Record<string, string> = {
   tornado: 'games/tornado/tornado.html',
   wgrandprix: 'games/w-grand-prix/w-grand-prix.html',
   wordfusion: 'games/word-fusion/word-fusion.html',
+  countadd: 'games/count-and-add/count-and-add.html',
+  mazechase: 'games/maze-chase-fixed/index.html',
+  moneyblocks: 'games/money-blocks/index.html',
+  parachutedrop: 'games/parachute-drop/index.html',
+  superwings: 'games/super-wings-game/index.html',
+  swampjump: 'games/swamp-jump-game/index.html',
+  treasurechest: 'games/treasure-chest-game/index.html',
+  unicornwings: 'games/unicorn-wings-game/index.html',
 };
 
 export const THEMES = [

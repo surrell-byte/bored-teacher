@@ -1,0 +1,281 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Orbitron:wght@400;700;900&display=swap');
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --green:  #00ff88;
+  --gold:   #FFD700;
+  --red:    #ff4444;
+  --cyan:   #00ffff;
+  --purple: #cc00ff;
+  --bg:     #080c10;
+  --panel:  rgba(0,255,136,0.06);
+}
+
+html, body {
+  width: 100%; height: 100%;
+  background: var(--bg);
+  color: white;
+  font-family: 'Orbitron', monospace;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-x: hidden;
+  min-height: 100vh;
+  /* prevent iOS bounce / overscroll while playing */
+  overscroll-behavior: none;
+}
+
+/* Scanline overlay */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px, transparent 3px,
+    rgba(0,0,0,0.08) 3px, rgba(0,0,0,0.08) 4px
+  );
+  pointer-events: none;
+  z-index: 1000;
+}
+
+/* ── TITLE ── */
+#title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(0.7rem, 3.5vw, 1.4rem);
+  color: var(--green);
+  text-shadow: 0 0 10px var(--green), 0 0 30px var(--green);
+  margin: 12px 0 8px;
+  letter-spacing: 2px;
+  text-align: center;
+  padding: 0 8px;
+  animation: flicker 4s infinite;
+}
+
+@keyframes flicker {
+  0%,100% { opacity: 1; }
+  92%     { opacity: 1; }
+  93%     { opacity: 0.7; }
+  94%     { opacity: 1; }
+  96%     { opacity: 0.6; }
+  97%     { opacity: 1; }
+}
+
+/* ── HUD ── */
+#hud {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  width: min(640px, 97vw);
+  padding: 6px 12px;
+  background: var(--panel);
+  border: 1px solid rgba(0,255,136,0.3);
+  border-radius: 8px;
+  box-shadow: 0 0 12px rgba(0,255,136,0.15), inset 0 0 20px rgba(0,255,136,0.04);
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+  row-gap: 4px;
+}
+
+.stat {
+  font-size: clamp(0.4rem, 2.2vw, 0.6rem);
+  color: rgba(255,255,255,0.6);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.stat span {
+  color: var(--green);
+  font-size: clamp(0.55rem, 2.8vw, 0.82rem);
+  font-weight: 700;
+  text-shadow: 0 0 8px var(--green);
+  margin-left: 3px;
+  transition: transform 0.15s;
+}
+
+.stat span.pop { animation: statpop 0.25s ease; }
+
+@keyframes statpop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.5); color: var(--gold); }
+  100% { transform: scale(1); }
+}
+
+.lives-icons { color: var(--green); letter-spacing: 2px; text-shadow: 0 0 6px var(--green); }
+
+#highscoreStat      { color: var(--gold); }
+#highscoreStat span { color: var(--gold); text-shadow: 0 0 8px var(--gold); }
+
+/* ── CANVAS WRAPPER ── */
+#gameWrapper {
+  position: relative;
+  line-height: 0;
+  /* shrink-wraps tightly around the CSS-scaled canvas */
+  display: inline-block;
+}
+
+#gameCanvas {
+  display: block;
+  /* width/height set in px by JS; CSS size set by fitCanvasToWindow */
+  border: 2px solid rgba(0,255,136,0.4);
+  border-radius: 10px;
+  box-shadow:
+    0 0 18px rgba(0,255,136,0.3),
+    0 0 50px rgba(0,255,136,0.1),
+    inset 0 0 30px rgba(0,0,0,0.8);
+  /* ensure crisp pixel rendering when scaled down */
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+}
+
+/* ── OVERLAY ── */
+#overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: rgba(0,0,0,0.78);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s;
+  z-index: 10;
+  padding: 16px;
+}
+
+#overlay.show { opacity: 1; pointer-events: all; }
+
+#overlayTitle {
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(0.8rem, 4vw, 1.8rem);
+  color: var(--green);
+  text-shadow: 0 0 20px var(--green);
+  margin-bottom: 12px;
+  text-align: center;
+  line-height: 1.5;
+}
+
+#overlayTitle.red    { color: var(--red);    text-shadow: 0 0 20px var(--red);    }
+#overlayTitle.gold   { color: var(--gold);   text-shadow: 0 0 20px var(--gold);   }
+#overlayTitle.purple { color: var(--purple); text-shadow: 0 0 20px var(--purple); }
+
+#overlayMsg {
+  font-size: clamp(0.45rem, 2.2vw, 0.68rem);
+  color: rgba(255,255,255,0.7);
+  margin-bottom: 18px;
+  letter-spacing: 2px;
+  text-align: center;
+  line-height: 1.9;
+}
+
+#overlayBtn {
+  font-family: 'Orbitron', monospace;
+  font-weight: 700;
+  font-size: clamp(0.6rem, 2.5vw, 0.75rem);
+  padding: 12px 28px;
+  background: var(--green);
+  color: #000;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  box-shadow: 0 0 16px var(--green);
+  transition: transform 0.15s, box-shadow 0.15s;
+  touch-action: manipulation;
+}
+
+#overlayBtn:hover { transform: scale(1.07); box-shadow: 0 0 30px var(--green); }
+#overlayBtn:active { transform: scale(0.96); }
+#overlayBtn.red   { background: var(--red); box-shadow: 0 0 16px var(--red); color: #fff; }
+
+/* ── MOBILE DPAD ── */
+#dpad {
+  display: none;
+  margin-top: 10px;
+  user-select: none;
+  touch-action: none;
+  /* grid layout so centre cell can stay empty */
+  display: grid;
+  grid-template-areas:
+    ".    up   ."
+    "left .    right"
+    ".    down .";
+  gap: 6px;
+}
+
+/* Always show dpad on coarse-pointer (touch) devices */
+@media (pointer: coarse) {
+  #dpad { display: grid; }
+}
+
+/* Also show on narrow viewports regardless */
+@media (max-width: 680px) {
+  #dpad { display: grid; }
+}
+
+#dUp    { grid-area: up;    }
+#dDown  { grid-area: down;  }
+#dLeft  { grid-area: left;  }
+#dRight { grid-area: right; }
+
+#dpad button {
+  width: clamp(48px, 13vw, 64px);
+  height: clamp(48px, 13vw, 64px);
+  background: rgba(0,255,136,0.10);
+  border: 1px solid rgba(0,255,136,0.35);
+  border-radius: 10px;
+  color: var(--green);
+  font-size: clamp(1rem, 4vw, 1.4rem);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.08s, transform 0.08s;
+  display: flex; align-items: center; justify-content: center;
+  touch-action: manipulation;
+}
+
+#dpad button:active {
+  background: rgba(0,255,136,0.35);
+  transform: scale(0.92);
+}
+
+/* ── LEGEND ── */
+#legend {
+  display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+  margin: 8px 4px 6px;
+  font-size: clamp(0.38rem, 1.8vw, 0.5rem);
+  color: rgba(255,255,255,0.45);
+  letter-spacing: 1px;
+}
+
+.legend-item { display: flex; align-items: center; gap: 4px; }
+.legend-dot  { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+/* ── MUTE BUTTON ── */
+#muteBtn {
+  background: transparent;
+  border: 1px solid rgba(0,255,136,0.3);
+  border-radius: 6px;
+  color: var(--green);
+  font-size: clamp(0.85rem, 3vw, 1rem);
+  cursor: pointer;
+  padding: 2px 8px;
+  line-height: 1;
+  transition: background 0.15s, box-shadow 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+#muteBtn:hover  { background: rgba(0,255,136,0.12); box-shadow: 0 0 8px rgba(0,255,136,0.3); }
+#muteBtn.muted  { border-color: rgba(255,68,68,0.4); color: #ff4444; }
+
+/* ── SMALL SCREEN TWEAKS ── */
+@media (max-width: 400px) {
+  #hud { gap: 5px; padding: 5px 8px; }
+  #title { margin: 8px 0 6px; }
+}

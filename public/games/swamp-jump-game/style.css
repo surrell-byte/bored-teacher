@@ -1,0 +1,403 @@
+:root {
+    --bg-dark: #08140d;
+    --bg-mid: #10281b;
+    --bg-light: #1c4a31;
+
+    --glass: rgba(0, 0, 0, 0.45);
+    --glass-border: rgba(255, 255, 255, 0.12);
+
+    --gold: #ffd54a;
+    --gold-soft: #ffef9a;
+
+    --green-light: #8fd96f;
+    --green-main: #58b44a;
+    --green-dark: #2e6f29;
+
+    --text-soft: #d7efc7;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    overflow: hidden;
+
+    font-family:
+        "Segoe UI",
+        "Trebuchet MS",
+        sans-serif;
+
+    background:
+        radial-gradient(
+            circle at top,
+            #24593c 0%,
+            #10281b 35%,
+            #08140d 100%
+        );
+
+    position: relative;
+
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* ===== BACKGROUND GLOW ===== */
+
+body::before {
+    content: "";
+
+    position: absolute;
+    inset: 0;
+
+    background:
+        radial-gradient(
+            circle at 50% 25%,
+            rgba(120, 255, 150, 0.15),
+            transparent 45%
+        );
+
+    pointer-events: none;
+}
+
+/* ===== GAME WRAPPER ===== */
+
+.game-wrapper {
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    gap: 18px;
+
+    z-index: 2;
+}
+
+/* ===== HEADER ===== */
+
+.game-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 24px;
+
+    width: 100%;
+}
+
+/* ===== SCORE BOXES ===== */
+
+.score-display {
+    position: relative;
+
+    min-width: 120px;
+
+    padding: 14px 24px;
+
+    border-radius: 24px;
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(0, 0, 0, 0.5),
+            rgba(0, 0, 0, 0.72)
+        );
+
+    border: 2px solid rgba(255, 255, 255, 0.08);
+
+    box-shadow:
+        0 10px 25px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
+    backdrop-filter: blur(10px);
+
+    text-align: center;
+
+    overflow: hidden;
+
+    transition:
+        transform 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+.score-display::before {
+    content: "";
+
+    position: absolute;
+    inset: 0;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255,255,255,0.06),
+            transparent 45%
+        );
+
+    pointer-events: none;
+}
+
+.score-display.pop {
+    transform: scale(1.08);
+}
+
+.score-label {
+    font-size: 0.72rem;
+
+    text-transform: uppercase;
+
+    letter-spacing: 2px;
+
+    color: var(--text-soft);
+
+    opacity: 0.8;
+
+    margin-bottom: 6px;
+}
+
+.score-value {
+    font-size: 2.7rem;
+    font-weight: 800;
+
+    line-height: 1;
+
+    color: var(--gold);
+
+    text-shadow:
+        0 0 18px rgba(255, 213, 74, 0.45),
+        0 0 40px rgba(255, 213, 74, 0.2);
+}
+
+.best-score {
+    font-size: 0.72rem;
+
+    color: #b6ef9d;
+
+    margin-top: 4px;
+
+    opacity: 0.7;
+}
+
+/* ===== CANVAS ===== */
+
+canvas {
+    display: block;
+
+    border-radius: 30px;
+
+    /* FIX: was #1b2330 — caused a color flash before JS draws the first frame */
+    background: transparent;
+
+    box-shadow:
+        0 30px 80px rgba(0, 0, 0, 0.55),
+        0 0 0 5px rgba(255,255,255,0.05),
+        inset 0 0 0 2px rgba(255,255,255,0.04);
+
+    max-width: 95vw;
+    max-height: 80vh;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+/* FIX: scoped to pointer-capable devices so hover doesn't stick on touch */
+@media (hover: hover) {
+    canvas:hover {
+        transform: translateY(-2px);
+
+        box-shadow:
+            0 35px 90px rgba(0, 0, 0, 0.6),
+            0 0 0 5px rgba(255,255,255,0.06),
+            inset 0 0 0 2px rgba(255,255,255,0.05);
+    }
+}
+
+/* ===== HINT TEXT ===== */
+
+.hint {
+    color: var(--text-soft);
+
+    font-size: 0.92rem;
+
+    letter-spacing: 1px;
+
+    opacity: 0.72;
+
+    text-align: center;
+
+    animation: hintPulse 2.4s ease-in-out infinite;
+
+    text-shadow:
+        0 0 12px rgba(180,255,180,0.15);
+}
+
+@keyframes hintPulse {
+    0%, 100% {
+        opacity: 0.45;
+        transform: translateY(0px);
+    }
+
+    50% {
+        opacity: 1;
+        transform: translateY(-2px);
+    }
+}
+
+/* ===== FIREFLIES ===== */
+
+.firefly {
+    position: fixed;
+
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+
+    background: #ffe45c;
+
+    box-shadow:
+        0 0 8px rgba(255, 230, 90, 0.8),
+        0 0 20px rgba(255, 230, 90, 0.5),
+        0 0 40px rgba(255, 230, 90, 0.2);
+
+    pointer-events: none;
+
+    z-index: 0;
+
+    animation:
+        fireflyFloat 7s ease-in-out infinite,
+        fireflyGlow 2s ease-in-out infinite;
+}
+
+@keyframes fireflyFloat {
+
+    0%,
+    100% {
+        transform:
+            translate(0px, 0px)
+            scale(1);
+
+        opacity: 0.4;
+    }
+
+    25% {
+        transform:
+            translate(35px, -55px)
+            scale(1.15);
+
+        opacity: 1;
+    }
+
+    50% {
+        transform:
+            translate(-20px, -110px)
+            scale(0.8);
+
+        opacity: 0.5;
+    }
+
+    75% {
+        transform:
+            translate(20px, -45px)
+            scale(1.05);
+
+        opacity: 0.9;
+    }
+}
+
+@keyframes fireflyGlow {
+
+    0%,
+    100% {
+        filter: blur(0px);
+    }
+
+    50% {
+        filter: blur(1px);
+    }
+}
+
+/* ===== MOBILE ===== */
+
+@media (max-width: 700px) {
+
+    .game-wrapper {
+        gap: 14px;
+    }
+
+    .game-header {
+        gap: 14px;
+    }
+
+    .score-display {
+        min-width: 100px;
+
+        padding: 10px 18px;
+
+        border-radius: 20px;
+    }
+
+    .score-value {
+        font-size: 2.2rem;
+    }
+
+    .hint {
+        font-size: 0.82rem;
+
+        padding: 0 12px;
+    }
+
+    canvas {
+        border-radius: 24px;
+    }
+}
+
+/* ===== EXTRA SMALL ===== */
+
+@media (max-width: 480px) {
+
+    .score-display {
+        min-width: 88px;
+        padding: 9px 14px;
+    }
+
+    .score-value {
+        font-size: 1.9rem;
+    }
+
+    .score-label {
+        font-size: 0.62rem;
+    }
+}
+
+/* ===== REDUCED MOTION ===== */
+
+/* FIX: respect OS accessibility setting — disable animations for sensitive users */
+@media (prefers-reduced-motion: reduce) {
+
+    .firefly {
+        animation: none;
+        opacity: 0.5;
+    }
+
+    .hint {
+        animation: none;
+        opacity: 0.72;
+    }
+
+    canvas {
+        transition: none;
+    }
+}

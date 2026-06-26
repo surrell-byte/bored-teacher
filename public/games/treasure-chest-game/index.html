@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏴‍☠️ Treasure Chest Showdown - 2 Player Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="particles-container" id="particlesContainer"></div>
+
+    <div class="game-container">
+        <div class="game-header">
+            <h1 class="game-title">🏴‍☠️ Treasure Chest Showdown</h1>
+            <p class="game-subtitle">Choose wisely, brave adventurer...</p>
+            <div class="round-indicator" id="roundIndicator">⚔️ Round 1 — Player 1's Turn</div>
+            <button class="sound-toggle" id="soundToggle" title="Toggle sound" aria-label="Toggle sound">🔊</button>
+        </div>
+
+        <div class="game-board">
+            <div class="player-panel player1 active-player" id="player1Panel">
+                <div class="player-avatar">1</div>
+                <div class="player-name">🏆 Player 1</div>
+                <span class="turn-badge">YOUR TURN</span>
+                <div class="player-money-container">
+                    <div class="player-money-label">Treasure Hoard</div>
+                    <div class="player-money" id="player1Money">$10,000</div>
+                </div>
+                <div class="progress-bar-outer">
+                    <div class="progress-bar-inner" id="player1Progress" style="width: 40%;"></div>
+                </div>
+                <div class="progress-label">Goal: $25,000</div>
+            </div>
+
+            <div class="chest-area" id="chestArea">
+                <div class="chest-wrapper chest-gold" data-chest="0" onclick="openChest(0, this)">
+                    <div class="chest-container" id="chestContainer0">
+                        <div class="chest-lid" id="chestLid0"></div>
+                        <div class="chest-lock"></div>
+                        <div class="chest-body"></div>
+                        <div class="chest-glow"></div>
+                    </div>
+                    <span class="chest-label">🌟 Golden Chest</span>
+                </div>
+                <div class="chest-wrapper chest-silver" data-chest="1" onclick="openChest(1, this)">
+                    <div class="chest-container" id="chestContainer1">
+                        <div class="chest-lid" id="chestLid1"></div>
+                        <div class="chest-lock"></div>
+                        <div class="chest-body"></div>
+                        <div class="chest-glow"></div>
+                    </div>
+                    <span class="chest-label">🌙 Silver Chest</span>
+                </div>
+                <div class="chest-wrapper chest-bronze" data-chest="2" onclick="openChest(2, this)">
+                    <div class="chest-container" id="chestContainer2">
+                        <div class="chest-lid" id="chestLid2"></div>
+                        <div class="chest-lock"></div>
+                        <div class="chest-body"></div>
+                        <div class="chest-glow"></div>
+                    </div>
+                    <span class="chest-label">🏺 Bronze Chest</span>
+                </div>
+            </div>
+
+            <div class="player-panel player2" id="player2Panel">
+                <div class="player-avatar">2</div>
+                <div class="player-name">🏆 Player 2</div>
+                <span class="turn-badge">YOUR TURN</span>
+                <div class="player-money-container">
+                    <div class="player-money-label">Treasure Hoard</div>
+                    <div class="player-money" id="player2Money">$10,000</div>
+                </div>
+                <div class="progress-bar-outer">
+                    <div class="progress-bar-inner" id="player2Progress" style="width: 40%;"></div>
+                </div>
+                <div class="progress-label">Goal: $25,000</div>
+            </div>
+        </div>
+
+        <div class="game-log" id="gameLog">
+            <div class="log-entry" style="color:#8a7a60;">📜 The adventure begins... Both players start with <span class="highlight-gold">$10,000</span>. First to <span class="highlight-gold">$25,000</span> wins!</div>
+            <div class="log-entry" style="color:#f7d774;">⚔️ <strong>Player 1</strong> — it's your turn! Choose a treasure chest.</div>
+        </div>
+
+        <button class="btn-reset" onclick="resetGame()">🔄 Start New Game</button>
+    </div>
+
+    <div class="result-notification" id="resultNotification">
+        <div class="result-icon" id="resultIcon"></div>
+        <div class="result-text" id="resultText"></div>
+        <div class="result-amount" id="resultAmount"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+.screen-overlay {
+  position: fixed; inset: 0; z-index: 2000;
+  background:
+    radial-gradient(ellipse at 50% -8%, var(--bg-top), transparent 52%),
+    radial-gradient(ellipse at center, var(--bg-deep) 0%, var(--bg-deep-end) 100%);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px; transition: opacity .4s ease;
+}
+.screen-overlay.fade-out { opacity: 0; pointer-events: none; }
+
+.welcome-box { display: flex; flex-direction: column; align-items: center; gap: 24px; text-align: center; max-width: 480px; width: 100%; }
+.welcome-eyebrow { font: 600 12px 'Inter'; letter-spacing: .26em; text-transform: uppercase; color: var(--gold); transition: color .6s; }
+.welcome-title {
+  font-family: 'Fraunces', serif; font-weight: 700;
+  font-size: clamp(48px, 8vw, 80px); line-height: .95;
+  background: linear-gradient(135deg, var(--gold-bright) 20%, var(--gold-deep) 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  transition: background .6s;
+}
+.welcome-sub { font: 400 15px/1.6 'Inter'; color: var(--ivory-dim); max-width: 340px; }
+.welcome-rule { width: 40px; height: 1px; background: var(--gold-deep); }
+.welcome-btn {
+  background: var(--gold); border: none; color: var(--bg);
+  font: 700 13px 'Inter'; letter-spacing: .16em; text-transform: uppercase;
+  padding: 18px 48px; border-radius: 14px; cursor: pointer;
+  transition: .2s; margin-top: 8px;
+}
+.welcome-btn:hover { background: var(--gold-bright); transform: translateY(-2px); box-shadow: 0 12px 30px rgba(0,0,0,.35); }
+
+.setup-box { display: flex; flex-direction: column; gap: 28px; max-width: 560px; width: 100%; }
+.setup-header { text-align: center; }
+.setup-eyebrow { font: 600 11px 'Inter'; letter-spacing: .24em; text-transform: uppercase; color: var(--gold); margin-bottom: 8px; }
+.setup-title { font-family: 'Fraunces', serif; font-weight: 600; font-size: 34px; color: var(--ivory); }
+.setup-players { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.setup-player { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 18px; padding: 22px 18px; display: flex; flex-direction: column; gap: 14px; transition: border-color .3s; }
+.setup-player:focus-within { border-color: var(--gold); }
+.setup-player-label { font: 600 11px 'Inter'; letter-spacing: .18em; text-transform: uppercase; color: var(--gold); }
+.setup-name-input {
+  background: rgba(255,255,255,.06); border: 1px solid var(--panel-border);
+  border-radius: 10px; padding: 11px 14px;
+  font: 500 15px 'Inter'; color: var(--ivory);
+  width: 100%; outline: none; transition: border-color .2s;
+}
+.setup-name-input:focus { border-color: var(--gold); }
+.setup-name-input::placeholder { color: var(--ivory-dim); }
+body[data-theme="white"] .setup-name-input { background: rgba(0,0,0,.06); }
+
+.setup-avatar-label { font: 500 10px 'Inter'; letter-spacing: .12em; text-transform: uppercase; color: var(--ivory-dim); margin-bottom: 4px; }
+.avatar-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; }
+.avatar-btn {
+  aspect-ratio: 1; border-radius: 10px; cursor: pointer;
+  background: rgba(255,255,255,.05); border: 1px solid var(--panel-border);
+  font-size: 20px; display: flex; align-items: center; justify-content: center;
+  transition: .18s; line-height: 1;
+}
+.avatar-btn:hover { background: rgba(255,255,255,.12); transform: scale(1.08); }
+.avatar-btn.selected { border-color: var(--gold); background: rgba(201,169,97,.18); box-shadow: 0 0 0 1px var(--gold); }
+
+.setup-start, .htp-start {
+  width: 100%; background: var(--gold); border: none; color: var(--bg);
+  font: 700 13px 'Inter'; letter-spacing: .16em; text-transform: uppercase;
+  padding: 18px; border-radius: 14px; cursor: pointer;
+  transition: .2s; display: block;
+}
+.setup-start:hover, .htp-start:hover { background: var(--gold-bright); transform: translateY(-1px); box-shadow: 0 10px 28px rgba(0,0,0,.3); }
+body[data-theme="white"] .setup-start, body[data-theme="white"] .htp-start { color: #fff; }
+
+.winner-overlay {
+  position: fixed; inset: 0; background: var(--bg);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 20px; overflow: hidden;
+}
+.winner-eyebrow { font: 600 15px 'Inter'; letter-spacing: .32em; color: var(--gold); text-transform: uppercase; }
+.winner-title {
+  font-family: 'Fraunces', serif; font-weight: 700; font-size: clamp(72px, 10vw, 128px);
+  line-height: .92;
+  background: linear-gradient(135deg, var(--gold-bright), var(--gold-deep));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.winner-rule { width: 70px; height: 1px; background: var(--gold-deep); margin: 2px 0; }
+.winner-amount { font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: clamp(32px, 4vw, 48px); color: var(--ivory); }
+.winner-name { font: 500 clamp(18px, 2vw, 24px) 'Inter'; color: var(--ivory-dim); letter-spacing: .04em; }
+.play-again {
+  margin-top: 22px; background: none; border: 1px solid var(--gold-deep); color: var(--gold-bright);
+  font: 600 15px 'Inter'; letter-spacing: .14em; text-transform: uppercase;
+  padding: 16px 40px; border-radius: 999px; cursor: pointer; transition: .2s;
+}
+.play-again:hover { background: var(--gold-bright); color: var(--bg); border-color: var(--gold-bright); }
+.confetti { position: absolute; top: -20px; width: 7px; height: 14px; opacity: .9; border-radius: 2px; animation: fall linear forwards; }

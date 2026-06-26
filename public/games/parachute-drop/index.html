@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Parachute Drop</title>
+
+<link rel="stylesheet" href="css/main.css" />
+<link rel="stylesheet" href="css/game.css" />
+<link rel="stylesheet" href="css/animations.css" />
+</head>
+<body>
+
+<div class="stage">
+  <div class="cloud c1"></div>
+  <div class="cloud c2"></div>
+  <div class="cloud c3"></div>
+
+  <!-- HUD: player cards + die in the middle -->
+  <div class="hud">
+    <div class="player-card left active" id="card-left">
+      <div class="avatar">🧒</div>
+      <div class="player-info">
+        <div class="player-name">Leo <span id="leoMood">😎</span></div>
+        <div class="hearts" id="hearts-left">
+          <span class="heart">❤️</span><span class="heart">❤️</span><span class="heart">❤️</span>
+        </div>
+        <div class="player-score">🏆 <span id="leoScore">0</span></div>
+        <div class="turn-tag">Your turn</div>
+      </div>
+    </div>
+
+    <div class="hud-center">
+      <div class="die-platform">
+        <div class="die" id="die" aria-hidden="true">
+          <div class="pip" data-i="0"></div><div class="pip" data-i="1"></div><div class="pip" data-i="2"></div>
+          <div class="pip" data-i="3"></div><div class="pip" data-i="4"></div><div class="pip" data-i="5"></div>
+          <div class="pip" data-i="6"></div><div class="pip" data-i="7"></div><div class="pip" data-i="8"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="player-card right" id="card-right">
+      <div class="avatar">👧</div>
+      <div class="player-info">
+        <div class="player-name">Mia <span id="miaMood">😎</span></div>
+        <div class="hearts" id="hearts-right">
+          <span class="heart">❤️</span><span class="heart">❤️</span><span class="heart">❤️</span>
+        </div>
+        <div class="player-score">🏆 <span id="miaScore">0</span></div>
+        <div class="turn-tag">Your turn</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PARACHUTE RIGS -->
+  <div class="rigs">
+    <div class="rig-col left">
+      <svg id="rig-left" class="rig-svg" viewBox="0 0 220 240" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="canopyGradLeft" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#5cf0a4"/>
+            <stop offset="100%" stop-color="#1f9d57"/>
+          </linearGradient>
+        </defs>
+        <g>
+          <path class="canopy" d="M40,90 C40,40 80,15 110,15 C140,15 180,40 180,90 Z"/>
+          <path class="canopy-stripe" stroke="#0b2912" d="M70,90 C72,55 90,25 110,15"/>
+          <path class="canopy-stripe" stroke="#0b2912" d="M150,90 C148,55 130,25 110,15"/>
+          <line id="rope-1" class="rope" x1="55" y1="85" x2="110" y2="165"/>
+          <line id="rope-5" class="rope" x1="110" y1="88" x2="110" y2="165"/>
+          <line id="rope-3" class="rope" x1="165" y1="85" x2="110" y2="165"/>
+          <g id="badge-1" class="badge left-badge" transform="translate(58,110)">
+            <circle r="14"/><text y="1">1</text>
+          </g>
+          <g id="badge-5" class="badge left-badge" transform="translate(110,97)">
+            <circle r="15"/><text y="1">5</text>
+          </g>
+          <g id="badge-3" class="badge left-badge" transform="translate(160,110)">
+            <circle r="14"/><text y="1">3</text>
+          </g>
+          <text x="110" y="195" font-size="62" text-anchor="middle" dominant-baseline="central">🧒</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="rig-center">
+      <!-- Roll button and status live here, between the parachutes -->
+      <div class="controls">
+        <button id="rollBtn">🎲 Start rolling for Leo</button>
+        <button id="muteBtn" title="Mute sound">🔈</button>
+        <button id="restartBtn" hidden>🔄 Play again</button>
+      </div>
+      <div class="game-status" id="status" aria-live="polite">
+        Leo's turn — click Start to roll, then Stop whenever you dare!
+      </div>
+    </div>
+
+    <div class="rig-col right">
+      <svg id="rig-right" class="rig-svg" viewBox="0 0 220 240" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="canopyGradRight" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#ffd47a"/>
+            <stop offset="100%" stop-color="#d98600"/>
+          </linearGradient>
+        </defs>
+        <g>
+          <path class="canopy mia" d="M40,90 C40,40 80,15 110,15 C140,15 180,40 180,90 Z"/>
+          <path class="canopy-stripe" stroke="#3a2400" d="M70,90 C72,55 90,25 110,15"/>
+          <path class="canopy-stripe" stroke="#3a2400" d="M150,90 C148,55 130,25 110,15"/>
+          <line id="rope-2" class="rope" x1="55" y1="85" x2="110" y2="165"/>
+          <line id="rope-6" class="rope" x1="110" y1="88" x2="110" y2="165"/>
+          <line id="rope-4" class="rope" x1="165" y1="85" x2="110" y2="165"/>
+          <g id="badge-2" class="badge right-badge" transform="translate(58,110)">
+            <circle r="14"/><text y="1">2</text>
+          </g>
+          <g id="badge-6" class="badge right-badge" transform="translate(110,97)">
+            <circle r="15"/><text y="1">6</text>
+          </g>
+          <g id="badge-4" class="badge right-badge" transform="translate(160,110)">
+            <circle r="14"/><text y="1">4</text>
+          </g>
+          <text x="110" y="195" font-size="62" text-anchor="middle" dominant-baseline="central">👧</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <!-- OCEAN -->
+  <div class="ocean">
+    <div class="wave-wrap back">
+      <svg width="100%" height="40" viewBox="0 0 1200 40" preserveAspectRatio="none">
+        <path d="M0,20 C50,5 100,35 150,20 C200,5 250,35 300,20 C350,5 400,35 450,20 C500,5 550,35 600,20 L600,40 L0,40 Z
+                 M600,20 C650,5 700,35 750,20 C800,5 850,35 900,20 C950,5 1000,35 1050,20 C1100,5 1150,35 1200,20 L1200,40 L600,40 Z"
+              fill="#ffffff" opacity="0.5"/>
+      </svg>
+    </div>
+    <div class="wave-wrap">
+      <svg width="100%" height="40" viewBox="0 0 1200 40" preserveAspectRatio="none">
+        <path d="M0,22 C50,8 100,36 150,22 C200,8 250,36 300,22 C350,8 400,36 450,22 C500,8 550,36 600,22 L600,40 L0,40 Z
+                 M600,22 C650,8 700,36 750,22 C800,8 850,36 900,22 C950,8 1000,36 1050,22 C1100,8 1150,36 1200,22 L1200,40 L600,40 Z"
+              fill="#eaffff" opacity="0.85"/>
+      </svg>
+    </div>
+    <div class="fin f1"></div>
+    <div class="fin f2"></div>
+    <div class="shark s1" id="sharkLeft">🦈</div>
+    <div class="shark s2" id="sharkRight">🦈</div>
+    <div class="bubble" style="left:14%; animation-delay:0s;"></div>
+    <div class="bubble" style="left:33%; animation-delay:1.4s;"></div>
+    <div class="bubble" style="left:52%; animation-delay:2.6s;"></div>
+    <div class="bubble" style="left:71%; animation-delay:0.8s;"></div>
+    <div class="bubble" style="left:86%; animation-delay:2s;"></div>
+    <div class="splash" id="splash-left" style="left:25%;"></div>
+    <div class="splash" id="splash-right" style="left:75%;"></div>
+  </div>
+
+</div>
+
+<div class="modal-overlay" id="modal" hidden>
+  <div class="modal-card">
+    <h2 id="modalTitle">Game over</h2>
+    <p id="modalText">Someone took a swim.</p>
+    <button id="modalRestart">🔄 Play again</button>
+  </div>
+</div>
+
+<script type="module" src="js/game.js"></script>
+
+</body>
+</html>
