@@ -25,7 +25,6 @@ const GAME_COMPONENTS: Record<string, React.LazyExoticComponent<React.ComponentT
   wordmatch:  lazy(() => import('@/games/word-match/WordMatch.jsx')),
   missingfruit: lazy(() => import('@/games/missing-fruit/MissingFruit.jsx')),
   animalclass: lazy(() => import('@/games/animal-class-quest/AnimalClassQuest.jsx')),
-  blockfight: lazy(() => import('@/games/block-fight/BlockFight')),
   colourclash: lazy(() => import('@/games/colour-clash/ColourClash.jsx')),
   compoundword: lazy(() => import('@/games/compound-word/CompoundWord.jsx')),
   crimsonduel: lazy(() => import('@/games/crimson-color-duel/CrimsonColorDuel.jsx')),

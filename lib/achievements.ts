@@ -155,7 +155,7 @@ export const ACHIEVEMENT_CATEGORIES: AchievementCategory[] = [
         color: 'var(--blue)',
         description: '85%+ in 5 or more vocabulary games',
         check: s => ['unicorn','wordmatch','colourclash','emojimatch','familyquest',
-          'blockfight','foodwordhunt','fruitwordhunt','lakersracer','tornado']
+          'foodwordhunt','fruitwordhunt','lakersracer','tornado']
           .filter(k => (s.games[k]?.highScore ?? 0) >= 85).length >= 5,
       },
       {
@@ -182,7 +182,7 @@ export const ACHIEVEMENT_CATEGORIES: AchievementCategory[] = [
         icon: '🔬',
         color: 'var(--teal)',
         description: '85%+ in any science game',
-        check: s => ['animal','animalclass','oceanquest','deepseaReveal','farmquiz'].some(
+        check: s => ['animal','animalclass','oceanquest','deepseaReveal'].some(
           k => (s.games[k]?.highScore ?? 0) >= 85
         ),
       },

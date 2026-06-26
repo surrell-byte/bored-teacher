@@ -158,7 +158,7 @@ export default function HubPage() {
         </div>
       </div>
 
-      {state.lastGame && (
+      {state.lastGame && GAME_NAMES[state.lastGame] && (
         <div className="continue-card">
           <div className="continue-icon">
             {GAME_ICONS[state.lastGame] ?? '🎮'}

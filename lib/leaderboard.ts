@@ -6,8 +6,8 @@ const LB_KEY  = 'eslhub_leaderboard';
 
 export const GAME_KEYS = [
   'unicorn','warriors','compound','animal','wordmatch','memory','missingfruit',
-  'animalclass','blockfight','colourclash','compoundword','crimsonduel','deepseaReveal',
-  'emojimatch','emojispelling','familyquest','farmquiz','farmgame','findmyfood',
+  'animalclass','colourclash','compoundword','crimsonduel','deepseaReveal',
+  'emojimatch','emojispelling','familyquest','farmgame','findmyfood',
   'flagmaster','foodwordhunt','fruitwordhunt','lakersracer','neonbridge','oceanquest',
   'pacman','phonicsadventure','phonicsworld','shuttlecock','tornado','wgrandprix','wordfusion',
 ];
