@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { onAuthStateChanged, loadUserState } from '@/lib/firebase';
 import { useGame, xpForLevel } from '@/lib/gameState';
 import {
-  GAME_KEYS, GAME_NAMES, GAME_ICONS, GAME_TAGS, GAME_DIFFICULTY,
+  GAME_KEYS, NEW_GAME_KEYS, GAME_NAMES, GAME_ICONS, GAME_TAGS, GAME_DIFFICULTY,
 } from '@/lib/constants';
 import GameCard from '@/components/GameCard';
 import ManagePlayersModal from '@/components/ManagePlayersModal';
@@ -298,16 +298,27 @@ export default function HubPage() {
       ) : (
         <>
           {!search && tag === 'all' && (
-            <section className="hub-section">
-              <h2 className="hub-section-title">
-                {totalPlayed === 0 ? '🎮 Featured Games' : '🆕 New For You'}
-              </h2>
-              <div className="hub-featured-grid">
-                {featuredGames.map(gameId => (
-                  <GameCard key={gameId} gameId={gameId} onClick={handlePlay} />
-                ))}
-              </div>
-            </section>
+            <>
+              <section className="hub-section">
+                <h2 className="hub-section-title">🆕 New Games</h2>
+                <div className="hub-featured-grid">
+                  {NEW_GAME_KEYS.map(gameId => (
+                    <GameCard key={gameId} gameId={gameId} onClick={handlePlay} />
+                  ))}
+                </div>
+              </section>
+
+              <section className="hub-section">
+                <h2 className="hub-section-title">
+                  {totalPlayed === 0 ? '🎮 Featured Games' : '🆕 New For You'}
+                </h2>
+                <div className="hub-featured-grid">
+                  {featuredGames.map(gameId => (
+                    <GameCard key={gameId} gameId={gameId} onClick={handlePlay} />
+                  ))}
+                </div>
+              </section>
+            </>
           )}
 
           <div className="hub-game-grid">

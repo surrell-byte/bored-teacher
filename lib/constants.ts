@@ -11,6 +11,11 @@ export const GAME_KEYS = [
 
 export type GameKey = (typeof GAME_KEYS)[number];
 
+export const NEW_GAME_KEYS = [
+  'countadd','mazechase','moneyblocks','parachutedrop',
+  'superwings','swampjump','treasurechest','unicornwings',
+] as const;
+
 export const GAME_NAMES: Record<string, string> = {
   unicorn: 'Unicorn Trophy Run', warriors: 'Warriors Grammar Slam',
   compound: 'Compound Word Quest', animal: 'Animal Kingdom Quest',
