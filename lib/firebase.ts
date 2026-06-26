@@ -7,8 +7,8 @@ import {
   getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  signOut as firebaseSignOut,
   onAuthStateChanged as _onAuthStateChanged,
-  signOut,
   updateProfile,
   sendPasswordResetEmail,
   setPersistence,
@@ -63,8 +63,8 @@ export async function signIn(email: string, password: string) {
   return cred.user;
 }
 
-export async function logOut() {
-  await signOut(auth);
+export async function signOut() {
+  await firebaseSignOut(auth);
 }
 
 export async function resetPassword(email: string) {

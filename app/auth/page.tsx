@@ -83,10 +83,16 @@ function AuthPageInner() {
       const user = await signUp(email, password, name.trim());
 
       if (role === 'teacher') {
+        console.log("Creating teacher...");
+
         const code = await createClassCode(user.uid);
-        await setUserClass(user.uid, user.uid, 'teacher');
+        console.log("Created class code:", code);
+
+        await setUserClass(user.uid, user.uid, "teacher");
+        console.log("Saved teacher profile");
+
         setGeneratedCode(code);
-        setStep('showCode');
+        setStep("showCode");
         setLoading(false);
         return;
       }
@@ -180,23 +186,31 @@ function AuthPageInner() {
 
         /* ── Student: signup succeeded but code didn't resolve — retry just the code ── */
         ) : step === 'needCode' ? (
-          <div>
-            <div className="auth-error" role="alert">
-              Your account was created, but that class code wasn't recognized. Please enter a valid code from your teacher to join the class.
-            </div>
-            {error && <div className="auth-error" role="alert">{error}</div>}
-            <div className="field">
-              <label htmlFor="retryCode">Class Code</label>
-              <input
-                id="retryCode" type="text" value={classCode}
-                onChange={e => setClassCode(e.target.value.trim().toUpperCase())}
-                placeholder="e.g. K7X9QM" autoComplete="off" maxLength={6}
-                style={{ textTransform: 'uppercase' }}
-              />
-            </div>
-            <button className="auth-submit" onClick={handleJoinRetry} disabled={loading}>
-              {loading ? '⏳ Checking…' : 'Join Class'}
+          <div className="auth-card">
+            <h2>Join a Class</h2>
+
+            <p className="auth-subtitle">
+              Your account was created, but it isn't connected to a class yet.
+            </p>
+
+            <input
+              value={classCode}
+              onChange={(e) => setClassCode(e.target.value.toUpperCase())}
+              placeholder="Enter class code"
+              className="auth-input"
+              maxLength={6}
+            />
+
+            {error && <div className="auth-error">{error}</div>}
+
+            <button
+              className="primary-btn"
+              onClick={handleJoinRetry}
+              disabled={loading}
+            >
+              Join Class
             </button>
+
           </div>
 
         ) : (
@@ -439,6 +453,36 @@ function AuthPageInner() {
           border-radius: 16px;
           padding: 18px 10px;
           margin: 16px 0;
+        }
+        .auth-subtitle {
+          color: var(--muted);
+          text-align: center;
+          margin-bottom: 1.5rem;
+          font-size: 0.9rem;
+          line-height: 1.6;
+        }
+        .auth-input {
+          width: 100%;
+          padding: 14px;
+          text-align: center;
+          font-size: 1.2rem;
+          font-weight: 700;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          background: var(--surface-soft);
+          border: 1.5px solid var(--border);
+          border-radius: 14px;
+          color: var(--text);
+          margin-bottom: 1rem;
+        }
+        .primary-btn {
+          width: 100%;
+          background: var(--teal);
+          /* ... other styles ... */
+        }
+        .secondary-btn {
+          width: 100%;
+          /* ... other styles ... */
         }
       `}</style>
     </div>
