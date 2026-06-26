@@ -182,14 +182,14 @@ function AuthPageInner() {
         ) : step === 'needCode' ? (
           <div>
             <div className="auth-error" role="alert">
-              That class code wasn't recognized. Your account was created — just enter a valid code below to finish joining your class.
+              Your account was created, but that class code wasn't recognized. Please enter a valid code from your teacher to join the class.
             </div>
             {error && <div className="auth-error" role="alert">{error}</div>}
             <div className="field">
               <label htmlFor="retryCode">Class Code</label>
               <input
                 id="retryCode" type="text" value={classCode}
-                onChange={e => setClassCode(e.target.value.toUpperCase())}
+                onChange={e => setClassCode(e.target.value.trim().toUpperCase())}
                 placeholder="e.g. K7X9QM" autoComplete="off" maxLength={6}
                 style={{ textTransform: 'uppercase' }}
               />
@@ -205,7 +205,7 @@ function AuthPageInner() {
           <div className="tabs">
             <button
               className={`tab-btn${tab === 'login' ? ' active' : ''}`}
-              onClick={() => { setTab('login'); setError(''); setInfo(''); }}
+              onClick={() => { setTab('login'); setError(''); setInfo(''); setRole('student'); }}
             >Sign In</button>
             <button
               className={`tab-btn${tab === 'register' ? ' active' : ''}`}
@@ -244,7 +244,7 @@ function AuthPageInner() {
               <div className="field">
                 <label htmlFor="classCode">Class Code</label>
                 <input
-                  id="classCode" type="text" value={classCode}
+                  id="classCode" type="text" value={classCode} spellCheck="false"
                   onChange={e => setClassCode(e.target.value.toUpperCase())}
                   placeholder="e.g. K7X9QM" autoComplete="off" maxLength={6} required
                   style={{ textTransform: 'uppercase' }}
@@ -455,7 +455,7 @@ export default function AuthPage() {
 
 function friendlyError(err: unknown): string {
   const code = (err as { code?: string })?.code ?? '';
-  if (code === 'auth/user-not-found' || code === 'auth/wrong-password') return 'Wrong email or password.';
+  if (code === 'auth/user-not-found' || code === 'auth/wrong-password' || code === 'auth/invalid-credential') return 'Wrong email or password.';
   if (code === 'auth/email-already-in-use') return 'That email is already registered. Try signing in.';
   if (code === 'auth/weak-password') return 'Password must be at least 6 characters.';
   if (code === 'auth/invalid-email') return 'Please enter a valid email address.';
