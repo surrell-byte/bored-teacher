@@ -1,6 +1,7 @@
-// lib/leaderboard.ts — Leaderboard persistence & scoring helpers
+// features/leaderboard/api.ts — Leaderboard persistence & scoring helpers
 
 import { loadAllStudentScores } from '@/lib/firebase';
+import type { Leaderboard, LBPlayer, LBPlayerWithScore } from '@/types/leaderboard';
 
 const LB_KEY  = 'eslhub_leaderboard';
 
@@ -12,20 +13,7 @@ export const GAME_KEYS = [
   'pacman','phonicsadventure','phonicsworld','shuttlecock','tornado','wgrandprix','wordfusion',
 ];
 
-export interface LBPlayer {
-  id: string;
-  name: string;
-  addedAt: string;
-  games: Record<string, { best: number; played: number }>;
-}
-
-export interface LBPlayerWithScore extends LBPlayer {
-  score: { total: number; avg: number; gamesPlayed: number };
-}
-
-export interface Leaderboard {
-  players: LBPlayer[];
-}
+export type { Leaderboard, LBPlayer, LBPlayerWithScore };
 
 export function loadLeaderboard(): Leaderboard {
   try {

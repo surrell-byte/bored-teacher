@@ -5,7 +5,7 @@ import { useGame } from '@/lib/gameState';
 import {
   GAME_NAMES, GAME_ICONS, GAME_TAGS, GAME_BADGE,
   GAME_DIFFICULTY, GAME_BAR_COLOR, GAME_IMAGES,
-} from '@/lib/constants';
+} from '@/constants/index';
 
 interface Props {
   gameId: string;

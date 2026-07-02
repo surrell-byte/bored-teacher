@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { type ReactNode } from 'react';
 import Navbar from './Navbar';
 import Toast from './ui/Toast';
-import AchievementToast from './AchievementToast';
+import AchievementToast from '@/features/achievements/components/AchievementToast';
 import { useGame } from '@/lib/gameState';
 
 const NO_SHELL = ['/auth', '/games/'];

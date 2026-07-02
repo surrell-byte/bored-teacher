@@ -9,8 +9,8 @@ import { useGame } from '@/lib/gameState';
 import {
   getSortedClassLeaderboard,
   type LBPlayerWithScore,
-} from '@/lib/leaderboard';
-import { GAME_KEYS, GAME_NAMES, GAME_ICONS } from '@/lib/constants';
+} from '@/features/leaderboard/api';
+import { GAME_KEYS, GAME_NAMES, GAME_ICONS } from '@/constants/index';
 
 const MEDALS = ['🥇', '🥈', '🥉'];
 

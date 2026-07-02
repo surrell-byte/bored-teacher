@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged } from '@/lib/firebase';
 import { useGame } from '@/lib/gameState';
-import { ACHIEVEMENT_CATEGORIES } from '@/lib/achievements';
+import { ACHIEVEMENT_CATEGORIES } from '@/features/achievements/achievements';
 
 
 

@@ -5,7 +5,7 @@ import './globals.css';
 import { GameProvider } from '@/lib/gameState';
 import PageTransition from '@/components/PageTransition';
 import AppShell from '@/components/AppShell';
-import AchievementPopup from '@/components/AchievementPopup';
+import AchievementPopup from '@/features/achievements/components/AchievementPopup';
 
 export const metadata: Metadata = {
   title: 'ESL Game Hub',

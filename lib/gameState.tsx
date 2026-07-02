@@ -3,9 +3,9 @@
 
 import { createContext, useContext, useState, useEffect, useRef, useCallback, ReactNode } from 'react';
 import { auth, onAuthStateChanged, saveUserState, loadUserState } from '@/lib/firebase';
-import { GAME_KEYS } from '@/lib/constants';
-import { getEarnedIds, getNewlyUnlocked, type Achievement } from '@/lib/achievements';
-import { syncCurrentPlayerToLeaderboard } from '@/lib/leaderboard';
+import { GAME_KEYS } from '@/constants/index';
+import { getEarnedIds, getNewlyUnlocked, type Achievement } from '@/features/achievements/achievements';
+import { syncCurrentPlayerToLeaderboard } from '@/features/leaderboard/api';
 
 // ── Types ─────────────────────────────────────────────────────
 
@@ -80,8 +80,8 @@ export function xpForLevel(lvl: number) { return lvl * 100; }
 // ── Auth helper ───────────────────────────────────────────────
 
 export async function logOut() {
-  const { logOut: fbLogOut } = await import('@/lib/firebase');
-  await fbLogOut();
+  const { signOut: fbSignOut } = await import('@/lib/firebase');
+  await fbSignOut();
 }
 
 // ── Provider ──────────────────────────────────────────────────

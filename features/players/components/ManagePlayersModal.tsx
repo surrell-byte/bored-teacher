@@ -1,5 +1,5 @@
 'use client';
-// components/ManagePlayersModal.tsx
+// features/players/components/ManagePlayersModal.tsx
 
 import { useState, useEffect, useRef } from 'react';
 import { useGame } from '@/lib/gameState';
@@ -8,7 +8,7 @@ import {
   loadLeaderboard, saveLeaderboard, addPlayersToLeaderboard, removePlayer,
   clearLeaderboard, parseCSVToNames, getSortedLeaderboard,
   type LBPlayerWithScore,
-} from '@/lib/leaderboard';
+} from '@/features/leaderboard/api';
 
 // Optional: Firestore sync for leaderboard (teacher-level)
 async function syncToFirestore(uid: string) {

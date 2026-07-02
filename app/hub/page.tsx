@@ -3,13 +3,13 @@
 
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { onAuthStateChanged, loadUserState } from '@/lib/firebase';
+import { onAuthStateChanged } from '@/lib/firebase';
 import { useGame, xpForLevel } from '@/lib/gameState';
 import {
   GAME_KEYS, NEW_GAME_KEYS, GAME_NAMES, GAME_ICONS, GAME_TAGS, GAME_DIFFICULTY,
-} from '@/lib/constants';
+} from '@/constants/index';
 import GameCard from '@/components/GameCard';
-import ManagePlayersModal from '@/components/ManagePlayersModal';
+import ManagePlayersModal from '@/features/players/components/ManagePlayersModal';
 
 const TAG_FILTERS = [
   { label: '⚡ All Games',     value: 'all' },
@@ -52,15 +52,8 @@ export default function HubPage() {
   useEffect(() => {
     const isGuest = localStorage.getItem('guestUser') === 'true';
     if (isGuest) { setReady(true); checkDailyReward(); return; }
-    const unsub = onAuthStateChanged(async (user) => {
+    const unsub = onAuthStateChanged((user) => {
       if (!user) { router.replace('/auth'); return; }
-      // Read classId directly from Firestore — don't rely on context state timing,
-      // since the local→remote merge in gameState.tsx may not have settled yet.
-      const remote = await loadUserState(user.uid);
-      if (!remote?.classId) {
-        router.replace('/auth?needCode=1');
-        return;
-      }
       setReady(true);
       checkDailyReward();
     });

@@ -1,4 +1,4 @@
-// lib/constants.ts — shared constants for ESL Game Hub
+// constants/index.ts — shared constants for ESL Game Hub
 
 export const GAME_KEYS = [
   'unicorn','warriors','compound','animal','wordmatch','memory','missingfruit',

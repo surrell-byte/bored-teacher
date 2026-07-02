@@ -1,10 +1,10 @@
 'use client';
-// components/ProfileModal.tsx
+// features/profiles/components/ProfileModal.tsx
 
 import { useState, useEffect } from 'react';
 import { useGame } from '@/lib/gameState';
 import { auth, setDisplayName } from '@/lib/firebase';
-import { AVATARS } from '@/lib/constants';
+import { AVATARS } from '@/constants/index';
 
 const ALL_AVATARS = [...new Set(Object.values(AVATARS).flat())];
 type Cat = 'all' | keyof typeof AVATARS;

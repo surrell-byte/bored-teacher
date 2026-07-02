@@ -4,9 +4,9 @@
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 import { useGame, logOut } from '@/lib/gameState';
-import { THEMES } from '@/lib/constants';
+import { THEMES } from '@/constants/index';
 import { useRouter } from 'next/navigation';
-import ProfileModal from './ProfileModal';
+import ProfileModal from '@/features/profiles/components/ProfileModal';
 
 export default function Navbar() {
   const { state, applyTheme, earnedAchievementIds } = useGame();
@@ -68,6 +68,9 @@ export default function Navbar() {
           </Link>
           <Link href="/resources" className="pill-btn" style={{ textDecoration: 'none' }}>
             📚 Resources
+          </Link>
+          <Link href="/payment" className="pill-btn" style={{ textDecoration: 'none' }}>
+            💳 Payment
           </Link>
         </nav>
 
@@ -163,6 +166,9 @@ export default function Navbar() {
           </Link>
           <Link href="/resources" className="mobile-nav-item" onClick={() => setMobileOpen(false)}>
             📚 Resources
+          </Link>
+          <Link href="/payment" className="mobile-nav-item" onClick={() => setMobileOpen(false)}>
+            💳 Payment
           </Link>
           <button className="mobile-nav-item" onClick={() => { setShowProfile(true); setMobileOpen(false); }}>
             ✏️ Edit Profile

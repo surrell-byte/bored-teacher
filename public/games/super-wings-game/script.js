@@ -50,6 +50,8 @@ const state = {
   turn: 0,
   sound: true,
   rolling: false,
+  spinning: false,
+  spinnerTimer: null,
   timers: []
 };
 
@@ -88,6 +90,8 @@ function clearGameTimers() {
   });
   state.timers = [];
   state.rolling = false;
+  state.spinning = false;
+  state.spinnerTimer = null;
   rollButton.disabled = false;
   rollButton.classList.remove("is-rolling");
   p1Token.classList.remove("is-flying");
@@ -145,26 +149,41 @@ function positionToken(token, player, index) {
 }
 
 function rollDice() {
-  if (state.rolling) return;
+  if (state.spinning) {
+    stopDice();
+  } else {
+    startDice();
+  }
+}
+
+function startDice() {
+  if (state.rolling) return; // ignore clicks while a move is animating
 
   state.rolling = true;
-  rollButton.disabled = true;
+  state.spinning = true;
   rollButton.classList.add("is-rolling");
-  rollLabel.textContent = "FLY";
+  rollLabel.textContent = "STOP";
   playTone(540, 0.08);
 
-  let ticks = 0;
-  const spinner = trackTimer(window.setInterval(() => {
+  state.spinnerTimer = trackTimer(window.setInterval(() => {
     rollValue.textContent = String(1 + Math.floor(Math.random() * 3));
-    ticks += 1;
-    if (ticks >= 9) {
-      window.clearInterval(spinner);
-      state.timers = state.timers.filter(({ timer }) => timer !== spinner);
-      const roll = 1 + Math.floor(Math.random() * 3);
-      rollValue.textContent = String(roll);
-      moveCurrentPlayer(roll);
-    }
   }, 85), "interval");
+}
+
+function stopDice() {
+  window.clearInterval(state.spinnerTimer);
+  state.timers = state.timers.filter(({ timer }) => timer !== state.spinnerTimer);
+  state.spinnerTimer = null;
+  state.spinning = false;
+
+  rollButton.disabled = true; // re-enabled in finishTurn()
+  rollButton.classList.remove("is-rolling");
+  rollLabel.textContent = "FLY";
+
+  const roll = 1 + Math.floor(Math.random() * 3);
+  rollValue.textContent = String(roll);
+  playTone(640, 0.1);
+  moveCurrentPlayer(roll);
 }
 
 function moveCurrentPlayer(roll) {
@@ -223,7 +242,7 @@ function openModal(type) {
     modalTitle.textContent = "How to Play";
     modalBody.innerHTML = `
       <p>Pick a plane for each player, then press Ready.</p>
-      <p>Take turns rolling. Your plane flies along the clouds by the number shown.</p>
+      <p>Click ROLL to start spinning, then click STOP to lock in your number. Your plane flies along the clouds by that amount.</p>
       <p>Reach the finish cloud first to win the race.</p>
     `;
     return;

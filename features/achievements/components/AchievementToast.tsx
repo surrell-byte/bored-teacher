@@ -1,5 +1,5 @@
 'use client';
-// components/AchievementToast.tsx
+// features/achievements/components/AchievementToast.tsx
 // Celebration popup shown when a new achievement is unlocked.
 // Uses a pure CSS confetti burst — no external package needed.
 
