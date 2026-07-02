@@ -5,11 +5,12 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged } from '@/lib/firebase';
 
-const SPLASH_DURATION_MS = 3400;
+const SPLASH_DURATION_MS = 5000;
 
 export default function SplashPage() {
   const router = useRouter();
   const [progress, setProgress] = useState(0);
+  const [displayedProgress, setDisplayedProgress] = useState(0);
   const [status, setStatus] = useState('Warming up the classroom');
 
   useEffect(() => {
@@ -24,14 +25,16 @@ export default function SplashPage() {
       }, ms));
     }
 
-    queue(150, 18, 'Opening the game library');
-    queue(850, 44, 'Loading resources');
-    queue(1700, 72, 'Polishing your dashboard');
-    queue(2600, 92, 'Almost ready');
+    // Slightly slower, smoother progression so the splash lingers pleasantly
+    queue(200, 10, 'Opening the game library');
+    queue(1200, 36, 'Loading resources');
+    queue(2600, 64, 'Polishing your dashboard');
+    queue(4000, 86, 'Almost ready');
 
     const finish = setTimeout(() => {
       setProgress(100);
-      setTimeout(() => router.replace(destination), 260);
+      // small pause so the 100% state is visible before navigation
+      setTimeout(() => router.replace(destination), 420);
     }, SPLASH_DURATION_MS);
 
     const isGuest = localStorage.getItem('guestUser') === 'true';
@@ -52,6 +55,32 @@ export default function SplashPage() {
       timers.forEach(clearTimeout);
     };
   }, [router]);
+
+  // Smoothly tween the numeric progress so the percentage counts up
+  useEffect(() => {
+    let raf = 0 as number;
+    const start = performance.now();
+    const from = displayedProgress;
+    const to = progress;
+    const duration = 600;
+
+    function step(now: number) {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - t, 3); // ease-out cubic
+      const val = Math.round(from + (to - from) * eased);
+      setDisplayedProgress(val);
+      if (t < 1) raf = requestAnimationFrame(step);
+    }
+
+    // if progress is behind (e.g. reset), jump immediately
+    if (to < from) {
+      setDisplayedProgress(to);
+    } else {
+      raf = requestAnimationFrame(step);
+    }
+
+    return () => cancelAnimationFrame(raf);
+  }, [progress]);
 
   return (
     <div className="splash-wrapper">
@@ -140,12 +169,25 @@ export default function SplashPage() {
           border: 1px solid rgba(255,255,255,0.11);
         }
         .splash-bar {
+          position: relative;
           height: 100%;
           width: 0%;
           border-radius: 999px;
           background: linear-gradient(90deg, #7ec8a0, #f5c842, #ffe27a);
           box-shadow: 0 0 20px rgba(245,200,66,0.32);
           transition: width 0.85s cubic-bezier(0.22,0.61,0.36,1);
+          overflow: hidden;
+        }
+
+        .splash-bar::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(90deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 12%, rgba(255,255,255,0.0) 30%);
+          transform: translateX(-120%);
+          filter: blur(8px);
+          animation: splashShimmer 2.2s linear infinite;
+          mix-blend-mode: screen;
         }
         .splash-status {
           display: flex;
@@ -169,6 +211,10 @@ export default function SplashPage() {
           from { opacity: 0; transform: translateY(16px); }
           to   { opacity: 1; transform: translateY(0); }
         }
+        @keyframes splashShimmer {
+          from { transform: translateX(-120%); }
+          to   { transform: translateX(120%); }
+        }
       `}</style>
 
       <div className="splash-card">
@@ -181,11 +227,11 @@ export default function SplashPage() {
         </div>
         <div className="splash-loading">
           <div className="splash-track">
-            <div className="splash-bar" style={{ width: `${progress}%` }} />
+            <div className="splash-bar" style={{ width: `${displayedProgress}%` }} />
           </div>
           <div className="splash-status">
             <span>{status}</span>
-            <span>{progress}%</span>
+            <span>{displayedProgress}%</span>
           </div>
         </div>
       </div>

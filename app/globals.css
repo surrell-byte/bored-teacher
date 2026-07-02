@@ -7,6 +7,7 @@
 html {
   width: 100%;
   overflow-x: hidden;
+  overscroll-behavior-x: none;
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -199,6 +200,8 @@ body {
   min-height: 100vh;
   width: 100%;
   overflow-x: hidden;
+  overscroll-behavior-x: none;
+  touch-action: pan-y;
   -webkit-font-smoothing: antialiased;
   scroll-behavior: smooth;
   transition:
@@ -301,6 +304,9 @@ body::before{
 
 /* Global iframe baseline — removes the inline gap browsers add */
 iframe { display: block; }
+
+/* Prevent background / image dragging that causes horizontal pull on some devices */
+img, picture, svg { -webkit-user-drag: none; user-drag: none; }
 
 a { color: inherit; }
 
@@ -613,7 +619,7 @@ a { color: inherit; }
 
 .card-cover {
   position: relative;
-  height: 180px;
+  height: clamp(120px, 18vw, 220px);
   border-radius: 18px;
   overflow: hidden;
   margin-bottom: 14px;
@@ -627,6 +633,18 @@ a { color: inherit; }
   border: 1px solid rgba(255,255,255,0.14);
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.12);
 }
+.card-cover-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.96;
+  transition: opacity 0.35s ease;
+}
+.card-cover.has-image .card-cover-pattern { display: none; }
+.card-cover.has-image .card-cover-icon { background: rgba(0,0,0,0.28); }
 .card-cover::after {
   content: "";
   position: absolute;
@@ -1352,10 +1370,10 @@ a { color: inherit; }
    HUB PAGE
 ══════════════════════════════════════════════════════════════ */
 .hub-page {
-  width: min(100%, 1200px);
-  max-width: 1200px;
+  width: 100%;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: clamp(14px, 3vw, 28px) clamp(14px, 3vw, 24px) 80px;
+  padding: clamp(12px, 3vw, 48px) clamp(12px, 4vw, 48px) 96px;
   overflow-x: clip;
 }
 
@@ -1499,8 +1517,8 @@ a { color: inherit; }
 
 .hub-game-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  gap: clamp(12px, 2vw, 28px);
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -2052,8 +2070,16 @@ a { color: inherit; }
 }
 .hub-featured-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: clamp(12px, 2vw, 24px);
+}
+
+@media (min-width: 1600px) {
+  .hub-page { max-width: 1800px; padding-left: clamp(28px, 6vw, 120px); padding-right: clamp(28px, 6vw, 120px); }
+  .hub-hero-grid { grid-template-columns: 1.6fr 1fr; gap: 28px; }
+  .hub-game-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 32px; }
+  .hub-featured-grid { grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+  .game-card { padding: 22px; }
 }
 .continue-card {
   display: flex;
