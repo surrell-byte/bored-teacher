@@ -5,41 +5,52 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged } from '@/lib/firebase';
 
+const SPLASH_DURATION_MS = 3400;
+
 export default function SplashPage() {
   const router = useRouter();
   const [progress, setProgress] = useState(0);
+  const [status, setStatus] = useState('Warming up the classroom');
 
   useEffect(() => {
-    const isGuest = localStorage.getItem('guestUser') === 'true';
-    if (isGuest) { router.replace('/hub'); return; }
-
     let resolved = false;
+    let destination = '/auth';
+    const timers: ReturnType<typeof setTimeout>[] = [];
 
-    // Safety net: if Firebase is slow, go to auth
-    const fallback = setTimeout(() => {
-      if (resolved) return;
+    function queue(ms: number, nextProgress: number, nextStatus: string) {
+      timers.push(setTimeout(() => {
+        setProgress(nextProgress);
+        setStatus(nextStatus);
+      }, ms));
+    }
+
+    queue(150, 18, 'Opening the game library');
+    queue(850, 44, 'Loading resources');
+    queue(1700, 72, 'Polishing your dashboard');
+    queue(2600, 92, 'Almost ready');
+
+    const finish = setTimeout(() => {
+      setProgress(100);
+      setTimeout(() => router.replace(destination), 260);
+    }, SPLASH_DURATION_MS);
+
+    const isGuest = localStorage.getItem('guestUser') === 'true';
+    if (isGuest) {
       resolved = true;
-      runSplash(() => router.replace('/auth'));
-    }, 2800);
+      destination = '/hub';
+    }
 
     const unsub = onAuthStateChanged((user) => {
       if (resolved) return;
       resolved = true;
-      clearTimeout(fallback);
-      if (user) {
-        router.replace('/hub');
-      } else {
-        runSplash(() => router.replace('/auth'));
-      }
+      destination = user ? '/hub' : '/auth';
     });
 
-    function runSplash(done: () => void) {
-      // Animate progress bar then redirect
-      setTimeout(() => setProgress(100), 100);
-      setTimeout(done, 1800);
-    }
-
-    return () => { unsub(); clearTimeout(fallback); };
+    return () => {
+      unsub();
+      clearTimeout(finish);
+      timers.forEach(clearTimeout);
+    };
   }, [router]);
 
   return (
@@ -49,29 +60,67 @@ export default function SplashPage() {
           position: fixed; inset: 0;
           display: flex; flex-direction: column;
           align-items: center; justify-content: center;
-          background: var(--bg, #1a4d2e);
-          gap: 0;
+          background:
+            radial-gradient(circle at 50% 25%, rgba(245,200,66,0.16), transparent 26%),
+            radial-gradient(circle at 18% 70%, rgba(93,189,181,0.16), transparent 28%),
+            linear-gradient(160deg, #102714 0%, #1f3d24 46%, #0d2112 100%);
+          overflow: hidden;
+          padding: 28px;
+          color: #f0ede0;
+        }
+        .splash-wrapper::before {
+          content: "";
+          position: absolute;
+          inset: 28px;
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 30px;
+          pointer-events: none;
+        }
+        .splash-card {
+          position: relative;
+          z-index: 1;
+          width: min(560px, 92vw);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          padding: clamp(28px, 6vw, 54px);
+          border-radius: 30px;
+          background: linear-gradient(180deg, rgba(255,255,255,0.11), rgba(255,255,255,0.045));
+          border: 1px solid rgba(255,255,255,0.14);
+          box-shadow: 0 34px 90px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.08);
+          animation: splashCardIn 0.75s cubic-bezier(0.22,1,0.36,1) both;
         }
         .splash-icon {
-          font-size: 5.4rem;
-          margin-bottom: 18px;
+          width: 96px;
+          height: 96px;
+          display: grid;
+          place-items: center;
+          border-radius: 28px;
+          font-size: 4rem;
+          margin-bottom: 20px;
+          background: linear-gradient(135deg, rgba(245,200,66,0.24), rgba(93,189,181,0.18));
+          border: 1px solid rgba(255,255,255,0.14);
           filter: drop-shadow(0 8px 24px rgba(0,0,0,0.4));
           animation: iconPop 0.65s cubic-bezier(0.34,1.4,0.64,1) 0.05s both;
         }
         .splash-title {
           font-family: var(--font-display, 'Syne', sans-serif);
-          font-size: clamp(2.4rem, 7vw, 3.8rem);
+          font-size: clamp(2.5rem, 8vw, 4.7rem);
           font-weight: 800;
-          color: #f0ede0;
-          letter-spacing: 0.03em;
+          color: #fff8e5;
+          letter-spacing: 0;
+          line-height: 0.95;
           margin-bottom: 8px;
           animation: fadeUp 0.5s ease 0.32s both;
         }
         .splash-sub {
           display: flex; align-items: center; gap: 10px;
-          margin-bottom: 44px;
+          margin-bottom: 34px;
           animation: fadeUp 0.5s ease 0.5s both;
           opacity: 0;
+          flex-wrap: wrap;
+          justify-content: center;
         }
         .splash-sub span {
           font-size: 0.78rem; font-weight: 800;
@@ -79,16 +128,37 @@ export default function SplashPage() {
           color: #7ec8a0;
         }
         .splash-dot { width: 3px; height: 3px; border-radius: 50%; background: rgba(126,200,160,0.45); }
+        .splash-loading {
+          width: min(360px, 78vw);
+          animation: fadeUp 0.5s ease 0.7s both;
+        }
         .splash-track {
-          width: min(220px, 55vw); height: 2px;
-          background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden;
-          animation: trackIn 0.4s ease 0.65s both;
-          opacity: 0;
+          height: 10px;
+          background: rgba(255,255,255,0.1);
+          border-radius: 999px;
+          overflow: hidden;
+          border: 1px solid rgba(255,255,255,0.11);
         }
         .splash-bar {
-          height: 100%; width: 0%; border-radius: 2px;
-          background: linear-gradient(90deg, #7ec8a0, #f5c842);
-          transition: width 1.55s cubic-bezier(0.22,0.61,0.36,1);
+          height: 100%;
+          width: 0%;
+          border-radius: 999px;
+          background: linear-gradient(90deg, #7ec8a0, #f5c842, #ffe27a);
+          box-shadow: 0 0 20px rgba(245,200,66,0.32);
+          transition: width 0.85s cubic-bezier(0.22,0.61,0.36,1);
+        }
+        .splash-status {
+          display: flex;
+          justify-content: space-between;
+          gap: 12px;
+          margin-top: 12px;
+          color: rgba(240,237,224,0.72);
+          font-size: 0.78rem;
+          font-weight: 700;
+        }
+        @keyframes splashCardIn {
+          from { opacity: 0; transform: translateY(22px) scale(0.96); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
         }
         @keyframes iconPop {
           0%   { opacity: 0; transform: scale(0.4) rotate(-12deg); }
@@ -99,21 +169,25 @@ export default function SplashPage() {
           from { opacity: 0; transform: translateY(16px); }
           to   { opacity: 1; transform: translateY(0); }
         }
-        @keyframes trackIn {
-          from { opacity: 0; transform: scaleX(0.6); }
-          to   { opacity: 1; transform: scaleX(1); }
-        }
       `}</style>
 
-      <span className="splash-icon">🎓</span>
-      <span className="splash-title">ESL Game Hub</span>
-      <div className="splash-sub">
-        <span>Learn</span><span className="splash-dot" />
-        <span>Play</span><span className="splash-dot" />
-        <span>Level Up</span>
-      </div>
-      <div className="splash-track">
-        <div className="splash-bar" style={{ width: `${progress}%` }} />
+      <div className="splash-card">
+        <span className="splash-icon">🎓</span>
+        <span className="splash-title">ESL Game Hub</span>
+        <div className="splash-sub">
+          <span>Learn</span><span className="splash-dot" />
+          <span>Play</span><span className="splash-dot" />
+          <span>Level Up</span>
+        </div>
+        <div className="splash-loading">
+          <div className="splash-track">
+            <div className="splash-bar" style={{ width: `${progress}%` }} />
+          </div>
+          <div className="splash-status">
+            <span>{status}</span>
+            <span>{progress}%</span>
+          </div>
+        </div>
       </div>
     </div>
   );

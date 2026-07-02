@@ -1,10 +1,11 @@
 'use client';
 // components/GameCard.tsx
 
+import type { CSSProperties } from 'react';
 import { useGame } from '@/lib/gameState';
 import {
   GAME_NAMES, GAME_ICONS, GAME_TAGS, GAME_BADGE,
-  GAME_DIFFICULTY, GAME_BAR_COLOR, GAME_IMAGES,
+  GAME_DIFFICULTY, GAME_BAR_COLOR,
 } from '@/constants/index';
 
 interface Props {
@@ -17,6 +18,9 @@ export default function GameCard({ gameId, onClick }: Props) {
   const g = state.games[gameId] ?? { highScore: 0, completions: 0, lastAccuracy: 0 };
   const tag = GAME_TAGS[gameId] ?? { label: 'Game', color: 'tag-vocab' };
   const badge = g.completions > 0 ? `✓ ${g.completions}x` : (GAME_BADGE[gameId] ?? '');
+  const gameName = GAME_NAMES[gameId] ?? 'Game';
+  const icon = GAME_ICONS[gameId] ?? '🎮';
+  const color = GAME_BAR_COLOR[gameId] ?? 'var(--teal)';
 
   return (
     <div
@@ -26,17 +30,29 @@ export default function GameCard({ gameId, onClick }: Props) {
       role="button"
       tabIndex={0}
       onKeyDown={e => e.key === 'Enter' && onClick(gameId)}
-      aria-label={`Play ${GAME_NAMES[gameId]}`}
+      aria-label={`Play ${gameName}`}
     >
-      <img src={GAME_IMAGES[gameId]} className="card-image" alt="" />
+      <div
+        className="card-cover"
+        style={{ '--cover-accent': color } as CSSProperties}
+        aria-hidden
+      >
+        <div className="card-cover-pattern" />
+        <div className="card-cover-icon">{icon}</div>
+        <div className="card-cover-copy">
+          <span>{tag.label}</span>
+          <strong>{gameName}</strong>
+        </div>
+      </div>
+
       <div className="card-top">
-        <div className="card-icon">{GAME_ICONS[gameId]}</div>
+        <div className="card-icon">{icon}</div>
         <div className={`card-badge${g.completions > 0 ? ' active' : ''}`}>
           {badge || GAME_BADGE[gameId]}
         </div>
       </div>
 
-      <div className="card-name">{GAME_NAMES[gameId]}</div>
+      <div className="card-name">{gameName}</div>
 
       <div className="card-footer">
         <div className={`card-tag ${tag.color}`}>{tag.label}</div>
