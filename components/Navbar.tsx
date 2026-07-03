@@ -3,20 +3,37 @@
 
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
-import { useGame, logOut } from '@/lib/gameState';
+import { useGame, logOut, xpForLevel } from '@/lib/gameState';
 import { THEMES } from '@/constants/index';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import ProfileModal from '@/features/profiles/components/ProfileModal';
+
+const NAV_ITEMS = [
+  { href: '/hub',         label: 'Dashboard',   icon: '🏠' },
+  { href: '/games',       label: 'Games',       icon: '🎮' },
+  { href: '/leaderboard', label: 'Leaderboard', icon: '🏆' },
+  { href: '/resources',   label: 'Resources',   icon: '📚' },
+  { href: '/trophy',      label: 'Trophy Room', icon: '⭐' },
+  { href: '/payment',     label: 'Payment',     icon: '💳' },
+];
 
 export default function Navbar() {
   const { state, applyTheme, earnedAchievementIds } = useGame();
   const router = useRouter();
+  const pathname = usePathname() ?? '';
   const [showProfile, setShowProfile] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const isGuest = typeof window !== 'undefined' && localStorage.getItem('guestUser') === 'true';
+
+  const xpMax = xpForLevel(state.level);
+  const xpPct = Math.min(100, Math.round((state.xp / xpMax) * 100));
+
+  function isActive(href: string) {
+    return href === '/hub' ? pathname === '/hub' : pathname.startsWith(href);
+  }
 
   // Close dropdown on outside click (mouse + touch)
   useEffect(() => {
@@ -33,7 +50,7 @@ export default function Navbar() {
     };
   }, []);
 
-  useEffect(() => { setMobileOpen(false); }, []);
+  useEffect(() => { setMobileOpen(false); }, [pathname]);
 
   async function handleLogout() {
     try {
@@ -47,35 +64,49 @@ export default function Navbar() {
   return (
     <>
       <header className="topbar">
-        {/* Logo */}
+        {/* Logo + wordmark */}
         <div className="brand">
-          <Link href="/hub" aria-label="Go to home" style={{ display: 'inline-flex', lineHeight: 0 }}>
+          <Link href="/hub" aria-label="Go to home" style={{ display: 'inline-flex', alignItems: 'center', lineHeight: 0, textDecoration: 'none' }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/assets/images/logo.png" alt="Bored Teacher" className="brand-logo" />
+            <img src="/assets/images/logo.png" alt="" className="brand-logo" />
+            <span className="brand-word">
+              <span className="brand-word-top">BORED</span>
+              <span className="brand-word-bottom">TEACHER</span>
+            </span>
           </Link>
         </div>
 
         {/* Desktop nav links */}
         <nav className="nav-links" aria-label="Main navigation">
-          <Link href="/leaderboard" className="pill-btn" style={{ textDecoration: 'none' }}>
-            🏆 Leaderboard
-          </Link>
-          <Link href="/trophy" className="pill-btn" style={{ textDecoration: 'none' }}>
-            🎖️ Trophy Room
-            {earnedAchievementIds.size > 0 && (
-              <span className="nav-achievement-count">{earnedAchievementIds.size}</span>
-            )}
-          </Link>
-          <Link href="/resources" className="pill-btn" style={{ textDecoration: 'none' }}>
-            📚 Resources
-          </Link>
-          <Link href="/payment" className="pill-btn" style={{ textDecoration: 'none' }}>
-            💳 Payment
-          </Link>
+          {NAV_ITEMS.map(item => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`pill-btn${isActive(item.href) ? ' active' : ''}`}
+              style={{ textDecoration: 'none' }}
+              aria-current={isActive(item.href) ? 'page' : undefined}
+            >
+              {item.icon} {item.label}
+              {item.href === '/trophy' && earnedAchievementIds.size > 0 && (
+                <span className="nav-achievement-count">{earnedAchievementIds.size}</span>
+              )}
+            </Link>
+          ))}
         </nav>
 
-        {/* Right side — profile dropdown + hamburger */}
+        {/* Right side — stats, bell, profile dropdown, hamburger */}
         <div className="nav-right">
+          <span className="stat-pill stat-pill-coins" aria-label={`${state.coins} coins`}>
+            <span className="stat-icon">🪙</span>{state.coins}
+          </span>
+          <span className="stat-pill stat-pill-xp" aria-label={`${state.xp} of ${xpMax} experience points`}>
+            <span className="stat-icon">✨</span>{state.xp}/{xpMax} XP
+          </span>
+
+          <button className="notif-bell" aria-label="Notifications" type="button">
+            🔔
+          </button>
+
           {/* Profile dropdown — position:relative is the anchor */}
           <div
             className="profile-dropdown-wrap"
@@ -83,14 +114,24 @@ export default function Navbar() {
             style={{ position: 'relative' }}
           >
             <button
-              className="pill-btn player-chip"
+              className="player-chip-btn"
               onClick={() => setShowDropdown(d => !d)}
               aria-expanded={showDropdown}
               aria-haspopup="true"
               aria-label={`Profile menu for ${state.name}`}
+              type="button"
             >
-              {state.avatar} {state.name}{' '}
-              <span style={{ fontSize: '0.6rem', opacity: 0.6, marginLeft: 2 }}>▾</span>
+              <span className="player-chip-top">
+                <span className="player-chip-avatar">{state.avatar}</span>
+                <span className="player-chip-info">
+                  <span className="player-chip-name">{state.name}</span>
+                  <span className="player-chip-level">Level {state.level}</span>
+                </span>
+                <span style={{ fontSize: '0.6rem', opacity: 0.6, marginLeft: 2 }}>▾</span>
+              </span>
+              <span className="player-chip-xpbar">
+                <span className="player-chip-xpfill" style={{ width: `${xpPct}%` }} />
+              </span>
             </button>
 
             {showDropdown && (
@@ -149,6 +190,7 @@ export default function Navbar() {
             onClick={() => setMobileOpen(o => !o)}
             aria-expanded={mobileOpen}
             aria-label="Toggle navigation menu"
+            type="button"
           >
             {mobileOpen ? '✕' : '☰'}
           </button>
@@ -158,18 +200,22 @@ export default function Navbar() {
       {/* Mobile menu */}
       {mobileOpen && (
         <nav className="mobile-menu" aria-label="Mobile navigation">
-          <Link href="/leaderboard" className="mobile-nav-item" onClick={() => setMobileOpen(false)}>
-            🏆 Leaderboard
-          </Link>
-          <Link href="/trophy" className="mobile-nav-item" onClick={() => setMobileOpen(false)}>
-            🎖️ Trophy Room
-          </Link>
-          <Link href="/resources" className="mobile-nav-item" onClick={() => setMobileOpen(false)}>
-            📚 Resources
-          </Link>
-          <Link href="/payment" className="mobile-nav-item" onClick={() => setMobileOpen(false)}>
-            💳 Payment
-          </Link>
+          <div className="mobile-stats-row">
+            <span className="stat-pill stat-pill-coins"><span className="stat-icon">🪙</span>{state.coins}</span>
+            <span className="stat-pill stat-pill-xp"><span className="stat-icon">✨</span>{state.xp}/{xpMax} XP</span>
+          </div>
+
+          {NAV_ITEMS.map(item => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`mobile-nav-item${isActive(item.href) ? ' active' : ''}`}
+              onClick={() => setMobileOpen(false)}
+            >
+              {item.icon} {item.label}
+            </Link>
+          ))}
+
           <button className="mobile-nav-item" onClick={() => { setShowProfile(true); setMobileOpen(false); }}>
             ✏️ Edit Profile
           </button>

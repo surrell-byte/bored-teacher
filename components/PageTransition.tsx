@@ -12,9 +12,10 @@ export default function PageTransition({ children }: { children: ReactNode }) {
   // Game pages use position:fixed for full-screen iframe — skip the
   // transform-based animation or it breaks the fixed stacking context.
   const isGamePage = pathname?.startsWith('/games/');
+  const isRoot = pathname === '/';
 
   useEffect(() => {
-    if (isGamePage) return;
+    if (isGamePage || isRoot) return;
     const el = ref.current;
     if (!el) return;
     el.classList.remove('page-enter-active');

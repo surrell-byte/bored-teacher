@@ -16,15 +16,13 @@ export default function AppShell({ children }: { children: ReactNode }) {
   const { pendingAchievement, clearPendingAchievement } = useGame();
 
   return (
-    <>
-      {showShell && (
-        <a href="#main-content" className="skip-to-content">
-          Skip to content
-        </a>
-      )}
+    <div className={`app-shell-wrap${showShell ? '' : ' no-shell'}`}>
+      <a href="#main-content" className="skip-to-content">
+        Skip to content
+      </a>
 
-      {showShell && <Navbar />}
-      {showShell && <Toast />}
+      <Navbar />
+      <Toast />
 
       <main id="main-content">
         {children}
@@ -42,6 +40,6 @@ export default function AppShell({ children }: { children: ReactNode }) {
           onDone={clearPendingAchievement}
         />
       )}
-    </>
+    </div>
   );
 }

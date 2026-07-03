@@ -163,21 +163,20 @@ export default function GamePage() {
 
   return (
     <div style={{ position: 'fixed', inset: 0, display: 'flex', flexDirection: 'column', background: 'var(--bg)', overflow: 'hidden' }}>
-      {/* Topbar */}
-      <div style={{
-        height: 52, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 16px', borderBottom: '1px solid var(--border)',
-        background: 'var(--surface-strong)', flexShrink: 0, zIndex: 10,
-      }}>
-        <Link href="/hub" className="lb-back-btn" style={{ textDecoration: 'none' }}>←Hub</Link>
-        <span style={{ fontFamily: 'var(--font-display, Syne)', fontWeight: 800, fontSize: '0.95rem' }}>
-          {gameIcon} {gameName}
-        </span>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: '0.8rem', color: 'var(--muted)' }}>
-          <span>Lv {state.level}</span>
-          <span>🪙 {state.coins}</span>
-        </div>
-      </div>
+      {/* Floating back-to-hub button */}
+      <Link
+        href="/hub"
+        className="lb-back-btn"
+        style={{
+          position: 'fixed',
+          top: 12,
+          left: 12,
+          zIndex: 20,
+          textDecoration: 'none',
+        }}
+      >
+        ←Hub
+      </Link>
 
       {/* Game area */}
       {GameComp ? (

@@ -1,32 +1,26 @@
 'use client';
-// app/trophy/page.tsx
+import './trophy.css';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged } from '@/lib/firebase';
 import { useGame } from '@/lib/gameState';
-import { ACHIEVEMENT_CATEGORIES } from '@/features/achievements/achievements';
+import { ACHIEVEMENT_CATEGORIES, ACHIEVEMENTS, type Achievement } from '@/features/achievements/achievements';
 
-
-
-
-const TIERS = [
-  { name: 'Beginner', icon: '🌱', min: 0,    max: 500,  sub: 'Keep playing!' },
-  { name: 'Bronze',   icon: '🥉', min: 500,  max: 1500, sub: 'Getting warmed up.' },
-  { name: 'Silver',   icon: '🥈', min: 1500, max: 3000, sub: 'Building momentum.' },
-  { name: 'Gold',     icon: '🥇', min: 3000, max: 5000, sub: 'Strong results!' },
-  { name: 'Platinum', icon: '💎', min: 5000, max: 8000, sub: 'Elite performer.' },
-  { name: 'Diamond',  icon: '🌟', min: 8000, max: 1e9,  sub: 'Mastery achieved.' },
-];
-
-function getTier(totalScore: number) {
-  return TIERS.find((t, i) => totalScore < t.max || i === TIERS.length - 1)!;
+function formatDate(iso: string | undefined) {
+  if (!iso) return 'Earned';
+  try {
+    return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  } catch {
+    return 'Earned';
+  }
 }
 
 export default function TrophyPage() {
   const router = useRouter();
   const { state, earnedAchievementIds } = useGame();
-  const [ready, setReady] = useState(false);
+  const [ready, setReady]   = useState(false);
+  const [tab, setTab]       = useState<'all' | string>('all');
 
   useEffect(() => {
     const isGuest = localStorage.getItem('guestUser') === 'true';
@@ -39,16 +33,27 @@ export default function TrophyPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const totalScore = Object.values(state.games).reduce((a, g) => a + g.highScore, 0);
-  const tier       = getTier(totalScore);
-  const nextTier   = TIERS[TIERS.indexOf(tier) + 1];
-  const tierPct    = nextTier
-    ? Math.min(100, Math.round(((totalScore - tier.min) / (nextTier.min - tier.min)) * 100))
-    : 100;
-
+  const totalScore  = Object.values(state.games).reduce((a, g) => a + g.highScore, 0);
   const allEarned   = earnedAchievementIds;
   const earnedCount = allEarned.size;
-  const totalBadges = ACHIEVEMENT_CATEGORIES.flatMap(c => c.achievements).length;
+  const totalBadges = ACHIEVEMENTS.length;
+  const completionPct = totalBadges > 0 ? Math.round((earnedCount / totalBadges) * 100) : 0;
+
+  // Most recently earned achievement, by real earnedAt timestamp
+  const recentAchievements = useMemo(() => {
+    return ACHIEVEMENTS
+      .filter(a => allEarned.has(a.id))
+      .sort((a, b) => (state.earnedAt[b.id] || '').localeCompare(state.earnedAt[a.id] || ''))
+      .slice(0, 6);
+  }, [allEarned, state.earnedAt]);
+
+  const latestAchievement: Achievement | null = recentAchievements[0] ?? null;
+
+  const donutPct = totalBadges > 0 ? (earnedCount / totalBadges) * 360 : 0;
+
+  const visibleCategories = tab === 'all'
+    ? ACHIEVEMENT_CATEGORIES
+    : ACHIEVEMENT_CATEGORIES.filter(c => c.label === tab);
 
   if (!ready) return null;
 
@@ -56,48 +61,145 @@ export default function TrophyPage() {
     <div className="trophy-page">
 
       {/* ── Hero ──────────────────────────────────────────── */}
-      <div className="shell-card" style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-        gap: 20,
-        padding: 'clamp(20px, 4vw, 40px)',
-        marginBottom: 20,
-        borderRadius: 32,
-        alignItems: 'center',
-      }}>
+      <div className="shell-card trophy-hero-grid" style={{ padding: 'clamp(20px, 4vw, 40px)', marginBottom: 20, borderRadius: 32, gap: 24 }}>
         <div>
+          <div className="hero-kicker">🏆 Trophy Room</div>
           <div className="trophy-hero-name">{state.avatar} {state.name}</div>
           {state.username && <div className="trophy-hero-handle">@{state.username}</div>}
-          <div className="trophy-hero-stats">
-            <div className="trophy-stat"><span className="trophy-stat-val">{earnedCount}</span><span className="trophy-stat-lbl">Badges</span></div>
-            <div className="trophy-stat"><span className="trophy-stat-val">{state.level}</span><span className="trophy-stat-lbl">Level</span></div>
-            <div className="trophy-stat"><span className="trophy-stat-val">{totalScore}</span><span className="trophy-stat-lbl">Total Score</span></div>
-            <div className="trophy-stat"><span className="trophy-stat-val">{state.loginStreak || 0}</span><span className="trophy-stat-lbl">Day Streak</span></div>
+          <p style={{ color: 'var(--muted)', fontSize: '0.88rem', lineHeight: 1.6, maxWidth: '48ch' }}>
+            Celebrate your achievements and track your learning journey.
+          </p>
+        </div>
+
+        <div>
+          <div className="trophy-snapshot-title">Your Achievement Snapshot</div>
+          <div className="trophy-snapshot-grid">
+            <div className="trophy-snapshot-stat">
+              <span className="hero-stat-icon">🏆</span>
+              <div>
+                <div className="hero-stat-val" style={{ color: 'var(--gold)' }}>{earnedCount}</div>
+                <div className="hero-stat-lbl">Trophies Earned</div>
+              </div>
+            </div>
+            <div className="trophy-snapshot-stat">
+              <span className="hero-stat-icon">⭐</span>
+              <div>
+                <div className="hero-stat-val" style={{ color: 'var(--gold)' }}>{totalScore}</div>
+                <div className="hero-stat-lbl">Total Points</div>
+              </div>
+            </div>
+            <div className="trophy-snapshot-stat">
+              <span className="hero-stat-icon">🔥</span>
+              <div>
+                <div className="hero-stat-val" style={{ color: 'var(--coral)' }}>{state.loginStreak || 0}</div>
+                <div className="hero-stat-lbl">Day Streak</div>
+              </div>
+            </div>
+            <div className="trophy-snapshot-stat">
+              <span className="hero-stat-icon">🎯</span>
+              <div>
+                <div className="hero-stat-val" style={{ color: 'var(--teal)' }}>{completionPct}%</div>
+                <div className="hero-stat-lbl">Completion</div>
+              </div>
+            </div>
           </div>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-          <div style={{ fontSize: '4rem' }}>{tier.icon}</div>
-          <div style={{ fontFamily: 'var(--font-display, Syne)', fontWeight: 800, fontSize: '1.1rem', textAlign: 'center' }}>{tier.name}</div>
-          <div style={{ fontSize: '0.72rem', color: 'var(--muted)', textAlign: 'center' }}>{tier.sub}</div>
+      </div>
+
+      {/* ── Tabs ──────────────────────────────────────────── */}
+      <div className="trophy-tabs" role="tablist" aria-label="Trophy categories">
+        <button className={`pill-btn${tab === 'all' ? ' active' : ''}`} onClick={() => setTab('all')} aria-pressed={tab === 'all'}>
+          🏅 All Trophies
+        </button>
+        {ACHIEVEMENT_CATEGORIES.map(c => (
+          <button
+            key={c.label}
+            className={`pill-btn${tab === c.label ? ' active' : ''}`}
+            onClick={() => setTab(c.label)}
+            aria-pressed={tab === c.label}
+          >
+            {c.label}
+          </button>
+        ))}
+      </div>
+
+      {/* ── Recent Achievements ─────────────────────────────── */}
+      {recentAchievements.length > 0 && (
+        <div className="shell-card" style={{ padding: 'clamp(16px, 3vw, 24px)', marginBottom: 20 }}>
+          <div className="hub-section-title" style={{ marginBottom: 14, fontSize: '1rem' }}>Recent Achievements</div>
+          <div className="recent-ach-row">
+            {recentAchievements.map(a => (
+              <div key={a.id} className="recent-ach-card" style={{ borderColor: a.color }}>
+                <div className="recent-ach-icon">{a.icon}</div>
+                <div className="recent-ach-name">{a.name}</div>
+                <div className="recent-ach-date">{formatDate(state.earnedAt[a.id])}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Collection donut + Latest Achievement ───────────── */}
+      <div className="trophy-side-grid" style={{ marginBottom: 20 }}>
+        <div className="shell-card" style={{ padding: 'clamp(16px, 3vw, 24px)' }}>
+          <div className="hub-section-title" style={{ marginBottom: 16, fontSize: '1rem' }}>Trophy Collection</div>
+          <div className="trophy-donut-wrap">
+            <div
+              className="trophy-donut"
+              style={{ background: `conic-gradient(var(--gold) 0deg ${donutPct}deg, var(--border) ${donutPct}deg 360deg)` }}
+            >
+              <div className="trophy-donut-hole">
+                <span className="trophy-donut-num">{earnedCount}</span>
+                <span className="trophy-donut-lbl">Earned</span>
+              </div>
+            </div>
+            <div className="trophy-donut-legend">
+              <div className="trophy-legend-row"><span className="trophy-legend-dot" style={{ background: 'var(--gold)' }} />{earnedCount} Earned</div>
+              <div className="trophy-legend-row"><span className="trophy-legend-dot" style={{ background: 'var(--border)' }} />{totalBadges - earnedCount} Locked</div>
+              <div className="trophy-legend-total">Total: {totalBadges} Trophies</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="shell-card" style={{ padding: 'clamp(16px, 3vw, 24px)' }}>
+          <div className="hub-section-title" style={{ marginBottom: 16, fontSize: '1rem' }}>Latest Achievement</div>
+          {latestAchievement ? (
+            <div className="latest-ach" style={{ borderColor: latestAchievement.color }}>
+              <div className="latest-ach-icon">{latestAchievement.icon}</div>
+              <div className="latest-ach-name">{latestAchievement.name}</div>
+              <div className="latest-ach-desc">{latestAchievement.description}</div>
+              <div className="latest-ach-date">{formatDate(state.earnedAt[latestAchievement.id])}</div>
+            </div>
+          ) : (
+            <div style={{ color: 'var(--muted)', fontSize: '0.86rem', textAlign: 'center', padding: '24px 12px' }}>
+              Play a game to earn your first trophy!
+            </div>
+          )}
         </div>
       </div>
 
-      {/* ── Tier progress ─────────────────────────────────── */}
+      {/* ── Trophy Categories overview ───────────────────────── */}
       <div className="shell-card" style={{ padding: 'clamp(16px, 3vw, 24px)', marginBottom: 20 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', fontWeight: 700, marginBottom: 8 }}>
-          <span>{tier.icon} {tier.name}</span>
-          {nextTier && <span>{nextTier.icon} {nextTier.name}</span>}
-        </div>
-        <div style={{ height: 8, background: 'var(--border)', borderRadius: 8, overflow: 'hidden', marginBottom: 8 }}>
-          <div style={{ height: '100%', width: `${tierPct}%`, background: 'linear-gradient(90deg, var(--gold), var(--teal))', borderRadius: 8, transition: 'width 0.9s cubic-bezier(0.34,1.2,0.64,1)' }} />
-        </div>
-        <div style={{ fontSize: '0.76rem', color: 'var(--muted)' }}>
-          {nextTier ? `${nextTier.min - totalScore} pts to ${nextTier.name}` : '🌟 Maximum tier reached!'}
+        <div className="hub-section-title" style={{ marginBottom: 16, fontSize: '1rem' }}>Trophy Categories</div>
+        <div className="trophy-cat-grid">
+          {ACHIEVEMENT_CATEGORIES.map(cat => {
+            const catEarned = cat.achievements.filter(a => allEarned.has(a.id)).length;
+            const pct = Math.round((catEarned / cat.achievements.length) * 100);
+            return (
+              <div key={cat.label} className="trophy-cat-card">
+                <div className="trophy-cat-label">{cat.label}</div>
+                <div className="trophy-cat-count">{catEarned} / {cat.achievements.length} Earned</div>
+                <div className="trophy-cat-bar">
+                  <div className="trophy-cat-bar-fill" style={{ width: `${pct}%` }} />
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      {/* ── Achievement categories ────────────────────────── */}
-      {ACHIEVEMENT_CATEGORIES.map(cat => {
+      {/* ── Full badge grid, filtered by active tab ──────────── */}
+      {visibleCategories.map(cat => {
         const catEarned = cat.achievements.filter(a => allEarned.has(a.id)).length;
         return (
           <div key={cat.label} className="shell-card" style={{ padding: 'clamp(16px, 3vw, 24px)', marginBottom: 16 }}>
@@ -125,7 +227,7 @@ export default function TrophyPage() {
                     <div style={{ fontSize: '2rem', marginBottom: 6, filter: earned ? 'none' : 'grayscale(1)' }}>{a.icon}</div>
                     <div style={{ fontWeight: 700, fontSize: '0.82rem', marginBottom: 3, color: earned ? 'var(--text)' : 'var(--muted)' }} className="badge-card-title">{a.name}</div>
                     <div style={{ fontSize: '0.68rem', color: 'var(--muted)' }} className="badge-card-desc">{a.description}</div>
-                    {earned && <div style={{ marginTop: 6, fontSize: '0.68rem', color: a.color, fontWeight: 700 }}>✓ Earned</div>}
+                    {earned && <div style={{ marginTop: 6, fontSize: '0.68rem', color: a.color, fontWeight: 700 }}>✓ {formatDate(state.earnedAt[a.id])}</div>}
                   </div>
                 );
               })}
@@ -133,22 +235,8 @@ export default function TrophyPage() {
           </div>
         );
       })}
-
-      {/* ── Summary ────────────────────────────────────────── */}
-      <div className="shell-card" style={{ padding: 'clamp(16px, 3vw, 24px)', display: 'flex', gap: 24, flexWrap: 'wrap' }}>
-        <div>
-          <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--muted)', marginBottom: 4 }}>Badge Progress</div>
-          <div style={{ fontFamily: 'var(--font-display, Syne)', fontWeight: 800, fontSize: '1.4rem', color: 'var(--gold)' }}>{earnedCount} / {totalBadges}</div>
-        </div>
-        <div>
-          <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--muted)', marginBottom: 4 }}>Current Tier</div>
-          <div style={{ fontFamily: 'var(--font-display, Syne)', fontWeight: 800, fontSize: '1.4rem' }}>{tier.icon} {tier.name}</div>
-        </div>
-        <div>
-          <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--muted)', marginBottom: 4 }}>Login Streak</div>
-          <div style={{ fontFamily: 'var(--font-display, Syne)', fontWeight: 800, fontSize: '1.4rem', color: 'var(--coral)' }}>🔥 {state.loginStreak || 0} days</div>
-        </div>
-      </div>
     </div>
   );
 }
+
+
