@@ -47,8 +47,8 @@ export default function SplashPage() {
 
     const finish = setTimeout(() => {
       setProgress(100);
-      setTimeout(() => setExiting(true), 150);
-      setTimeout(() => router.replace(destination), 550);
+      setExiting(true);
+      setTimeout(() => router.replace(destination), 450);
     }, SPLASH_DURATION_MS);
 
     const isGuest = localStorage.getItem('guestUser') === 'true';
@@ -68,6 +68,11 @@ export default function SplashPage() {
       clearTimeout(finish);
       timers.forEach(clearTimeout);
     };
+  }, [router]);
+
+  useEffect(() => {
+    router.prefetch('/auth');
+    router.prefetch('/hub');
   }, [router]);
 
   // Smoothly tween the numeric progress so the percentage counts up
@@ -103,12 +108,12 @@ export default function SplashPage() {
           z-index: 99999;
           display: flex; flex-direction: column;
           align-items: center; justify-content: flex-end;
-          background: url('/assets/images/welcome-page.webp') center center / cover no-repeat;
+          background: transparent;
           overflow: hidden;
           padding: 0 28px 64px;
           color: #f0ede0;
           opacity: 1;
-          transition: opacity 0.5s ease;
+          transition: opacity 0.45s ease;
         }
         .splash-wrapper.exiting {
           opacity: 0;

@@ -173,7 +173,7 @@ function AuthPageInner() {
           min-height: 100vh;
           display: flex; align-items: center; justify-content: center;
           padding: 24px;
-          background: var(--bg);
+          background: transparent;
         }
         .deco {
           position: fixed; font-size: 3.8rem; opacity: 0.055;

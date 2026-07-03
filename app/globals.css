@@ -10,6 +10,33 @@ html {
   overscroll-behavior-x: none;
 }
 
+body {
+  min-height: 100vh;
+  font-family: var(--font-body);
+  color: var(--text);
+  background: var(--bg);
+}
+
+.app-background,
+.app-background-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.app-background {
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  transition: opacity 0.35s ease, background-image 0.35s ease;
+}
+
+.app-background-overlay {
+  background: radial-gradient(circle at top, rgba(255,255,255,0.07), transparent 24%),
+              linear-gradient(180deg, rgba(7,10,14,0.08), rgba(6,12,23,0.92));
+}
+
 /* Breakpoints (common set) --------------------------------------------------
    0–479px  : small phones
    480–767px: large phones
@@ -1732,12 +1759,8 @@ a { color: inherit; }
 }
 
 /* ── Page transitions ───────────────────────────────────── */
-.page-enter {
-  opacity: 1;
+.page-transition-container {
   min-height: 100%;
-}
-.page-enter-active {
-  animation: pageEnter 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 /* When the shell is hidden (auth / game pages) hide header and toast visually
