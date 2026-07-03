@@ -124,7 +124,6 @@ export const GAME_TAGS: Record<string, { label: string; color: string }> = {
   wgrandprix: { label: 'Vocabulary', color: 'tag-vocab' },
   wordfusion: { label: 'Word Formation', color: 'tag-words' },
   countadd: { label: 'Logic', color: 'tag-bio' },
-  mazechase: { label: 'Logic', color: 'tag-bio' },
   moneyblocks: { label: 'Logic', color: 'tag-bio' },
   parachutedrop: { label: 'Logic', color: 'tag-bio' },
   superwings: { label: 'Logic', color: 'tag-bio' },
