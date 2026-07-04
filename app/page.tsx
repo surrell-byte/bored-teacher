@@ -1,7 +1,7 @@
 'use client';
 // app/page.tsx — Splash screen + auth redirect (replaces index.html)
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged } from '@/lib/firebase';
 
@@ -23,10 +23,13 @@ export default function SplashPage() {
   const [displayedProgress, setDisplayedProgress] = useState(0);
   const [status, setStatus] = useState(STATUS_MESSAGES[0]);
   const [exiting, setExiting] = useState(false);
+  const [clickable, setClickable] = useState(false);
+  const destinationRef = useRef('/auth');
+  const finishRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const redirectRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     let resolved = false;
-    let destination = '/auth';
     const timers: ReturnType<typeof setTimeout>[] = [];
 
     function queue(ms: number, nextProgress: number, nextStatus: string) {
@@ -45,27 +48,30 @@ export default function SplashPage() {
     queue(4200, 94, STATUS_MESSAGES[6]);
     queue(4700, 98, STATUS_MESSAGES[7]);
 
-    const finish = setTimeout(() => {
+    finishRef.current = setTimeout(() => {
       setProgress(100);
+      setClickable(true);
+      window.dispatchEvent(new CustomEvent('splashBackgroundChange', { detail: { stage: 'start-playing' } }));
       setExiting(true);
-      setTimeout(() => router.replace(destination), 450);
+      redirectRef.current = setTimeout(() => router.replace(destinationRef.current), 450);
     }, SPLASH_DURATION_MS);
 
     const isGuest = localStorage.getItem('guestUser') === 'true';
     if (isGuest) {
       resolved = true;
-      destination = '/hub';
+      destinationRef.current = '/hub';
     }
 
     const unsub = onAuthStateChanged((user) => {
       if (resolved) return;
       resolved = true;
-      destination = user ? '/hub' : '/auth';
+      destinationRef.current = user ? '/hub' : '/auth';
     });
 
     return () => {
       unsub();
-      clearTimeout(finish);
+      if (finishRef.current) clearTimeout(finishRef.current);
+      if (redirectRef.current) clearTimeout(redirectRef.current);
       timers.forEach(clearTimeout);
     };
   }, [router]);
@@ -74,6 +80,13 @@ export default function SplashPage() {
     router.prefetch('/auth');
     router.prefetch('/hub');
   }, [router]);
+
+  useEffect(() => {
+    if (progress >= 100) {
+      setClickable(true);
+      window.dispatchEvent(new CustomEvent('splashBackgroundChange', { detail: { stage: 'start-playing' } }));
+    }
+  }, [progress]);
 
   // Smoothly tween the numeric progress so the percentage counts up
   useEffect(() => {
@@ -100,8 +113,25 @@ export default function SplashPage() {
     return () => cancelAnimationFrame(raf);
   }, [progress]);
 
+  function handleContinue() {
+    if (exiting) return;
+    setExiting(true);
+    setClickable(false);
+    if (finishRef.current) clearTimeout(finishRef.current);
+    if (redirectRef.current) clearTimeout(redirectRef.current);
+    router.replace(destinationRef.current);
+  }
+
   return (
     <div className={`splash-wrapper${exiting ? ' exiting' : ''}`}>
+      {clickable && (
+        <button
+          type="button"
+          className="splash-click-target"
+          onClick={handleContinue}
+          aria-label="Continue to start playing"
+        />
+      )}
       <style suppressHydrationWarning>{`
         .splash-wrapper {
           position: fixed; inset: 0;
@@ -158,6 +188,14 @@ export default function SplashPage() {
           font-size: 0.8rem;
           font-weight: 700;
           text-shadow: 0 1px 6px rgba(0,0,0,0.6);
+        }
+        .splash-click-target {
+          position: absolute;
+          inset: 0;
+          border: none;
+          background: transparent;
+          cursor: pointer;
+          z-index: 1;
         }
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(16px); }

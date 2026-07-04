@@ -8,11 +8,12 @@ import Toast from './ui/Toast';
 import AchievementToast from '@/features/achievements/components/AchievementToast';
 import { useGame } from '@/lib/gameState';
 
-const NO_SHELL = ['/auth', '/games/'];
+const NO_SHELL_PATHS = ['/', '/auth'];
 
 export default function AppShell({ children }: { children: ReactNode }) {
   const pathname   = usePathname() ?? '';
-  const showShell  = !NO_SHELL.some(p => pathname.startsWith(p));
+  const isGameRoute = pathname.startsWith('/games');
+  const showShell  = !NO_SHELL_PATHS.includes(pathname) && !isGameRoute;
   const { pendingAchievement, clearPendingAchievement } = useGame();
 
   return (
@@ -21,7 +22,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
         Skip to content
       </a>
 
-      <Navbar />
+      {showShell && <Navbar />}
       <Toast />
 
       <main id="main-content">
