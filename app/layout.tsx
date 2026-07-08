@@ -2,10 +2,9 @@
 import type { Metadata } from 'next';
 import { type ReactNode } from 'react';
 import './globals.css';
-import { GameProvider } from '@/lib/gameState';
+import { GameProvider } from '@/providers/GameProvider';
 import PageTransition from '@/components/PageTransition';
 import AppShell from '@/components/AppShell';
-import AchievementPopup from '@/features/achievements/components/AchievementPopup';
 import AppBackground from '@/components/AppBackground';
 
 export const metadata: Metadata = {
@@ -20,7 +19,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body>
         <GameProvider>
           <AppBackground />
-          <AchievementPopup />
           <AppShell>
             <PageTransition>
               {children}

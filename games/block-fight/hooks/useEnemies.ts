@@ -1,5 +1,5 @@
-import { intersects } from '../engine/collisions';
-import { type GameState, type GameUi, type Platform, type Rect } from '../engine/types';
+import { intersects } from '../systems/collisions';
+import { type GameState, type GameUi, type Platform, type Rect } from '../systems/types';
 
 type UiSetter = React.Dispatch<React.SetStateAction<GameUi>>;
 

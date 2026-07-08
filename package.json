@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "check-css": "node scripts/check-orphaned-classes.js"
   },
   "dependencies": {
     "firebase": "^10.12.0",
@@ -22,6 +23,7 @@
     "@types/react-dom": "^18",
     "eslint": "^8",
     "eslint-config-next": "14.2.5",
+    "eslint-plugin-import": "^2.32.0",
     "typescript": "^5"
   }
 }

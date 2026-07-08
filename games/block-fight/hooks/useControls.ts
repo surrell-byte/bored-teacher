@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { JUMP_BUFFER_FRAMES } from '../engine/constants';
-import { type ControlsState, type GameState } from '../engine/types';
+import { JUMP_BUFFER_FRAMES } from '../systems/constants';
+import { type ControlsState, type GameState } from '../systems/types';
 
 const PREVENT_DEFAULT_KEYS = ['Space', 'ArrowLeft', 'ArrowRight', 'ArrowUp'];
 

@@ -8,9 +8,9 @@ import {
   JUMP_POWER,
   MAX_SPEED,
   PLAYER_START,
-} from '../engine/constants';
-import { resolvePlatformCollisions } from '../engine/collisions';
-import { type ControlsState, type GameState, type GameUi, type Platform } from '../engine/types';
+} from '../systems/constants';
+import { resolvePlatformCollisions } from '../systems/collisions';
+import { type ControlsState, type GameState, type GameUi, type Platform } from '../systems/types';
 
 type UiSetter = React.Dispatch<React.SetStateAction<GameUi>>;
 

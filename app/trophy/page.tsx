@@ -4,7 +4,7 @@ import './trophy.css';
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged } from '@/lib/firebase';
-import { useGame } from '@/lib/gameState';
+import { useGame } from '@/providers/GameProvider';
 import { ACHIEVEMENT_CATEGORIES, ACHIEVEMENTS, type Achievement } from '@/features/achievements/achievements';
 
 function formatDate(iso: string | undefined) {

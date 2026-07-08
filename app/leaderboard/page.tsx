@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { onAuthStateChanged } from '@/lib/firebase';
-import { useGame } from '@/lib/gameState';
+import { useGame } from '@/providers/GameProvider';
 import {
   getSortedClassLeaderboard,
   type LBPlayerWithScore,

@@ -2,7 +2,7 @@
 // features/profiles/components/ProfileModal.tsx
 
 import { useState, useEffect } from 'react';
-import { useGame } from '@/lib/gameState';
+import { useGame } from '@/providers/GameProvider';
 import { auth, setDisplayName } from '@/lib/firebase';
 import { AVATARS } from '@/constants/index';
 

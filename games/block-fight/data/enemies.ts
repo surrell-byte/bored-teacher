@@ -1,4 +1,4 @@
-import { type Enemy } from '../engine/types';
+import { type Enemy } from '../systems/types';
 
 const ENEMIES_INIT: Enemy[] = [
   { x: 300, y: 304, vx: 1.5, w: 28, h: 28, alive: true, platIdx: 2 },

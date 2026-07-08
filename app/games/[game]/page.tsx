@@ -8,8 +8,8 @@ import { auth, saveStudentScore } from '@/lib/firebase';
 import { syncCurrentPlayerToLeaderboard } from '@/features/leaderboard/api';
 import { GAME_NAMES, GAME_ICONS, GAME_URLS } from '@/constants/index';
 import { useControls } from '@/hooks/useControls';
-import DesktopControls from '@/components/game/DesktopControls';
-import MobileControls from '@/components/game/MobileControls';
+import DesktopControls from '@/components/ui/controls/DesktopControls';
+import MobileControls from '@/components/ui/controls/MobileControls';
 
 // ── React game component props and registry ──
 type GameComponentProps = {

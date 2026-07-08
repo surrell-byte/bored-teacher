@@ -6,7 +6,7 @@ import { type ReactNode } from 'react';
 import Navbar from './Navbar';
 import Toast from './ui/Toast';
 import AchievementToast from '@/features/achievements/components/AchievementToast';
-import { useGame } from '@/lib/gameState';
+import { useGame } from '@/providers/GameProvider';
 
 const NO_SHELL_PATHS = ['/', '/auth'];
 

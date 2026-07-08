@@ -92,6 +92,8 @@ export const GAME_DESC: Record<string, string> = {
   unicornwings: 'Race unicorns around the board with a sparkling two-player dice challenge.',
 };
 
+export const GAME_COVERS: Record<string, string> = {};
+
 export const GAME_TAGS: Record<string, { label: string; color: string }> = {
   unicorn: { label: 'Vocabulary', color: 'tag-vocab' },
   warriors: { label: 'Grammar', color: 'tag-grammar' },
@@ -211,14 +213,14 @@ export const GAME_URLS: Record<string, string> = {
   tornado: 'games/tornado/tornado.html',
   wgrandprix: 'games/w-grand-prix/w-grand-prix.html',
   wordfusion: 'games/word-fusion/word-fusion.html',
-  countadd: 'games/count-and-add/count-and-add.html',
+  countadd: 'assets/legacy-games/count-and-add/count-and-add.html',
   
-  moneyblocks: 'games/money-blocks/index.html',
-  parachutedrop: 'games/parachute-drop/index.html',
-  superwings: 'games/super-wings-game/index.html',
-  swampjump: 'games/swamp-jump-game/index.html',
-  treasurechest: 'games/treasure-chest-game/index.html',
-  unicornwings: 'games/unicorn-wings-game/index.html',
+  moneyblocks: 'assets/legacy-games/money-blocks/index.html',
+  parachutedrop: 'assets/legacy-games/parachute-drop/index.html',
+  superwings: 'assets/legacy-games/super-wings-game/index.html',
+  swampjump: 'assets/legacy-games/swamp-jump-game/index.html',
+  treasurechest: 'assets/legacy-games/treasure-chest-game/index.html',
+  unicornwings: 'assets/legacy-games/unicorn-wings-game/index.html',
 };
 
 export const THEMES = [

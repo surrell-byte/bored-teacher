@@ -1,4 +1,4 @@
-import { type GameStatus } from '../engine/types';
+import { type GameStatus } from '../systems/types';
 
 type GameOverProps = {
   score: number;

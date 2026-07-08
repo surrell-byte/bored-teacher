@@ -1,6 +1,6 @@
 'use client';
 
-import { useGame } from '@/lib/gameState';
+import { useGame } from '@/providers/GameProvider';
 
 export default function StatsPage() {
   const { state } = useGame();

@@ -3,6 +3,20 @@
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 
+// Each background image's focal point — the point that should stay
+// visible when `background-size: cover` crops the image to fit the
+// viewport. Tune these once per image, not per viewport.
+const BACKGROUNDS: Record<string, { src: string; position: string }> = {
+  welcome:      { src: '/assets/images/welcome-page.webp',        position: 'center' },
+  startPlaying: { src: '/assets/images/start-playing-page.webp',  position: 'center' },
+  hub:          { src: '/assets/images/hub-bg-desktop.webp',      position: 'center' },
+  games:        { src: '/assets/images/games-bg-desktop.webp',    position: '75% center' },
+  leaderboard:  { src: '/assets/images/leaderboard-bg-desktop.webp', position: 'center' },
+  trophy:       { src: '/assets/images/trophy-room-bg-desktop.webp', position: 'center' },
+  shop:         { src: '/assets/images/shop-bg-desktop.webp',     position: 'center' },
+  resources:    { src: '/assets/images/resources-bg-desktop.webp', position: 'center' },
+};
+
 export default function AppBackground() {
   const pathname = usePathname();
   const [splashStage, setSplashStage] = useState<'welcome' | 'start-playing'>('welcome');
@@ -14,7 +28,6 @@ export default function AppBackground() {
         setSplashStage('start-playing');
       }
     }
-
     window.addEventListener('splashBackgroundChange', handleStageChange as EventListener);
     return () => window.removeEventListener('splashBackgroundChange', handleStageChange as EventListener);
   }, []);
@@ -26,47 +39,41 @@ export default function AppBackground() {
   }, [pathname]);
 
   useEffect(() => {
-    [
-      '/assets/images/welcome-page.webp',
-      '/assets/images/start-playing-page.webp',
-      '/assets/images/hub-bg-desktop.webp',
-      '/assets/images/games-bg-desktop.webp',
-      '/assets/images/leaderboard-bg-desktop.webp',
-      '/assets/images/trophy-room-bg-desktop.webp',
-      '/assets/images/shop-bg-desktop.webp',
-      '/assets/images/resources-bg-desktop.webp',
-      '/assets/images/logo.png',
-    ].forEach((src) => {
+    Object.values(BACKGROUNDS).forEach(({ src }) => {
       const img = new Image();
       img.src = src;
     });
   }, []);
 
-  let bg = '/assets/images/start-playing-page.webp';
+  let entry = BACKGROUNDS.startPlaying;
 
   if (pathname === '/') {
-    bg = splashStage === 'start-playing'
-      ? '/assets/images/start-playing-page.webp'
-      : '/assets/images/welcome-page.webp';
+    entry = splashStage === 'start-playing' ? BACKGROUNDS.startPlaying : BACKGROUNDS.welcome;
   } else if (pathname === '/auth') {
-    bg = '/assets/images/welcome-page.webp';
+    entry = BACKGROUNDS.welcome;
   } else if (pathname.startsWith('/hub')) {
-    bg = '/assets/images/hub-bg-desktop.webp';
+    entry = BACKGROUNDS.hub;
   } else if (pathname === '/games' || pathname.startsWith('/games/')) {
-    bg = '/assets/images/games-bg-desktop.webp';
+    entry = BACKGROUNDS.games;
   } else if (pathname.startsWith('/leaderboard')) {
-    bg = '/assets/images/leaderboard-bg-desktop.webp';
+    entry = BACKGROUNDS.leaderboard;
   } else if (pathname.startsWith('/trophy')) {
-    bg = '/assets/images/trophy-room-bg-desktop.webp';
+    entry = BACKGROUNDS.trophy;
   } else if (pathname.startsWith('/payment')) {
-    bg = '/assets/images/shop-bg-desktop.webp';
+    entry = BACKGROUNDS.shop;
   } else if (pathname.startsWith('/resources')) {
-    bg = '/assets/images/resources-bg-desktop.webp';
+    entry = BACKGROUNDS.resources;
   }
 
   return (
     <>
-      <div className="app-background" style={{ backgroundImage: `url(${bg})` }} />
+      <div
+        className="app-background"
+        style={{
+          backgroundImage: `url(${entry.src})`,
+          ['--bg-pos' as any]: entry.position,
+        }}
+      />
       <div className="app-background-overlay" />
     </>
   );

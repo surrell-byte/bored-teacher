@@ -3,7 +3,7 @@
 // Achievements are DERIVED from HubState — never stored separately —
 // so they're always consistent and require no migration.
 
-import type { HubState } from '@/lib/gameState';
+import type { HubState } from '@/providers/GameProvider';
 import { GAME_KEYS } from '@/constants/index';
 
 export interface Achievement {

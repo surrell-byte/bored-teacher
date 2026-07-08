@@ -2,7 +2,7 @@
 // features/players/components/ManagePlayersModal.tsx
 
 import { useState, useEffect, useRef } from 'react';
-import { useGame } from '@/lib/gameState';
+import { useGame } from '@/providers/GameProvider';
 import { auth } from '@/lib/firebase';
 import {
   loadLeaderboard, saveLeaderboard, addPlayersToLeaderboard, removePlayer,

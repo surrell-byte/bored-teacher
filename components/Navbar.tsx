@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
-import { useGame, logOut, xpForLevel } from '@/lib/gameState';
+import { useGame, logOut, xpForLevel } from '@/providers/GameProvider';
 import { THEMES } from '@/constants/index';
 import { usePathname, useRouter } from 'next/navigation';
 import ProfileModal from '@/features/profiles/components/ProfileModal';

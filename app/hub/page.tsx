@@ -4,11 +4,11 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged } from '@/lib/firebase';
-import { useGame, xpForLevel } from '@/lib/gameState';
+import { useGame, xpForLevel } from '@/providers/GameProvider';
 import {
   GAME_KEYS, NEW_GAME_KEYS, GAME_NAMES, GAME_ICONS, GAME_TAGS, GAME_DIFFICULTY,
 } from '@/constants/index';
-import GameCard from '@/components/GameCard';
+import GameCard from '@/components/cards/GameCard';
 import ManagePlayersModal from '@/features/players/components/ManagePlayersModal';
 
 const TAG_FILTERS = [

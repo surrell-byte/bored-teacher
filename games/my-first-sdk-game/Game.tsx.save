@@ -1,0 +1,32 @@
+BaseGame
+}
+from "../sdk";
+import {
+BaseGame
+}
+from "../sdk";
+
+
+
+export class TestGame 
+extends BaseGame {
+
+
+
+start(){
+
+
+console.log(
+"My SDK game started"
+);
+
+
+
+this.addScore(100);
+
+
+}
+
+
+
+}

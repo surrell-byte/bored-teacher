@@ -1,4 +1,4 @@
-import { type Coin, type Platform } from '../engine/types';
+import { type Coin, type Platform } from '../systems/types';
 
 export const PLATFORMS: Platform[] = [
   [0, 400, 800, 24],
