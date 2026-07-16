@@ -16,17 +16,18 @@ type GameComponentProps = {
   onComplete: (score: number, accuracy: number) => void;
 };
 
-const GAME_COMPONENTS: Record<string, React.LazyExoticComponent<React.ComponentType<GameComponentProps>> | undefined> = {
-  unicorn:    lazy(() => import('@/games/unicorn-run/UnicornRun.jsx')),
-  warriors:   lazy(() => import('@/games/warriors-grammar-slam/WarriorsGrammarSlam.jsx')),
-  memory:     lazy(() => import('@/games/memory-game/MemoryMatch.jsx')),
-  compound:   lazy(() => import('@/games/compound-word-quest/CompoundWordQuest.jsx')),
-  animal:     lazy(() => import('@/games/animal-kingdom-quest/AnimalKingdomQuest.jsx')),
-  wordmatch:  lazy(() => import('@/games/word-match/WordMatch.jsx')),
+const GAME_COMPONENTS: Record<
+  string,
+  React.LazyExoticComponent<React.ComponentType<GameComponentProps>> | undefined
+> = {
+  unicorn: lazy(() => import('@/games/unicorn-run/UnicornRun.jsx')),
+  warriors: lazy(() => import('@/games/warriors-grammar-slam/WarriorsGrammarSlam.jsx')),
+  memory: lazy(() => import('@/games/memory-game/MemoryMatch.jsx')),
+  compound: lazy(() => import('@/games/compound-word-quest/CompoundWordQuest.jsx')),
+  wordmatch: lazy(() => import('@/games/word-match/WordMatch.jsx')),
   missingfruit: lazy(() => import('@/games/missing-fruit/MissingFruit.jsx')),
   animalclass: lazy(() => import('@/games/animal-class-quest/AnimalClassQuest.jsx')),
   colourclash: lazy(() => import('@/games/colour-clash/ColourClash.jsx')),
-  compoundword: lazy(() => import('@/games/compound-word/CompoundWord.jsx')),
   crimsonduel: lazy(() => import('@/games/crimson-color-duel/CrimsonColorDuel.jsx')),
   deepseaReveal: lazy(() => import('@/games/deep-sea-reveal/DeepSeaReveal.jsx')),
   emojimatch: lazy(() => import('@/games/emoji-match/EmojiMatch.jsx')),
@@ -46,7 +47,6 @@ const GAME_COMPONENTS: Record<string, React.LazyExoticComponent<React.ComponentT
   shuttlecock: lazy(() => import('@/games/shuttlecock-smash/ShuttlecockSmash.jsx')),
   tornado: lazy(() => import('@/games/tornado/Tornado.jsx')),
   wgrandprix: lazy(() => import('@/games/w-grand-prix/WGrandPrix.jsx')),
-  wordfusion: lazy(() => import('@/games/word-fusion/WordFusion.jsx')),
 };
 
 // ── Types ─────────────────────────────────────────────────────
