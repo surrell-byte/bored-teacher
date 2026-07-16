@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from "react";
+import { useStorage } from "@/hooks/useStorage";
 
 // ═══════════════════════════════════════════════
 // DATA (ported verbatim from flagmaster-premium.html)
@@ -36,12 +37,12 @@ const popularityCodes = {
   BF:5,TD:5,NE:5,BJ:5,TG:5,GA:5,CG:5,CD:5,CF:5,SS:5,
   SO:5,DJ:5,ER:5,MR:5,GM:5,GN:5,GW:5,SL:5,LR:5,GQ:5,
   OM:4,QA:4,KW:4,BH:4,JO:4,YE:4,SY:4,LB:4,PS:4,HT:4,
-  DO:4,CU:4,BB:4,TW:4,HK:4,MO:4,PG:4,FJ:4,SB:4,VU:4,
+  DO:4,BB:4,TW:4,HK:4,MO:4,PG:4,FJ:4,SB:4,VU:4,
   TO:4,WS:4,FM:4,PW:4,MH:4,KI:4,NR:4,TV:4,ST:4,CV:4,
   SC:4,MU:4,MV:4,BT:4,KG:4,TJ:4,TM:4,GY:4,SR:4,BZ:4,
   PF:3,NC:3,GL:3,FO:3,BM:3,KY:3,VG:3,AI:3,MS:3,CW:3,
   PR:3,GD:3,LC:3,VC:3,KN:3,AG:3,DM:3,KM:3,CK:3,IO:3,
-  SM:3,MC:3,LI:3,VA:3,AD:3,SZ:3,LS:3,SS:2,AX:1,
+  SM:3,MC:3,LI:3,VA:3,AD:3,SZ:3,LS:3,AX:1,
 };
 function getPopularity(code) { return popularityCodes[code] || 3; }
 
@@ -295,7 +296,7 @@ export default function Flagmaster({ onComplete }) {
   const [ageInput, setAgeInput] = useState("");
   const [countryCode, setCountryCode] = useState("");
   const [shakeField, setShakeField] = useState(null); // 'name' | 'age' | 'country'
-  const [profile, setProfile] = useState(null); // {name, age, country}
+  const [profile, setProfile] = useStorage("flagPlayerProfile", null); // {name, age, country}
 
   // Progress
   const [levelCompleted, setLevelCompleted] = useState([false, false, false, false, false]);
@@ -317,15 +318,15 @@ export default function Flagmaster({ onComplete }) {
 
   const advanceTimeoutRef = useRef(null);
 
-  // Restore saved passport profile (matches localStorage.flagPlayerProfile in the HTML)
+  // Hydrate the passport form once the saved profile loads from storage.
   useEffect(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem("flagPlayerProfile"));
-      if (saved) {
-        setProfile(saved);
-        setNameInput(saved.name); setAgeInput(String(saved.age)); setCountryCode(saved.country);
-      }
-    } catch (e) {}
+    if (profile) {
+      setNameInput(profile.name); setAgeInput(String(profile.age)); setCountryCode(profile.country);
+    }
+  }, [profile]);
+
+  // Unmount cleanup for the pending "advance to next question" timeout.
+  useEffect(() => {
     return () => { if (advanceTimeoutRef.current) clearTimeout(advanceTimeoutRef.current); };
   }, []);
 
@@ -342,7 +343,6 @@ export default function Flagmaster({ onComplete }) {
     if (!countryCode) { shake("country"); return; }
     const p = { name: name.slice(0, 14), age, country: countryCode };
     setProfile(p);
-    try { localStorage.setItem("flagPlayerProfile", JSON.stringify(p)); } catch (e) {}
     setScreen("worldMap");
   };
 

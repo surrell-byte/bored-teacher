@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import { useStorage } from "@/hooks/useStorage";
 
 const QUESTIONS_DB = {
   1: [
@@ -45,7 +46,7 @@ export default function WarriorsGrammarSlam({ onComplete }) {
   const [screen, setScreen] = useState("start");
   const [playerName, setPlayerName] = useState("");
   const [level, setLevel] = useState(1);
-  const [unlocked, setUnlocked] = useState({ 1: true, 2: false, 3: false });
+  const [unlocked, setUnlocked] = useStorage("warriors-grammar-slam-v1", { 1: true, 2: false, 3: false });
   const [questions, setQuestions] = useState([]);
   const [idx, setIdx] = useState(0);
   const [score, setScore] = useState(0);
@@ -53,21 +54,6 @@ export default function WarriorsGrammarSlam({ onComplete }) {
   const [streak, setStreak] = useState(0);
   const [selected, setSelected] = useState(null);
   const [answered, setAnswered] = useState(false);
-
-  // Load progress on mount
-  useEffect(() => {
-    const saved = localStorage.getItem("warriors-grammar-slam-v1");
-    if (saved) {
-      try {
-        setUnlocked(JSON.parse(saved));
-      } catch (e) { console.error("Failed to load progress", e); }
-    }
-  }, []);
-
-  // Auto-save progress
-  useEffect(() => {
-    localStorage.setItem("warriors-grammar-slam-v1", JSON.stringify(unlocked));
-  }, [unlocked]);
 
   const startLevel = useCallback((lvl) => {
     setLevel(lvl);
@@ -229,7 +215,7 @@ export default function WarriorsGrammarSlam({ onComplete }) {
             const isWrong = answered && opt === selected && opt !== current.correct;
             return (
               <button key={opt} onClick={() => answer(opt)} style={{
-                padding: "14px 16px", borderRadius: 14, border: "none",
+                padding: "14px 16px", borderRadius: 14,
                 cursor: answered ? "default" : "pointer",
                 fontWeight: 700, fontSize: "0.95rem",
                 background: isCorrect ? "#166534" : isWrong ? "#7f1d1d" : "rgba(255,255,255,0.1)",

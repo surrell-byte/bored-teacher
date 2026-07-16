@@ -160,7 +160,7 @@ export default function PhonicWorld({ onComplete }) {
           const isDone = completed[key];
           return (
             <button key={key} onClick={() => startIsland(key)} style={{
-              padding:"18px 12px", borderRadius:20, border:"none",
+              padding:"18px 12px", borderRadius:20,
               background: isUnlocked
                 ? `linear-gradient(135deg,${isl.color},${isl.color}cc)`
                 : "rgba(255,255,255,0.05)",
@@ -266,7 +266,7 @@ export default function PhonicWorld({ onComplete }) {
               : opt;
             return (
               <button key={i} onClick={() => answer(i)} style={{
-                padding:"14px 12px", borderRadius:14, border:"none",
+                padding:"14px 12px", borderRadius:14,
                 cursor:answered?"default":"pointer",
                 fontWeight:700, fontSize:"1rem",
                 background: isCorrect?"#166534":isWrong?"#7f1d1d":"rgba(255,255,255,0.08)",

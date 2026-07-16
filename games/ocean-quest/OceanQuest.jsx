@@ -131,7 +131,7 @@ export default function OceanQuest({ onComplete }) {
           { lvl:3, label:"🎯 Find It", desc:"Match name to emoji" },
         ].map(({ lvl, label, desc }) => (
           <button key={lvl} onClick={() => startLevel(lvl)} style={{
-            padding:"18px 28px", borderRadius:16, border:"none",
+            padding:"18px 28px", borderRadius:16,
             background:"rgba(255,255,255,0.12)", color:"#fff",
             fontWeight:700, fontSize:"1rem", cursor:"pointer",
             border:"1px solid rgba(255,255,255,0.2)",

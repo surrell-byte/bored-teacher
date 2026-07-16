@@ -214,7 +214,7 @@ export default function MonkeyTreeClimb({ onComplete }) {
           const isWrong = feedback==="wrong" && opt===question.answer; // reveal correct on wrong
           return (
             <button key={i} onClick={() => answer(opt)} style={{
-              padding:"14px", borderRadius:14, border:"none",
+              padding:"14px", borderRadius:14,
               cursor:feedback?"default":"pointer",
               fontWeight:800, fontSize:"1.1rem",
               background: isCorrect?"#166534":isWrong?"#166534":feedback?"rgba(255,255,255,0.06)":"rgba(255,255,255,0.1)",

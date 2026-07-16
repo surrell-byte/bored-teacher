@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import { useStorage } from "@/hooks/useStorage";
 
 const CATEGORIES = {
   fruits: {
@@ -45,22 +46,9 @@ export default function FoodWordHunt({ onComplete }) {
   const [typed, setTyped] = useState([]);
   const [score, setScore] = useState(0);
   const [mistakes, setMistakes] = useState(0);
-  const [completedCats, setCompletedCats] = useState([]);
+  const [completedCats, setCompletedCats] = useStorage("food-word-hunt-v1", []);
   const [feedback, setFeedback] = useState("");
   const [done, setDone] = useState(false);
-
-  // Load progress
-  useEffect(() => {
-    const saved = localStorage.getItem("food-word-hunt-v1");
-    if (saved) setCompletedCats(JSON.parse(saved));
-  }, []);
-
-  // Save progress
-  useEffect(() => {
-    if (completedCats.length > 0) {
-      localStorage.setItem("food-word-hunt-v1", JSON.stringify(completedCats));
-    }
-  }, [completedCats]);
 
   const startCategory = useCallback((key) => {
     const cat = CATEGORIES[key];

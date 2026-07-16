@@ -273,7 +273,7 @@ export default function FamilyQuest({ onComplete }) {
               const isWrong   = answered && opt.word === selected && opt.word !== current.word;
               return (
                 <button key={opt.word} onClick={() => mcqAnswer(opt.word)} style={{
-                  padding:"14px 20px", borderRadius:14, border:"none",
+                  padding:"14px 20px", borderRadius:14,
                   cursor:answered?"default":"pointer",
                   fontWeight:700, fontSize:"1rem",
                   background: isCorrect?"#166534":isWrong?"#7f1d1d":"rgba(245,158,11,0.1)",

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useStorage } from "@/hooks/useStorage";
 
 const TILE = 30;
 const RAW_MAZE = [
@@ -46,12 +47,9 @@ export default function PacMan({ onComplete }) {
   const canvasRef = useRef(null);
   const gameRef = useRef(null);
   const [ui, setUi] = useState({ score: 0, lives: 3, state: "playing" });
-  const [best, setBest] = useState(0);
+  const [best, setBest] = useStorage("pacman-high-score", 0);
 
   useEffect(() => {
-    const saved = localStorage.getItem("pacman-high-score");
-    if (saved) setBest(parseInt(saved));
-
     const canvas = canvasRef.current;
     canvas.width = W; canvas.height = H;
     const ctx = canvas.getContext("2d");
@@ -143,9 +141,8 @@ export default function PacMan({ onComplete }) {
   useEffect(() => {
     if (ui.score > best) {
       setBest(ui.score);
-      localStorage.setItem("pacman-high-score", ui.score.toString());
     }
-  }, [ui.score, best]);
+  }, [ui.score, best, setBest]);
 
   return (
     <div style={{ minHeight:"100vh", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", background:"#000", fontFamily:"'Segoe UI', sans-serif", padding:16 }}>

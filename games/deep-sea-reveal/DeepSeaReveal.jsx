@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useGame } from "@/lib/gameState";
+import { useStorage } from "@/hooks/useStorage";
 
 // Color sequence encoded as r=red, g=green, b=blue, y=yellow
 const CREATURES = {
@@ -74,10 +75,7 @@ export default function DeepSeaReveal({ onComplete }) {
   const [zone, setZone] = useState(null);
   const [unlocked, setUnlocked] = useState({ shallow:true, twilight:false, midnight:false, hadal:false });
   const [score, setScore] = useState(0);
-  const [bestScore, setBestScore] = useState(() => {
-    if (typeof window === 'undefined') return 0;
-    return Number(window.localStorage.getItem('deepsea-best')) || 0;
-  });
+  const [bestScore, setBestScore] = useStorage('deepsea-best', 0);
   const [totalCorrectGuesses, setTotalCorrectGuesses] = useState(0);
   const [totalPossibleGuesses, setTotalPossibleGuesses] = useState(0);
   const [round, setRound] = useState(0);
@@ -98,10 +96,9 @@ export default function DeepSeaReveal({ onComplete }) {
 
   useEffect(() => {
     if (score > bestScore) {
-      window.localStorage.setItem('deepsea-best', String(score));
       setBestScore(score);
     }
-  }, [score, bestScore]);
+  }, [score, bestScore, setBestScore]);
 
   useEffect(() => {
     if (!timerActive || phase !== "answer") return;
@@ -241,7 +238,7 @@ export default function DeepSeaReveal({ onComplete }) {
       <div style={{ display:"flex", flexDirection:"column", gap:12, width:"100%", maxWidth:400 }}>
         {ZONES.map((z, i) => (
           <button key={z.id} onClick={() => unlocked[z.id] && startZone(z.id)} style={{
-            padding:"16px 24px", borderRadius:16, border:"none",
+            padding:"16px 24px", borderRadius:16,
             background: unlocked[z.id]
               ? `linear-gradient(135deg,rgba(2,132,199,${0.25+i*0.15}),rgba(3,105,161,${0.25+i*0.15}))`
               : "rgba(255,255,255,0.05)",
@@ -263,7 +260,7 @@ export default function DeepSeaReveal({ onComplete }) {
         ))}
       </div>
       <button onClick={() => setScreen("title")} style={{
-        marginTop:20, padding:"10px 24px", borderRadius:999, border:"none",
+        marginTop:20, padding:"10px 24px", borderRadius:999,
         background:"rgba(255,255,255,0.08)", color:"#7dd3fc", cursor:"pointer",
         backdropFilter: "blur(12px)",
         WebkitBackdropFilter: "blur(12px)",
@@ -307,7 +304,7 @@ export default function DeepSeaReveal({ onComplete }) {
         onMouseDown={e => { e.currentTarget.style.transform="translateY(-2px)"; }}
         onMouseUp={e => { e.currentTarget.style.transform="translateY(0)"; }}>🔄 Retry</button>
         <button onClick={() => setScreen("zone")} style={{
-          padding:"14px 28px", borderRadius:999, border:"none",
+          padding:"14px 28px", borderRadius:999,
           background:"rgba(255,255,255,0.08)", color:"#7dd3fc", fontWeight:700, cursor:"pointer",
           backdropFilter:"blur(12px)",
           WebkitBackdropFilter:"blur(12px)",

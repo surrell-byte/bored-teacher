@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useStorage } from "@/hooks/useStorage";
 
 const DATA = [
   { word: "Apple", meaning: "A red or green fruit" },
@@ -18,11 +19,9 @@ export default function WordMatch({ onComplete }) {
   const [feedback, setFeedback] = useState("");
   const [score, setScore] = useState(0);
   const [done, setDone] = useState(false);
-  const [bestScore, setBestScore] = useState(0);
+  const [bestScore, setBestScore] = useStorage("word-match-best", 0);
 
   useEffect(() => {
-    const saved = localStorage.getItem("word-match-best");
-    if (saved) setBestScore(parseInt(saved));
     startGame();
   }, []);
 
@@ -44,7 +43,6 @@ export default function WordMatch({ onComplete }) {
         const accuracy = Math.round((DATA.length / (attempts + 1)) * 100);
         if (accuracy > bestScore) {
           setBestScore(accuracy);
-          localStorage.setItem("word-match-best", accuracy.toString());
         }
         onComplete?.(accuracy, accuracy);
         setDone(true);

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useGame } from "@/lib/gameState";
+import { playBeep } from "@/lib/sound/beep";
 
 const COLOURS = [
   { id:"red",    label:"RED",    bg:"linear-gradient(135deg,#ef4444,#b91c1c)", sound:261 },
@@ -9,21 +10,6 @@ const COLOURS = [
   { id:"purple", label:"PURPLE", bg:"linear-gradient(135deg,#a855f7,#7c3aed)", sound:440 },
   { id:"orange", label:"ORANGE", bg:"linear-gradient(135deg,#f97316,#c2410c)", sound:349 },
 ];
-
-function playBeep(freq, duration = 0.2) {
-  try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain); gain.connect(ctx.destination);
-    osc.frequency.value = freq;
-    gain.gain.value = 0.3;
-    osc.start();
-    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
-    osc.stop(ctx.currentTime + duration);
-    setTimeout(() => ctx.close(), 600);
-  } catch(e) {}
-}
 
 const MODES = [
   { id:"classic", label:"🎮 Classic", desc:"4 colours, 3 lives" },

@@ -1,0 +1,523 @@
+--- a/games/colour-clash/ColourClash.jsx	2026-06-16 05:08:32.000000000 +0000
++++ b/games/colour-clash/ColourClash.jsx	2026-07-16 11:56:20.008148004 +0000
+@@ -1,5 +1,6 @@
+ import { useState, useEffect, useCallback, useRef } from "react";
+ import { useGame } from "@/lib/gameState";
++import { playBeep } from "@/lib/sound/beep";
+ 
+ const COLOURS = [
+   { id:"red",    label:"RED",    bg:"linear-gradient(135deg,#ef4444,#b91c1c)", sound:261 },
+@@ -10,21 +11,6 @@
+   { id:"orange", label:"ORANGE", bg:"linear-gradient(135deg,#f97316,#c2410c)", sound:349 },
+ ];
+ 
+-function playBeep(freq, duration = 0.2) {
+-  try {
+-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+-    const osc = ctx.createOscillator();
+-    const gain = ctx.createGain();
+-    osc.connect(gain); gain.connect(ctx.destination);
+-    osc.frequency.value = freq;
+-    gain.gain.value = 0.3;
+-    osc.start();
+-    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+-    osc.stop(ctx.currentTime + duration);
+-    setTimeout(() => ctx.close(), 600);
+-  } catch(e) {}
+-}
+-
+ const MODES = [
+   { id:"classic", label:"🎮 Classic", desc:"4 colours, 3 lives" },
+   { id:"hard",    label:"💀 Hard",    desc:"6 colours, 1 life" },
+--- a/games/animal-class-quest/AnimalClassQuest.jsx	2026-06-16 05:08:32.000000000 +0000
++++ b/games/animal-class-quest/AnimalClassQuest.jsx	2026-07-16 11:56:34.142586523 +0000
+@@ -1,5 +1,6 @@
+ import { useState, useCallback } from "react";
+ import { useGame } from "@/lib/gameState";
++import { playBeep as playTone } from "@/lib/sound/beep";
+ 
+ const EASY = [
+   { name:"Frog",      emoji:"🐸", cls:"Amphibian" }, { name:"Cat",       emoji:"🐱", cls:"Mammal" },
+@@ -38,16 +39,7 @@
+ 
+ function shuffle(arr){ return [...arr].sort(()=>Math.random()-0.5); }
+ function playBeep(type){
+-  try{
+-    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+-    const osc=ctx.createOscillator(), g=ctx.createGain();
+-    osc.connect(g); g.connect(ctx.destination);
+-    osc.type="sine";
+-    if(type==="correct"){osc.frequency.value=880;g.gain.value=0.3;}
+-    else{osc.frequency.value=300;g.gain.value=0.25;}
+-    osc.start(); g.gain.exponentialRampToValueAtTime(0.00001,ctx.currentTime+0.25);
+-    osc.stop(ctx.currentTime+0.25); setTimeout(()=>ctx.close(),500);
+-  }catch(e){}
++  playTone(type === "correct" ? 880 : 300, 0.25, type === "correct" ? 0.3 : 0.25);
+ }
+ 
+ export default function AnimalClassQuest({ onComplete }) {
+--- a/games/deep-sea-reveal/DeepSeaReveal.jsx	2026-06-16 05:08:32.000000000 +0000
++++ b/games/deep-sea-reveal/DeepSeaReveal.jsx	2026-07-16 11:56:54.978248691 +0000
+@@ -1,5 +1,6 @@
+ import { useState, useCallback, useEffect, useRef } from "react";
+ import { useGame } from "@/lib/gameState";
++import { useStorage } from "@/hooks/useStorage";
+ 
+ // Color sequence encoded as r=red, g=green, b=blue, y=yellow
+ const CREATURES = {
+@@ -74,10 +75,7 @@
+   const [zone, setZone] = useState(null);
+   const [unlocked, setUnlocked] = useState({ shallow:true, twilight:false, midnight:false, hadal:false });
+   const [score, setScore] = useState(0);
+-  const [bestScore, setBestScore] = useState(() => {
+-    if (typeof window === 'undefined') return 0;
+-    return Number(window.localStorage.getItem('deepsea-best')) || 0;
+-  });
++  const [bestScore, setBestScore] = useStorage('deepsea-best', 0);
+   const [totalCorrectGuesses, setTotalCorrectGuesses] = useState(0);
+   const [totalPossibleGuesses, setTotalPossibleGuesses] = useState(0);
+   const [round, setRound] = useState(0);
+@@ -98,10 +96,9 @@
+ 
+   useEffect(() => {
+     if (score > bestScore) {
+-      window.localStorage.setItem('deepsea-best', String(score));
+       setBestScore(score);
+     }
+-  }, [score, bestScore]);
++  }, [score, bestScore, setBestScore]);
+ 
+   useEffect(() => {
+     if (!timerActive || phase !== "answer") return;
+--- a/games/flagmaster/Flagmaster.jsx	2026-07-05 08:05:53.000000000 +0000
++++ b/games/flagmaster/Flagmaster.jsx	2026-07-16 11:58:01.950510820 +0000
+@@ -1,4 +1,5 @@
+ import { useState, useCallback, useEffect, useRef } from "react";
++import { useStorage } from "@/hooks/useStorage";
+ 
+ // ═══════════════════════════════════════════════
+ // DATA (ported verbatim from flagmaster-premium.html)
+@@ -295,7 +296,7 @@
+   const [ageInput, setAgeInput] = useState("");
+   const [countryCode, setCountryCode] = useState("");
+   const [shakeField, setShakeField] = useState(null); // 'name' | 'age' | 'country'
+-  const [profile, setProfile] = useState(null); // {name, age, country}
++  const [profile, setProfile] = useStorage("flagPlayerProfile", null); // {name, age, country}
+ 
+   // Progress
+   const [levelCompleted, setLevelCompleted] = useState([false, false, false, false, false]);
+@@ -317,15 +318,15 @@
+ 
+   const advanceTimeoutRef = useRef(null);
+ 
+-  // Restore saved passport profile (matches localStorage.flagPlayerProfile in the HTML)
++  // Hydrate the passport form once the saved profile loads from storage.
++  useEffect(() => {
++    if (profile) {
++      setNameInput(profile.name); setAgeInput(String(profile.age)); setCountryCode(profile.country);
++    }
++  }, [profile]);
++
++  // Unmount cleanup for the pending "advance to next question" timeout.
+   useEffect(() => {
+-    try {
+-      const saved = JSON.parse(localStorage.getItem("flagPlayerProfile"));
+-      if (saved) {
+-        setProfile(saved);
+-        setNameInput(saved.name); setAgeInput(String(saved.age)); setCountryCode(saved.country);
+-      }
+-    } catch (e) {}
+     return () => { if (advanceTimeoutRef.current) clearTimeout(advanceTimeoutRef.current); };
+   }, []);
+ 
+@@ -342,7 +343,6 @@
+     if (!countryCode) { shake("country"); return; }
+     const p = { name: name.slice(0, 14), age, country: countryCode };
+     setProfile(p);
+-    try { localStorage.setItem("flagPlayerProfile", JSON.stringify(p)); } catch (e) {}
+     setScreen("worldMap");
+   };
+ 
+--- a/games/food-word-hunt/FoodWordHunt.jsx	2026-06-15 20:12:29.000000000 +0000
++++ b/games/food-word-hunt/FoodWordHunt.jsx	2026-07-16 11:58:50.141102372 +0000
+@@ -1,4 +1,5 @@
+ import { useState, useCallback, useEffect } from "react";
++import { useStorage } from "@/hooks/useStorage";
+ 
+ const CATEGORIES = {
+   fruits: {
+@@ -45,23 +46,10 @@
+   const [typed, setTyped] = useState([]);
+   const [score, setScore] = useState(0);
+   const [mistakes, setMistakes] = useState(0);
+-  const [completedCats, setCompletedCats] = useState([]);
++  const [completedCats, setCompletedCats] = useStorage("food-word-hunt-v1", []);
+   const [feedback, setFeedback] = useState("");
+   const [done, setDone] = useState(false);
+ 
+-  // Load progress
+-  useEffect(() => {
+-    const saved = localStorage.getItem("food-word-hunt-v1");
+-    if (saved) setCompletedCats(JSON.parse(saved));
+-  }, []);
+-
+-  // Save progress
+-  useEffect(() => {
+-    if (completedCats.length > 0) {
+-      localStorage.setItem("food-word-hunt-v1", JSON.stringify(completedCats));
+-    }
+-  }, [completedCats]);
+-
+   const startCategory = useCallback((key) => {
+     const cat = CATEGORIES[key];
+     const shuffled = shuffle(cat.items);
+--- a/games/fruit-word-hunt/FruitWordHunt.jsx	2026-06-15 19:57:09.000000000 +0000
++++ b/games/fruit-word-hunt/FruitWordHunt.jsx	2026-07-16 11:59:16.801309658 +0000
+@@ -1,4 +1,5 @@
+ import { useState, useCallback, useEffect } from "react";
++import { useStorage } from "@/hooks/useStorage";
+ 
+ const ALL_FRUITS = [
+   { emoji: "🍎", name: "apple" }, { emoji: "🍐", name: "pear" },
+@@ -40,32 +41,24 @@
+ export default function FruitWordHunt({ onComplete }) {
+   const [screen, setScreen] = useState("menu");
+   const [levelIdx, setLevelIdx] = useState(0);
+-  const [unlocked, setUnlocked] = useState([true, false, false]);
++  // Combined into one storage-backed value so both pieces persist together
++  // under the same "fruit-word-hunt-v1" key as before.
++  const [progress, setProgress] = useStorage("fruit-word-hunt-v1", { unlocked: [true, false, false], score: [0, 0, 0] });
++  const unlocked = progress.unlocked;
++  const score = progress.score;
++  const setUnlocked = useCallback((next) => {
++    setProgress(prev => ({ ...prev, unlocked: typeof next === "function" ? next(prev.unlocked) : next }));
++  }, [setProgress]);
++  const setScore = useCallback((next) => {
++    setProgress(prev => ({ ...prev, score: typeof next === "function" ? next(prev.score) : next }));
++  }, [setProgress]);
+   const [fruitIdx, setFruitIdx] = useState(0);
+-  const [score, setScore] = useState([0, 0, 0]);
+   const [mistakes, setMistakes] = useState(0);
+   const [tiles, setTiles] = useState([]);
+   const [typed, setTyped] = useState([]);
+   const [feedback, setFeedback] = useState("");
+   const [levelComplete, setLevelComplete] = useState(false);
+ 
+-  // Load progress on mount
+-  useEffect(() => {
+-    const saved = localStorage.getItem("fruit-word-hunt-v1");
+-    if (saved) {
+-      try {
+-        const { unlocked: u, score: s } = JSON.parse(saved);
+-        if (u) setUnlocked(u);
+-        if (s) setScore(s);
+-      } catch (e) { console.error("Failed to load progress", e); }
+-    }
+-  }, []);
+-
+-  // Auto-save progress whenever unlocked levels or scores change
+-  useEffect(() => {
+-    localStorage.setItem("fruit-word-hunt-v1", JSON.stringify({ unlocked, score }));
+-  }, [unlocked, score]);
+-
+   const loadFruit = useCallback((lvlIdx, fIdx, tiles0 = null) => {
+     const lvl = LEVELS[lvlIdx];
+     const fName = lvl.fruits[fIdx];
+--- a/games/pac-man/PacMan.jsx	2026-06-15 20:12:34.000000000 +0000
++++ b/games/pac-man/PacMan.jsx	2026-07-16 11:59:43.113087603 +0000
+@@ -1,4 +1,5 @@
+ import { useEffect, useRef, useState } from "react";
++import { useStorage } from "@/hooks/useStorage";
+ 
+ const TILE = 30;
+ const RAW_MAZE = [
+@@ -46,12 +47,9 @@
+   const canvasRef = useRef(null);
+   const gameRef = useRef(null);
+   const [ui, setUi] = useState({ score: 0, lives: 3, state: "playing" });
+-  const [best, setBest] = useState(0);
++  const [best, setBest] = useStorage("pacman-high-score", 0);
+ 
+   useEffect(() => {
+-    const saved = localStorage.getItem("pacman-high-score");
+-    if (saved) setBest(parseInt(saved));
+-
+     const canvas = canvasRef.current;
+     canvas.width = W; canvas.height = H;
+     const ctx = canvas.getContext("2d");
+@@ -143,9 +141,8 @@
+   useEffect(() => {
+     if (ui.score > best) {
+       setBest(ui.score);
+-      localStorage.setItem("pacman-high-score", ui.score.toString());
+     }
+-  }, [ui.score, best]);
++  }, [ui.score, best, setBest]);
+ 
+   return (
+     <div style={{ minHeight:"100vh", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", background:"#000", fontFamily:"'Segoe UI', sans-serif", padding:16 }}>
+--- a/games/shuttlecock-smash/ShuttlecockSmash.jsx	2026-06-15 20:05:39.000000000 +0000
++++ b/games/shuttlecock-smash/ShuttlecockSmash.jsx	2026-07-16 11:58:31.093538234 +0000
+@@ -1,4 +1,5 @@
+ import { useState, useCallback, useEffect } from "react";
++import { useStorage } from "@/hooks/useStorage";
+ 
+ const QUESTIONS_DB = {
+   1: [
+@@ -33,7 +34,7 @@
+   const [screen, setScreen] = useState("start");
+   const [playerName, setPlayerName] = useState("");
+   const [level, setLevel] = useState(1);
+-  const [unlocked, setUnlocked] = useState({ 1: true, 2: false });
++  const [unlocked, setUnlocked] = useStorage("shuttlecock-smash-v1", { 1: true, 2: false });
+   const [questions, setQuestions] = useState([]);
+   const [idx, setIdx] = useState(0);
+   const [score, setScore] = useState(0);
+@@ -41,21 +42,6 @@
+   const [selected, setSelected] = useState(null);
+   const [answered, setAnswered] = useState(false);
+ 
+-  // Load progress on mount
+-  useEffect(() => {
+-    const saved = localStorage.getItem("shuttlecock-smash-v1");
+-    if (saved) {
+-      try {
+-        setUnlocked(JSON.parse(saved));
+-      } catch (e) { console.error("Failed to load progress", e); }
+-    }
+-  }, []);
+-
+-  // Auto-save progress
+-  useEffect(() => {
+-    localStorage.setItem("shuttlecock-smash-v1", JSON.stringify(unlocked));
+-  }, [unlocked]);
+-
+   const startLevel = useCallback((lvl) => {
+     setLevel(lvl);
+     setQuestions(shuffle(QUESTIONS_DB[lvl]));
+--- a/games/unicorn-run/UnicornRun.jsx	2026-06-15 20:08:23.000000000 +0000
++++ b/games/unicorn-run/UnicornRun.jsx	2026-07-16 11:58:31.093990741 +0000
+@@ -1,4 +1,5 @@
+ import { useState, useCallback, useEffect } from "react";
++import { useStorage } from "@/hooks/useStorage";
+ 
+ const QUESTIONS_DB = {
+   1: [
+@@ -45,7 +46,7 @@
+   const [screen, setScreen] = useState("start");
+   const [playerName, setPlayerName] = useState("");
+   const [level, setLevel] = useState(1);
+-  const [unlocked, setUnlocked] = useState({ 1:true, 2:false, 3:false });
++  const [unlocked, setUnlocked] = useStorage("unicorn-run-v1", { 1:true, 2:false, 3:false });
+   const [questions, setQuestions] = useState([]);
+   const [idx, setIdx] = useState(0);
+   const [score, setScore] = useState(0);
+@@ -53,17 +54,6 @@
+   const [selected, setSelected] = useState(null);
+   const [answered, setAnswered] = useState(false);
+ 
+-  useEffect(() => {
+-    const saved = localStorage.getItem("unicorn-run-v1");
+-    if (saved) {
+-      try { setUnlocked(JSON.parse(saved)); } catch (e) { console.error(e); }
+-    }
+-  }, []);
+-
+-  useEffect(() => {
+-    localStorage.setItem("unicorn-run-v1", JSON.stringify(unlocked));
+-  }, [unlocked]);
+-
+   const startLevel = useCallback((lvl) => {
+     setLevel(lvl);
+     setQuestions(shuffle(QUESTIONS_DB[lvl]));
+--- a/games/warriors-grammar-slam/WarriorsGrammarSlam.jsx	2026-07-03 14:23:11.000000000 +0000
++++ b/games/warriors-grammar-slam/WarriorsGrammarSlam.jsx	2026-07-16 11:58:31.094288284 +0000
+@@ -1,4 +1,5 @@
+ import { useState, useCallback, useEffect } from "react";
++import { useStorage } from "@/hooks/useStorage";
+ 
+ const QUESTIONS_DB = {
+   1: [
+@@ -45,7 +46,7 @@
+   const [screen, setScreen] = useState("start");
+   const [playerName, setPlayerName] = useState("");
+   const [level, setLevel] = useState(1);
+-  const [unlocked, setUnlocked] = useState({ 1: true, 2: false, 3: false });
++  const [unlocked, setUnlocked] = useStorage("warriors-grammar-slam-v1", { 1: true, 2: false, 3: false });
+   const [questions, setQuestions] = useState([]);
+   const [idx, setIdx] = useState(0);
+   const [score, setScore] = useState(0);
+@@ -54,21 +55,6 @@
+   const [selected, setSelected] = useState(null);
+   const [answered, setAnswered] = useState(false);
+ 
+-  // Load progress on mount
+-  useEffect(() => {
+-    const saved = localStorage.getItem("warriors-grammar-slam-v1");
+-    if (saved) {
+-      try {
+-        setUnlocked(JSON.parse(saved));
+-      } catch (e) { console.error("Failed to load progress", e); }
+-    }
+-  }, []);
+-
+-  // Auto-save progress
+-  useEffect(() => {
+-    localStorage.setItem("warriors-grammar-slam-v1", JSON.stringify(unlocked));
+-  }, [unlocked]);
+-
+   const startLevel = useCallback((lvl) => {
+     setLevel(lvl);
+     setQuestions(shuffle(QUESTIONS_DB[lvl]));
+--- a/games/word-fusion/WordFusion.jsx	2026-06-15 20:12:30.000000000 +0000
++++ b/games/word-fusion/WordFusion.jsx	2026-07-16 11:58:31.094555384 +0000
+@@ -1,4 +1,5 @@
+ import { useState, useCallback, useEffect } from "react";
++import { useStorage } from "@/hooks/useStorage";
+ 
+ const EASY = [
+   { part1:"sun",   part2:"flower", answer:"sunflower",  options:["sunflower","sunlight","sundrop","sunhat"] },
+@@ -51,7 +52,7 @@
+   const [screen, setScreen] = useState("landing");
+   const [playerName, setPlayerName] = useState("");
+   const [levelId, setLevelId] = useState("easy");
+-  const [unlocked, setUnlocked] = useState({ easy:true, medium:false, hard:false });
++  const [unlocked, setUnlocked] = useStorage("word-fusion-v1", { easy:true, medium:false, hard:false });
+   const [questions, setQuestions] = useState([]);
+   const [idx, setIdx] = useState(0);
+   const [score, setScore] = useState(0);
+@@ -59,15 +60,6 @@
+   const [selected, setSelected] = useState(null);
+   const [answered, setAnswered] = useState(false);
+ 
+-  useEffect(() => {
+-    const saved = localStorage.getItem("word-fusion-v1");
+-    if (saved) setUnlocked(JSON.parse(saved));
+-  }, []);
+-
+-  useEffect(() => {
+-    localStorage.setItem("word-fusion-v1", JSON.stringify(unlocked));
+-  }, [unlocked]);
+-
+   const startLevel = useCallback((id) => {
+     const lvl = LEVELS.find(l => l.id === id);
+     setLevelId(id);
+--- a/games/word-match/WordMatch.jsx	2026-06-15 20:12:32.000000000 +0000
++++ b/games/word-match/WordMatch.jsx	2026-07-16 11:59:55.531146639 +0000
+@@ -1,4 +1,5 @@
+ import { useState, useEffect, useCallback } from "react";
++import { useStorage } from "@/hooks/useStorage";
+ 
+ const DATA = [
+   { word: "Apple", meaning: "A red or green fruit" },
+@@ -18,11 +19,9 @@
+   const [feedback, setFeedback] = useState("");
+   const [score, setScore] = useState(0);
+   const [done, setDone] = useState(false);
+-  const [bestScore, setBestScore] = useState(0);
++  const [bestScore, setBestScore] = useStorage("word-match-best", 0);
+ 
+   useEffect(() => {
+-    const saved = localStorage.getItem("word-match-best");
+-    if (saved) setBestScore(parseInt(saved));
+     startGame();
+   }, []);
+ 
+@@ -44,7 +43,6 @@
+         const accuracy = Math.round((DATA.length / (attempts + 1)) * 100);
+         if (accuracy > bestScore) {
+           setBestScore(accuracy);
+-          localStorage.setItem("word-match-best", accuracy.toString());
+         }
+         onComplete?.(accuracy, accuracy);
+         setDone(true);
+--- a/hooks/useStorage.ts	2026-07-07 03:53:49.000000000 +0000
++++ b/hooks/useStorage.ts	2026-07-16 11:56:00.066501257 +0000
+@@ -0,0 +1,55 @@
++'use client';
++
++import { useState, useEffect, useCallback } from 'react';
++
++/**
++ * Shared localStorage-backed state hook.
++ *
++ * Replaces the ad-hoc `localStorage.getItem`/`setItem` pairs that were
++ * duplicated across ~10 games (DeepSeaReveal, Flagmaster, FoodWordHunt,
++ * FruitWordHunt, PacMan, ShuttlecockSmash, UnicornRun, WarriorsGrammarSlam,
++ * WordFusion, WordMatch). Values are JSON-encoded, so plain numbers,
++ * strings, arrays, and objects all work the same way previously-stored
++ * plain values (e.g. "42") still parse correctly with JSON.parse.
++ *
++ * Usage:
++ *   const [best, setBest] = useStorage('pacman-high-score', 0);
++ *   const [unlocked, setUnlocked] = useStorage('word-fusion-v1', []);
++ */
++export function useStorage<T>(
++  key: string,
++  defaultValue: T
++): [T, (value: T | ((prev: T) => T)) => void] {
++  const [value, setValue] = useState<T>(defaultValue);
++
++  // Read from localStorage once on mount (client-side only, SSR-safe).
++  useEffect(() => {
++    try {
++      const raw = window.localStorage.getItem(key);
++      if (raw !== null) {
++        setValue(JSON.parse(raw));
++      }
++    } catch {
++      // Corrupt or missing data — fall back to defaultValue silently.
++    }
++    // eslint-disable-next-line react-hooks/exhaustive-deps
++  }, [key]);
++
++  const setStoredValue = useCallback(
++    (next: T | ((prev: T) => T)) => {
++      setValue((prev) => {
++        const resolved =
++          typeof next === 'function' ? (next as (prev: T) => T)(prev) : next;
++        try {
++          window.localStorage.setItem(key, JSON.stringify(resolved));
++        } catch {
++          // localStorage unavailable (private mode, quota, etc) — ignore.
++        }
++        return resolved;
++      });
++    },
++    [key]
++  );
++
++  return [value, setStoredValue];
++}
+--- /dev/null	2026-07-07 01:52:05.049744079 +0000
++++ b/lib/sound/beep.ts	2026-07-16 11:56:07.070501292 +0000
+@@ -0,0 +1,29 @@
++/**
++ * Shared Web Audio "beep" tone generator.
++ *
++ * Extracted from two nearly-identical `playBeep()` implementations that
++ * were hand-rolled inside ColourClash.jsx and AnimalClassQuest.jsx.
++ * Behavior is unchanged — same oscillator/gain ramp shape, same silent
++ * failure if AudioContext is unavailable/blocked.
++ */
++export function playBeep(frequency: number, duration = 0.2, gain = 0.3) {
++  if (typeof window === 'undefined') return;
++  try {
++    const AudioCtx: typeof AudioContext =
++      (window as any).AudioContext || (window as any).webkitAudioContext;
++    const ctx = new AudioCtx();
++    const osc = ctx.createOscillator();
++    const gainNode = ctx.createGain();
++    osc.connect(gainNode);
++    gainNode.connect(ctx.destination);
++    osc.type = 'sine';
++    osc.frequency.value = frequency;
++    gainNode.gain.value = gain;
++    osc.start();
++    gainNode.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
++    osc.stop(ctx.currentTime + duration);
++    setTimeout(() => ctx.close(), Math.max(500, duration * 1000 + 300));
++  } catch {
++    // Audio not supported/blocked — fail silently, matches prior behavior.
++  }
++}

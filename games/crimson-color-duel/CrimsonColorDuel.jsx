@@ -258,7 +258,7 @@ export default function CrimsonColorDuel({ onComplete }) {
             const isWrong   = answered && opt === selected && opt !== current.color;
             return (
               <button key={opt} onClick={() => handleAnswer(opt)} style={{
-                padding:"14px 12px", borderRadius:14, border:"none",
+                padding:"14px 12px", borderRadius:14,
                 cursor: answered ? "default" : "pointer",
                 fontWeight:700, fontSize:"0.95rem",
                 display:"flex", alignItems:"center", gap:8, justifyContent:"center",

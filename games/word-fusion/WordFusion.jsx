@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import { useStorage } from "@/hooks/useStorage";
 
 const EASY = [
   { part1:"sun",   part2:"flower", answer:"sunflower",  options:["sunflower","sunlight","sundrop","sunhat"] },
@@ -51,22 +52,13 @@ export default function WordFusion({ onComplete }) {
   const [screen, setScreen] = useState("landing");
   const [playerName, setPlayerName] = useState("");
   const [levelId, setLevelId] = useState("easy");
-  const [unlocked, setUnlocked] = useState({ easy:true, medium:false, hard:false });
+  const [unlocked, setUnlocked] = useStorage("word-fusion-v1", { easy:true, medium:false, hard:false });
   const [questions, setQuestions] = useState([]);
   const [idx, setIdx] = useState(0);
   const [score, setScore] = useState(0);
   const [mistakes, setMistakes] = useState(0);
   const [selected, setSelected] = useState(null);
   const [answered, setAnswered] = useState(false);
-
-  useEffect(() => {
-    const saved = localStorage.getItem("word-fusion-v1");
-    if (saved) setUnlocked(JSON.parse(saved));
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("word-fusion-v1", JSON.stringify(unlocked));
-  }, [unlocked]);
 
   const startLevel = useCallback((id) => {
     const lvl = LEVELS.find(l => l.id === id);

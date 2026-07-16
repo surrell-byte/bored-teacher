@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import { useStorage } from "@/hooks/useStorage";
 
 const ALL_FRUITS = [
   { emoji: "🍎", name: "apple" }, { emoji: "🍐", name: "pear" },
@@ -40,31 +41,23 @@ function getFruit(name) { return ALL_FRUITS.find(f => f.name === name); }
 export default function FruitWordHunt({ onComplete }) {
   const [screen, setScreen] = useState("menu");
   const [levelIdx, setLevelIdx] = useState(0);
-  const [unlocked, setUnlocked] = useState([true, false, false]);
+  // Combined into one storage-backed value so both pieces persist together
+  // under the same "fruit-word-hunt-v1" key as before.
+  const [progress, setProgress] = useStorage("fruit-word-hunt-v1", { unlocked: [true, false, false], score: [0, 0, 0] });
+  const unlocked = progress.unlocked;
+  const score = progress.score;
+  const setUnlocked = useCallback((next) => {
+    setProgress(prev => ({ ...prev, unlocked: typeof next === "function" ? next(prev.unlocked) : next }));
+  }, [setProgress]);
+  const setScore = useCallback((next) => {
+    setProgress(prev => ({ ...prev, score: typeof next === "function" ? next(prev.score) : next }));
+  }, [setProgress]);
   const [fruitIdx, setFruitIdx] = useState(0);
-  const [score, setScore] = useState([0, 0, 0]);
   const [mistakes, setMistakes] = useState(0);
   const [tiles, setTiles] = useState([]);
   const [typed, setTyped] = useState([]);
   const [feedback, setFeedback] = useState("");
   const [levelComplete, setLevelComplete] = useState(false);
-
-  // Load progress on mount
-  useEffect(() => {
-    const saved = localStorage.getItem("fruit-word-hunt-v1");
-    if (saved) {
-      try {
-        const { unlocked: u, score: s } = JSON.parse(saved);
-        if (u) setUnlocked(u);
-        if (s) setScore(s);
-      } catch (e) { console.error("Failed to load progress", e); }
-    }
-  }, []);
-
-  // Auto-save progress whenever unlocked levels or scores change
-  useEffect(() => {
-    localStorage.setItem("fruit-word-hunt-v1", JSON.stringify({ unlocked, score }));
-  }, [unlocked, score]);
 
   const loadFruit = useCallback((lvlIdx, fIdx, tiles0 = null) => {
     const lvl = LEVELS[lvlIdx];

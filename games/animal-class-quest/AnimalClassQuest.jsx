@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { useGame } from "@/lib/gameState";
+import { playBeep as playTone } from "@/lib/sound/beep";
 
 const EASY = [
   { name:"Frog",      emoji:"🐸", cls:"Amphibian" }, { name:"Cat",       emoji:"🐱", cls:"Mammal" },
@@ -38,16 +39,7 @@ const FACTS = {
 
 function shuffle(arr){ return [...arr].sort(()=>Math.random()-0.5); }
 function playBeep(type){
-  try{
-    const ctx=new(window.AudioContext||window.webkitAudioContext)();
-    const osc=ctx.createOscillator(), g=ctx.createGain();
-    osc.connect(g); g.connect(ctx.destination);
-    osc.type="sine";
-    if(type==="correct"){osc.frequency.value=880;g.gain.value=0.3;}
-    else{osc.frequency.value=300;g.gain.value=0.25;}
-    osc.start(); g.gain.exponentialRampToValueAtTime(0.00001,ctx.currentTime+0.25);
-    osc.stop(ctx.currentTime+0.25); setTimeout(()=>ctx.close(),500);
-  }catch(e){}
+  playTone(type === "correct" ? 880 : 300, 0.25, type === "correct" ? 0.3 : 0.25);
 }
 
 export default function AnimalClassQuest({ onComplete }) {
@@ -189,7 +181,7 @@ export default function AnimalClassQuest({ onComplete }) {
             const isWrong=answered&&cls===wrongAns&&cls!==current.cls;
             return (
               <button key={cls} onClick={()=>answer(cls)} style={{
-                padding:"13px 16px",borderRadius:14,border:"none",
+                padding:"13px 16px",borderRadius:14,
                 cursor:answered?"default":"pointer",fontWeight:700,fontSize:"0.95rem",
                 background:isRight?"#166534":isWrong?"#7f1d1d":"rgba(255,255,255,0.1)",
                 color:isRight?"#4ade80":isWrong?"#fca5a5":"#ecfdf5",
