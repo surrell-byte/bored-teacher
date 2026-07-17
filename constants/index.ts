@@ -1,227 +1,79 @@
 // constants/index.ts — shared constants for ESL Game Hub
+//
+// Game metadata now lives in constants/games.ts (single source of truth).
+// Everything below is derived from that list so every consumer (Hub, Games
+// list, game page, leaderboard, achievements) keeps working unchanged.
+// To add/remove/edit a game, edit constants/games.ts only.
 
-export const GAME_KEYS = [
-  'unicorn','warriors','compound','animal','wordmatch','memory','missingfruit',
-  'animalclass','colourclash','compoundword','crimsonduel','deepseaReveal',
-  'emojimatch','emojispelling','familyquest','farmgame','findmyfood',
-  'flagmaster','foodwordhunt','fruitwordhunt','lakersracer','neonbridge','oceanquest',
-  'pacman','phonicsadventure','phonicsworld','shuttlecock','tornado','wgrandprix','wordfusion',
-  'countadd','moneyblocks','parachutedrop','superwings','swampjump','treasurechest','unicornwings',
-] as const;
+import { GAMES } from './games';
+export type { GameDefinition } from './games';
+export { GAMES } from './games';
 
+export const GAME_KEYS = GAMES.map(g => g.id) as readonly string[];
 export type GameKey = (typeof GAME_KEYS)[number];
 
-export const NEW_GAME_KEYS = [
-  'countadd','moneyblocks','parachutedrop',
-  'superwings','swampjump','treasurechest','unicornwings',
-] as const;
+export const NEW_GAME_KEYS = GAMES.filter(g => g.isNew).map(g => g.id) as readonly string[];
 
-export const GAME_NAMES: Record<string, string> = {
-  unicorn: 'Unicorn Trophy Run', warriors: 'Warriors Grammar Slam',
-  compound: 'Compound Word Quest', animal: 'Animal Kingdom Quest',
-  wordmatch: 'Word Match', memory: 'Memory Game', missingfruit: 'Missing Fruit',
-  animalclass: 'Animal Class Quest',
-  colourclash: 'Colour Clash', compoundword: 'Compound Word',
-  crimsonduel: 'Crimson Color Duel', deepseaReveal: 'Deep Sea Reveal',
-  emojimatch: 'Emoji Match', emojispelling: 'Emoji Spelling Game',
-  familyquest: 'Family Quest',
-  farmgame: 'Farm Game', findmyfood: 'Find My Food',
-  flagmaster: 'Flagmaster', foodwordhunt: 'Food Word Hunt',
-  fruitwordhunt: 'Fruit Word Hunt', lakersracer: 'Lakers Showtime Racer',
-  neonbridge: 'Neon Bridge of Destiny', oceanquest: 'Ocean Quest',
-  pacman: 'Pac-Man', phonicsadventure: 'Phonics Adventure',
-  phonicsworld: 'Phonics World', shuttlecock: 'Shuttlecock Smash',
-  tornado: 'Tornado', wgrandprix: 'W Grand Prix', wordfusion: 'Word Fusion',
-  countadd: 'Count & Add', 
-  moneyblocks: 'Money Blocks', parachutedrop: 'Parachute Drop',
-  superwings: 'Super Wings Races', swampjump: 'Froggy Hop',
-  treasurechest: 'Treasure Chest Showdown', unicornwings: 'Unicorn Wing Races',
+export const GAME_NAMES: Record<string, string> = Object.fromEntries(
+  GAMES.map(g => [g.id, g.name])
+);
+
+export const GAME_ICONS: Record<string, string> = Object.fromEntries(
+  GAMES.map(g => [g.id, g.icon])
+);
+
+export const GAME_DESC: Record<string, string> = Object.fromEntries(
+  GAMES.map(g => [g.id, g.description])
+);
+
+export const GAME_COVERS: Record<string, string> = {
+  animalclass: '/assets/covers/animal-class-quest-cover.webp',
+  blockfight: '/assets/covers/block-fight-cover.webp',
+  colourclash: '/assets/covers/colour-clash-cover.webp',
+  compound: '/assets/covers/compound-word-quest.webp',
+  connect4: '/assets/covers/connect-4-cover.webp',
+  countadd: '/assets/covers/count-and-add-cover.webp',
+  deepseaReveal: '/assets/covers/deep-sea-reveal.webp',
+  emojimatch: '/assets/covers/emoji-match-cover.webp',
+  emojispelling: '/assets/covers/emoji-spelling-game-cover.webp',
+  farmgame: '/assets/covers/farm-game-cover.webp',
+  findmyfood: '/assets/covers/find-my-food-cover.webp',
+  foodwordhunt: '/assets/covers/food-word-hunt-cover.webp',
+  swampjump: '/assets/covers/froggy-hop-cover.webp',
+  memory: '/assets/covers/memory-match-cover.webp',
+  monkeytree: '/assets/covers/monkey-tree-climb-cover.webp',
+  neonbridge: '/assets/covers/neon-bridge-cover.webp',
+  oceanquest: '/assets/covers/ocean-quest-cover.webp',
+  parachutedrop: '/assets/covers/parachute-drop-cover.webp',
+  phonicsworld: '/assets/covers/phonics-world-cover.webp',
+  redorblack: '/assets/covers/red-or-black-cover.webp',
+  lakersracer: '/assets/covers/shakers-showtime-racer-cover.webp',
+  shuttlecock: '/assets/covers/shuttlecock-smash-cover.webp',
+  tornado: '/assets/covers/tornado-cover.webp',
+  treasurechest: '/assets/covers/treasure-chest-showdown-cover.webp',
+  wgrandprix: '/assets/covers/w-grand-prix.webp',
+  wordmatch: '/assets/covers/word-match-cover.webp',
 };
 
-export const GAME_ICONS: Record<string, string> = {
-  unicorn: '🦄', warriors: '🏀', compound: '🧩', animal: '🐾',
-  wordmatch: '🔤', memory: '🧠', missingfruit: '🍓',
-  animalclass: '🦁', colourclash: '🎨', compoundword: '🔗',
-  crimsonduel: '⚔️', deepseaReveal: '🌊', emojimatch: '😊', emojispelling: '📝',
-  familyquest: '👨‍👩‍👧', farmgame: '🌾', findmyfood: '🍔',
-  flagmaster: '🚩', foodwordhunt: '🍕', fruitwordhunt: '🍎', lakersracer: '🏀',
-  neonbridge: '🌉', oceanquest: '🐠', pacman: '👾', phonicsadventure: '📖',
-  phonicsworld: '🔤', shuttlecock: '🏸', tornado: '🌪️', wgrandprix: '🏎️', wordfusion: '⚡',
-  countadd: '➕', moneyblocks: '💰', parachutedrop: '🪂',
-  superwings: '✈️', swampjump: '🐸', treasurechest: '🏴‍☠️', unicornwings: '🦄',
-};
+export const GAME_TAGS: Record<string, { label: string; color: string }> = Object.fromEntries(
+  GAMES.map(g => [g.id, g.tag])
+);
 
-export const GAME_DESC: Record<string, string> = {
-  unicorn: 'Fast vocabulary matching with bright visuals and quick recall pressure.',
-  warriors: 'Train tense accuracy with increasingly challenging sentence choices.',
-  compound: 'Strengthen word-building intuition by combining clues into full answers.',
-  animal: 'Blend ESL reading with science categories in a crisp classification challenge.',
-  wordmatch: 'Match words to their meanings in a fast-paced pairing challenge.',
-  memory: 'Flip cards and match pairs to sharpen recall and vocabulary retention.',
-  missingfruit: 'Identify the missing item from the sequence to build observation and logic skills.',
-  animalclass: 'Sort creatures into their correct animal classes in this science-meets-ESL challenge.',
-  colourclash: 'Identify and match colours at speed — great for early learners and visual thinkers.',
-  compoundword: 'Smash two words together to form compound words and expand your vocabulary range.',
-  crimsonduel: 'Two-player colour duel mode — compete head-to-head to name colours fastest.',
-  deepseaReveal: 'Uncover hidden ocean creatures as you answer vocabulary questions correctly.',
-  emojimatch: 'Match emojis to their English words in this fun and expressive memory challenge.',
-  emojispelling: 'Use emoji clues to practise spelling and reinforce word-sound connections.',
-  familyquest: 'Learn family member vocabulary and relationships through an interactive quest format.',
-  farmgame: 'Explore farm life vocabulary through an engaging game-based learning experience.',
-  findmyfood: 'Spot and identify foods from descriptions — builds food vocabulary and reading skills.',
-  flagmaster: 'Identify world flags and their countries — a geography and culture vocabulary boost.',
-  foodwordhunt: 'Hunt for hidden food words in a grid — combines spelling skills with vocabulary building.',
-  fruitwordhunt: 'Find fruit names hidden in a letter grid and sharpen your spelling at the same time.',
-  lakersracer: 'Race to the basket by answering correctly — fast-paced vocabulary and grammar sprints.',
-  neonbridge: 'Cross the neon bridge by choosing the correct answer before time runs out.',
-  oceanquest: 'Dive into ocean science vocabulary with this colourful underwater classification quest.',
-  pacman: 'Classic arcade action with an ESL twist — chomp your way through vocabulary challenges.',
-  phonicsadventure: 'Go on a phonics journey, practising letter sounds and blends through story-driven play.',
-  phonicsworld: 'Explore a world of letter-sound relationships — ideal for early readers building fluency.',
-  shuttlecock: 'Rally your vocabulary knowledge in this badminton-inspired word-smashing challenge.',
-  tornado: 'A whirlwind vocab challenge — answer before the storm sweeps your score away.',
-  wgrandprix: 'Rev up your vocabulary and race to the finish — the faster you answer, the further you go.',
-  wordfusion: 'Fuse word parts together under time pressure to test morphology and vocabulary range.',
-  countadd: 'Practise quick counting and addition with bright, early-numeracy questions.',
-  
-  moneyblocks: 'Reveal money blocks, manage risk, and race to build the biggest total.',
-  parachutedrop: 'Roll, stop, and choose parachute values in a playful two-player number game.',
-  superwings: 'Race colourful planes around the board in a simple turn-based classroom game.',
-  swampjump: 'Hop through the swamp, time each jump, and chase a new high score.',
-  treasurechest: 'Choose treasure chests, collect rewards, and compete for the biggest hoard.',
-  unicornwings: 'Race unicorns around the board with a sparkling two-player dice challenge.',
-};
+export const GAME_BADGE: Record<string, string> = Object.fromEntries(
+  GAMES.map(g => [g.id, g.badge])
+);
 
-export const GAME_COVERS: Record<string, string> = {};
+export const GAME_DIFFICULTY: Record<string, string> = Object.fromEntries(
+  GAMES.map(g => [g.id, g.difficulty])
+);
 
-export const GAME_TAGS: Record<string, { label: string; color: string }> = {
-  unicorn: { label: 'Vocabulary', color: 'tag-vocab' },
-  warriors: { label: 'Grammar', color: 'tag-grammar' },
-  compound: { label: 'Word Formation', color: 'tag-words' },
-  animal: { label: 'Science', color: 'tag-bio' },
-  wordmatch: { label: 'Vocabulary', color: 'tag-vocab' },
-  memory: { label: 'Memory', color: 'tag-grammar' },
-  missingfruit: { label: 'Logic', color: 'tag-bio' },
-  animalclass: { label: 'Science', color: 'tag-bio' },
-  colourclash: { label: 'Vocabulary', color: 'tag-vocab' },
-  compoundword: { label: 'Word Formation', color: 'tag-words' },
-  crimsonduel: { label: 'Colours', color: 'tag-vocab' },
-  deepseaReveal: { label: 'Science', color: 'tag-bio' },
-  emojimatch: { label: 'Vocabulary', color: 'tag-vocab' },
-  emojispelling: { label: 'Spelling', color: 'tag-words' },
-  familyquest: { label: 'Vocabulary', color: 'tag-vocab' },
-  farmgame: { label: 'Vocabulary', color: 'tag-vocab' },
-  findmyfood: { label: 'Vocabulary', color: 'tag-vocab' },
-  flagmaster: { label: 'Geography', color: 'tag-bio' },
-  foodwordhunt: { label: 'Vocabulary', color: 'tag-vocab' },
-  fruitwordhunt: { label: 'Vocabulary', color: 'tag-vocab' },
-  lakersracer: { label: 'Vocabulary', color: 'tag-vocab' },
-  neonbridge: { label: 'Grammar', color: 'tag-grammar' },
-  oceanquest: { label: 'Science', color: 'tag-bio' },
-  pacman: { label: 'Vocabulary', color: 'tag-vocab' },
-  phonicsadventure: { label: 'Phonics', color: 'tag-words' },
-  phonicsworld: { label: 'Phonics', color: 'tag-words' },
-  shuttlecock: { label: 'Vocabulary', color: 'tag-vocab' },
-  tornado: { label: 'Vocabulary', color: 'tag-vocab' },
-  wgrandprix: { label: 'Vocabulary', color: 'tag-vocab' },
-  wordfusion: { label: 'Word Formation', color: 'tag-words' },
-  countadd: { label: 'Logic', color: 'tag-bio' },
-  moneyblocks: { label: 'Logic', color: 'tag-bio' },
-  parachutedrop: { label: 'Logic', color: 'tag-bio' },
-  superwings: { label: 'Logic', color: 'tag-bio' },
-  swampjump: { label: 'Logic', color: 'tag-bio' },
-  treasurechest: { label: 'Logic', color: 'tag-bio' },
-  unicornwings: { label: 'Logic', color: 'tag-bio' },
-};
+export const GAME_BAR_COLOR: Record<string, string> = Object.fromEntries(
+  GAMES.map(g => [g.id, g.barColor])
+);
 
-export const GAME_BADGE: Record<string, string> = {
-  unicorn: '3 Levels', warriors: '3 Levels', compound: 'Word Fusion', animal: '3 Levels',
-  wordmatch: 'Match Up', memory: 'Flip & Match', missingfruit: 'Spot It',
-  animalclass: 'Classify', colourclash: 'Colours',
-  compoundword: 'Combine', crimsonduel: 'Duel', deepseaReveal: 'Reveal',
-  emojimatch: 'Match Up', emojispelling: 'Spell It', familyquest: 'Family',
-  farmgame: 'Farm Life', findmyfood: 'Find It',
-  flagmaster: 'Flags', foodwordhunt: 'Hunt', fruitwordhunt: 'Hunt',
-  lakersracer: 'Race', neonbridge: 'Survive', oceanquest: 'Dive In',
-  pacman: 'Arcade', phonicsadventure: 'Phonics', phonicsworld: 'Sounds',
-  shuttlecock: 'Smash', tornado: 'Storm', wgrandprix: 'Race', wordfusion: 'Fuse',
-  countadd: 'Add Up', moneyblocks: 'Money',
-  parachutedrop: 'Dice', superwings: 'Race', swampjump: 'Hop',
-  treasurechest: 'Treasure', unicornwings: 'Race',
-};
-
-export const GAME_DIFFICULTY: Record<string, string> = {
-  unicorn: 'Starter', warriors: 'Intermediate', compound: 'Puzzle', animal: 'Mixed Skills',
-  wordmatch: 'Starter', memory: 'Starter', missingfruit: 'Puzzle',
-  animalclass: 'Starter', colourclash: 'Starter',
-  compoundword: 'Puzzle', crimsonduel: 'Competitive', deepseaReveal: 'Mixed Skills',
-  emojimatch: 'Starter', emojispelling: 'Intermediate', familyquest: 'Starter',
-  farmgame: 'Starter', findmyfood: 'Starter',
-  flagmaster: 'Intermediate', foodwordhunt: 'Puzzle', fruitwordhunt: 'Puzzle',
-  lakersracer: 'Competitive', neonbridge: 'Intermediate', oceanquest: 'Mixed Skills',
-  pacman: 'Arcade', phonicsadventure: 'Starter', phonicsworld: 'Starter',
-  shuttlecock: 'Competitive', tornado: 'Intermediate', wgrandprix: 'Competitive', wordfusion: 'Intermediate',
-  countadd: 'Starter', moneyblocks: 'Mixed Skills',
-  parachutedrop: 'Starter', superwings: 'Starter', swampjump: 'Arcade',
-  treasurechest: 'Competitive', unicornwings: 'Starter',
-};
-
-export const GAME_BAR_COLOR: Record<string, string> = {
-  unicorn: 'var(--gold)', warriors: 'var(--green)', compound: 'var(--blue)', animal: 'var(--teal)',
-  wordmatch: 'var(--purple)', memory: 'var(--coral)', missingfruit: 'var(--green)',
-  animalclass: 'var(--teal)', colourclash: 'var(--purple)',
-  compoundword: 'var(--blue)', crimsonduel: 'var(--red)', deepseaReveal: 'var(--teal)',
-  emojimatch: 'var(--gold)', emojispelling: 'var(--purple)', familyquest: 'var(--green)',
-  farmgame: 'var(--gold)', findmyfood: 'var(--coral)',
-  flagmaster: 'var(--blue)', foodwordhunt: 'var(--coral)', fruitwordhunt: 'var(--green)',
-  lakersracer: 'var(--gold)', neonbridge: 'var(--purple)', oceanquest: 'var(--teal)',
-  pacman: 'var(--gold)', phonicsadventure: 'var(--blue)', phonicsworld: 'var(--blue)',
-  shuttlecock: 'var(--green)', tornado: 'var(--red)', wgrandprix: 'var(--red)', wordfusion: 'var(--purple)',
-  countadd: 'var(--green)', moneyblocks: 'var(--gold)',
-  parachutedrop: 'var(--blue)', superwings: 'var(--red)', swampjump: 'var(--green)',
-  treasurechest: 'var(--gold)', unicornwings: 'var(--purple)',
-};
-
-export const GAME_URLS: Record<string, string> = {
-  unicorn: 'games/unicorn-run/unicorn.html',
-  warriors: 'games/warriors-grammar-slam/warriors.html',
-  compound: 'games/compound-word-quest/compound.html',
-  animal: 'games/animal-kingdom-quest/animal.html',
-  wordmatch: 'games/word-match/index.html',
-  memory: 'games/memory-game/index.html',
-  missingfruit: 'games/missing-fruit/index.html',
-  animalclass: 'games/animal-class-quest/animal-class-quest.html',
-  colourclash: 'games/colour-clash/colour-clash.html',
-  compoundword: 'games/compound-word/compound-word.html',
-  crimsonduel: 'games/crimson-color-duel/crimson-color-duel-premium.html',
-  deepseaReveal: 'games/deep-sea-reveal/deep-sea-reveal.html',
-  emojimatch: 'games/emoji-match/emoji-match.html',
-  emojispelling: 'games/emoji-spelling-game/emoji_spelling_game.html',
-  familyquest: 'games/family-quest/family-quest-premium.html',
-  farmgame: 'games/farm-game/farm-game-v1.html',
-  findmyfood: 'games/find-my-food/find-my-food-premium.html',
-  flagmaster: 'games/flagmaster/flagmaster-premium.html',
-  foodwordhunt: 'games/food-word-hunt/food-word-hunt.html',
-  fruitwordhunt: 'games/fruit-word-hunt/fruit-word-hunt.html',
-  lakersracer: 'games/lakers-showtime-racer/lakers-showtime-racer.html',
-  neonbridge: 'games/neon-bridge-of-destiny/neon-bridge-of-destiny.html',
-  oceanquest: 'games/ocean-quest/ocean-quest.html',
-  pacman: 'games/pac-man/pac-man.html',
-  phonicsadventure: 'games/phonics-adventure/phonics-adventure.html',
-  phonicsworld: 'games/phonics-world/phonics-world.html',
-  shuttlecock: 'games/shuttlecock-smash/shuttlecock-smash.html',
-  tornado: 'games/tornado/tornado.html',
-  wgrandprix: 'games/w-grand-prix/w-grand-prix.html',
-  wordfusion: 'games/word-fusion/word-fusion.html',
-  countadd: 'assets/legacy-games/count-and-add/count-and-add.html',
-  
-  moneyblocks: 'assets/legacy-games/money-blocks/index.html',
-  parachutedrop: 'assets/legacy-games/parachute-drop/index.html',
-  superwings: 'assets/legacy-games/super-wings-game/index.html',
-  swampjump: 'assets/legacy-games/swamp-jump-game/index.html',
-  treasurechest: 'assets/legacy-games/treasure-chest-game/index.html',
-  unicornwings: 'assets/legacy-games/unicorn-wings-game/index.html',
-};
+export const GAME_URLS: Record<string, string> = Object.fromEntries(
+  GAMES.map(g => [g.id, g.url])
+);
 
 export const THEMES = [
   { value: 'chalkboard', label: '🍃 Chalkboard' },

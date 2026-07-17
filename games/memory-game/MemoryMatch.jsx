@@ -77,16 +77,17 @@ export default function MemoryMatch({ onComplete }) {
 
       <div style={{
         display: "grid", gridTemplateColumns: "repeat(4, 1fr)",
-        gap: 12, maxWidth: 440,
+        gap: "clamp(8px, 1.5vw, 20px)", width: "100%",
+        maxWidth: "min(720px, calc(100vw - 48px))",
       }}>
         {cards.map((card, idx) => {
           const isFlipped = flipped.includes(idx) || matched.has(idx);
           const isMatched = matched.has(idx);
           return (
             <div key={idx} onClick={() => flip(idx)} style={{
-              width: 90, height: 90, borderRadius: 16, cursor: "pointer",
+              width: "100%", aspectRatio: "1", borderRadius: 16, cursor: "pointer",
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: isFlipped ? "1.5rem" : "2rem",
+              fontSize: isFlipped ? "clamp(1.3rem, 3.2vw, 2.4rem)" : "clamp(1.8rem, 4.2vw, 3.2rem)",
               background: isMatched
                 ? "linear-gradient(135deg,#22c55e,#16a34a)"
                 : isFlipped

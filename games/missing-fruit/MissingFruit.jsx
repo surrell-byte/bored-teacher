@@ -96,7 +96,7 @@ export default function MissingFruit({ onComplete }) {
            phase === "guess" ? "🔍 Which fruit is missing?" :
            result === "correct" ? "🎉 Correct!" : ""}
         </p>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", maxWidth: 360 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", maxWidth: "min(560px, calc(100vw - 56px))" }}>
           {fruits.map((fruit, idx) => {
             const hidden = phase !== "memorise" && idx === missingIdx;
             const isWrong = wrong.has(idx);

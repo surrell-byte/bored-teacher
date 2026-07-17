@@ -165,7 +165,7 @@ export default function MonkeyTreeClimb({ onComplete }) {
       background:"linear-gradient(180deg,#0a3a1e 0%,#0f4c2a 60%,#1a6636 100%)",
       fontFamily:"'Segoe UI', sans-serif", color:"#ecfdf5", padding:24,
     }}>
-      <div style={{ display:"flex", justifyContent:"space-between", width:"100%", maxWidth:440, marginBottom:14 }}>
+      <div style={{ display:"flex", justifyContent:"space-between", width:"100%", maxWidth:"min(640px, calc(100vw - 56px))", marginBottom:14 }}>
         <span style={{ background:"#166534", padding:"4px 14px", borderRadius:999, fontWeight:700 }}>{level.name}</span>
         <span style={{ color:"#fbbf24", fontWeight:700 }}>🏆 {score}</span>
         <span>{Array.from({length:3},(_,i)=>i<lives?"❤️":"🖤").join("")}</span>
@@ -194,11 +194,11 @@ export default function MonkeyTreeClimb({ onComplete }) {
 
       {/* Question card */}
       <div style={{
-        background:"rgba(255,255,255,0.07)", borderRadius:24, padding:"24px 32px",
+        background:"rgba(255,255,255,0.07)", borderRadius:24, padding:"clamp(20px,3vw,32px) clamp(24px,4vw,44px)",
         textAlign:"center", marginBottom:20, minWidth:280,
         border:`2px solid ${feedback==="correct"?"#4ade80":feedback==="wrong"?"#f87171":"rgba(255,255,255,0.1)"}`,
       }}>
-        <div style={{ fontSize:"2rem", fontWeight:800, color:"#bbf7d0", letterSpacing:2 }}>
+        <div style={{ fontSize:"clamp(1.7rem, 3.4vw, 2.6rem)", fontWeight:800, color:"#bbf7d0", letterSpacing:2 }}>
           {question.q}
         </div>
         {feedback && (
@@ -208,15 +208,15 @@ export default function MonkeyTreeClimb({ onComplete }) {
         )}
       </div>
 
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, maxWidth:280, width:"100%" }}>
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"clamp(10px, 1.6vw, 18px)", maxWidth:"min(640px, calc(100vw - 56px))", width:"100%" }}>
         {question.options.map((opt,i) => {
           const isCorrect = feedback==="correct" && opt===question.answer;
           const isWrong = feedback==="wrong" && opt===question.answer; // reveal correct on wrong
           return (
             <button key={i} onClick={() => answer(opt)} style={{
-              padding:"14px", borderRadius:14,
+              padding:"clamp(14px,2vw,22px)", borderRadius:14,
               cursor:feedback?"default":"pointer",
-              fontWeight:800, fontSize:"1.1rem",
+              fontWeight:800, fontSize:"clamp(1.1rem,2vw,1.5rem)",
               background: isCorrect?"#166534":isWrong?"#166534":feedback?"rgba(255,255,255,0.06)":"rgba(255,255,255,0.1)",
               color: isCorrect||isWrong?"#4ade80":"#ecfdf5",
               border:`2px solid ${isCorrect||isWrong?"#22c55e":"transparent"}`,

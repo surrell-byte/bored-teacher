@@ -239,7 +239,7 @@ export default function LakersShowtimeRacer({ onComplete }) {
 
       {/* Log */}
       <div style={{
-        width:"100%", maxWidth:400, background:"rgba(255,255,255,0.03)",
+        width:"100%", maxWidth:"min(560px, calc(100vw - 56px))", background:"rgba(255,255,255,0.03)",
         borderRadius:12, padding:"10px 14px", fontSize:"0.78rem", color:"#64748b",
         maxHeight:120, overflowY:"auto",
       }}>

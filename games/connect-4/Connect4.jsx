@@ -315,7 +315,7 @@ export default function Connect4({ onComplete }) {
         {/* Hover indicator */}
         <div style={{ display: "flex", gap: 8, marginBottom: 4, height: 18 }}>
           {Array.from({ length: COLS }, (_, c) => (
-            <div key={c} style={{ width: 48, display: "flex", justifyContent: "center" }}>
+            <div key={c} style={{ width: "clamp(20px, calc(14vw - 24px), 48px)", display: "flex", justifyContent: "center" }}>
               {hoverCol === c && !status && !(mode === "ai" && current === 2) && (
                 <div style={{
                   width: 14, height: 14, borderRadius: "50%",
@@ -336,7 +336,7 @@ export default function Connect4({ onComplete }) {
                   onMouseEnter={() => setHoverCol(c)}
                   onMouseLeave={() => setHoverCol(-1)}
                   style={{
-                    width: 48, height: 48, borderRadius: "50%", cursor: status || (mode === "ai" && current === 2) ? "default" : "pointer",
+                    width: "clamp(20px, calc(14vw - 24px), 48px)", height: "clamp(20px, calc(14vw - 24px), 48px)", borderRadius: "50%", cursor: status || (mode === "ai" && current === 2) ? "default" : "pointer",
                     background: cell === 0
                       ? "rgba(255,255,255,0.08)"
                       : `radial-gradient(circle at 35% 30%,${cell === 1 ? t1.a : t2.a},${cell === 1 ? t1.b : t2.b})`,

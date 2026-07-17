@@ -14,7 +14,7 @@ const NAV_ITEMS = [
   { href: '/leaderboard', label: 'Leaderboard', icon: '🏆' },
   { href: '/resources',   label: 'Resources',   icon: '📚' },
   { href: '/trophy',      label: 'Trophy Room', icon: '⭐' },
-  { href: '/payment',     label: 'Payment',     icon: '💳' },
+  { href: '/payment',     label: 'Shop',        icon: '💳' },
 ];
 
 export default function Navbar() {

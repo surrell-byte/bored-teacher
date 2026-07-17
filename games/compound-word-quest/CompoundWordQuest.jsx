@@ -164,7 +164,7 @@ export default function CompoundWordQuest({ onComplete }) {
       background: "linear-gradient(135deg,#f0f9ff,#e0f2fe,#bae6fd)",
       fontFamily: "'Segoe UI', sans-serif", padding: 24,
     }}>
-      <div style={{ width: "100%", maxWidth: 520 }}>
+      <div style={{ width: "100%", maxWidth: "min(760px, calc(100vw - 56px))" }}>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
           <span style={{ background: LEVEL_COLORS[level], padding: "4px 14px", borderRadius: 999, color: "#fff", fontWeight: 700, fontSize: "0.85rem" }}>LEVEL {level}</span>
           <span style={{ color: "#0369a1", fontWeight: 700 }}>🏆 Score: {score}</span>
@@ -178,12 +178,12 @@ export default function CompoundWordQuest({ onComplete }) {
           boxShadow: "0 8px 24px #0369a122",
         }}>
           <div style={{ textAlign: "center" }}>
-            <div style={{ fontSize: "3.5rem" }}>{current.e1}</div>
+            <div style={{ fontSize: "clamp(2.6rem, 5.5vw, 4.5rem)" }}>{current.e1}</div>
             <div style={{ color: "#64748b", fontSize: "0.85rem", fontWeight: 600, marginTop: 4 }}>{current.p1}</div>
           </div>
-          <div style={{ display: "flex", alignItems: "center", fontSize: "1.8rem", color: "#94a3b8" }}>+</div>
+          <div style={{ display: "flex", alignItems: "center", fontSize: "clamp(1.4rem, 2.6vw, 2.2rem)", color: "#94a3b8" }}>+</div>
           <div style={{ textAlign: "center" }}>
-            <div style={{ fontSize: "3.5rem" }}>{current.e2}</div>
+            <div style={{ fontSize: "clamp(2.6rem, 5.5vw, 4.5rem)" }}>{current.e2}</div>
             <div style={{ color: "#64748b", fontSize: "0.85rem", fontWeight: 600, marginTop: 4 }}>{current.p2}</div>
           </div>
         </div>
@@ -203,8 +203,8 @@ export default function CompoundWordQuest({ onComplete }) {
             const isWrong = answered && opt === selected && opt !== current.a;
             return (
               <button key={opt} onClick={() => answer(opt)} style={{
-                padding: "12px 20px", borderRadius: 999, border: "none", cursor: answered ? "default" : "pointer",
-                fontWeight: 700, fontSize: "1rem", minWidth: 140,
+                padding: "clamp(12px,1.8vw,18px) clamp(20px,3vw,32px)", borderRadius: 999, border: "none", cursor: answered ? "default" : "pointer",
+                fontWeight: 700, fontSize: "clamp(1rem,1.6vw,1.3rem)", minWidth: 140,
                 background: isCorrect ? "#22c55e" : isWrong ? "#ef4444" : "#0369a1",
                 color: "#fff",
                 boxShadow: isCorrect ? "0 0 12px #22c55e88" : "0 4px 0 " + (isWrong ? "#b91c1c" : "#075985"),

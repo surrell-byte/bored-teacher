@@ -152,7 +152,7 @@ export default function PacMan({ onComplete }) {
         <span style={{ color:"#f87171" }}>{Array.from({length:3},(_,i)=>i<ui.lives?"💛":"🖤").join("")}</span>
       </div>
       <div style={{ position:"relative" }}>
-        <canvas ref={canvasRef} style={{ border:"2px solid #1d4ed8", borderRadius:4, display:"block" }} />
+        <canvas ref={canvasRef} style={{ border:"2px solid #1d4ed8", borderRadius:4, display:"block", maxWidth:"100%", height:"auto" }} />
         {(ui.state!=="playing") && (
           <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", background:"rgba(0,0,0,0.85)" }}>
             <div style={{ fontSize:"3rem" }}>{ui.state==="win"?"🏆":"👻"}</div>

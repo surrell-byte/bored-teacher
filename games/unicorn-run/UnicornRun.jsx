@@ -129,7 +129,7 @@ export default function UnicornRun({ onComplete }) {
 
   return (
     <div style={{ minHeight:"100vh", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", background:"linear-gradient(135deg,#4a0072,#7b1fa2,#e91e63)", fontFamily:"'Segoe UI',sans-serif", color:"#fff", padding:24 }}>
-      <div style={{ width:"100%", maxWidth:520 }}>
+      <div style={{ width:"100%", maxWidth:"min(760px, calc(100vw - 56px))" }}>
         <div style={{ display:"flex", justifyContent:"space-between", marginBottom:16 }}>
           <span style={{ background:LEVEL_COLORS[level], padding:"4px 14px", borderRadius:999, fontWeight:700, fontSize:"0.85rem" }}>LEVEL {level}</span>
           <span style={{ color:"#fce4ec", fontWeight:800 }}>🏆 {score}</span>
@@ -138,15 +138,15 @@ export default function UnicornRun({ onComplete }) {
         <div style={{ height:6, background:"rgba(255,255,255,0.2)", borderRadius:999, marginBottom:20, overflow:"hidden" }}>
           <div style={{ height:"100%", width:`${(idx/questions.length)*100}%`, background:"#fce4ec", borderRadius:999, transition:"width 0.3s" }} />
         </div>
-        <div style={{ background:"rgba(255,255,255,0.08)", borderRadius:24, padding:28, textAlign:"center", marginBottom:20, border:"1px solid rgba(255,255,255,0.15)" }}>
-          <div style={{ fontSize:"4rem", marginBottom:12 }}>{current.emoji}</div>
-          <p style={{ fontSize:"1.15rem", fontWeight:600, lineHeight:1.6 }}>{current.sentence}</p>
+        <div style={{ background:"rgba(255,255,255,0.08)", borderRadius:24, padding:"clamp(20px,3vw,40px)", textAlign:"center", marginBottom:20, border:"1px solid rgba(255,255,255,0.15)" }}>
+          <div style={{ fontSize:"clamp(2.8rem, 7vw, 5rem)", marginBottom:12 }}>{current.emoji}</div>
+          <p style={{ fontSize:"clamp(1.15rem, 2.2vw, 1.5rem)", fontWeight:600, lineHeight:1.6 }}>{current.sentence}</p>
         </div>
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"clamp(10px, 1.6vw, 18px)" }}>
           {current.options.map(opt => {
             const isCorrect = answered && opt === current.correct;
             const isWrong = answered && opt === selected && opt !== current.correct;
-            return (<button key={opt} onClick={() => answer(opt)} style={{ padding:"14px", borderRadius:14, border:"2px solid", borderColor: isCorrect?"#4ade80":isWrong?"#f87171":"rgba(255,255,255,0.2)", cursor: answered?"default":"pointer", fontWeight:700, fontSize:"0.95rem", background: isCorrect?"rgba(34,197,94,0.2)":isWrong?"rgba(239,68,68,0.2)":"rgba(255,255,255,0.1)", color:"#fff", transition:"all 0.15s" }}>{opt}</button>);
+            return (<button key={opt} onClick={() => answer(opt)} style={{ padding:"clamp(14px,2vw,22px)", borderRadius:14, border:"2px solid", borderColor: isCorrect?"#4ade80":isWrong?"#f87171":"rgba(255,255,255,0.2)", cursor: answered?"default":"pointer", fontWeight:700, fontSize:"clamp(0.95rem,1.6vw,1.25rem)", background: isCorrect?"rgba(34,197,94,0.2)":isWrong?"rgba(239,68,68,0.2)":"rgba(255,255,255,0.1)", color:"#fff", transition:"all 0.15s" }}>{opt}</button>);
           })}
         </div>
         {answered && (<div style={{ textAlign:"center", marginTop:16 }}><p style={{ fontWeight:700, color:selected===current.correct?"#4ade80":"#f87171", marginBottom:12 }}>{selected===current.correct ? "🌟 Magical! Correct!" : `❌ Answer: "${current.correct}"`}</p>{lives > 0 && (<button onClick={next} style={{ padding:"14px 32px", borderRadius:999, border:"none", background:"linear-gradient(135deg,#ec4899,#be185d)", color:"#fff", fontWeight:800, cursor:"pointer" }}>{idx+1 < questions.length ? "🦄 Next" : "🌈 Finish"}</button>)}</div>)}

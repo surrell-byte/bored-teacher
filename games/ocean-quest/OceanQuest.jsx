@@ -178,7 +178,7 @@ export default function OceanQuest({ onComplete }) {
       </div>
       <style>{`@keyframes bubble { 0%{transform:translateY(0);opacity:0.5} 100%{transform:translateY(-100vh);opacity:0} }`}</style>
 
-      <div style={{ width:"100%", maxWidth:500, position:"relative", zIndex:1 }}>
+      <div style={{ width:"100%", maxWidth:"min(760px, calc(100vw - 56px))", position:"relative", zIndex:1 }}>
         <div style={{ display:"flex", justifyContent:"space-between", marginBottom:16 }}>
           <span style={{ background:"rgba(255,255,255,0.15)", padding:"4px 14px", borderRadius:999, fontWeight:700, fontSize:"0.85rem" }}>
             {level===1?"Spell It":level===2?"Name It":"Find It"}
@@ -193,12 +193,12 @@ export default function OceanQuest({ onComplete }) {
         <div style={{ background:"rgba(255,255,255,0.08)", borderRadius:24, padding:32, textAlign:"center", marginBottom:20, backdropFilter:"blur(4px)", border:"1px solid rgba(255,255,255,0.12)" }}>
           {level === 3 ? (
             <>
-              <h3 style={{ fontSize:"2rem", color:"#bae6fd", margin:"0 0 8px" }}>{current.name}</h3>
+              <h3 style={{ fontSize:"clamp(1.6rem, 3.2vw, 2.4rem)", color:"#bae6fd", margin:"0 0 8px" }}>{current.name}</h3>
               <p style={{ color:"#7dd3fc" }}>Which emoji is this creature?</p>
             </>
           ) : (
             <>
-              <div style={{ fontSize:"5rem", marginBottom:8 }}>{current.emoji}</div>
+              <div style={{ fontSize:"clamp(3.5rem, 8vw, 6rem)", marginBottom:8 }}>{current.emoji}</div>
               {level === 2 && <p style={{ color:"#7dd3fc" }}>What is this sea creature?</p>}
             </>
           )}
@@ -209,10 +209,10 @@ export default function OceanQuest({ onComplete }) {
               <div style={{ display:"flex", gap:6, justifyContent:"center", marginTop:16, flexWrap:"wrap" }}>
                 {current.name.toUpperCase().split("").map((_, i) => (
                   <div key={i} style={{
-                    width:36, height:42, borderRadius:8, border:"2px solid",
+                    width:"clamp(32px, 6vw, 52px)", height:"clamp(38px, 7vw, 58px)", borderRadius:8, border:"2px solid",
                     borderColor: feedback==="correct"?"#4ade80":feedback==="wrong"?"#f87171":"rgba(255,255,255,0.3)",
                     display:"flex", alignItems:"center", justifyContent:"center",
-                    fontSize:"1.2rem", fontWeight:800, background:"rgba(255,255,255,0.1)",
+                    fontSize:"clamp(1.1rem, 2.2vw, 1.5rem)", fontWeight:800, background:"rgba(255,255,255,0.1)",
                   }}>{typed[i]?.l||""}</div>
                 ))}
               </div>
@@ -228,7 +228,7 @@ export default function OceanQuest({ onComplete }) {
             <div style={{ display:"flex", flexWrap:"wrap", gap:6, justifyContent:"center", marginBottom:12 }}>
               {pool.map(t => (
                 <button key={t.id} onClick={() => tapLetter(t.id)} disabled={t.used||answered}
-                  style={{ width:40, height:40, borderRadius:8, border:"none", fontWeight:800, fontSize:"1rem", cursor:t.used?"default":"pointer",
+                  style={{ width:"clamp(36px, 6.5vw, 56px)", height:"clamp(36px, 6.5vw, 56px)", borderRadius:8, border:"none", fontWeight:800, fontSize:"clamp(1rem, 1.8vw, 1.3rem)", cursor:t.used?"default":"pointer",
                     background:t.used?"rgba(255,255,255,0.05)":"#0369a1", color:t.used?"transparent":"#fff",
                     boxShadow:t.used?"none":"0 3px 0 #01579b", transition:"all 0.1s" }}>
                   {t.l}
@@ -250,10 +250,10 @@ export default function OceanQuest({ onComplete }) {
               const isWrong = answered && opt === selected && opt !== correctVal;
               return (
                 <button key={opt} onClick={() => answerMC(opt)} style={{
-                  padding: level===3?"20px 8px":"14px 16px", borderRadius:14, border:"2px solid",
+                  padding: level===3?"clamp(18px,3vw,30px) clamp(8px,1.5vw,16px)":"clamp(14px,2vw,22px) clamp(14px,2vw,22px)", borderRadius:14, border:"2px solid",
                   borderColor: isCorrect?"#4ade80":isWrong?"#f87171":"rgba(255,255,255,0.15)",
                   cursor:answered?"default":"pointer",
-                  fontWeight:700, fontSize: level===3?"1.8rem":"0.95rem",
+                  fontWeight:700, fontSize: level===3?"clamp(1.6rem,3.4vw,2.4rem)":"clamp(0.95rem,1.6vw,1.2rem)",
                   background: isCorrect?"rgba(34,197,94,0.2)":isWrong?"rgba(239,68,68,0.2)":"rgba(255,255,255,0.08)",
                   color:"#fff", transition:"all 0.15s",
                 }}>{opt}</button>

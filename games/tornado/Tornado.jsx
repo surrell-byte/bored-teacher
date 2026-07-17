@@ -168,7 +168,7 @@ export default function Tornado({ onComplete }) {
         <div style={{
           margin:"0 0 12px", padding:"10px 20px", borderRadius:12,
           background:"rgba(255,255,255,0.07)", color:flash.color,
-          fontWeight:700, fontSize:"1rem", textAlign:"center", maxWidth:360,
+          fontWeight:700, fontSize:"1rem", textAlign:"center", maxWidth:"min(560px, calc(100vw - 56px))",
         }}>{flash.msg}</div>
       )}
 

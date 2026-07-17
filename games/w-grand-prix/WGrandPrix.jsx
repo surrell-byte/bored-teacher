@@ -104,7 +104,7 @@ export default function WGrandPrix({ onComplete }) {
   return (
     <div style={{ minHeight:"100vh", display:"flex", flexDirection:"column", alignItems:"center", background:"linear-gradient(135deg,#0f0f0f,#1a0f00)", fontFamily:"'Segoe UI', sans-serif", color:"#f1f5f9", padding:16 }}>
       <h2 style={{ color:"#f97316", letterSpacing:2, margin:"12px 0 10px", fontSize:"1.4rem" }}>🏁 W GRAND PRIX</h2>
-      <div style={{ display:"flex", flexWrap:"wrap", gap:3, maxWidth:440, justifyContent:"flex-start", background:"rgba(255,255,255,0.03)", borderRadius:12, padding:10, marginBottom:14, border:"1px solid rgba(255,255,255,0.07)" }}>
+      <div style={{ display:"flex", flexWrap:"wrap", gap:3, maxWidth:"min(640px, calc(100vw - 56px))", justifyContent:"flex-start", background:"rgba(255,255,255,0.03)", borderRadius:12, padding:10, marginBottom:14, border:"1px solid rgba(255,255,255,0.07)" }}>
         {Array.from({length:TRACK_TOTAL+1},(_,i)=>i).map(i => {
           const ph = positions.reduce((acc,p,pi)=>{ if(p===i) acc.push(pi); return acc; },[]);
           return (<div key={i} style={{ width:36, height:36, borderRadius:6, display:"flex", alignItems:"center", justifyContent:"center", fontSize:"0.65rem", background: i===TRACK_TOTAL?"#92400e": SPECIALS[i]?"rgba(239,68,68,0.2)":"rgba(255,255,255,0.04)", border: SPECIALS[i]?"1px solid #ef444466":"1px solid rgba(255,255,255,0.06)", position:"relative", flexDirection:"column" }}>{ph.length>0 ? ph.map(pi=><span key={pi} style={{fontSize:"1rem",lineHeight:1}}>{EMOJIS[pi]}</span>) : <span style={{color:"rgba(255,255,255,0.25)"}}>{i===TRACK_TOTAL?"🏆":SPECIALS[i]?"⚡":i}</span>}</div>);
@@ -120,14 +120,14 @@ export default function WGrandPrix({ onComplete }) {
           <button onClick={() => setScreen("setup")} style={{ padding:"12px 28px", borderRadius:999, border:"none", background:"#f97316", color:"#fff", fontWeight:700, cursor:"pointer" }}>🔄 New Race</button>
         </div>
       ) : (
-        <div style={{ textAlign:"center", marginBottom:12, width:"100%", maxWidth:440 }}>
+        <div style={{ textAlign:"center", marginBottom:12, width:"100%", maxWidth:"min(640px, calc(100vw - 56px))" }}>
           <p style={{ color:"#f97316", fontWeight:700, marginBottom:6 }}>{EMOJIS[current]} {names[current]}'s turn <span style={{ marginLeft:12, background:"rgba(249,115,22,0.2)", padding:"3px 12px", borderRadius:999, fontSize:"0.85rem", color: timeLeft<=3?"#f87171":"#f97316" }}>⏱ {timeLeft}s</span></p>
           <div style={{ display:"flex", gap:10, justifyContent:"center", flexWrap:"wrap" }}>
             {cards.map((c,i) => (<button key={i} onClick={() => playCard(c)} disabled={animating} style={{ padding:"14px 18px", borderRadius:16, border:"none", background: animating?"#1e293b":`linear-gradient(135deg,${c.delta>=2?"#f97316":c.delta===1?"#22c55e":c.delta===0?"#64748b":"#ef4444"},${c.delta>=2?"#ea580c":c.delta===1?"#16a34a":c.delta===0?"#475569":"#dc2626"})`, color:"#fff", fontWeight:800, fontSize: "1.1rem", minWidth:80 }}><div style={{fontSize:"1.4rem"}}>{c.label}</div><div style={{fontSize:"0.7rem",opacity:0.8}}>{c.desc}</div></button>))}
           </div>
         </div>
       )}
-      <div style={{ width:"100%", maxWidth:440, background:"rgba(255,255,255,0.03)", borderRadius:12, padding:"10px 14px", fontSize:"0.78rem", color:"#64748b", maxHeight:100, overflowY:"auto" }}>{log.map((l,i)=><div key={i} style={{marginBottom:2}}>{l}</div>)}</div>
+      <div style={{ width:"100%", maxWidth:"min(640px, calc(100vw - 56px))", background:"rgba(255,255,255,0.03)", borderRadius:12, padding:"10px 14px", fontSize:"0.78rem", color:"#64748b", maxHeight:100, overflowY:"auto" }}>{log.map((l,i)=><div key={i} style={{marginBottom:2}}>{l}</div>)}</div>
     </div>
   );
 }

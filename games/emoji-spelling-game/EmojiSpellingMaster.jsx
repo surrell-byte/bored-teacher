@@ -186,7 +186,7 @@ export default function EmojiSpellingMaster({ onComplete }) {
       background: "linear-gradient(135deg,#1e1b4b,#312e81,#1e1b4b)",
       fontFamily: "'Segoe UI', sans-serif", color: "#e0e7ff", padding: 24,
     }}>
-      <div style={{ width: "100%", maxWidth: 480 }}>
+      <div style={{ width: "100%", maxWidth: "min(760px, calc(100vw - 56px))" }}>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
           <span style={{ background: LEVEL_COLORS[level], padding: "4px 14px", borderRadius: 999, fontWeight: 700, fontSize: "0.85rem" }}>{level.toUpperCase()}</span>
           <span style={{ color: "#fbbf24", fontWeight: 700 }}>Score: {score}</span>
@@ -198,15 +198,15 @@ export default function EmojiSpellingMaster({ onComplete }) {
           textAlign: "center", marginBottom: 20,
           border: feedback === "correct" ? "2px solid #22c55e" : feedback === "wrong" ? "2px solid #ef4444" : "2px solid rgba(255,255,255,0.1)",
         }}>
-          <div style={{ fontSize: "4.5rem", marginBottom: 16 }}>{current.emoji}</div>
+          <div style={{ fontSize: "clamp(3rem, 8vw, 6.5rem)", marginBottom: 16 }}>{current.emoji}</div>
           {/* Slots */}
           <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
             {current.word.split("").map((_, i) => (
               <div key={i} style={{
-                width: 48, height: 56, borderRadius: 10, border: "2px solid",
+                width: "clamp(38px, 7vw, 60px)", height: "clamp(44px, 8vw, 68px)", borderRadius: 10, border: "2px solid",
                 borderColor: feedback === "correct" ? "#22c55e" : feedback === "wrong" ? "#ef4444" : "#818cf8",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: "1.5rem", fontWeight: 800, color: "#e0e7ff",
+                fontSize: "clamp(1.2rem, 2.4vw, 1.8rem)", fontWeight: 800, color: "#e0e7ff",
                 background: "rgba(255,255,255,0.05)",
               }}>
                 {typed[i]?.letter || ""}
@@ -226,10 +226,10 @@ export default function EmojiSpellingMaster({ onComplete }) {
             <button key={i} onClick={() => tapLetter(i, letter)}
               disabled={usedPoolIdx.has(i) || !!feedback}
               style={{
-                width: 44, height: 44, borderRadius: 10, border: "none",
+                width: "clamp(38px, 7vw, 60px)", height: "clamp(38px, 7vw, 60px)", borderRadius: 10, border: "none",
                 background: usedPoolIdx.has(i) ? "rgba(255,255,255,0.05)" : "#4f46e5",
                 color: usedPoolIdx.has(i) ? "transparent" : "#fff",
-                fontWeight: 800, fontSize: "1.1rem", cursor: usedPoolIdx.has(i) ? "default" : "pointer",
+                fontWeight: 800, fontSize: "clamp(1.1rem, 2vw, 1.5rem)", cursor: usedPoolIdx.has(i) ? "default" : "pointer",
                 transition: "all 0.15s",
               }}>
               {letter}

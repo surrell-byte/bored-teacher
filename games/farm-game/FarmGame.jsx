@@ -99,7 +99,7 @@ export default function FarmGame({ onComplete }) {
     if (type === 0) return (
       <div style={{ textAlign:"center" }}>
         <p style={{ color:"#92400e", fontSize:"1.1rem", fontWeight:700 }}>Which animal is this?</p>
-        <div style={{ fontSize:"5rem", margin:"12px 0" }}>{target.emoji}</div>
+        <div style={{ fontSize:"clamp(3.2rem, 8vw, 6rem)", margin:"12px 0" }}>{target.emoji}</div>
       </div>
     );
     if (type === 1) return (
@@ -172,7 +172,7 @@ export default function FarmGame({ onComplete }) {
       background:"linear-gradient(180deg,#86efac 0%,#4ade80 30%,#fde68a 100%)",
       fontFamily:"'Segoe UI',sans-serif", padding:24,
     }}>
-      <div style={{ width:"100%", maxWidth:480 }}>
+      <div style={{ width:"100%", maxWidth:"min(760px, calc(100vw - 56px))" }}>
         <div style={{ display:"flex", justifyContent:"space-between", marginBottom:16 }}>
           <span style={{ background:LEVELS[levelIdx].color, padding:"4px 14px", borderRadius:999, color:"#fff", fontWeight:700, fontSize:"0.85rem" }}>
             {LEVELS[levelIdx].name}
@@ -193,17 +193,17 @@ export default function FarmGame({ onComplete }) {
           )}
         </div>
 
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"clamp(10px, 1.6vw, 18px)" }}>
           {options.map(opt => {
             const isCorrect = answered && opt.name === target.name;
             const isWrong = answered && opt.name === selected && opt.name !== target.name;
             const display = type === 0 || type === 1 ? opt.name : opt.emoji;
             return (
               <button key={opt.name} onClick={() => answer(opt.name)} style={{
-                padding:"16px", borderRadius:16, border:"2px solid",
+                padding:"clamp(16px, 2.4vw, 26px)", borderRadius:16, border:"2px solid",
                 borderColor: isCorrect?"#22c55e":isWrong?"#ef4444":"#86efac",
                 cursor: answered?"default":"pointer",
-                fontWeight:700, fontSize: type===2?"2rem":"1rem",
+                fontWeight:700, fontSize: type===2?"clamp(1.6rem, 3.4vw, 2.6rem)":"clamp(1rem, 1.6vw, 1.3rem)",
                 background: isCorrect?"#f0fdf4":isWrong?"#fef2f2":"white",
                 color: isCorrect?"#166534":isWrong?"#dc2626":"#14532d",
                 transition:"all 0.15s",

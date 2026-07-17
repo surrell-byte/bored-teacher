@@ -235,7 +235,7 @@ export default function DeepSeaReveal({ onComplete }) {
     }}>
       <h2 style={{ fontSize:"1.8rem", color:"#38bdf8", marginBottom:8 }}>Choose Your Zone</h2>
       <p style={{ color:"#7dd3fc", marginBottom:28 }}>Deeper = harder patterns, more points</p>
-      <div style={{ display:"flex", flexDirection:"column", gap:12, width:"100%", maxWidth:400 }}>
+      <div style={{ display:"flex", flexDirection:"column", gap:12, width:"100%", maxWidth:"min(640px, calc(100vw - 56px))" }}>
         {ZONES.map((z, i) => (
           <button key={z.id} onClick={() => unlocked[z.id] && startZone(z.id)} style={{
             padding:"16px 24px", borderRadius:16,
@@ -336,7 +336,7 @@ export default function DeepSeaReveal({ onComplete }) {
       background: currentTheme.bg,
       fontFamily:"'Segoe UI', sans-serif", color:"#bae6fd", padding:24,
     }}>
-      <div style={{ width:"100%", maxWidth:480 }}>
+      <div style={{ width:"100%", maxWidth:"min(760px, calc(100vw - 56px))" }}>
         {/* Header */}
         <div style={{ display:"flex", justifyContent:"space-between", flexWrap:"wrap", gap:12, marginBottom:14 }}>
           <span style={{
@@ -355,7 +355,7 @@ export default function DeepSeaReveal({ onComplete }) {
 
         {phase === "reveal" && (
           <div style={{
-            fontSize:"4rem", marginBottom:16,
+            fontSize:"clamp(2.8rem, 7vw, 5rem)", marginBottom:16,
             opacity: phase === "reveal" ? 1 : 0,
             transition: "opacity 0.4s ease",
           }}>{current.emoji}</div>
@@ -388,8 +388,8 @@ export default function DeepSeaReveal({ onComplete }) {
           border:"1px solid rgba(255,255,255,0.15)",
           boxShadow:"0 8px 32px rgba(0,0,0,.35), 0 0 20px rgba(56,189,248,.15)",
         }}>
-          <div style={{ fontSize:"4rem", marginBottom:8 }}>{current.emoji}</div>
-          <h2 style={{ fontSize:"1.4rem", margin:"0 0 16px", color:"#e0f2fe" }}>{current.name}</h2>
+          <div style={{ fontSize:"clamp(2.8rem, 7vw, 5rem)", marginBottom:8 }}>{current.emoji}</div>
+          <h2 style={{ fontSize:"clamp(1.3rem, 2.4vw, 1.8rem)", margin:"0 0 16px", color:"#e0f2fe" }}>{current.name}</h2>
 
           {/* Sequence tiles */}
           <div style={{ display:"flex", gap:8, justifyContent:"center", flexWrap:"wrap" }}>
@@ -413,10 +413,10 @@ export default function DeepSeaReveal({ onComplete }) {
 
               return (
                 <div key={i} style={{
-                  width:44, height:44, borderRadius:10,
+                  width:"clamp(40px, 7vw, 60px)", height:"clamp(40px, 7vw, 60px)", borderRadius:10,
                   background: bg, border, boxShadow: glow,
                   display:"flex", alignItems:"center", justifyContent:"center",
-                  fontSize:"0.7rem", color:"rgba(255,255,255,0.5)",
+                  fontSize:"clamp(0.7rem, 1.2vw, 0.95rem)", color:"rgba(255,255,255,0.5)",
                   transition:"all 0.2s",
                 }}>
                   {isRevealed ? "" : (showCorrect && guessColor ? (guessColor===c?"✓":"✗") : i+1)}
@@ -470,10 +470,10 @@ export default function DeepSeaReveal({ onComplete }) {
           <div style={{ display:"flex", gap:10, justifyContent:"center", flexWrap:"wrap" }}>
             {Object.entries(COLOR_MAP).map(([key, color]) => (
               <button key={key} onClick={() => guessColor(key)} style={{
-                width:70, height:70, borderRadius:16, border:"none",
+                width:"clamp(64px, 11vw, 100px)", height:"clamp(64px, 11vw, 100px)", borderRadius:16, border:"none",
                 background: color, cursor:"pointer",
                 boxShadow:`0 4px 16px ${color}55, 0 0 25px ${color}33`,
-                fontWeight:700, color:"#fff", fontSize:"0.85rem",
+                fontWeight:700, color:"#fff", fontSize:"clamp(0.85rem, 1.4vw, 1.05rem)",
                 transition:"all 0.15s",
               }} 
               onMouseDown={e => { e.currentTarget.style.transform="scale(0.88)"; e.currentTarget.style.boxShadow=`0 2px 8px ${color}55`; }}

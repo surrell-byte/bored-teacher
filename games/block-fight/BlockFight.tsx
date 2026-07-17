@@ -12,17 +12,27 @@ import { useControls } from './hooks/useControls';
 import { updateEnemies } from './hooks/useEnemies';
 import { updatePhysics } from './hooks/usePhysics';
 
-export default function BlockFight() {
+type BlockFightProps = {
+  onComplete?: (score: number, accuracy: number) => void;
+};
+
+export default function BlockFight({ onComplete }: BlockFightProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const stateRef = useRef<GameState | null>(null);
   const [ui, setUi] = useState<GameUi>(createInitialUi);
 
-  const restart = useCallback(() => {
+    const restart = useCallback(() => {
     stateRef.current = createInitialState();
     setUi(createInitialUi());
   }, []);
 
   const controlsRef = useControls(stateRef, restart);
+
+  // Report the result back to the game page once the run ends.
+  useEffect(() => {
+    if (ui.state === 'win') onComplete?.(ui.score, 100);
+    else if (ui.state === 'dead') onComplete?.(ui.score, 0);
+  }, [ui.state, ui.score, onComplete]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -74,7 +84,7 @@ export default function BlockFight() {
           ref={canvasRef}
           width={800}
           height={424}
-          style={{ border: '2px solid #1e293b', borderRadius: 12, display: 'block' }}
+          style={{ border: '2px solid #1e293b', borderRadius: 12, display: 'block', maxWidth: '100%', height: 'auto' }}
         />
 
         {ui.state !== 'playing' && (

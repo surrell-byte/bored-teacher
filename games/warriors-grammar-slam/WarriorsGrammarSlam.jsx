@@ -177,7 +177,7 @@ export default function WarriorsGrammarSlam({ onComplete }) {
       background: "linear-gradient(135deg,#1a1a2e,#16213e,#0f3460)",
       fontFamily: "'Segoe UI', sans-serif", color: "#f1f5f9", padding: 24,
     }}>
-      <div style={{ width: "100%", maxWidth: 520 }}>
+      <div style={{ width: "100%", maxWidth: "min(760px, calc(100vw - 56px))" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <span style={{ background: LEVEL_COLORS[level], padding: "4px 14px", borderRadius: 999, fontWeight: 700, fontSize: "0.85rem" }}>
             {LEVEL_NAMES[level]}

@@ -136,7 +136,7 @@ export default function ShuttlecockSmash({ onComplete }) {
       background:"linear-gradient(135deg,#0c1445,#1a237e,#0d47a1)",
       fontFamily:"'Segoe UI',sans-serif", color:"#fff", padding:24,
     }}>
-      <div style={{ width:"100%", maxWidth:520 }}>
+      <div style={{ width:"100%", maxWidth:"min(760px, calc(100vw - 56px))" }}>
         <div style={{ display:"flex", justifyContent:"space-between", marginBottom:16 }}>
           <span style={{ background: level===1?"#f59e0b":"#ef4444", padding:"4px 14px", borderRadius:999, fontWeight:700, fontSize:"0.85rem" }}>LEVEL {level}</span>
           <span style={{ color:"#ffd54f", fontWeight:800 }}>🏸 {score} pts</span>
@@ -147,23 +147,23 @@ export default function ShuttlecockSmash({ onComplete }) {
         </div>
 
         <div style={{ background:"rgba(255,255,255,0.06)", borderRadius:24, padding:28, textAlign:"center", marginBottom:20, border:"1px solid rgba(255,255,255,0.1)" }}>
-          <div style={{ fontSize:"3.5rem", marginBottom:12 }}>{current.emoji}</div>
+          <div style={{ fontSize:"clamp(2.6rem, 6vw, 4.5rem)", marginBottom:12 }}>{current.emoji}</div>
           <p style={{ fontSize:"1.1rem", fontWeight:600, color:"#e2e8f0", lineHeight:1.6 }}>
             {current.sentence}
           </p>
           <p style={{ fontSize:"0.85rem", color:"#90caf9", marginTop:8 }}>💡 Fill in the blank with a <strong>-tion</strong> word</p>
         </div>
 
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"clamp(10px, 1.6vw, 18px)" }}>
           {current.options.map(opt => {
             const isCorrect = answered && opt === current.correct;
             const isWrong = answered && opt === selected && opt !== current.correct;
             return (
               <button key={opt} onClick={() => answer(opt)} style={{
-                padding:"14px 16px", borderRadius:14, border:"2px solid",
+                padding:"clamp(14px,2vw,22px) clamp(16px,2vw,22px)", borderRadius:14, border:"2px solid",
                 borderColor: isCorrect?"#22c55e":isWrong?"#ef4444":"rgba(255,255,255,0.1)",
                 cursor: answered?"default":"pointer",
-                fontWeight:700, fontSize:"0.9rem",
+                fontWeight:700, fontSize:"clamp(0.9rem,1.6vw,1.2rem)",
                 background: isCorrect?"#166534":isWrong?"#7f1d1d":"rgba(255,255,255,0.08)",
                 color: isCorrect?"#4ade80":isWrong?"#fca5a5":"#f1f5f9",
                 transition:"all 0.15s",

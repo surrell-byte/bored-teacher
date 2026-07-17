@@ -76,7 +76,7 @@ export default function EmojiMatch({ onComplete }) {
       <div style={{
         display: "flex", justifyContent: "space-between", alignItems: "center",
         background: "#0f172aee", padding: "10px 22px", borderRadius: 60,
-        margin: "8px 0 20px", width: "100%", maxWidth: 440, boxSizing: "border-box",
+        margin: "8px 0 20px", width: "100%", maxWidth: "min(640px, calc(100vw - 56px))", boxSizing: "border-box",
         border: "1px solid #334155",
       }}>
         <span style={{ fontSize: "0.9rem", fontWeight: 600, color: "#cbd5e6" }}>🎯 MOVES</span>
@@ -106,7 +106,7 @@ export default function EmojiMatch({ onComplete }) {
 
       <div style={{
         display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`,
-        gap: 10, maxWidth: 440,
+        gap: 10, maxWidth: "min(640px, calc(100vw - 56px))",
       }}>
         {cards.map((card, idx) => {
           const isFlipped = flipped.includes(idx) || matched.has(idx);

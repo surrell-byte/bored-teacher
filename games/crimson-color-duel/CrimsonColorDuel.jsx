@@ -202,7 +202,7 @@ export default function CrimsonColorDuel({ onComplete }) {
       background:"linear-gradient(135deg,#1a0a1e,#2d0b33,#1a0a1e)",
       fontFamily:"'Segoe UI', sans-serif", color:"#f3e8ff", padding:24,
     }}>
-      <div style={{ width:"100%", maxWidth:480 }}>
+      <div style={{ width:"100%", maxWidth:"min(760px, calc(100vw - 56px))" }}>
         {/* Header */}
         <div style={{ display:"flex", justifyContent:"space-between", marginBottom:14 }}>
           <span style={{

@@ -152,7 +152,7 @@ export default function AnimalClassQuest({ onComplete }) {
     <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",
       justifyContent:"center",background:"linear-gradient(135deg,#064e3b,#065f46,#047857)",
       fontFamily:"'Segoe UI',sans-serif",color:"#ecfdf5",padding:24}}>
-      <div style={{width:"100%",maxWidth:480}}>
+      <div style={{width:"100%",maxWidth:"min(760px, calc(100vw - 56px))"}}>
         {/* Header */}
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
           <span style={{background:COLS[level],padding:"4px 14px",borderRadius:999,fontWeight:700,fontSize:"0.85rem",textTransform:"capitalize"}}>{level}</span>
@@ -169,20 +169,20 @@ export default function AnimalClassQuest({ onComplete }) {
           border:`2px solid ${answered?(wrongAns?COLS.hard:"#22c55e"):"rgba(255,255,255,0.1)"}`,
           transition:"border 0.2s",
         }}>
-          <div style={{fontSize:"5rem",marginBottom:10}}>{current.emoji}</div>
+          <div style={{fontSize:"clamp(3.2rem, 8vw, 6.5rem)",marginBottom:10}}>{current.emoji}</div>
           <h2 style={{fontSize:"2rem",margin:"0 0 6px",color:"#6ee7b7"}}>{current.name}</h2>
           {answered&&<p style={{color:"#a7f3d0",fontSize:"0.9rem",margin:0}}>{FACTS[current.cls]}</p>}
         </div>
 
         {/* Class buttons */}
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"clamp(10px, 1.6vw, 18px)"}}>
           {CLASSES.map(cls=>{
             const isRight=answered&&cls===current.cls;
             const isWrong=answered&&cls===wrongAns&&cls!==current.cls;
             return (
               <button key={cls} onClick={()=>answer(cls)} style={{
-                padding:"13px 16px",borderRadius:14,
-                cursor:answered?"default":"pointer",fontWeight:700,fontSize:"0.95rem",
+                padding:"clamp(13px,2vw,20px) clamp(16px,2vw,22px)",borderRadius:14,
+                cursor:answered?"default":"pointer",fontWeight:700,fontSize:"clamp(0.95rem,1.6vw,1.25rem)",
                 background:isRight?"#166534":isWrong?"#7f1d1d":"rgba(255,255,255,0.1)",
                 color:isRight?"#4ade80":isWrong?"#fca5a5":"#ecfdf5",
                 border:`2px solid ${isRight?"#22c55e":isWrong?"#ef4444":"transparent"}`,

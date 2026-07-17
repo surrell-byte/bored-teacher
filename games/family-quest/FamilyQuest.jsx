@@ -200,7 +200,7 @@ export default function FamilyQuest({ onComplete }) {
       <div style={{ fontSize:"3.5rem", marginBottom:8 }}>👨‍👩‍👧‍👦</div>
       <h1 style={{ fontSize:"2.2rem", color:"#92400e", margin:"0 0 8px" }}>Family Quest</h1>
       <p style={{ color:"#b45309", marginBottom:32 }}>Learn family member words!</p>
-      <div style={{ display:"flex", flexDirection:"column", gap:12, width:"100%", maxWidth:360 }}>
+      <div style={{ display:"flex", flexDirection:"column", gap:12, width:"100%", maxWidth:"min(640px, calc(100vw - 56px))" }}>
         {MODES.map(m => (
           <button key={m.id} onClick={() => startMode(m.id)} style={{
             padding:"16px 24px", borderRadius:18, border:"none",
@@ -250,7 +250,7 @@ export default function FamilyQuest({ onComplete }) {
         background:"linear-gradient(135deg,#fef3c7,#fde68a,#fef9c3)",
         fontFamily:"'Segoe UI', sans-serif", padding:24,
       }}>
-        <div style={{ width:"100%", maxWidth:480 }}>
+        <div style={{ width:"100%", maxWidth:"min(760px, calc(100vw - 56px))" }}>
           <div style={{ display:"flex", justifyContent:"space-between", marginBottom:16 }}>
             <span style={{ background:"#f59e0b", color:"#fff", padding:"4px 14px", borderRadius:999, fontWeight:700 }}>Quiz</span>
             <span style={{ color:"#92400e", fontWeight:700 }}>🏆 {score}</span>
@@ -262,7 +262,7 @@ export default function FamilyQuest({ onComplete }) {
             background:"#fff", borderRadius:24, padding:"32px 24px", textAlign:"center",
             marginBottom:20, boxShadow:"0 8px 24px #f59e0b22",
           }}>
-            <div style={{ fontSize:"5rem", marginBottom:10 }}>{current.emoji}</div>
+            <div style={{ fontSize:"clamp(3.2rem, 8vw, 6.5rem)", marginBottom:10 }}>{current.emoji}</div>
             <p style={{ color:"#92400e", fontWeight:700, fontSize:"1.1rem", marginBottom:4 }}>{current.desc}</p>
             <p style={{ color:"#b45309" }}>{current.q}</p>
           </div>
@@ -313,7 +313,7 @@ export default function FamilyQuest({ onComplete }) {
       background:"linear-gradient(135deg,#fef3c7,#fde68a,#fef9c3)",
       fontFamily:"'Segoe UI', sans-serif", padding:24,
     }}>
-      <div style={{ width:"100%", maxWidth:440 }}>
+      <div style={{ width:"100%", maxWidth:"min(760px, calc(100vw - 56px))" }}>
         <div style={{ display:"flex", justifyContent:"space-between", marginBottom:16 }}>
           <span style={{ background:"#f59e0b", color:"#fff", padding:"4px 14px", borderRadius:999, fontWeight:700 }}>Spell It</span>
           <span style={{ color:"#92400e", fontWeight:700 }}>🏆 {score}</span>
@@ -325,7 +325,7 @@ export default function FamilyQuest({ onComplete }) {
           marginBottom:20, boxShadow:"0 8px 24px #f59e0b22",
           border:`2px solid ${spellResult==="correct"?"#22c55e":spellResult==="wrong"?"#ef4444":"#fde68a"}`,
         }}>
-          <div style={{ fontSize:"5rem", marginBottom:10 }}>{current.emoji}</div>
+          <div style={{ fontSize:"clamp(3.2rem, 8vw, 6.5rem)", marginBottom:10 }}>{current.emoji}</div>
           <p style={{ color:"#92400e", fontSize:"1.1rem", fontWeight:600 }}>{current.desc}</p>
           {spellResult && (
             <p style={{ color:spellResult==="correct"?"#16a34a":"#dc2626", fontWeight:700, marginTop:8 }}>
@@ -366,7 +366,7 @@ export default function FamilyQuest({ onComplete }) {
         background:"linear-gradient(135deg,#fef3c7,#fde68a,#fef9c3)",
         fontFamily:"'Segoe UI', sans-serif", padding:24,
       }}>
-        <div style={{ width:"100%", maxWidth:500 }}>
+        <div style={{ width:"100%", maxWidth:"min(760px, calc(100vw - 56px))" }}>
           <div style={{ display:"flex", justifyContent:"space-between", marginBottom:16 }}>
             <span style={{ background:"#f59e0b", color:"#fff", padding:"4px 14px", borderRadius:999, fontWeight:700 }}>Family Tree</span>
             <span style={{ color:"#92400e", fontWeight:700 }}>🏆 {score}</span>
@@ -399,9 +399,9 @@ export default function FamilyQuest({ onComplete }) {
                     cursor:matched?"default":"pointer",
                   }}>
                   <div style={{
-                    width:60, height:60, borderRadius:14,
+                    width:"clamp(56px, 12vw, 100px)", height:"clamp(56px, 12vw, 100px)", borderRadius:14,
                     display:"flex", alignItems:"center", justifyContent:"center",
-                    fontSize:"1.8rem",
+                    fontSize:"clamp(1.8rem, 3.6vw, 2.8rem)",
                     background: matched?"rgba(34,197,94,0.15)":"rgba(255,255,255,0.8)",
                     border:`2px solid ${matched?"#22c55e":"#fde68a"}`,
                     opacity: matched ? 0.5 : 1,

@@ -152,7 +152,8 @@ export default function PhonicWorld({ onComplete }) {
 
       <div style={{
         display:"grid", gridTemplateColumns:"repeat(3, 1fr)",
-        gap:12, maxWidth:440,
+        gap:"clamp(10px, 1.6vw, 20px)", width:"100%",
+        maxWidth:"min(640px, calc(100vw - 56px))",
       }}>
         {ISLAND_KEYS.map((key, i) => {
           const isl = ISLANDS[key];
@@ -160,7 +161,7 @@ export default function PhonicWorld({ onComplete }) {
           const isDone = completed[key];
           return (
             <button key={key} onClick={() => startIsland(key)} style={{
-              padding:"18px 12px", borderRadius:20,
+              padding:"clamp(16px, 2.2vw, 26px) clamp(10px, 1.6vw, 18px)", borderRadius:20,
               background: isUnlocked
                 ? `linear-gradient(135deg,${isl.color},${isl.color}cc)`
                 : "rgba(255,255,255,0.05)",
@@ -168,9 +169,9 @@ export default function PhonicWorld({ onComplete }) {
               border: isDone ? "2px solid #fbbf24" : "2px solid transparent",
               opacity: isUnlocked ? 1 : 0.5,
             }}>
-              <div style={{ fontSize:"1.8rem", marginBottom:4 }}>{isl.icon}</div>
-              <div style={{ fontWeight:800, fontSize:"1.2rem" }}>{key}</div>
-              <div style={{ fontSize:"0.7rem", opacity:0.85, marginTop:2 }}>
+              <div style={{ fontSize:"clamp(1.6rem, 3vw, 2.3rem)", marginBottom:4 }}>{isl.icon}</div>
+              <div style={{ fontWeight:800, fontSize:"clamp(1.1rem, 1.8vw, 1.4rem)" }}>{key}</div>
+              <div style={{ fontSize:"clamp(0.65rem, 1vw, 0.8rem)", opacity:0.85, marginTop:2 }}>
                 {isUnlocked ? (isDone ? "✅ Done" : isl.desc) : "🔒 Locked"}
               </div>
             </button>
@@ -220,7 +221,7 @@ export default function PhonicWorld({ onComplete }) {
       background:`linear-gradient(135deg,${islandData.color}22,#0c4a6e)`,
       fontFamily:"'Segoe UI', sans-serif", color:"#e0f2fe", padding:24,
     }}>
-      <div style={{ width:"100%", maxWidth:480 }}>
+      <div style={{ width:"100%", maxWidth:"min(760px, calc(100vw - 56px))" }}>
         <div style={{ display:"flex", justifyContent:"space-between", marginBottom:14 }}>
           <span style={{
             background:islandData.color, padding:"4px 14px", borderRadius:999, fontWeight:800,
@@ -243,7 +244,7 @@ export default function PhonicWorld({ onComplete }) {
           border:`1px solid ${islandData.color}44`,
         }}>
           {/* Highlight the digraph in each option */}
-          <p style={{ fontSize:"1.2rem", fontWeight:700, color:"#e0f2fe", margin:0, lineHeight:1.6 }}>
+          <p style={{ fontSize:"clamp(1.2rem, 2.4vw, 1.7rem)", fontWeight:700, color:"#e0f2fe", margin:0, lineHeight:1.6 }}>
             {current.q}
           </p>
           {answered && (
@@ -266,9 +267,9 @@ export default function PhonicWorld({ onComplete }) {
               : opt;
             return (
               <button key={i} onClick={() => answer(i)} style={{
-                padding:"14px 12px", borderRadius:14,
+                padding:"clamp(14px, 2vw, 22px) clamp(12px, 1.6vw, 18px)", borderRadius:14,
                 cursor:answered?"default":"pointer",
-                fontWeight:700, fontSize:"1rem",
+                fontWeight:700, fontSize:"clamp(1rem, 1.6vw, 1.3rem)",
                 background: isCorrect?"#166534":isWrong?"#7f1d1d":"rgba(255,255,255,0.08)",
                 color: isCorrect?"#4ade80":isWrong?"#fca5a5":"#e0f2fe",
                 border:`2px solid ${isCorrect?"#22c55e":isWrong?"#ef4444":"rgba(255,255,255,0.1)"}`,

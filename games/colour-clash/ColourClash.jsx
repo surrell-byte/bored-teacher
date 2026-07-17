@@ -178,7 +178,7 @@ export default function ColourClash({ onComplete }) {
       minHeight:"100vh", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
       background:"linear-gradient(135deg,#0f172a,#1e1b4b)", fontFamily:"'Segoe UI',sans-serif", color:"#fff", padding:24,
     }}>
-      <div style={{ display:"flex", justifyContent:"space-between", width:"100%", maxWidth:400, marginBottom:16 }}>
+      <div style={{ display:"flex", justifyContent:"space-between", width:"100%", maxWidth:"min(560px, calc(100vw - 56px))", marginBottom:16 }}>
         <span style={{ color:"#94a3b8" }}>Round {round}</span>
         <span style={{ color:"#fbbf24", fontWeight:800 }}>⭐ {score}</span>
         <span>{Array.from({length:startLives},(_,i)=>i<lives?"❤️":"🖤").join("")}</span>
@@ -196,16 +196,16 @@ export default function ColourClash({ onComplete }) {
 
       <div style={{
         display:"grid", gridTemplateColumns:"1fr 1fr",
-        gap:12, maxWidth:360, width:"100%",
+        gap:"clamp(10px, 1.6vw, 20px)", maxWidth:"min(560px, calc(100vw - 56px))", width:"100%",
       }}>
         {colours.map(col => (
           <button key={col.id} onClick={() => tap(col.id)} style={{
-            height:100, borderRadius:20, border:"none", cursor: phase==="input"?"pointer":"default",
+            height:"clamp(90px, 15vw, 170px)", borderRadius:20, border:"none", cursor: phase==="input"?"pointer":"default",
             background: lit===col.id ? "white" : col.bg,
             boxShadow: lit===col.id ? `0 0 40px white, 0 0 80px ${col.id==="yellow"?"#fbbf24":col.id}` : "0 4px 16px rgba(0,0,0,0.4)",
             transition:"all 0.1s ease",
             transform: lit===col.id ? "scale(1.05)" : "scale(1)",
-            fontWeight:800, fontSize:"1rem", color:"rgba(255,255,255,0.9)",
+            fontWeight:800, fontSize:"clamp(1rem, 1.8vw, 1.4rem)", color:"rgba(255,255,255,0.9)",
             letterSpacing:2,
           }}>
             {col.label}

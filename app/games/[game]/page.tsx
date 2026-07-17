@@ -7,9 +7,6 @@ import { useGame } from '@/lib/gameState';
 import { auth, saveStudentScore } from '@/lib/firebase';
 import { syncCurrentPlayerToLeaderboard } from '@/features/leaderboard/api';
 import { GAME_NAMES, GAME_ICONS, GAME_URLS } from '@/constants/index';
-import { useControls } from '@/hooks/useControls';
-import DesktopControls from '@/components/ui/controls/DesktopControls';
-import MobileControls from '@/components/ui/controls/MobileControls';
 
 // ── React game component props and registry ──
 type GameComponentProps = {
@@ -47,6 +44,9 @@ const GAME_COMPONENTS: Record<
   shuttlecock: lazy(() => import('@/games/shuttlecock-smash/ShuttlecockSmash.jsx')),
   tornado: lazy(() => import('@/games/tornado/Tornado.jsx')),
   wgrandprix: lazy(() => import('@/games/w-grand-prix/WGrandPrix.jsx')),
+  connect4: lazy(() => import('@/games/connect-4/Connect4.jsx')),
+  monkeytree: lazy(() => import('@/games/monkey-tree-climb/MonkeyTreeClimb.jsx')),
+  blockfight: lazy(() => import('@/games/block-fight/BlockFight')),
 };
 
 // ── Types ─────────────────────────────────────────────────────
@@ -93,7 +93,6 @@ export default function GamePage() {
   const params  = useParams();
   const gameId  = (params?.game as string) ?? '';
   const { state, setState, updateGameStats, addXP } = useGame();
-  const { isMobile } = useControls();
 
   const [result, setResult]   = useState<GameResult | null>(null);
   const [loading, setLoading] = useState(true);
@@ -211,10 +210,6 @@ export default function GamePage() {
           />
         </>
       )}
-
-      <div style={{ position: 'fixed', left: 16, right: 16, bottom: 16, zIndex: 9, pointerEvents: 'none' }}>
-        {isMobile ? <MobileControls /> : <DesktopControls />}
-      </div>
 
       {result && <ResultModal result={result} gameName={gameName} onContinue={handleContinue} />}
     </div>

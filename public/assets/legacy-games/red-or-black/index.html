@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Red or Black - Card Guessing Game</title>
+    <style>
+        :root {
+            --bg: #0d0f13;
+            --surface: #1a1d25;
+            --surface-light: #22262f;
+            --gold: #c9a96e;
+            --gold-light: #d4b87a;
+            --red-suit: #d94040;
+            --red-suit-dark: #b83232;
+            --black-suit: #2c2c2c;
+            --black-suit-dark: #1a1a1a;
+            --text: #e0e0e0;
+            --text-muted: #999;
+            --correct: #2ecc71;
+            --wrong: #e74c3c;
+            --card-width: 190px;
+            --card-height: 266px;
+            --transition-speed: 0.6s;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg);
+            background-image:
+                radial-gradient(ellipse at center, #1a1d25 0%, #0d0f13 70%),
+                radial-gradient(circle at 50% 30%, rgba(201, 169, 110, 0.04) 0%, transparent 50%);
+            font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text);
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            padding: 16px;
+        }
+
+        .game-container {
+            background: var(--surface);
+            border-radius: 24px;
+            padding: 28px 24px 24px;
+            width: 100%;
+            max-width: 440px;
+            box-shadow:
+                0 20px 60px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.02);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-container::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: 20px;
+            right: 20px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(201, 169, 110, 0.4), transparent);
+            border-radius: 50%;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            width: 100%;
+        }
+        .title {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(180deg, #f0e6d3 0%, #c9a96e 50%, #a0844a 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: none;
+            margin-bottom: 2px;
+        }
+        .subtitle {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: flex;
+            gap: 12px;
+            width: 100%;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .stat-box {
+            background: var(--surface-light);
+            border-radius: 14px;
+            padding: 12px 16px;
+            text-align: center;
+            flex: 1;
+            min-width: 70px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            transition: all 0.3s ease;
+        }
+        .stat-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            line-height: 1;
+        }
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-top: 4px;
+        }
+        .stat-box.streak-box .stat-value {
+            color: var(--gold);
+        }
+        .stat-box.score-box .stat-value {
+            color: #fff;
+        }
+        .stat-box.best-box .stat-value {
+            color: var(--correct);
+        }
+
+        /* Card Area */
+        .card-stage {
+            position: relative;
+            width: var(--card-width);
+            height: var(--card-height);
+            perspective: 800px;
+            margin: 4px 0;
+        }
+        .card-inner {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: default;
+        }
+        .card-inner.flipped {
+            transform: rotateY(180deg);
+        }
+        .card-face,
+        .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 14px;
+            box-shadow:
+                0 8px 32px rgba(0, 0, 0, 0.45),
+                0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Card Back */
+        .card-back {
+            background: #1a2150;
+            background-image:
+                repeating-linear-gradient(45deg,
+                    rgba(255, 255, 255, 0.03) 0px,
+                    rgba(255, 255, 255, 0.03) 1.5px,
+                    transparent 1.5px,
+                    transparent 10px),
+                repeating-linear-gradient(-45deg,
+                    rgba(255, 255, 255, 0.03) 0px,
+                    rgba(255, 255, 255, 0.03) 1.5px,
+                    transparent 1.5px,
+                    transparent 10px),
+                linear-gradient(180deg, #1e2770 0%, #151d48 50%, #1a2150 100%);
+            border: 3px solid #2a3570;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: rotateY(0deg);
+        }
+        .card-back::after {
+            content: '';
+            position: absolute;
+            inset: 8px;
+            border-radius: 8px;
+            border: 2px solid rgba(201, 169, 110, 0.4);
+            pointer-events: none;
+        }
+        .card-back-pattern {
+            width: 60%;
+            height: 60%;
+            border-radius: 50%;
+            background: radial-gradient(circle,
+                    rgba(201, 169, 110, 0.25) 0%,
+                    rgba(201, 169, 110, 0.08) 40%,
+                    transparent 60%);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .card-back-pattern::before {
+            content: '✦';
+            font-size: 2.2rem;
+            color: rgba(201, 169, 110, 0.7);
+            text-shadow: 0 0 20px rgba(201, 169, 110, 0.4);
+        }
+        .card-back-inner-diamond {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: rgba(201, 169, 110, 0.3);
+            transform: rotate(45deg);
+            border-radius: 3px;
+            border: 1px solid rgba(201, 169, 110, 0.5);
+        }
+
+        /* Card Face */
+        .card-face {
+            background: #fafaf8;
+            background-image: linear-gradient(135deg, #ffffff 0%, #f5f4f0 100%);
+            border: 3px solid #ddd;
+            transform: rotateY(180deg);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 14px 12px;
+            color: #222;
+        }
+        .card-corner-top {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            line-height: 1;
+        }
+        .card-rank {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+        .card-suit-small {
+            font-size: 1.1rem;
+            margin-top: -2px;
+        }
+        .card-center {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+        }
+        .card-suit-large {
+            font-size: 5rem;
+            line-height: 1;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .card-corner-bottom {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            line-height: 1;
+            transform: rotate(180deg);
+        }
+        .card-face.red {
+            color: #c0392b;
+        }
+        .card-face.black {
+            color: #1a1a1a;
+        }
+
+        /* Result Banner */
+        .result-banner {
+            position: absolute;
+            top: -44px;
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+            pointer-events: none;
+            opacity: 0;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            white-space: nowrap;
+            z-index: 10;
+        }
+        .result-banner.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        .result-banner.correct-banner {
+            background: rgba(46, 204, 113, 0.2);
+            color: #2ecc71;
+            border: 1px solid rgba(46, 204, 113, 0.35);
+            box-shadow: 0 4px 16px rgba(46, 204, 113, 0.15);
+        }
+        .result-banner.wrong-banner {
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+            border: 1px solid rgba(231, 76, 60, 0.35);
+            box-shadow: 0 4px 16px rgba(231, 76, 60, 0.15);
+        }
+
+        /* Buttons */
+        .button-row {
+            display: flex;
+            gap: 16px;
+            width: 100%;
+            max-width: 340px;
+        }
+        .guess-btn {
+            flex: 1;
+            padding: 16px 20px;
+            border: none;
+            border-radius: 16px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .guess-btn:active {
+            transform: scale(0.96);
+        }
+        .guess-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
+            filter: grayscale(30%);
+        }
+        .btn-red {
+            background: linear-gradient(180deg, #e74c3c 0%, #c0392b 100%);
+            color: #fff;
+            border: 2px solid #e74c3c;
+            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.35);
+        }
+        .btn-red:hover:not(:disabled) {
+            box-shadow: 0 8px 28px rgba(231, 76, 60, 0.5);
+            transform: translateY(-2px);
+        }
+        .btn-red:active:not(:disabled) {
+            transform: scale(0.96) translateY(0);
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+        }
+        .btn-black {
+            background: linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 100%);
+            color: #e0e0e0;
+            border: 2px solid #444;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+        }
+        .btn-black:hover:not(:disabled) {
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.65);
+            transform: translateY(-2px);
+            border-color: #666;
+        }
+        .btn-black:active:not(:disabled) {
+            transform: scale(0.96) translateY(0);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+        .btn-icon {
+            display: inline-block;
+            margin-right: 6px;
+            font-size: 1.1rem;
+        }
+
+        /* Remaining Info */
+        .remaining-info {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+        }
+        .remaining-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+        .remaining-dot.red-dot {
+            background: #e74c3c;
+            box-shadow: 0 0 6px rgba(231, 76, 60, 0.5);
+        }
+        .remaining-dot.black-dot {
+            background: #555;
+            box-shadow: 0 0 6px rgba(0, 0, 0, 0.4);
+        }
+        .remaining-count {
+            font-weight: 700;
+            color: #ddd;
+        }
+
+        /* History Strip */
+        .history-strip {
+            display: flex;
+            gap: 7px;
+            flex-wrap: wrap;
+            justify-content: center;
+            min-height: 28px;
+            align-items: center;
+        }
+        .history-dot {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            position: relative;
+            transition: all 0.3s ease;
+            animation: popIn 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        @keyframes popIn {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            60% {
+                transform: scale(1.3);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        .history-dot.red-card {
+            background: #e74c3c;
+            box-shadow: 0 0 8px rgba(231, 76, 60, 0.5);
+        }
+        .history-dot.black-card {
+            background: #444;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+        }
+        .history-dot.wrong-guess {
+            opacity: 0.5;
+            box-shadow: none;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        .history-dot.wrong-guess::after {
+            content: '×';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.7rem;
+            font-weight: 900;
+            color: #fff;
+            line-height: 1;
+        }
+
+        /* Game Over Overlay */
+        .game-over-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(13, 15, 19, 0.92);
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            z-index: 20;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+        .game-over-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .game-over-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--gold);
+            letter-spacing: -0.5px;
+        }
+        .game-over-stats {
+            display: flex;
+            gap: 24px;
+            text-align: center;
+        }
+        .game-over-stat-val {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #fff;
+        }
+        .game-over-stat-lbl {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+        .play-again-btn {
+            padding: 14px 32px;
+            border-radius: 25px;
+            border: 2px solid var(--gold);
+            background: rgba(201, 169, 110, 0.15);
+            color: var(--gold-light);
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: all 0.25s ease;
+        }
+        .play-again-btn:hover {
+            background: rgba(201, 169, 110, 0.3);
+            box-shadow: 0 6px 24px rgba(201, 169, 110, 0.2);
+            transform: translateY(-2px);
+        }
+        .play-again-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            :root {
+                --card-width: 150px;
+                --card-height: 210px;
+            }
+            .game-container {
+                padding: 20px 14px 18px;
+                border-radius: 20px;
+                gap: 14px;
+            }
+            .title {
+                font-size: 1.5rem;
+            }
+            .stat-box {
+                padding: 10px 12px;
+            }
+            .stat-value {
+                font-size: 1.3rem;
+            }
+            .guess-btn {
+                padding: 14px 12px;
+                font-size: 0.9rem;
+                border-radius: 12px;
+                letter-spacing: 1px;
+            }
+            .card-suit-large {
+                font-size: 3.5rem;
+            }
+            .card-rank {
+                font-size: 1.2rem;
+            }
+            .card-suit-small {
+                font-size: 0.9rem;
+            }
+            .card-face {
+                padding: 10px 8px;
+            }
+            .card-face,
+            .card-back {
+                border-radius: 10px;
+            }
+            .card-back::after {
+                inset: 5px;
+                border-radius: 5px;
+            }
+            .result-banner {
+                top: -36px;
+                font-size: 0.75rem;
+                padding: 6px 14px;
+            }
+            .button-row {
+                gap: 10px;
+                max-width: 280px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container" id="gameContainer">
+        <!-- Header -->
+        <div class="header">
+            <h1 class="title">Red or Black</h1>
+            <p class="subtitle">Guess the card color</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-bar">
+            <div class="stat-box score-box">
+                <div class="stat-value" id="scoreDisplay">0</div>
+                <div class="stat-label">Score</div>
+            </div>
+            <div class="stat-box streak-box">
+                <div class="stat-value" id="streakDisplay">0</div>
+                <div class="stat-label">Streak 🔥</div>
+            </div>
+            <div class="stat-box best-box">
+                <div class="stat-value" id="bestStreakDisplay">0</div>
+                <div class="stat-label">Best</div>
+            </div>
+        </div>
+
+        <!-- Card Stage -->
+        <div class="card-stage" id="cardStage">
+            <div class="result-banner" id="resultBanner"></div>
+            <div class="card-inner" id="cardInner">
+                <!-- Card Back -->
+                <div class="card-back">
+                    <div class="card-back-pattern">
+                        <div class="card-back-inner-diamond"></div>
+                    </div>
+                </div>
+                <!-- Card Face -->
+                <div class="card-face" id="cardFace">
+                    <div class="card-corner-top">
+                        <span class="card-rank" id="cardRankTop">A</span>
+                        <span class="card-suit-small" id="cardSuitTop">♥</span>
+                    </div>
+                    <div class="card-center">
+                        <span class="card-suit-large" id="cardSuitCenter">♥</span>
+                    </div>
+                    <div class="card-corner-bottom">
+                        <span class="card-rank" id="cardRankBottom">A</span>
+                        <span class="card-suit-small" id="cardSuitBottom">♥</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Guess Buttons -->
+        <div class="button-row">
+            <button class="guess-btn btn-red" id="btnRed" title="Guess Red (Hearts or Diamonds)">
+                <span class="btn-icon">🔴</span> Red
+            </button>
+            <button class="guess-btn btn-black" id="btnBlack" title="Guess Black (Spades or Clubs)">
+                <span class="btn-icon">⚫</span> Black
+            </button>
+        </div>
+
+        <!-- Remaining Cards Info -->
+        <div class="remaining-info" id="remainingInfo">
+            <span><span class="remaining-dot red-dot"></span> Red: <span class="remaining-count" id="redRemaining">26</span></span>
+            <span><span class="remaining-dot black-dot"></span> Black: <span class="remaining-count" id="blackRemaining">26</span></span>
+            <span>| 🂠 <span class="remaining-count" id="totalRemaining">52</span> left</span>
+        </div>
+
+        <!-- History Strip -->
+        <div class="history-strip" id="historyStrip"></div>
+
+        <!-- Game Over Overlay -->
+        <div class="game-over-overlay" id="gameOverOverlay">
+            <div class="game-over-title">🎴 Deck Complete!</div>
+            <div class="game-over-stats">
+                <div>
+                    <div class="game-over-stat-val" id="finalScore">0</div>
+                    <div class="game-over-stat-lbl">Score</div>
+                </div>
+                <div>
+                    <div class="game-over-stat-val" id="finalBestStreak">0</div>
+                    <div class="game-over-stat-lbl">Best Streak</div>
+                </div>
+                <div>
+                    <div class="game-over-stat-val" id="finalAccuracy">0%</div>
+                    <div class="game-over-stat-lbl">Accuracy</div>
+                </div>
+            </div>
+            <button class="play-again-btn" id="playAgainBtn">🔄 Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // ──────────────────────────────────────
+            // DOM References
+            // ──────────────────────────────────────
+            const cardInner = document.getElementById('cardInner');
+            const cardFace = document.getElementById('cardFace');
+            const cardRankTop = document.getElementById('cardRankTop');
+            const cardSuitTop = document.getElementById('cardSuitTop');
+            const cardSuitCenter = document.getElementById('cardSuitCenter');
+            const cardRankBottom = document.getElementById('cardRankBottom');
+            const cardSuitBottom = document.getElementById('cardSuitBottom');
+            const resultBanner = document.getElementById('resultBanner');
+            const btnRed = document.getElementById('btnRed');
+            const btnBlack = document.getElementById('btnBlack');
+            const scoreDisplay = document.getElementById('scoreDisplay');
+            const streakDisplay = document.getElementById('streakDisplay');
+            const bestStreakDisplay = document.getElementById('bestStreakDisplay');
+            const redRemainingEl = document.getElementById('redRemaining');
+            const blackRemainingEl = document.getElementById('blackRemaining');
+            const totalRemainingEl = document.getElementById('totalRemaining');
+            const historyStrip = document.getElementById('historyStrip');
+            const gameOverOverlay = document.getElementById('gameOverOverlay');
+            const finalScoreEl = document.getElementById('finalScore');
+            const finalBestStreakEl = document.getElementById('finalBestStreak');
+            const finalAccuracyEl = document.getElementById('finalAccuracy');
+            const playAgainBtn = document.getElementById('playAgainBtn');
+            const cardStage = document.getElementById('cardStage');
+
+            // ──────────────────────────────────────
+            // Game State
+            // ──────────────────────────────────────
+            const SUITS = [
+                { name: 'hearts', symbol: '♥', color: 'red' },
+                { name: 'diamonds', symbol: '♦', color: 'red' },
+                { name: 'spades', symbol: '♠', color: 'black' },
+                { name: 'clubs', symbol: '♣', color: 'black' },
+            ];
+            const RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+
+            let deck = [];
+            let currentIndex = 0;
+            let score = 0;
+            let streak = 0;
+            let bestStreak = 0;
+            let totalGuesses = 0;
+            let isRevealing = false;
+            let gameOver = false;
+
+            // ──────────────────────────────────────
+            // Create & Shuffle Deck (Fisher-Yates)
+            // ──────────────────────────────────────
+            function createDeck() {
+                const newDeck = [];
+                for (const suit of SUITS) {
+                    for (const rank of RANKS) {
+                        newDeck.push({ rank, suit: suit.symbol, color: suit.color, suitName: suit.name });
+                    }
+                }
+                return newDeck;
+            }
+
+            function shuffleDeck(arr) {
+                const a = [...arr];
+                for (let i = a.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [a[i], a[j]] = [a[j], a[i]];
+                }
+                return a;
+            }
+
+            // ──────────────────────────────────────
+            // Update Card Face Content
+            // ──────────────────────────────────────
+            function updateCardFace(card) {
+                if (!card) return;
+                const isRed = card.color === 'red';
+                // Remove old color classes
+                cardFace.classList.remove('red', 'black');
+                cardFace.classList.add(isRed ? 'red' : 'black');
+
+                cardRankTop.textContent = card.rank;
+                cardSuitTop.textContent = card.suit;
+                cardSuitCenter.textContent = card.suit;
+                cardRankBottom.textContent = card.rank;
+                cardSuitBottom.textContent = card.suit;
+            }
+
+            // ──────────────────────────────────────
+            // Update Remaining Counts
+            // ──────────────────────────────────────
+            function updateRemainingCounts() {
+                const remaining = deck.length - currentIndex;
+                let redCount = 0;
+                let blackCount = 0;
+                for (let i = currentIndex; i < deck.length; i++) {
+                    if (deck[i].color === 'red') redCount++;
+                    else blackCount++;
+                }
+                redRemainingEl.textContent = redCount;
+                blackRemainingEl.textContent = blackCount;
+                totalRemainingEl.textContent = remaining;
+            }
+
+            // ──────────────────────────────────────
+            // Update Stats Display
+            // ──────────────────────────────────────
+            function updateStatsDisplay() {
+                scoreDisplay.textContent = score;
+                streakDisplay.textContent = streak;
+                bestStreakDisplay.textContent = bestStreak;
+            }
+
+            // ──────────────────────────────────────
+            // Add History Dot
+            // ──────────────────────────────────────
+            function addHistoryDot(card, wasCorrect) {
+                const dot = document.createElement('span');
+                dot.classList.add('history-dot');
+                dot.classList.add(card.color === 'red' ? 'red-card' : 'black-card');
+                if (!wasCorrect) {
+                    dot.classList.add('wrong-guess');
+                }
+                dot.title = `${card.rank}${card.suit} — ${wasCorrect ? 'Correct' : 'Wrong'}`;
+                historyStrip.appendChild(dot);
+
+                // Keep only last 12 dots
+                const dots = historyStrip.querySelectorAll('.history-dot');
+                if (dots.length > 12) {
+                    dots[0].remove();
+                }
+            }
+
+            // ──────────────────────────────────────
+            // Show Result Banner
+            // ──────────────────────────────────────
+            function showResultBanner(wasCorrect, card) {
+                resultBanner.classList.remove('correct-banner', 'wrong-banner', 'show');
+                void resultBanner.offsetWidth; // force reflow
+
+                if (wasCorrect) {
+                    resultBanner.textContent = '✅ Correct!';
+                    resultBanner.classList.add('correct-banner');
+                } else {
+                    resultBanner.textContent = `❌ Wrong! It was ${card.color.toUpperCase()}`;
+                    resultBanner.classList.add('wrong-banner');
+                }
+                resultBanner.classList.add('show');
+
+                // Auto-hide after a bit
+                clearTimeout(resultBanner._hideTimeout);
+                resultBanner._hideTimeout = setTimeout(() => {
+                    resultBanner.classList.remove('show');
+                }, 1800);
+            }
+
+            // ──────────────────────────────────────
+            // Flash Effect on Card Stage
+            // ──────────────────────────────────────
+            function flashCardStage(color) {
+                cardStage.style.transition = 'box-shadow 0.15s ease';
+                if (color === 'correct') {
+                    cardStage.style.boxShadow = '0 0 40px rgba(46, 204, 113, 0.6)';
+                } else {
+                    cardStage.style.boxShadow = '0 0 40px rgba(231, 76, 60, 0.6)';
+                }
+                setTimeout(() => {
+                    cardStage.style.boxShadow = '';
+                    setTimeout(() => {
+                        cardStage.style.transition = '';
+                    }, 200);
+                }, 300);
+            }
+
+            // ──────────────────────────────────────
+            // Reset Card to Back (no animation)
+            // ──────────────────────────────────────
+            function resetCardToBack() {
+                cardInner.style.transition = 'none';
+                cardInner.classList.remove('flipped');
+                void cardInner.offsetWidth; // force reflow
+                cardInner.style.transition = '';
+            }
+
+            // ──────────────────────────────────────
+            // Show Game Over
+            // ──────────────────────────────────────
+            function showGameOver() {
+                gameOver = true;
+                const accuracy = totalGuesses > 0 ? Math.round((score / totalGuesses) * 100) : 0;
+                finalScoreEl.textContent = score;
+                finalBestStreakEl.textContent = bestStreak;
+                finalAccuracyEl.textContent = accuracy + '%';
+                gameOverOverlay.classList.add('active');
+                btnRed.disabled = true;
+                btnBlack.disabled = true;
+            }
+
+            // ──────────────────────────────────────
+            // Hide Game Over
+            // ──────────────────────────────────────
+            function hideGameOver() {
+                gameOver = false;
+                gameOverOverlay.classList.remove('active');
+                btnRed.disabled = false;
+                btnBlack.disabled = false;
+            }
+
+            // ──────────────────────────────────────
+            // Process Guess
+            // ──────────────────────────────────────
+            function processGuess(guessedColor) {
+                if (isRevealing || gameOver) return;
+                if (currentIndex >= deck.length) return;
+
+                isRevealing = true;
+                btnRed.disabled = true;
+                btnBlack.disabled = true;
+
+                const card = deck[currentIndex];
+                const actualColor = card.color;
+                const wasCorrect = guessedColor === actualColor;
+
+                // Update card face (should already be set, but ensure it is)
+                updateCardFace(card);
+
+                // Flip the card to reveal
+                cardInner.classList.add('flipped');
+
+                // After flip animation completes
+                const flipDuration = 600; // matches CSS transition
+                setTimeout(() => {
+                    // Show result
+                    showResultBanner(wasCorrect, card);
+                    flashCardStage(wasCorrect ? 'correct' : 'wrong');
+
+                    // Update score & streak
+                    totalGuesses++;
+                    if (wasCorrect) {
+                        score++;
+                        streak++;
+                        if (streak > bestStreak) {
+                            bestStreak = streak;
+                        }
+                    } else {
+                        streak = 0;
+                    }
+                    updateStatsDisplay();
+                    addHistoryDot(card, wasCorrect);
+
+                    // Advance to next card
+                    currentIndex++;
+                    updateRemainingCounts();
+
+                    // Check if deck is exhausted
+                    if (currentIndex >= deck.length) {
+                        // Wait a moment then show game over
+                        setTimeout(() => {
+                            resetCardToBack();
+                            updateCardFace({ rank: '?', suit: '?', color: 'black' });
+                            cardFace.classList.remove('red', 'black');
+                            cardFace.classList.add('black');
+                            cardRankTop.textContent = '?';
+                            cardSuitTop.textContent = '?';
+                            cardSuitCenter.textContent = '🂠';
+                            cardRankBottom.textContent = '?';
+                            cardSuitBottom.textContent = '?';
+                            showGameOver();
+                            isRevealing = false;
+                        }, 1000);
+                    } else {
+                        // Prepare next card
+                        setTimeout(() => {
+                            resetCardToBack();
+                            updateCardFace(deck[currentIndex]);
+                            updateRemainingCounts();
+                            isRevealing = false;
+                            btnRed.disabled = false;
+                            btnBlack.disabled = false;
+                        }, 900);
+                    }
+                }, flipDuration + 150);
+            }
+
+            // ──────────────────────────────────────
+            // Initialize / Reset Game
+            // ──────────────────────────────────────
+            function initGame() {
+                deck = shuffleDeck(createDeck());
+                currentIndex = 0;
+                score = 0;
+                streak = 0;
+                bestStreak = 0;
+                totalGuesses = 0;
+                isRevealing = false;
+                gameOver = false;
+
+                // Clear history
+                historyStrip.innerHTML = '';
+
+                // Reset UI
+                resetCardToBack();
+                updateCardFace(deck[0]);
+                updateRemainingCounts();
+                updateStatsDisplay();
+                hideGameOver();
+                resultBanner.classList.remove('show', 'correct-banner', 'wrong-banner');
+                btnRed.disabled = false;
+                btnBlack.disabled = false;
+                cardStage.style.boxShadow = '';
+                cardStage.style.transition = '';
+            }
+
+            // ──────────────────────────────────────
+            // Event Listeners
+            // ──────────────────────────────────────
+            btnRed.addEventListener('click', () => processGuess('red'));
+            btnBlack.addEventListener('click', () => processGuess('black'));
+            playAgainBtn.addEventListener('click', initGame);
+
+            // Keyboard support
+            document.addEventListener('keydown', (e) => {
+                if (gameOver) {
+                    if (e.key === 'Enter' || e.key === ' ' || e.key === 'r') {
+                        e.preventDefault();
+                        initGame();
+                    }
+                    return;
+                }
+                if (isRevealing) return;
+                if (e.key === 'ArrowLeft' || e.key === 'r' || e.key === 'R') {
+                    e.preventDefault();
+                    processGuess('red');
+                } else if (e.key === 'ArrowRight' || e.key === 'b' || e.key === 'B') {
+                    e.preventDefault();
+                    processGuess('black');
+                }
+            });
+
+            // ──────────────────────────────────────
+            // Start the Game
+            // ──────────────────────────────────────
+            initGame();
+
+            console.log('🃏 Red or Black game ready!');
+            console.log('  - Click RED or BLACK to guess');
+            console.log('  - Keyboard: ArrowLeft/R key = Red | ArrowRight/B key = Black');
+            console.log('  - 52 cards • Track remaining red/black counts');
+            console.log('  - Build your streak! 🔥');
+        })();
+    </script>
+</body>
+</html>

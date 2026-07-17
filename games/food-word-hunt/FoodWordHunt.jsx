@@ -173,7 +173,7 @@ export default function FoodWordHunt({ onComplete }) {
         fontSize: "1.8rem", cursor: "pointer", color: "#b45309", padding: 8
       }}>✕</button>
 
-      <div style={{ width:"100%", maxWidth:480 }}>
+      <div style={{ width:"100%", maxWidth:"min(760px, calc(100vw - 56px))" }}>
         <div style={{ display:"flex", justifyContent:"space-between", marginBottom:14 }}>
           <span style={{ background:cat.color, color:"#fff", padding:"4px 14px", borderRadius:999, fontWeight:700 }}>{cat.label}</span>
           <span style={{ color:"#92400e", fontWeight:700 }}>🏆 {score}</span>
@@ -189,13 +189,13 @@ export default function FoodWordHunt({ onComplete }) {
           boxShadow:"0 8px 24px #0001",
           border:`2px solid ${feedback==="correct"?"#22c55e":feedback==="wrong"?"#ef4444":"#fde68a"}`,
         }}>
-          <div style={{ fontSize:"5rem", marginBottom:14 }}>{current.e}</div>
+          <div style={{ fontSize:"clamp(3.2rem, 8vw, 6.5rem)", marginBottom:14 }}>{current.e}</div>
           <div style={{ display:"flex", gap:8, justifyContent:"center", flexWrap:"wrap" }}>
             {current.n.split("").map((_, i) => (
               <div key={i} style={{
-                width:40, height:46, borderRadius:8, border:`2px solid ${cat.color}`,
+                width:"clamp(36px, 6.5vw, 56px)", height:"clamp(42px, 7.5vw, 64px)", borderRadius:8, border:`2px solid ${cat.color}`,
                 display:"flex", alignItems:"center", justifyContent:"center",
-                fontSize:"1.2rem", fontWeight:800, color:"#1e293b", background:"#fff7ed",
+                fontSize:"clamp(1.1rem, 2.2vw, 1.5rem)", fontWeight:800, color:"#1e293b", background:"#fff7ed",
               }}>
                 {typed[i]?.l || ""}
               </div>
@@ -212,10 +212,10 @@ export default function FoodWordHunt({ onComplete }) {
           {pool.map(tile => (
             <button key={tile.id} onClick={() => tap(tile.id)} disabled={tile.used || !!feedback}
               style={{
-                width:44, height:44, borderRadius:10, border:"none",
+                width:"clamp(38px, 7vw, 60px)", height:"clamp(38px, 7vw, 60px)", borderRadius:10, border:"none",
                 background: tile.used ? "#f1f5f9" : cat.color,
                 color: tile.used ? "transparent" : "#fff",
-                fontWeight:800, fontSize:"1.1rem", textTransform:"uppercase",
+                fontWeight:800, fontSize:"clamp(1.1rem, 2vw, 1.5rem)", textTransform:"uppercase",
                 cursor: tile.used ? "default" : "pointer",
                 boxShadow: tile.used ? "none" : `0 3px 0 ${cat.color}cc`,
                 transform: tile.used ? "translateY(2px)" : "translateY(0)",
