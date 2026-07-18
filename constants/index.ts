@@ -53,6 +53,22 @@ export const GAME_COVERS: Record<string, string> = {
   treasurechest: '/assets/covers/treasure-chest-showdown-cover.webp',
   wgrandprix: '/assets/covers/w-grand-prix.webp',
   wordmatch: '/assets/covers/word-match-cover.webp',
+  crimsonduel: '/assets/covers/crimson-colour-duel-cover.webp',
+  familyquest: '/assets/covers/family-quest-cover.webp',
+  feedmonster: '/assets/covers/feed-the-monster-cover.webp',
+  flagmaster: '/assets/covers/flagmaster-cover.webp',
+  fruitwordhunt: '/assets/covers/fruit-word-hunt-cover.webp',
+  higherorlower: '/assets/covers/higher-or-lower-cover.webp',
+  missingfruit: '/assets/covers/missing-fruit-cover.webp',
+  moneyblocks: '/assets/covers/money-blocks-cover.webp',
+  pacman: '/assets/covers/pac-man-cover.webp',
+  phonicsadventure: '/assets/covers/phonics-adventure-cover.webp',
+  superwings: '/assets/covers/super-wing-races-cover.webp',
+  unicornwings: '/assets/covers/unicorn-wing-races-cover.webp',
+  warriors: '/assets/covers/grammar-hoop-slam-cover.webp',
+  picturerace: '/assets/covers/picture-race-cover.webp',
+  sentencebuilder: '/assets/covers/sentence-builder-cover.webp',
+  unicorn: '/assets/covers/unicorn-trophy-race-cover.webp',
 };
 
 export const GAME_TAGS: Record<string, { label: string; color: string }> = Object.fromEntries(

@@ -18,7 +18,7 @@ const GAME_COMPONENTS: Record<
   React.LazyExoticComponent<React.ComponentType<GameComponentProps>> | undefined
 > = {
   unicorn: lazy(() => import('@/games/unicorn-run/UnicornRun.jsx')),
-  warriors: lazy(() => import('@/games/warriors-grammar-slam/WarriorsGrammarSlam.jsx')),
+  warriors: lazy(() => import('@/games/grammar-hoop-slam/GrammarHoopSlam.jsx')),
   memory: lazy(() => import('@/games/memory-game/MemoryMatch.jsx')),
   compound: lazy(() => import('@/games/compound-word-quest/CompoundWordQuest.jsx')),
   wordmatch: lazy(() => import('@/games/word-match/WordMatch.jsx')),

@@ -42,11 +42,11 @@ const QUESTIONS_DB = {
 
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
 
-export default function WarriorsGrammarSlam({ onComplete }) {
+export default function GrammarHoopSlam({ onComplete }) {
   const [screen, setScreen] = useState("start");
   const [playerName, setPlayerName] = useState("");
   const [level, setLevel] = useState(1);
-  const [unlocked, setUnlocked] = useStorage("warriors-grammar-slam-v1", { 1: true, 2: false, 3: false });
+  const [unlocked, setUnlocked] = useStorage("grammar-hoop-slam-v1", { 1: true, 2: false, 3: false });
   const [questions, setQuestions] = useState([]);
   const [idx, setIdx] = useState(0);
   const [score, setScore] = useState(0);

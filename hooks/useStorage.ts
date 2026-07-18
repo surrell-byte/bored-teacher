@@ -7,7 +7,7 @@ import { useState, useEffect, useCallback } from 'react';
  *
  * Replaces the ad-hoc `localStorage.getItem`/`setItem` pairs that were
  * duplicated across ~10 games (DeepSeaReveal, Flagmaster, FoodWordHunt,
- * FruitWordHunt, PacMan, ShuttlecockSmash, UnicornRun, WarriorsGrammarSlam,
+ * FruitWordHunt, PacMan, ShuttlecockSmash, UnicornRun, GrammarHoopSlam,
  * WordFusion, WordMatch). Values are JSON-encoded, so plain numbers,
  * strings, arrays, and objects all work the same way previously-stored
  * plain values (e.g. "42") still parse correctly with JSON.parse.
