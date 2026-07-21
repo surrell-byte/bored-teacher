@@ -47,15 +47,108 @@ body {
               linear-gradient(180deg, rgba(7,10,14,0.08), rgba(6,12,23,0.92));
 }
 
-/* Breakpoints (common set) --------------------------------------------------
-   0–479px  : small phones
-   480–767px: large phones
-   768–1023px: tablets
-   1024–1279px: small laptops
-   1280–1535px: desktop
-   1536px+  : large desktop
-   Use these in media queries: (max-width:767px), (min-width:768px) and (max-width:1023px), (min-width:1024px)
+/* Breakpoints ------------------------------------------------------------
+   Single source of truth — mirrors config/breakpoints.ts. If you change a
+   value here, change it there too (CSS can't import from TS without a
+   build step in this project).
+
+   mobile         0–639     phones
+   tablet         640–1023  tablets, small laptops in portrait
+   desktop        1024–1535 laptops, standard monitors
+   large-desktop  1536–2559 big monitors, wide displays
+   tv             2560+     ultrawide monitors, classroom smartboards/TVs
+
+   Custom properties can't be read inside @media conditions, so use the
+   literal px values in media queries themselves:
+   (min-width: 640px), (min-width: 1024px), (min-width: 1536px), (min-width: 2560px)
+
+   The ~20 per-component @media rules below have been snapped onto this
+   scale (max-width: 639px = "below tablet", max-width: 1023px = "below
+   desktop", min-width: 1536px = "large-desktop and up"). They used to be
+   767/700/640/600/860/900/1600 — scattered one-off values with no shared
+   scale. A handful of sub-mobile fine-tuning breakpoints (480, 540, 500,
+   560) are intentionally left alone — those aren't tier boundaries, they're
+   per-component adjustments for small-phone widths within the mobile tier.
 */
+:root {
+  --bp-tablet: 640px;
+  --bp-desktop: 1024px;
+  --bp-large-desktop: 1536px;
+  --bp-tv: 2560px;
+
+  /* Fluid spacing/type scale — grows smoothly across the whole range
+     instead of jumping at breakpoints. Prefer these over hardcoded px so
+     the app scales as one system; existing per-component media queries
+     keep working untouched while you migrate incrementally. */
+  --space-xs:  clamp(4px, 0.3vw, 8px);
+  --space-sm:  clamp(8px, 0.6vw, 14px);
+  --space-md:  clamp(12px, 1vw, 20px);
+  --space-lg:  clamp(20px, 1.6vw, 36px);
+  --space-xl:  clamp(32px, 2.4vw, 56px);
+
+  --text-sm:   clamp(0.8rem, 0.75rem + 0.2vw, 0.95rem);
+  --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.15rem);
+  --text-lg:   clamp(1.15rem, 1.05rem + 0.5vw, 1.5rem);
+  --text-xl:   clamp(1.5rem, 1.3rem + 1vw, 2.25rem);
+  --text-2xl:  clamp(2rem, 1.6rem + 2vw, 3.5rem);
+
+  --tap-target-min: 44px; /* WCAG minimum; presentation mode raises this */
+}
+
+/* Presentation mode — manual override for smartboards/TVs, toggled by a
+   teacher via useResponsive().setPresentationMode(true). Width alone can't
+   detect "this is a smartboard": most run at ordinary 1080p/4K, same as a
+   desktop monitor, just viewed from across a classroom. Everything below
+   scales up for that viewing distance when this attribute is set. */
+[data-presentation="true"] {
+  --space-xs:  clamp(8px, 0.5vw, 14px);
+  --space-sm:  clamp(14px, 1vw, 22px);
+  --space-md:  clamp(20px, 1.6vw, 32px);
+  --space-lg:  clamp(32px, 2.4vw, 56px);
+  --space-xl:  clamp(48px, 3.5vw, 84px);
+
+  --text-sm:   clamp(1.1rem, 1rem + 0.3vw, 1.3rem);
+  --text-base: clamp(1.4rem, 1.2rem + 0.6vw, 1.75rem);
+  --text-lg:   clamp(1.75rem, 1.5rem + 1vw, 2.4rem);
+  --text-xl:   clamp(2.25rem, 1.8rem + 1.8vw, 3.5rem);
+  --text-2xl:  clamp(3rem, 2.2rem + 3vw, 5rem);
+
+  --tap-target-min: 64px;
+}
+
+/* Presentation-mode page overrides ------------------------------------------
+   The token block above defines --space-* and --text-* variables but nothing in this
+   file's ~3000 existing rules reads them yet (they use hardcoded rem/px).
+   Rather than rewrite the whole stylesheet, these are targeted overrides
+   for the three highest-traffic screens a teacher actually presents from —
+   Hub, Games, and Leaderboard — so toggling presentation mode has a real,
+   visible effect today. Everything else keeps its normal sizing until it's
+   migrated to the token scale. */
+[data-presentation="true"] .hub-game-grid,
+[data-presentation="true"] .hub-featured-grid {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 460px));
+  gap: 32px;
+}
+[data-presentation="true"] .game-card { padding: 26px; }
+[data-presentation="true"] .card-name { font-size: 1.15rem; }
+[data-presentation="true"] .card-tag,
+[data-presentation="true"] .card-difficulty { font-size: 0.82rem; }
+[data-presentation="true"] .card-cover-icon {
+  width: 92px;
+  height: 92px;
+  font-size: 3.4rem;
+}
+
+[data-presentation="true"] .lb-hero-title { font-size: clamp(2.4rem, 5vw, 3.8rem); }
+[data-presentation="true"] .lb-hero-stat-val { font-size: 2.4rem; }
+[data-presentation="true"] .podium-avatar { width: 68px; height: 68px; font-size: 1.3rem; }
+[data-presentation="true"] .podium-avatar.rank-1 { width: 80px; height: 80px; font-size: 1.5rem; }
+[data-presentation="true"] .podium-name { font-size: 1.05rem; }
+[data-presentation="true"] .podium-score { font-size: 1rem; }
+[data-presentation="true"] .lb-table-wrap table { font-size: 1.15rem; }
+[data-presentation="true"] .lb-table-wrap table th { font-size: 0.85rem; }
+[data-presentation="true"] .lb-table-wrap table td,
+[data-presentation="true"] .lb-table-wrap table th { padding: 18px 20px; }
 
 /* Safe-area helpers --------------------------------------------------------*/
 :root {
@@ -265,7 +358,7 @@ body {
 }
 
 /* On phones, respect device safe-areas and add comfortable top/bottom padding */
-@media (max-width: 767px) {
+@media (max-width: 639px) {
   body {
     padding-top: max(24px, var(--safe-inset-top));
     padding-bottom: max(24px, var(--safe-inset-bottom));
@@ -565,7 +658,7 @@ a { color: inherit; }
 .mobile-nav-item:hover { background: var(--surface-soft); }
 .mobile-signout { color: var(--red); }
 
-@media (max-width: 700px) {
+@media (max-width: 639px) {
   .nav-links { display: none; }
   .hamburger { display: inline-flex; }
   .mobile-menu { display: flex; }
@@ -1130,7 +1223,7 @@ a { color: inherit; }
   margin-bottom: 20px;
   align-items: start;
 }
-@media (max-width: 640px) {
+@media (max-width: 639px) {
   .lb-hero { grid-template-columns: 1fr; }
   .lb-podium { padding: 12px 8px 0; gap: 4px; }
   .podium-slot { min-width: 60px; }
@@ -1408,7 +1501,7 @@ a { color: inherit; }
   display: grid;
   grid-template-columns: 1fr auto;
 }
-@media (max-width: 600px) {
+@media (max-width: 639px) {
   .trophy-hero-grid {
     grid-template-columns: 1fr;
   }
@@ -1485,7 +1578,7 @@ a { color: inherit; }
   margin-bottom: 22px;
   align-items: stretch;
 }
-@media (max-width: 700px) {
+@media (max-width: 639px) {
   .hub-hero { grid-template-columns: 1fr; }
   .hub-hero .shell-card:last-child {
     flex-direction: row;
@@ -1596,7 +1689,7 @@ a { color: inherit; }
   line-height: 1.6;
 }
 
-@media (max-width: 860px) {
+@media (max-width: 1023px) {
   .games-hero-grid {
     grid-template-columns: 1fr;
   }
@@ -2030,7 +2123,7 @@ a { color: inherit; }
   display: contents;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 639px) {
   .hub-filters-toggle {
     display: flex;
   }
@@ -2245,7 +2338,7 @@ a { color: inherit; }
   gap: clamp(12px, 2vw, 24px);
 }
 
-@media (min-width: 1600px) {
+@media (min-width: 1536px) {
   .hub-page { max-width: 1800px; padding-left: clamp(28px, 6vw, 120px); padding-right: clamp(28px, 6vw, 120px); }
   .hub-hero-grid { grid-template-columns: 1.6fr 1fr; gap: 28px; }
   .hub-game-grid { grid-template-columns: repeat(auto-fill, minmax(340px, 340px)); gap: 32px; }
@@ -2323,7 +2416,7 @@ a { color: inherit; }
   margin-bottom: 22px;
   min-width: 0;
 }
-@media (max-width: 700px) {
+@media (max-width: 639px) {
   .hub-hero-grid { grid-template-columns: 1fr; }
 }
 
@@ -2497,10 +2590,10 @@ a { color: inherit; }
   color: var(--text);
 }
 .stat-pill .stat-icon { font-size: 0.9rem; line-height: 1; }
-@media (max-width: 900px) {
+@media (max-width: 1023px) {
   .stat-pill-xp { display: none; }
 }
-@media (max-width: 700px) {
+@media (max-width: 639px) {
   .stat-pill { display: none; }
 }
 
@@ -2540,6 +2633,30 @@ a { color: inherit; }
   justify-content: center;
   line-height: 1;
   border: 2px solid var(--surface-strong);
+}
+
+.presentation-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface-strong);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 1rem;
+  flex-shrink: 0;
+  transition: border-color 0.18s, transform 0.12s, background 0.18s;
+}
+.presentation-toggle:hover { border-color: var(--border-bright); transform: translateY(-1px); }
+.presentation-toggle:active { transform: scale(0.95); }
+.presentation-toggle.active {
+  background: var(--accent, #6d8ee9);
+  border-color: var(--accent, #6d8ee9);
+  color: #fff;
 }
 
 /* ── Profile chip (two-line name/level + XP bar) ───────────── */
@@ -2625,7 +2742,7 @@ a { color: inherit; }
   grid-template-columns: 1.2fr 1fr;
   align-items: center;
 }
-@media (max-width: 700px) {
+@media (max-width: 639px) {
   .trophy-hero-grid { grid-template-columns: 1fr; }
 }
 
@@ -2690,7 +2807,7 @@ a { color: inherit; }
   grid-template-columns: 1fr 1fr;
   gap: 16px;
 }
-@media (max-width: 700px) {
+@media (max-width: 639px) {
   .trophy-side-grid { grid-template-columns: 1fr; }
 }
 
@@ -2914,7 +3031,7 @@ a { color: inherit; }
   color: var(--gold);
 }
 
-@media (max-width:640px){
+@media (max-width: 639px){
 
   .games-list-tile{
     padding:16px;
@@ -2985,3 +3102,146 @@ a { color: inherit; }
   overflow-wrap: normal;
   white-space: nowrap;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   GAME LAYOUT SYSTEM (engine/layout)
+   First real consumer of the --space-*, --text-*, and --tap-target-min tokens
+   defined at the top of this file. GameLayout picks one of these five
+   classes based on device tier (see engine/layout/ResponsiveLayout.tsx);
+   each arranges header/play-area/sidebar/controls slots differently, and
+   all of them get bigger automatically under [data-presentation="true"]
+   because they're built from the tokens, not hardcoded px.
+══════════════════════════════════════════════════════════════ */
+.game-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  gap: var(--space-sm);
+}
+.game-layout-header {
+  padding: var(--space-sm) var(--space-md);
+  font-size: var(--text-base);
+  font-weight: 700;
+}
+.game-layout-body {
+  display: flex;
+  flex: 1;
+  gap: var(--space-md);
+  min-height: 0;
+}
+.game-layout-play-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+.game-layout-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  font-size: var(--text-sm);
+  flex-shrink: 0;
+}
+
+/* Mobile — sidebar folds into a thin strip above play area; controls are
+   pinned to the bottom as a fixed bar within thumb reach. */
+.game-layout-mobile { padding: var(--space-xs); }
+.game-layout-sidebar-strip {
+  display: flex;
+  gap: var(--space-sm);
+  font-size: var(--text-sm);
+  padding: var(--space-xs) var(--space-sm);
+}
+.game-layout-controls-bar {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm);
+  min-height: var(--tap-target-min);
+}
+
+/* Tablet — sidebar sits beside play area; controls are in-flow at the
+   bottom rather than a fixed overlay (there's vertical room to spare). */
+.game-layout-tablet { padding: var(--space-sm); }
+.game-layout-tablet .game-layout-sidebar { width: clamp(160px, 22vw, 240px); }
+.game-layout-controls-row {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-md);
+  padding: var(--space-sm);
+  min-height: var(--tap-target-min);
+}
+
+/* Desktop / large-desktop — persistent sidebar column, mouse/keyboard
+   first so no dedicated controls bar; large-desktop just caps play-area
+   width so it doesn't stretch uncomfortably on a wide monitor. */
+.game-layout-desktop,
+.game-layout-large-desktop { padding: var(--space-md); }
+.game-layout-desktop .game-layout-sidebar,
+.game-layout-large-desktop .game-layout-sidebar { width: clamp(200px, 16vw, 280px); }
+.game-layout-large-desktop .game-layout-play-area { max-width: 1400px; margin: 0 auto; }
+
+/* TV / smartboard — everything scales with the presentation-mode tokens;
+   sidebar widens and tap targets grow for a viewer several feet away. */
+.game-layout-tv { padding: var(--space-xl); }
+.game-layout-tv .game-layout-header { font-size: var(--text-xl); }
+.game-layout-tv .game-layout-sidebar {
+  width: clamp(240px, 18vw, 360px);
+  font-size: var(--text-lg);
+}
+
+/* ── Default sub-widgets for GameLayout's slots (engine/layout) ───────── */
+.game-header-default {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+.game-header-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-weight: 800;
+  font-family: var(--font-display, Syne);
+}
+.game-header-icon { font-size: 1.2em; line-height: 1; }
+.game-header-actions { display: flex; gap: var(--space-xs); }
+
+.game-sidebar-default {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+.game-sidebar-stat {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: 12px;
+  background: var(--surface-soft);
+}
+.game-sidebar-stat-value { font-weight: 800; font-family: var(--font-display, Syne); }
+.game-sidebar-stat-label { color: var(--muted); font-size: 0.85em; }
+
+.game-bottombar-default {
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.game-bottombar-btn {
+  min-width: var(--tap-target-min);
+  min-height: var(--tap-target-min);
+  padding: var(--space-xs) var(--space-md);
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--surface-strong);
+  color: var(--text);
+  font-weight: 700;
+  cursor: pointer;
+}
+.game-bottombar-btn:active { transform: scale(0.96); }

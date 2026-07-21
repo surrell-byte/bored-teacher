@@ -7,6 +7,7 @@ import { useGame, logOut, xpForLevel } from '@/providers/GameProvider';
 import { THEMES } from '@/constants/index';
 import { usePathname, useRouter } from 'next/navigation';
 import ProfileModal from '@/features/profiles/components/ProfileModal';
+import { useResponsive } from '@/hooks/useResponsive';
 
 const NAV_ITEMS = [
   { href: '/hub',         label: 'Dashboard',   icon: '🏠' },
@@ -25,6 +26,11 @@ export default function Navbar() {
   const [showDropdown, setShowDropdown] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { isMobile, presentationMode, setPresentationMode } = useResponsive();
+
+  // Presentation mode is only offered on screens big enough to matter for a
+  // classroom display (tablet and up) — it has nothing to add on a phone.
+  const showPresentationToggle = !isMobile;
 
   const isGuest = typeof window !== 'undefined' && localStorage.getItem('guestUser') === 'true';
 
@@ -106,6 +112,19 @@ export default function Navbar() {
           <button className="notif-bell" aria-label="Notifications" type="button">
             🔔
           </button>
+
+          {showPresentationToggle && (
+            <button
+              className={`presentation-toggle${presentationMode ? ' active' : ''}`}
+              onClick={() => setPresentationMode(!presentationMode)}
+              aria-pressed={presentationMode}
+              aria-label={presentationMode ? 'Turn off presentation mode' : 'Turn on presentation mode for smartboards'}
+              title={presentationMode ? 'Presentation mode: on' : 'Presentation mode (bigger text & tap targets for smartboards)'}
+              type="button"
+            >
+              🖥️
+            </button>
+          )}
 
           {/* Profile dropdown — position:relative is the anchor */}
           <div
@@ -234,6 +253,16 @@ export default function Navbar() {
               ))}
             </select>
           </div>
+
+          {showPresentationToggle && (
+            <button
+              className={`mobile-nav-item${presentationMode ? ' active' : ''}`}
+              onClick={() => setPresentationMode(!presentationMode)}
+              aria-pressed={presentationMode}
+            >
+              🖥️ Presentation Mode {presentationMode ? '(On)' : '(Off)'}
+            </button>
+          )}
 
           <button className="mobile-nav-item mobile-signout" onClick={handleLogout}>
             {isGuest ? '🔓 Leave Guest Mode' : '🚪 Sign Out'}

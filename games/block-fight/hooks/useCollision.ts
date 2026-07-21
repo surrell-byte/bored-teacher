@@ -14,10 +14,3 @@ export function updateCollectibles(state: GameState, setUi: UiSetter) {
     }
   });
 }
-
-export function updateWinCondition(state: GameState, setUi: UiSetter) {
-  if (state.enemies.every(enemy => !enemy.alive) && state.coins.every(coin => coin.collected)) {
-    state.gameState = 'win';
-    setUi(ui => ({ ...ui, state: 'win' }));
-  }
-}

@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>What's Missing?</title>
+<style>
+  :root{
+    --bg1:#8fd14f; --bg2:#a7e063;
+    --card:#ffffff; --frame:#ffc94d; --frame-dark:#f5a623;
+    --accent:#ff7a3d; --red:#e8453c; --green:#3cb878;
+  }
+  *{box-sizing:border-box;}
+  html,body{ width:100%; }
+  body{
+    margin:0; min-height:100vh; display:flex; flex-direction:column; align-items:center;
+    justify-content:center; gap:18px; font-family:'Comic Sans MS', 'Baloo 2', 'Trebuchet MS', sans-serif;
+    background: radial-gradient(circle at 20% 20%, var(--bg2), var(--bg1));
+    overflow-x:hidden; position:relative;
+    padding:16px;
+  }
+  .deco{position:absolute; font-size:clamp(20px,4vw,40px); opacity:.5; pointer-events:none;}
+  .banner{
+    background: linear-gradient(180deg,#ffd166,#ffa733);
+    color:white; font-weight:800; font-size:clamp(22px,5vw,46px);
+    padding:clamp(8px,2vw,14px) clamp(20px,6vw,44px); border-radius:18px; box-shadow:0 6px 0 rgba(0,0,0,0.12);
+    text-shadow: 0 2px 0 rgba(0,0,0,0.15);
+    letter-spacing:1px;
+    text-align:center;
+    max-width:92vw;
+  }
+  .categoryBar{
+    display:flex; gap:10px; flex-wrap:wrap; justify-content:center; max-width:94vw;
+  }
+  .categoryBtn{
+    padding:10px 16px; border-radius:14px; background:white; border:4px solid var(--frame-dark);
+    font-weight:800; font-size:clamp(12px,2.4vw,15px); cursor:pointer; transition:.2s;
+    white-space:nowrap; color:#555;
+  }
+  .categoryBtn:hover{ transform: scale(1.06); }
+  .categoryBtn.active{ background: var(--accent); color:white; border-color:#e85d20; }
+  .board{
+    display:flex; gap:clamp(8px,2vw,18px); flex-wrap:wrap; justify-content:center; padding:10px;
+    max-width:96vw;
+  }
+  .card{
+    width:clamp(80px,22vw,160px); height:clamp(110px,28vw,220px); border-radius:18px;
+    background: var(--frame);
+    border:6px solid var(--frame-dark);
+    position:relative;
+    cursor:default;
+    perspective:1000px;
+    box-shadow:0 8px 18px rgba(0,0,0,.18);
+    overflow:visible;
+    transition: transform .15s ease, box-shadow .15s ease, border-color .2s;
+    animation: floatCard 2.2s ease-in-out infinite;
+  }
+  .card:hover{
+    transform: translateY(-8px) rotate(-1deg) scale(1.04);
+    box-shadow: 0 14px 24px rgba(0,0,0,.22);
+  }
+  .card.reveal{ animation: revealBounce .45s; }
+  @keyframes revealBounce{
+    0%{ transform:scale(.82); }
+    60%{ transform:scale(1.12); }
+    100%{ transform:scale(1); }
+  }
+  @keyframes floatCard{
+    0%,100%{ transform:translateY(0); }
+    50%{ transform:translateY(-7px); }
+  }
+  .card-flip{
+    width:100%; height:100%; position:relative;
+    transform-style:preserve-3d;
+    transition: transform .65s cubic-bezier(.25,.8,.25,1);
+  }
+  .card.flipping .card-flip{
+    transform: rotateY(180deg);
+  }
+  .card-face{
+    position:absolute; inset:0; border-radius:12px;
+    backface-visibility:hidden;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .card-front{ background: var(--card); }
+  .card-back{
+    background: linear-gradient(180deg,#ffd166,#ffb238);
+    transform: rotateY(180deg);
+  }
+  .card-inner{
+    width:88%; height:88%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:clamp(28px,8vw,64px);
+  }
+  .card-inner.reveal-pop{
+    animation: reveal .5s ease;
+  }
+  @keyframes reveal{
+    0%{ transform:scale(.2); opacity:0; }
+    70%{ transform:scale(1.2); }
+    100%{ transform:scale(1); opacity:1; }
+  }
+  .qmark{
+    font-size:clamp(32px,9vw,70px); font-weight:900; color:var(--accent);
+    text-shadow: 0 2px 0 rgba(0,0,0,0.1);
+  }
+  .status{
+    font-size:clamp(15px,3.6vw,22px); font-weight:700; color:#fff; text-shadow:0 2px 0 rgba(0,0,0,0.15);
+    min-height:30px; text-align:center; max-width:92vw;
+  }
+  .combo{
+    font-size:clamp(13px,3vw,18px); font-weight:800; color:#fff700;
+    text-shadow: 0 2px 0 rgba(0,0,0,0.2);
+    min-height:24px; text-align:center;
+  }
+  .controls{ display:flex; gap:14px; }
+  button.next{
+    background: var(--green); color:white; border:none; padding:10px clamp(18px,5vw,28px);
+    font-size:clamp(14px,3vw,18px); font-weight:800; border-radius:14px; cursor:pointer;
+    box-shadow:0 5px 0 #2a9760; transition: transform .1s;
+  }
+  button.next:active{ transform: translateY(3px); box-shadow:0 2px 0 #2a9760; }
+  button.next:disabled{ opacity:.45; cursor:default; }
+  .score{
+    background:rgba(255,255,255,0.85); border-radius:14px; padding:8px clamp(12px,3vw,18px);
+    font-weight:800; color:#3a8a3a; font-size:clamp(14px,3vw,18px); box-shadow:0 4px 0 rgba(0,0,0,0.08);
+    text-align:center;
+  }
+  .options{
+    display:flex; gap:clamp(8px,2vw,12px); flex-wrap:wrap; justify-content:center; max-width:96vw;
+  }
+  .opt{
+    background:white; border:4px solid var(--frame-dark); border-radius:16px;
+    width:clamp(78px,20vw,110px); height:clamp(78px,20vw,110px); display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:4px; cursor:pointer; transition: transform .12s;
+  }
+  .opt:hover{ transform: scale(1.08); }
+  .opt.right{ border-color: var(--green); background:#e7fbe9; }
+  .opt.wrong{ border-color: var(--red); background:#fdeceb; }
+  .optionEmoji{ font-size:clamp(26px,7vw,44px); }
+  .optionWord{ font-size:clamp(10px,2.4vw,14px); font-weight:800; color:#555; text-transform:capitalize; text-align:center; padding:0 2px; }
+  .confetti-piece{
+    position:fixed; top:-30px; pointer-events:none; z-index:999;
+    transition: transform 2.2s linear, top 2.2s linear;
+  }
+  .board.fade-out, .options.fade-out{
+    opacity:0; transform:translateY(20px) scale(.96);
+  }
+  .board.fade-in, .options.fade-in{
+    opacity:1; transform:translateY(0) scale(1);
+  }
+  .board, .options{
+    transition: opacity .35s ease, transform .35s ease;
+  }
+  .progressWrap{
+    width:min(520px,90vw); height:18px; background:#fff; border-radius:999px;
+    overflow:hidden; border:4px solid var(--frame-dark);
+  }
+  #progressBar{
+    width:0%; height:100%;
+    background:linear-gradient(90deg,#3cb878,#8fd14f);
+    transition:.4s;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation:none !important; transition:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="deco" style="top:6%; left:4%;">🌿</div>
+<div class="deco" style="top:10%; right:6%;">🌸</div>
+<div class="deco" style="bottom:8%; left:8%;">🌼</div>
+<div class="deco" style="bottom:10%; right:10%;">🍃</div>
+
+<div class="banner">What's missing?</div>
+
+<div class="categoryBar" id="categoryBar"></div>
+
+<div class="score">⭐ Score: <span id="scoreVal">0</span></div>
+<div class="score">🏆 Achievement: <span id="achievementText">None yet</span></div>
+
+<button id="soundBtn" class="next">🔊 Sound On</button>
+
+<div class="progressWrap"><div id="progressBar"></div></div>
+
+<div class="board" id="board"></div>
+
+<div class="options" id="options"></div>
+
+<div class="status" id="status">👀 Get ready to remember!</div>
+
+<div class="combo" id="combo"></div>
+
+<div class="controls">
+  <button class="next" id="nextBtn">Next Round ▶</button>
+</div>
+
+<script>
+const CATEGORIES = {
+  "Fruit": [
+    {name:"mango", emoji:"🥭"},
+    {name:"lemon", emoji:"🍋"},
+    {name:"orange", emoji:"🍊"},
+    {name:"banana", emoji:"🍌"},
+    {name:"apple", emoji:"🍎"},
+    {name:"grapes", emoji:"🍇"},
+    {name:"strawberry", emoji:"🍓"},
+    {name:"watermelon", emoji:"🍉"},
+    {name:"pineapple", emoji:"🍍"},
+    {name:"cherries", emoji:"🍒"},
+    {name:"peach", emoji:"🍑"},
+    {name:"kiwi", emoji:"🥝"},
+  ],
+  "Animals": [
+    {name:"lion", emoji:"🦁"},
+    {name:"elephant", emoji:"🐘"},
+    {name:"dog", emoji:"🐶"},
+    {name:"cat", emoji:"🐱"},
+    {name:"rabbit", emoji:"🐰"},
+    {name:"bear", emoji:"🐻"},
+    {name:"monkey", emoji:"🐵"},
+    {name:"pig", emoji:"🐷"},
+    {name:"cow", emoji:"🐮"},
+    {name:"horse", emoji:"🐴"},
+    {name:"tiger", emoji:"🐯"},
+    {name:"penguin", emoji:"🐧"},
+  ],
+  "Professions": [
+    {name:"doctor", emoji:"🧑‍⚕️"},
+    {name:"teacher", emoji:"🧑‍🏫"},
+    {name:"firefighter", emoji:"🧑‍🚒"},
+    {name:"police officer", emoji:"👮"},
+    {name:"chef", emoji:"🧑‍🍳"},
+    {name:"farmer", emoji:"🧑‍🌾"},
+    {name:"pilot", emoji:"🧑‍✈️"},
+    {name:"scientist", emoji:"🧑‍🔬"},
+    {name:"artist", emoji:"🧑‍🎨"},
+    {name:"mechanic", emoji:"🧑‍🔧"},
+    {name:"astronaut", emoji:"🧑‍🚀"},
+    {name:"judge", emoji:"🧑‍⚖️"},
+  ],
+  "Transport": [
+    {name:"car", emoji:"🚗"},
+    {name:"bus", emoji:"🚌"},
+    {name:"train", emoji:"🚆"},
+    {name:"plane", emoji:"✈️"},
+    {name:"boat", emoji:"🚤"},
+    {name:"tractor", emoji:"🚜"},
+    {name:"bike", emoji:"🚲"},
+    {name:"rocket", emoji:"🚀"},
+    {name:"ambulance", emoji:"🚑"},
+    {name:"truck", emoji:"🚚"},
+    {name:"taxi", emoji:"🚕"},
+    {name:"helicopter", emoji:"🚁"},
+  ],
+  "Weather": [
+    {name:"sunny", emoji:"☀️"},
+    {name:"cloudy", emoji:"☁️"},
+    {name:"rainy", emoji:"🌧️"},
+    {name:"stormy", emoji:"⛈️"},
+    {name:"snowy", emoji:"❄️"},
+    {name:"windy", emoji:"🌬️"},
+    {name:"foggy", emoji:"🌫️"},
+    {name:"rainbow", emoji:"🌈"},
+    {name:"hot", emoji:"🥵"},
+    {name:"cold", emoji:"🥶"},
+    {name:"lightning", emoji:"⚡"},
+    {name:"tornado", emoji:"🌪️"},
+  ],
+  "Food & Drinks": [
+    {name:"pizza", emoji:"🍕"},
+    {name:"burger", emoji:"🍔"},
+    {name:"fries", emoji:"🍟"},
+    {name:"ice cream", emoji:"🍦"},
+    {name:"cake", emoji:"🍰"},
+    {name:"cookie", emoji:"🍪"},
+    {name:"bread", emoji:"🍞"},
+    {name:"egg", emoji:"🥚"},
+    {name:"cheese", emoji:"🧀"},
+    {name:"juice", emoji:"🧃"},
+    {name:"milk", emoji:"🥛"},
+    {name:"coffee", emoji:"☕"},
+  ],
+  "Family Members": [
+    {name:"mother", emoji:"👩"},
+    {name:"father", emoji:"👨"},
+    {name:"baby", emoji:"👶"},
+    {name:"grandmother", emoji:"👵"},
+    {name:"grandfather", emoji:"👴"},
+    {name:"sister", emoji:"👧"},
+    {name:"brother", emoji:"👦"},
+    {name:"family", emoji:"👪"},
+    {name:"aunt", emoji:"👩‍🦱"},
+    {name:"uncle", emoji:"👨‍🦱"},
+    {name:"twins", emoji:"👯"},
+    {name:"toddler", emoji:"🧒"},
+  ],
+  "Sports": [
+    {name:"soccer", emoji:"⚽"},
+    {name:"basketball", emoji:"🏀"},
+    {name:"football", emoji:"🏈"},
+    {name:"baseball", emoji:"⚾"},
+    {name:"tennis", emoji:"🎾"},
+    {name:"volleyball", emoji:"🏐"},
+    {name:"rugby", emoji:"🏉"},
+    {name:"swimming", emoji:"🏊"},
+    {name:"cycling", emoji:"🚴"},
+    {name:"golf", emoji:"⛳"},
+    {name:"boxing", emoji:"🥊"},
+    {name:"bowling", emoji:"🎳"},
+  ],
+};
+
+let currentCategory = "Fruit";
+
+const board = document.getElementById('board');
+const optionsEl = document.getElementById('options');
+const statusEl = document.getElementById('status');
+const comboEl = document.getElementById('combo');
+const nextBtn = document.getElementById('nextBtn');
+const scoreVal = document.getElementById('scoreVal');
+const categoryBarEl = document.getElementById('categoryBar');
+const soundBtn = document.getElementById('soundBtn');
+const achievementText = document.getElementById('achievementText');
+const progressBar = document.getElementById('progressBar');
+
+let soundEnabled = true;
+
+const SINGULAR_NAMES = {
+  "Fruit": "fruit",
+  "Animals": "animal",
+  "Professions": "profession",
+  "Transport": "vehicle",
+  "Weather": "weather picture",
+  "Food & Drinks": "food item",
+  "Family Members": "family member",
+  "Sports": "sport"
+};
+
+let achievements = {
+  firstWin:false,
+  combo3:false,
+  combo5:false,
+  score25:false,
+  score50:false
+};
+
+const PRAISE = [
+  "🌟 Amazing!",
+  "🎉 Fantastic!",
+  "👏 Brilliant!",
+  "⭐ Great Memory!",
+  "🥳 Excellent!",
+  "🚀 Awesome!"
+];
+
+let streak = 0;
+
+let score = 0;
+let round = {};
+let previewTimer = null;
+
+const DIFFICULTIES = [
+  {name:"Easy", cards:4, preview:3000},
+  {name:"Medium", cards:6, preview:2500},
+  {name:"Hard", cards:8, preview:1800},
+  {name:"Expert", cards:10, preview:1200},
+];
+
+let difficulty = 0;
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function playCorrectSound(){
+  if(!soundEnabled) return;
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = "triangle";
+  osc.frequency.value = 650;
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  gain.gain.value = 0.12;
+  osc.start();
+  osc.frequency.setValueAtTime(650, ctx.currentTime);
+  osc.frequency.linearRampToValueAtTime(950, ctx.currentTime + 0.12);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+  osc.stop(ctx.currentTime + 0.25);
+}
+
+function playWrongSound(){
+  if(!soundEnabled) return;
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = "square";
+  osc.frequency.value = 300;
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  gain.gain.value = 0.12;
+  osc.start();
+  osc.frequency.linearRampToValueAtTime(170, ctx.currentTime + 0.22);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+  osc.stop(ctx.currentTime + 0.25);
+}
+
+function playLevelUp(){
+  if(!soundEnabled) return;
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  [450,650,900].forEach((note,i) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "triangle";
+    osc.frequency.value = note;
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    gain.gain.value = 0.10;
+    osc.start(ctx.currentTime + i*0.12);
+    gain.gain.setValueAtTime(0.10, ctx.currentTime + i*0.12);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i*0.12 + 0.18);
+    osc.stop(ctx.currentTime + i*0.12 + 0.18);
+  });
+}
+
+function playButtonClick(){
+  if(!soundEnabled) return;
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = "triangle";
+  osc.frequency.value = 420;
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  gain.gain.value = 0.08;
+  osc.start();
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+  osc.stop(ctx.currentTime + 0.08);
+}
+
+soundBtn.addEventListener('click', () => {
+  soundEnabled = !soundEnabled;
+  soundBtn.textContent = soundEnabled ? "🔊 Sound On" : "🔇 Sound Off";
+});
+
+function unlockAchievement(name){
+  achievementText.textContent = name;
+  confetti();
+  statusEl.textContent = "🏆 Achievement Unlocked!";
+  playLevelUp();
+}
+
+function buildCategories(){
+  categoryBarEl.innerHTML = '';
+  Object.keys(CATEGORIES).forEach(cat => {
+    const b = document.createElement('button');
+    b.className = 'categoryBtn' + (cat === currentCategory ? ' active' : '');
+    b.textContent = cat;
+    b.addEventListener('click', () => {
+      if(cat === currentCategory) return;
+      playButtonClick();
+      currentCategory = cat;
+      difficulty = 0;
+      streak = 0;
+      buildCategories();
+      newRound();
+    });
+    categoryBarEl.appendChild(b);
+  });
+}
+
+function newRound(){
+
+  nextBtn.disabled = true;
+  optionsEl.innerHTML = "";
+  comboEl.textContent = "";
+
+  const diff = DIFFICULTIES[difficulty];
+  const pool = CATEGORIES[currentCategory];
+  const maxCards = Math.max(4, pool.length - 3);
+  const cardCount = Math.min(diff.cards, maxCards);
+
+  statusEl.textContent = "👀 Remember the pictures!";
+
+  const chosen = shuffle(pool).slice(0, cardCount);
+  const missingIndex = Math.floor(Math.random()*chosen.length);
+
+  round = {
+    chosen,
+    missingIndex,
+    answered:false,
+    preview:true
+  };
+
+  board.innerHTML = "";
+
+  chosen.forEach((fruit, i) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.dataset.index = i;
+
+    const flip = document.createElement('div');
+    flip.className = 'card-flip';
+
+    const front = document.createElement('div');
+    front.className = 'card-face card-front';
+    front.innerHTML = `<div class="card-inner">${fruit.emoji}</div>`;
+
+    const back = document.createElement('div');
+    back.className = 'card-face card-back';
+    back.innerHTML = `<div class="card-inner"><span class="qmark">?</span></div>`;
+
+    flip.appendChild(front);
+    flip.appendChild(back);
+    card.appendChild(flip);
+    board.appendChild(card);
+
+    card.style.opacity = "0";
+    const delay = i * 80;
+    setTimeout(() => {
+      card.style.transition = "opacity .35s ease";
+      card.style.opacity = "1";
+    }, delay);
+  });
+
+  clearTimeout(previewTimer);
+  previewTimer = setTimeout(hideCard, diff.preview);
+}
+
+function hideCard(){
+
+  round.preview = false;
+
+  statusEl.textContent = `🤔 Which ${SINGULAR_NAMES[currentCategory] || "item"} disappeared?`;
+
+  // Freeze every card's idle float at the same instant — if only the
+  // missing card stopped bobbing, that stillness would itself be a clue.
+  board.querySelectorAll('.card').forEach(c => { c.style.animation = "none"; });
+
+  const card = board.querySelector(`.card[data-index="${round.missingIndex}"]`);
+
+  const front = card.querySelector('.card-front .card-inner');
+  front.innerHTML = '<span class="qmark">?</span>';
+
+  revealOptions();
+}
+
+function revealOptions(){
+  if(round.answered || round.preview) return;
+  optionsEl.innerHTML = '';
+  statusEl.textContent = `Which ${SINGULAR_NAMES[currentCategory] || "item"} is missing?`;
+
+  const correctFruit = round.chosen[round.missingIndex];
+  const distractors = shuffle(CATEGORIES[currentCategory].filter(f => !round.chosen.includes(f))).slice(0,3);
+  const choices = shuffle([correctFruit, ...distractors]);
+
+  choices.forEach(fruit => {
+    const opt = document.createElement('div');
+    opt.className = 'opt';
+    opt.dataset.name = fruit.name;
+    opt.innerHTML = `
+      <div class="optionEmoji">${fruit.emoji}</div>
+      <div class="optionWord">${fruit.name}</div>
+    `;
+    opt.addEventListener('click', () => pickAnswer(opt, fruit, correctFruit));
+    optionsEl.appendChild(opt);
+  });
+}
+
+function pickAnswer(el, fruit, correctFruit){
+  if(round.answered) return;
+  round.answered = true;
+
+  const missingCard = board.querySelector(`.card[data-index="${round.missingIndex}"]`);
+  const missingCardEl = missingCard.querySelector('.card-front .card-inner');
+
+  function revealCardEmoji(){
+    missingCardEl.innerHTML = correctFruit.emoji;
+    missingCardEl.classList.add('reveal-pop');
+    missingCard.classList.add('reveal');
+    setTimeout(() => {
+      missingCardEl.classList.remove('reveal-pop');
+      missingCard.classList.remove('reveal');
+    }, 450);
+  }
+
+  if(fruit.name === correctFruit.name){
+    el.classList.add('right');
+    statusEl.textContent = PRAISE[Math.floor(Math.random()*PRAISE.length)];
+    score++;
+    scoreVal.textContent = score;
+    streak++;
+    playCorrectSound();
+
+    progressBar.style.width = Math.min(score*2,100) + "%";
+
+    revealCardEmoji();
+
+    confetti();
+
+    if(streak === 3){
+      comboEl.textContent = "🔥 Combo x3 — Amazing!";
+      if(!achievements.combo3){
+        achievements.combo3 = true;
+        unlockAchievement("🔥 Hot Streak");
+      }
+    } else if(streak === 5){
+      comboEl.textContent = "🔥 Combo x5 — Memory Master!";
+      if(!achievements.combo5){
+        achievements.combo5 = true;
+        unlockAchievement("👑 Memory Master");
+      }
+    } else if(streak > 1){
+      comboEl.textContent = "🔥 Combo x" + streak;
+    } else {
+      comboEl.textContent = "";
+    }
+
+    if(!achievements.firstWin){
+      achievements.firstWin = true;
+      unlockAchievement("🌟 First Success");
+    }
+    if(score === 25 && !achievements.score25){
+      achievements.score25 = true;
+      unlockAchievement("🥈 Silver Memory");
+    }
+    if(score === 50 && !achievements.score50){
+      achievements.score50 = true;
+      unlockAchievement("🥇 Gold Memory");
+    }
+
+    if(score % 5 === 0 && difficulty < DIFFICULTIES.length - 1){
+      difficulty++;
+      playLevelUp();
+      statusEl.textContent = "⭐ Level Up! Now: " + DIFFICULTIES[difficulty].name;
+    }
+  } else {
+    el.classList.add('wrong');
+    statusEl.textContent = "Oops! The right answer is highlighted below.";
+    streak = 0;
+    comboEl.textContent = "";
+    playWrongSound();
+    [...optionsEl.children].forEach(c => {
+      if(c.dataset.name === correctFruit.name) c.classList.add('right');
+    });
+    revealCardEmoji();
+  }
+
+  nextBtn.disabled = false;
+}
+
+function confetti(){
+  const pieces = ["🎉","⭐","✨","🎊"];
+  for(let i=0;i<24;i++){
+    const c = document.createElement('div');
+    c.className = 'confetti-piece';
+    c.textContent = pieces[Math.floor(Math.random()*pieces.length)];
+    c.style.left = Math.random()*100 + 'vw';
+    c.style.fontSize = (16 + Math.random()*22) + 'px';
+    document.body.appendChild(c);
+    requestAnimationFrame(() => {
+      c.style.top = (window.innerHeight + 60) + 'px';
+      c.style.transform = `rotate(${Math.random()*720 - 360}deg)`;
+    });
+    setTimeout(() => c.remove(), 2300);
+  }
+}
+
+function animateNextRound(){
+  playButtonClick();
+
+  board.classList.add('fade-out');
+  optionsEl.classList.add('fade-out');
+  nextBtn.disabled = true;
+
+  setTimeout(() => {
+    newRound();
+
+    board.classList.remove('fade-out');
+    optionsEl.classList.remove('fade-out');
+    board.classList.add('fade-in');
+    optionsEl.classList.add('fade-in');
+
+    setTimeout(() => {
+      board.classList.remove('fade-in');
+      optionsEl.classList.remove('fade-in');
+    }, 350);
+  }, 350);
+}
+
+nextBtn.addEventListener('click', animateNextRound);
+
+buildCategories();
+newRound();
+</script>
+
+</body>
+</html>

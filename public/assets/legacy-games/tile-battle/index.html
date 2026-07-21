@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tile Battle</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#f5f5f7;
+  --surface:#ffffff;
+  --surface2:#f0f0f4;
+  --border:#e0e0e6;
+  --border2:#c8c8d2;
+  --text:#1a1a2e;
+  --text2:#6b6b80;
+  --accent:#534AB7;
+  --accent2:#3C3489;
+  --hp1:#7F77DD;
+  --hp2:#378ADD;
+}
+
+/* Themes */
+body.theme-dusk{
+  --bg:#1a1025;--surface:#261835;--surface2:#321f45;
+  --border:#4a3060;--border2:#6a4888;
+  --text:#f0e6ff;--text2:#b09ac8;
+  --accent:#9b59b6;--accent2:#7d3c98;
+}
+body.theme-fire{
+  --bg:#1a0a00;--surface:#2a1000;--surface2:#3d1800;
+  --border:#6b2800;--border2:#a03a00;
+  --text:#ffe8d0;--text2:#c48050;
+  --accent:#e05a00;--accent2:#b04500;
+}
+body.theme-ocean{
+  --bg:#001825;--surface:#002235;--surface2:#003048;
+  --border:#004a6e;--border2:#006a9e;
+  --text:#d0f0ff;--text2:#70b8d8;
+  --accent:#0088cc;--accent2:#006699;
+}
+body.theme-forest{
+  --bg:#061a06;--surface:#0c250c;--surface2:#123012;
+  --border:#1e4a1e;--border2:#2e6a2e;
+  --text:#d8f0d0;--text2:#80b878;
+  --accent:#2e8b2e;--accent2:#1e6b1e;
+}
+body.theme-rose{
+  --bg:#1a0812;--surface:#280d1c;--surface2:#381228;
+  --border:#601838;--border2:#8a2050;
+  --text:#ffe0ee;--text2:#c878a0;
+  --accent:#c0305a;--accent2:#9a2048;
+}
+body.theme-slate{
+  --bg:#0e1117;--surface:#161b25;--surface2:#1e2535;
+  --border:#2a3348;--border2:#3c4d68;
+  --text:#e0e8f8;--text2:#7888a8;
+  --accent:#4a7abf;--accent2:#375e99;
+}
+
+html,body{height:100%;min-height:100vh}
+body{
+  font-family:Inter,system-ui,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  transition:background .3s,color .3s;
+}
+
+/* ── SETUP ── */
+#setup-screen{
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;min-height:100vh;
+  gap:clamp(1rem,2.5vw,2rem);padding:clamp(1rem,4vw,2.5rem);
+}
+#setup-screen h1{
+  font-size:clamp(1.6rem,5vw,2.8rem);font-weight:500;color:var(--text);
+  text-align:center;
+}
+.setup-section-label{
+  font-size:13px;color:var(--text2);text-align:center;margin-bottom:4px;
+}
+.theme-picker{
+  display:flex;gap:10px;flex-wrap:wrap;justify-content:center;
+}
+.theme-opt{
+  width:36px;height:36px;border-radius:50%;cursor:pointer;
+  border:3px solid transparent;transition:.15s;flex-shrink:0;
+}
+.theme-opt.selected{border-color:var(--text);transform:scale(1.15)}
+.theme-opt[data-theme="default"]{background:linear-gradient(135deg,#7F77DD,#f5f5f7)}
+.theme-opt[data-theme="dusk"]{background:linear-gradient(135deg,#9b59b6,#1a1025)}
+.theme-opt[data-theme="fire"]{background:linear-gradient(135deg,#e05a00,#1a0a00)}
+.theme-opt[data-theme="ocean"]{background:linear-gradient(135deg,#0088cc,#001825)}
+.theme-opt[data-theme="forest"]{background:linear-gradient(135deg,#2e8b2e,#061a06)}
+.theme-opt[data-theme="rose"]{background:linear-gradient(135deg,#c0305a,#1a0812)}
+.theme-opt[data-theme="slate"]{background:linear-gradient(135deg,#4a7abf,#0e1117)}
+
+.setup-players{
+  display:flex;gap:clamp(.75rem,3vw,2rem);flex-wrap:wrap;justify-content:center;width:100%;
+}
+.setup-card{
+  background:var(--surface);border:0.5px solid var(--border);
+  border-radius:16px;padding:clamp(1rem,3vw,1.5rem);
+  display:flex;flex-direction:column;gap:.75rem;
+  flex:1;min-width:180px;max-width:280px;align-items:center;
+}
+.setup-card h2{font-size:15px;font-weight:500;color:var(--text)}
+.avatar-pick{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.avatar-opt{
+  width:clamp(40px,10vw,52px);height:clamp(40px,10vw,52px);
+  display:flex;align-items:center;justify-content:center;
+  font-size:clamp(20px,5vw,26px);
+  border-radius:10px;border:2px solid transparent;
+  background:var(--surface2);cursor:pointer;transition:.15s;
+}
+.avatar-opt.selected{border-color:var(--accent);background:var(--surface)}
+.color-pick{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.color-opt{
+  width:24px;height:24px;border-radius:50%;
+  border:2.5px solid transparent;cursor:pointer;transition:.15s;
+}
+.color-opt.selected{border-color:var(--text);transform:scale(1.18)}
+
+#start-btn,#play-again{
+  padding:clamp(9px,2vw,13px) clamp(24px,5vw,40px);
+  border-radius:999px;background:var(--accent);color:#fff;
+  border:none;font-size:clamp(14px,3vw,16px);font-weight:500;
+  cursor:pointer;transition:.15s;
+}
+#start-btn:hover,#play-again:hover{background:var(--accent2)}
+
+/* ── GAME ── */
+#game-screen{
+  display:none;flex-direction:column;align-items:center;
+  height:100vh;max-height:100vh;overflow:hidden;
+  padding:clamp(4px,1vw,10px) clamp(8px,2vw,16px);
+  gap:clamp(3px,0.8vw,8px);
+  max-width:680px;margin:0 auto;justify-content:center;
+  box-sizing:border-box;
+}
+
+.hp-row{
+  width:100%;display:flex;align-items:center;
+  gap:clamp(4px,1.5vw,10px);
+  background:var(--surface);border:1.5px solid var(--border);
+  border-radius:12px;padding:clamp(5px,1.2vw,9px) clamp(8px,1.5vw,14px);
+  transition:border-color .25s,box-shadow .25s;
+  flex-shrink:0;
+}
+.hp-row.active{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.hp-avatar{font-size:clamp(18px,3.5vw,24px);line-height:1;flex-shrink:0}
+.hp-name{font-size:clamp(11px,2vw,13px);font-weight:500;color:var(--text);min-width:clamp(42px,8vw,60px);flex-shrink:0}
+.hp-bar-wrap{flex:1;height:clamp(10px,1.8vw,15px);background:var(--surface2);border-radius:99px;overflow:hidden;position:relative}
+.hp-fill{position:absolute;top:0;left:0;height:100%;border-radius:99px;transition:width .5s cubic-bezier(.4,0,.2,1)}
+.hp-pct{font-size:clamp(10px,1.8vw,12px);color:var(--text2);min-width:30px;text-align:right;flex-shrink:0}
+
+#turn-info{font-size:clamp(11px,2vw,13px);color:var(--text2);text-align:center;flex-shrink:0}
+
+#grid{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:clamp(3px,0.8vw,6px);
+  width:100%;
+  flex-shrink:1;
+}
+
+.tile{
+  aspect-ratio:1;border-radius:10px;
+  cursor:pointer;transition:.15s;
+  user-select:none;perspective:700px;position:relative;
+}
+.tile-inner{
+  width:100%;height:100%;
+  position:relative;transform-style:preserve-3d;
+  transition:transform .45s cubic-bezier(.4,0,.2,1);
+  border-radius:10px;
+}
+.tile.flipped .tile-inner{transform:rotateY(180deg)}
+.tile-front,.tile-back{
+  position:absolute;inset:0;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;
+}
+.tile-front{
+  background:var(--surface);border:0.5px solid var(--border);
+  font-size:clamp(10px,2vw,13px);font-weight:500;color:var(--text);
+}
+.tile-back{
+  background:var(--surface2);border:0.5px solid var(--border2);
+  transform:rotateY(180deg);
+  font-size:clamp(12px,2.8vw,17px);
+  flex-direction:column;gap:1px;text-align:center;padding:3px;
+}
+.tile-back .olabel{
+  font-size:clamp(7px,1.4vw,9px);color:var(--text2);
+  line-height:1.2;font-weight:500;
+}
+.tile:hover:not(.flipped):not(.disabled) .tile-front{background:var(--surface2);border-color:var(--border2)}
+.tile.disabled{cursor:default}
+
+#result-banner{
+  background:var(--surface);border:0.5px solid var(--border);
+  border-radius:10px;padding:clamp(5px,1.2vw,9px) clamp(8px,2vw,14px);
+  text-align:center;font-size:clamp(11px,2vw,13px);color:var(--text);
+  width:100%;line-height:1.4;min-height:32px;flex-shrink:0;
+}
+
+/* ── END ── */
+#end-screen{
+  display:none;flex-direction:column;align-items:center;
+  justify-content:center;min-height:100vh;
+  gap:1.25rem;padding:2rem;text-align:center;
+}
+#end-screen h1{font-size:clamp(1.3rem,4vw,1.8rem);font-weight:500;color:var(--text)}
+#end-msg{font-size:clamp(13px,3vw,15px);color:var(--text2)}
+</style>
+</head>
+<body>
+
+<div id="setup-screen">
+  <h1>⚔️ Tile Battle</h1>
+
+  <div>
+    <p class="setup-section-label">Choose a theme</p>
+    <div class="theme-picker">
+      <div class="theme-opt selected" data-theme="default" title="Default"></div>
+      <div class="theme-opt" data-theme="dusk"   title="Dusk"></div>
+      <div class="theme-opt" data-theme="fire"   title="Fire"></div>
+      <div class="theme-opt" data-theme="ocean"  title="Ocean"></div>
+      <div class="theme-opt" data-theme="forest" title="Forest"></div>
+      <div class="theme-opt" data-theme="rose"   title="Rose"></div>
+      <div class="theme-opt" data-theme="slate"  title="Slate"></div>
+    </div>
+  </div>
+
+  <div class="setup-players">
+    <div class="setup-card">
+      <h2>Player 1</h2>
+      <div class="avatar-pick" id="av1">
+        <span class="avatar-opt selected" data-av="🧙">🧙</span>
+        <span class="avatar-opt" data-av="🦊">🦊</span>
+        <span class="avatar-opt" data-av="🐉">🐉</span>
+        <span class="avatar-opt" data-av="🤖">🤖</span>
+        <span class="avatar-opt" data-av="👾">👾</span>
+      </div>
+      <p class="setup-section-label">Health bar colour</p>
+      <div class="color-pick" id="cp1"></div>
+    </div>
+    <div class="setup-card">
+      <h2>Player 2</h2>
+      <div class="avatar-pick" id="av2">
+        <span class="avatar-opt selected" data-av="🧝">🧝</span>
+        <span class="avatar-opt" data-av="🐺">🐺</span>
+        <span class="avatar-opt" data-av="🦁">🦁</span>
+        <span class="avatar-opt" data-av="👽">👽</span>
+        <span class="avatar-opt" data-av="🎭">🎭</span>
+      </div>
+      <p class="setup-section-label">Health bar colour</p>
+      <div class="color-pick" id="cp2"></div>
+    </div>
+  </div>
+
+  <button id="start-btn">Start Battle</button>
+</div>
+
+<div id="game-screen">
+  <div class="hp-row active" id="pillar1">
+    <div class="hp-avatar" id="av-display1"></div>
+    <div class="hp-name">Player 1</div>
+    <div class="hp-bar-wrap"><div class="hp-fill" id="hp-fill1"></div></div>
+    <div class="hp-pct" id="hp-label1">100%</div>
+  </div>
+
+  <div id="turn-info">Player 1's turn — pick a tile</div>
+  <div id="grid"></div>
+  <div id="result-banner">Choose a tile to begin!</div>
+
+  <div class="hp-row" id="pillar2">
+    <div class="hp-avatar" id="av-display2"></div>
+    <div class="hp-name">Player 2</div>
+    <div class="hp-bar-wrap"><div class="hp-fill" id="hp-fill2"></div></div>
+    <div class="hp-pct" id="hp-label2">100%</div>
+  </div>
+</div>
+
+<div id="end-screen">
+  <div style="font-size:clamp(48px,12vw,72px)" id="end-emoji"></div>
+  <h1 id="end-title"></h1>
+  <p id="end-msg"></p>
+  <button id="play-again">Play Again</button>
+</div>
+
+<script>
+const COLORS=[
+  {n:'Purple',v:'#7F77DD'},{n:'Coral',v:'#D85A30'},
+  {n:'Teal',v:'#1D9E75'},{n:'Pink',v:'#D4537E'},
+  {n:'Blue',v:'#378ADD'},{n:'Amber',v:'#EF9F27'},
+  {n:'Red',v:'#E24B4A'},{n:'Green',v:'#639922'},
+];
+const OD={
+  1:{e:'🔥🔥🔥',l:'Heavy attack\u221220%'},
+  2:{e:'👊',l:'Light attack\u221210%'},
+  3:{e:'🩸',l:'Lifesteal \u221215%/+15%'},
+  4:{e:'💚',l:'Heal +20%'},
+  5:{e:'✨',l:'Recover +10%'},
+  6:{e:'💀',l:'DEVASTATION \u221250%'},
+};
+const state={avatars:['🧙','🧝'],colors:[COLORS[0].v,COLORS[4].v],hp:[100,100],turn:0,tiles:[],busy:false};
+
+/* Theme */
+document.querySelectorAll('.theme-opt').forEach(el=>el.onclick=()=>{
+  document.querySelectorAll('.theme-opt').forEach(x=>x.classList.remove('selected'));
+  el.classList.add('selected');
+  document.body.className=el.dataset.theme==='default'?'':'theme-'+el.dataset.theme;
+});
+
+/* Color pickers */
+function buildCP(cid,pi,def){
+  const w=document.getElementById(cid);w.innerHTML='';
+  COLORS.forEach(c=>{
+    const d=document.createElement('div');
+    d.className='color-opt'+(c.v===def?' selected':'');
+    d.style.background=c.v;d.title=c.n;
+    d.onclick=()=>{w.querySelectorAll('.color-opt').forEach(x=>x.classList.remove('selected'));d.classList.add('selected');state.colors[pi]=c.v;};
+    w.appendChild(d);
+  });
+}
+buildCP('cp1',0,state.colors[0]);
+buildCP('cp2',1,state.colors[1]);
+
+/* Avatar pickers */
+['av1','av2'].forEach((id,pi)=>{
+  document.querySelectorAll('#'+id+' .avatar-opt').forEach(el=>el.onclick=()=>{
+    document.querySelectorAll('#'+id+' .avatar-opt').forEach(x=>x.classList.remove('selected'));
+    el.classList.add('selected');state.avatars[pi]=el.dataset.av;
+  });
+});
+
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}
+  return arr;
+}
+function buildTiles(){
+  const o=[];
+  [8,8,3,2,3,1].forEach((c,i)=>{for(let j=0;j<c;j++)o.push(i+1);});
+  return shuffle(o);
+}
+
+function updateActive(){
+  document.getElementById('pillar1').classList.toggle('active',state.turn===0);
+  document.getElementById('pillar2').classList.toggle('active',state.turn===1);
+}
+function renderHP(){
+  [0,1].forEach(i=>{
+    const p=Math.max(0,Math.min(100,state.hp[i]));
+    document.getElementById('hp-fill'+(i+1)).style.width=p+'%';
+    document.getElementById('hp-label'+(i+1)).textContent=Math.round(p)+'%';
+  });
+}
+function setTurnInfo(){
+  document.getElementById('turn-info').textContent='Player '+(state.turn+1)+'\u2019s turn \u2014 pick a tile';
+  updateActive();
+}
+
+function buildGrid(){
+  const g=document.getElementById('grid');g.innerHTML='';
+  for(let i=0;i<25;i++){
+    const t=state.tiles[i],od=OD[t];
+    const tile=document.createElement('div');
+    tile.className='tile';
+    tile.innerHTML='<div class="tile-inner">'
+      +'<div class="tile-front">'+(i+1)+'</div>'
+      +'<div class="tile-back"><span>'+od.e+'</span><span class="olabel">'+od.l+'</span></div>'
+      +'</div>';
+    tile.onclick=()=>onTile(tile,i);
+    g.appendChild(tile);
+  }
+}
+
+function startGame(){
+  state.hp=[100,100];state.turn=0;state.busy=false;state.tiles=buildTiles();
+  document.getElementById('av-display1').textContent=state.avatars[0];
+  document.getElementById('av-display2').textContent=state.avatars[1];
+  ['hp-fill1','hp-fill2'].forEach((id,i)=>{
+    const f=document.getElementById(id);
+    f.style.background=state.colors[i];f.style.width='100%';
+  });
+  document.getElementById('hp-label1').textContent='100%';
+  document.getElementById('hp-label2').textContent='100%';
+  buildGrid();setTurnInfo();
+  document.getElementById('result-banner').textContent='Choose a tile to begin!';
+  document.getElementById('setup-screen').style.display='none';
+  document.getElementById('end-screen').style.display='none';
+  document.getElementById('game-screen').style.display='flex';
+}
+
+function applyOutcome(type,actor,target){
+  const p=actor+1,o=target+1;
+  switch(type){
+    case 1:state.hp[target]-=20;return'Player '+p+' lands a HEAVY ATTACK! \u221220% to Player '+o;
+    case 2:state.hp[target]-=10;return'Player '+p+' lands a light attack. \u221210% to Player '+o;
+    case 3:state.hp[target]-=15;state.hp[actor]=Math.min(100,state.hp[actor]+15);return'Player '+p+' steals 15% health from Player '+o+'!';
+    case 4:state.hp[actor]=Math.min(100,state.hp[actor]+20);return'Player '+p+' heals! +20% health.';
+    case 5:state.hp[actor]=Math.min(100,state.hp[actor]+10);return'Player '+p+' recovers! +10% health.';
+    case 6:state.hp[target]-=50;return'DEVASTATION! Player '+p+' deals 50% damage to Player '+o+'!';
+  }
+}
+
+function onTile(el,idx){
+  if(state.busy||el.classList.contains('flipped'))return;
+  state.busy=true;
+  document.querySelectorAll('.tile:not(.flipped)').forEach(t=>t.classList.add('disabled'));
+  el.classList.add('flipped');
+  const actor=state.turn,target=1-actor,type=state.tiles[idx];
+  setTimeout(()=>{
+    const desc=applyOutcome(type,actor,target);
+    state.hp[0]=Math.max(0,state.hp[0]);state.hp[1]=Math.max(0,state.hp[1]);
+    renderHP();
+    document.getElementById('result-banner').textContent=OD[type].e+'  '+desc;
+    const flipped=document.querySelectorAll('.tile.flipped').length;
+    const p1d=state.hp[0]<=0,p2d=state.hp[1]<=0;
+    setTimeout(()=>{
+      if(p1d||p2d||flipped>=25){endGame(p1d,p2d);return;}
+      state.turn=target;
+      document.querySelectorAll('.tile:not(.flipped)').forEach(t=>t.classList.remove('disabled'));
+      setTurnInfo();state.busy=false;
+    },900);
+  },480);
+}
+
+function endGame(p1d,p2d){
+  document.getElementById('game-screen').style.display='none';
+  document.getElementById('end-screen').style.display='flex';
+  let title,msg,emoji;
+  if(p1d&&p2d){emoji='🤝';title='Draw!';msg='Both players fell at the same time!';}
+  else if(p1d){emoji=state.avatars[1];title='Player 2 Wins!';msg='Player 1 has been defeated!';}
+  else if(p2d){emoji=state.avatars[0];title='Player 1 Wins!';msg='Player 2 has been defeated!';}
+  else if(state.hp[0]>state.hp[1]){emoji=state.avatars[0];title='Player 1 Wins!';msg='All tiles used. P1: '+Math.round(state.hp[0])+'% vs P2: '+Math.round(state.hp[1])+'%';}
+  else if(state.hp[1]>state.hp[0]){emoji=state.avatars[1];title='Player 2 Wins!';msg='All tiles used. P2: '+Math.round(state.hp[1])+'% vs P1: '+Math.round(state.hp[0])+'%';}
+  else{emoji='🤝';title='Draw!';msg='All tiles used \u2014 both at '+Math.round(state.hp[0])+'%!';}
+  document.getElementById('end-emoji').textContent=emoji;
+  document.getElementById('end-title').textContent=title;
+  document.getElementById('end-msg').textContent=msg;
+}
+
+document.getElementById('start-btn').onclick=startGame;
+document.getElementById('play-again').onclick=()=>{
+  document.getElementById('end-screen').style.display='none';
+  document.getElementById('setup-screen').style.display='flex';
+};
+</script>
+</body>
+</html>
