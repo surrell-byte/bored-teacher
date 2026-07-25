@@ -47,7 +47,6 @@ const GAME_COMPONENTS: Record<
   connect4: lazy(() => import('@/games/connect-4/Connect4.jsx')),
   monkeytree: lazy(() => import('@/games/monkey-tree-climb/MonkeyTreeClimb.jsx')),
   blockfight: lazy(() => import('@/games/block-fight/BlockFight')),
-  quiztrail: lazy(() => import('@/games/quiz-trail/QuizTrail')),
 };
 
 // ── Types ─────────────────────────────────────────────────────

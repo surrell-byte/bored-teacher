@@ -19,7 +19,6 @@ export interface GameDefinition {
 }
 
 export const GAMES: GameDefinition[] = [
-  { id: 'quiztrail', name: 'Quiz Trail', icon: '🧠', description: '200 general-knowledge questions across 10 levels, with timers, lives and stars.', tag: { label: 'General Knowledge', color: 'tag-bio' }, badge: '10 Levels', difficulty: 'Mixed Skills', barColor: 'var(--gold)', url: 'games/quiz-trail/index.html', isNew: true },
   { id: 'unicorn', name: 'Unicorn Trophy Run', icon: '🦄', description: 'Fast vocabulary matching with bright visuals and quick recall pressure.', tag: { label: 'Vocabulary', color: 'tag-vocab' }, badge: '3 Levels', difficulty: 'Starter', barColor: 'var(--gold)', url: 'games/unicorn-run/unicorn.html', isNew: false },
   { id: 'warriors', name: 'Grammar Hoop Slam', icon: '🏀', description: 'Train tense accuracy with increasingly challenging sentence choices.', tag: { label: 'Grammar', color: 'tag-grammar' }, badge: '3 Levels', difficulty: 'Intermediate', barColor: 'var(--green)', url: 'games/grammar-hoop-slam/grammar-hoop-slam.html', isNew: false },
   { id: 'compound', name: 'Compound Word Quest', icon: '🧩', description: 'Strengthen word-building intuition by combining clues into full answers.', tag: { label: 'Word Formation', color: 'tag-words' }, badge: 'Word Fusion', difficulty: 'Puzzle', barColor: 'var(--blue)', url: 'games/compound-word-quest/compound.html', isNew: false },

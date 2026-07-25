@@ -1,0 +1,41 @@
+diff -ruN a/app/games/[game]/page.tsx b/app/games/[game]/page.tsx
+--- a/app/games/[game]/page.tsx	2026-07-25 17:39:15.830515362 +0000
++++ b/app/games/[game]/page.tsx	2026-07-25 17:39:15.831997607 +0000
+@@ -47,6 +47,7 @@
+   connect4: lazy(() => import('@/games/connect-4/Connect4.jsx')),
+   monkeytree: lazy(() => import('@/games/monkey-tree-climb/MonkeyTreeClimb.jsx')),
+   blockfight: lazy(() => import('@/games/block-fight/BlockFight')),
++  quiztrail: lazy(() => import('@/games/quiz-trail/QuizTrail')),
+ };
+ 
+ // ── Types ─────────────────────────────────────────────────────
+diff -ruN a/constants/games.ts b/constants/games.ts
+--- a/constants/games.ts	2026-07-25 17:39:15.824632124 +0000
++++ b/constants/games.ts	2026-07-25 17:39:15.825737311 +0000
+@@ -19,6 +19,7 @@
+ }
+ 
+ export const GAMES: GameDefinition[] = [
++  { id: 'quiztrail', name: 'Quiz Trail', icon: '🧠', description: '200 general-knowledge questions across 10 levels, with timers, lives and stars.', tag: { label: 'General Knowledge', color: 'tag-bio' }, badge: '10 Levels', difficulty: 'Mixed Skills', barColor: 'var(--gold)', url: 'games/quiz-trail/index.html', isNew: true },
+   { id: 'unicorn', name: 'Unicorn Trophy Run', icon: '🦄', description: 'Fast vocabulary matching with bright visuals and quick recall pressure.', tag: { label: 'Vocabulary', color: 'tag-vocab' }, badge: '3 Levels', difficulty: 'Starter', barColor: 'var(--gold)', url: 'games/unicorn-run/unicorn.html', isNew: false },
+   { id: 'warriors', name: 'Grammar Hoop Slam', icon: '🏀', description: 'Train tense accuracy with increasingly challenging sentence choices.', tag: { label: 'Grammar', color: 'tag-grammar' }, badge: '3 Levels', difficulty: 'Intermediate', barColor: 'var(--green)', url: 'games/grammar-hoop-slam/grammar-hoop-slam.html', isNew: false },
+   { id: 'compound', name: 'Compound Word Quest', icon: '🧩', description: 'Strengthen word-building intuition by combining clues into full answers.', tag: { label: 'Word Formation', color: 'tag-words' }, badge: 'Word Fusion', difficulty: 'Puzzle', barColor: 'var(--blue)', url: 'games/compound-word-quest/compound.html', isNew: false },
+diff -ruN a/constants/index.ts b/constants/index.ts
+--- a/constants/index.ts	2026-07-25 17:39:15.826906222 +0000
++++ b/constants/index.ts	2026-07-25 17:39:15.829400527 +0000
+@@ -36,6 +36,7 @@
+   moneyblocks: 'Money Blocks', parachutedrop: 'Parachute Drop',
+   superwings: 'Super Wings Races', swampjump: 'Froggy Hop',
+   treasurechest: 'Treasure Chest Showdown', unicornwings: 'Unicorn Wing Races',
++  quiztrail: 'Quiz Trail',
+ };
+ 
+ export const GAME_ICONS: Record<string, string> = {
+@@ -49,6 +50,7 @@
+   phonicsworld: '🔤', shuttlecock: '🏸', tornado: '🌪️', wgrandprix: '🏎️',
+   countadd: '➕', moneyblocks: '💰', parachutedrop: '🪂',
+   superwings: '✈️', swampjump: '🐸', treasurechest: '🏴‍☠️', unicornwings: '🦄',
++  quiztrail: '🧠',
+ };
+ 
+ export const GAME_DESC: Record<string, string> = {

@@ -1,7 +1,6 @@
 // constants/index.ts — shared constants for ESL Game Hub
 
 export const GAME_KEYS = [
-  'quiztrail',
   'unicorn','warriors','compound','wordmatch','memory','missingfruit',
   'animalclass','colourclash','crimsonduel','deepseaReveal',
   'emojimatch','emojispelling','familyquest','farmgame','findmyfood',
@@ -13,7 +12,6 @@ export const GAME_KEYS = [
 export type GameKey = (typeof GAME_KEYS)[number];
 
 export const NEW_GAME_KEYS = [
-  'quiztrail',
   'countadd','moneyblocks','parachutedrop',
   'superwings','swampjump','treasurechest','unicornwings',
 ] as const;
@@ -96,7 +94,6 @@ export const GAME_DESC: Record<string, string> = {
 export const GAME_COVERS: Record<string, string> = {};
 
 export const GAME_TAGS: Record<string, { label: string; color: string }> = {
-  quiztrail: { label: 'General Knowledge', color: 'tag-bio' },
   unicorn: { label: 'Vocabulary', color: 'tag-vocab' },
   warriors: { label: 'Grammar', color: 'tag-grammar' },
   compound: { label: 'Word Formation', color: 'tag-words' },
@@ -134,7 +131,6 @@ export const GAME_TAGS: Record<string, { label: string; color: string }> = {
 };
 
 export const GAME_BADGE: Record<string, string> = {
-  quiztrail: '10 Levels',
   unicorn: '3 Levels', warriors: '3 Levels', compound: 'Word Fusion',
   wordmatch: 'Match Up', memory: 'Flip & Match', missingfruit: 'Spot It',
   animalclass: 'Classify', colourclash: 'Colours', crimsonduel: 'Duel', deepseaReveal: 'Reveal',
@@ -150,7 +146,6 @@ export const GAME_BADGE: Record<string, string> = {
 };
 
 export const GAME_DIFFICULTY: Record<string, string> = {
-  quiztrail: 'Mixed Skills',
   unicorn: 'Starter', warriors: 'Intermediate', compound: 'Puzzle',
   wordmatch: 'Starter', memory: 'Starter', missingfruit: 'Puzzle',
   animalclass: 'Starter', colourclash: 'Starter', crimsonduel: 'Competitive', deepseaReveal: 'Mixed Skills',
@@ -166,7 +161,6 @@ export const GAME_DIFFICULTY: Record<string, string> = {
 };
 
 export const GAME_BAR_COLOR: Record<string, string> = {
-  quiztrail: 'var(--gold)',
   unicorn: 'var(--gold)', warriors: 'var(--green)', compound: 'var(--blue)',
   wordmatch: 'var(--purple)', memory: 'var(--coral)', missingfruit: 'var(--green)',
   animalclass: 'var(--teal)', colourclash: 'var(--purple)', crimsonduel: 'var(--red)', deepseaReveal: 'var(--teal)',
