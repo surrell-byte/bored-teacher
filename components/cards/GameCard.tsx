@@ -19,8 +19,14 @@ export default function GameCard({
   onClick,
 }: GameCardProps) {
   const cover = GAME_COVERS[gameId];
-  const tag = GAME_TAGS[gameId];
-  const accent = GAME_BAR_COLOR[gameId] ?? 'var(--teal)';
+const tag = GAME_TAGS[gameId];
+const accent = GAME_BAR_COLOR[gameId] ?? 'var(--teal)';
+
+console.log({
+  gameId,
+  cover,
+  covers: GAME_COVERS,
+});
 
   return (
     <button
