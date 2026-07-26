@@ -1,54 +1,13 @@
 'use client';
 
-import { Suspense, lazy, useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useGame } from '@/lib/gameState';
 import { auth, saveStudentScore } from '@/lib/firebase';
 import { syncCurrentPlayerToLeaderboard } from '@/features/leaderboard/api';
 import { GAME_NAMES, GAME_ICONS, GAME_URLS } from '@/constants/index';
-
-// ── React game component props and registry ──
-type GameComponentProps = {
-  onComplete: (score: number, accuracy: number) => void;
-};
-
-const GAME_COMPONENTS: Record<
-  string,
-  React.LazyExoticComponent<React.ComponentType<GameComponentProps>> | undefined
-> = {
-  unicorn: lazy(() => import('@/games/unicorn-run/UnicornRun.jsx')),
-  warriors: lazy(() => import('@/games/grammar-hoop-slam/GrammarHoopSlam.jsx')),
-  memory: lazy(() => import('@/games/memory-game/MemoryMatch.jsx')),
-  compound: lazy(() => import('@/games/compound-word-quest/CompoundWordQuest.jsx')),
-  wordmatch: lazy(() => import('@/games/word-match/WordMatch.jsx')),
-  missingfruit: lazy(() => import('@/games/missing-fruit/MissingFruit.jsx')),
-  animalclass: lazy(() => import('@/games/animal-class-quest/AnimalClassQuest.jsx')),
-  colourclash: lazy(() => import('@/games/colour-clash/ColourClash.jsx')),
-  crimsonduel: lazy(() => import('@/games/crimson-color-duel/CrimsonColorDuel.jsx')),
-  deepseaReveal: lazy(() => import('@/games/deep-sea-reveal/DeepSeaReveal.jsx')),
-  emojimatch: lazy(() => import('@/games/emoji-match/EmojiMatch.jsx')),
-  emojispelling: lazy(() => import('@/games/emoji-spelling-game/EmojiSpellingMaster.jsx')),
-  familyquest: lazy(() => import('@/games/family-quest/FamilyQuest.jsx')),
-  farmgame: lazy(() => import('@/games/farm-game/FarmGame.jsx')),
-  findmyfood: lazy(() => import('@/games/find-my-food/FindMyFood.jsx')),
-  flagmaster: lazy(() => import('@/games/flagmaster/Flagmaster.jsx')),
-  foodwordhunt: lazy(() => import('@/games/food-word-hunt/FoodWordHunt.jsx')),
-  fruitwordhunt: lazy(() => import('@/games/fruit-word-hunt/FruitWordHunt.jsx')),
-  lakersracer: lazy(() => import('@/games/lakers-showtime-racer/LakersShowtimeRacer.jsx')),
-  neonbridge: lazy(() => import('@/games/neon-bridge-of-destiny/NeonBridgeOfDestiny.jsx')),
-  oceanquest: lazy(() => import('@/games/ocean-quest/OceanQuest.jsx')),
-  pacman: lazy(() => import('@/games/pac-man/PacMan.jsx')),
-  phonicsadventure: lazy(() => import('@/games/phonics-adventure/PhonicAdventure.jsx')),
-  phonicsworld: lazy(() => import('@/games/phonics-world/PhonicWorld.jsx')),
-  shuttlecock: lazy(() => import('@/games/shuttlecock-smash/ShuttlecockSmash.jsx')),
-  tornado: lazy(() => import('@/games/tornado/Tornado.jsx')),
-  wgrandprix: lazy(() => import('@/games/w-grand-prix/WGrandPrix.jsx')),
-  connect4: lazy(() => import('@/games/connect-4/Connect4.jsx')),
-  monkeytree: lazy(() => import('@/games/monkey-tree-climb/MonkeyTreeClimb.jsx')),
-  blockfight: lazy(() => import('@/games/block-fight/BlockFight')),
-  quiztrail: lazy(() => import('@/games/quiz-trail/QuizTrail')),
-};
+import { GAME_COMPONENTS } from '@/games/catalog.components';
 
 // ── Types ─────────────────────────────────────────────────────
 interface GameResult {

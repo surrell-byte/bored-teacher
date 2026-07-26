@@ -4,10 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "npm run check-games && next build",
     "start": "next start",
     "lint": "next lint",
-    "check-css": "node scripts/check-orphaned-classes.js"
+    "check-css": "node scripts/check-orphaned-classes.js",
+    "check-games": "node scripts/check-games.js"
   },
   "dependencies": {
     "firebase": "^10.12.0",
