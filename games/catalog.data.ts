@@ -21,6 +21,17 @@ export interface GameCatalogEntry {
 }
 
 export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
+  tilebattle: {
+    name: "Tile Battle",
+    icon: "⚔️",
+    desc: "A two-player local battle — flip tiles to trigger attacks, heals, and lifesteal until one warrior falls.",
+    cover: "/assets/covers/tile-battle-cover.webp",
+    tag: { label: "Strategy", color: "tag-bio" },
+    badge: "PvP",
+    difficulty: "Competitive",
+    barColor: "var(--purple)",
+    hasComponent: true,
+  },
   quiztrail: {
     name: "Quiz Trail",
     icon: "🧠",
