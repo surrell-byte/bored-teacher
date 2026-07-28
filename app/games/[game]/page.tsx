@@ -8,43 +8,13 @@ import { auth, saveStudentScore } from '@/lib/firebase';
 import { syncCurrentPlayerToLeaderboard } from '@/features/leaderboard/api';
 import { GAME_NAMES, GAME_ICONS, GAME_URLS } from '@/constants/index';
 import { GAME_COMPONENTS } from '@/games/catalog.components';
+import { GameShell } from '@/engine';
 
 // ── Types ─────────────────────────────────────────────────────
 interface GameResult {
   score: number;
   accuracy: number;
   gameId: string;
-}
-
-// ── Result modal (unchanged from original) ────────────────────
-function ResultModal({ result, gameName, onContinue }: {
-  result: GameResult; gameName: string; onContinue: () => void;
-}) {
-  const xpEarned    = Math.round(result.accuracy / 2);
-  const coinsEarned = Math.round(result.accuracy / 10);
-  const pct         = Math.min(100, result.accuracy);
-  const color       = pct >= 80 ? 'var(--green)' : pct >= 60 ? 'var(--gold)' : 'var(--red)';
-  const feedback    = pct >= 90 ? '🌟 Outstanding!' : pct >= 80 ? '🔥 Excellent work!': pct >= 70 ? '👍 Good job!' : pct >= 50 ? '💪 Keep practising!' : '📚 Review the material and try again.';
-  return (
-    <div className="modal-backdrop open" role="dialog" aria-modal aria-labelledby="perfTitle">
-      <div className="modal">
-        <div className="modal-header">
-          <div className="modal-title" id="perfTitle">Round Complete — {gameName}</div>
-        </div>
-        <div className="result-grid">
-          <div className="result-card"><div className="result-card-label">Score</div><div className="result-card-value">{result.score}</div></div>
-          <div className="result-card"><div className="result-card-label">Accuracy</div><div className="result-card-value">{result.accuracy}%</div></div>
-          <div className="result-card"><div className="result-card-label">XP Earned</div><div className="result-card-value" style={{ color: 'var(--gold)' }}>+{xpEarned}</div></div>
-          <div className="result-card"><div className="result-card-label">Coins</div><div className="result-card-value" style={{ color: 'var(--green)' }}>+{coinsEarned}</div></div>
-        </div>
-        <div className="accuracy-bar">
-          <div className="accuracy-fill" style={{ width: `${pct}%`, background: color }} />
-        </div>
-        <div className="result-feedback">{feedback}</div>
-        <button className="btn-primary" onClick={onContinue}>Continue</button>
-      </div>
-    </div>
-  );
 }
 
 // ── Page ──────────────────────────────────────────────────────
@@ -121,23 +91,20 @@ export default function GamePage() {
   }
 
   return (
-    <div style={{ position: 'fixed', inset: 0, display: 'flex', flexDirection: 'column', background: 'var(--bg)', overflow: 'hidden' }}>
-      {/* Floating back-to-hub button */}
-      <Link
-        href="/hub"
-        className="lb-back-btn"
-        style={{
-          position: 'fixed',
-          top: 12,
-          left: 12,
-          zIndex: 20,
-          textDecoration: 'none',
-        }}
+    <div style={{ position: 'fixed', inset: 0, background: 'var(--bg)', overflow: 'hidden' }}>
+      <GameShell
+        gameId={gameId}
+        title={gameName}
+        icon={gameIcon}
+        sessionKey={gameSession}
+        completion={result}
+        onContinue={handleContinue}
+        onRestart={handleContinue}
+        stats={[
+          { label: 'Best', value: state.games[gameId]?.highScore ?? 0, icon: '⭐' },
+          { label: 'Coins', value: state.coins, icon: '🪙' },
+        ]}
       >
-        ←Hub
-      </Link>
-
-      {/* Game area */}
       {GameComp ? (
         <Suspense fallback={
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)' }}>
@@ -171,8 +138,7 @@ export default function GamePage() {
           />
         </>
       )}
-
-      {result && <ResultModal result={result} gameName={gameName} onContinue={handleContinue} />}
+      </GameShell>
     </div>
   );
 }

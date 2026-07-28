@@ -38,4 +38,4 @@ export type { GameLayoutProps, GameLayoutSlots } from './layout/GameLayout';
 export type { GameHeaderProps } from './layout/GameHeader';
 export type { GameSidebarProps, GameStat } from './layout/GameSidebar';
 export type { GameBottomBarProps, GameButton } from './layout/GameBottomBar';
-export type { GameShellProps } from './layout/GameShell';
+export type { GameShellProps, GameCompletion, GameSessionEvent } from './layout/GameShell';

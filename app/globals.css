@@ -3289,3 +3289,35 @@ a { color: inherit; }
   cursor: pointer;
 }
 .game-bottombar-btn:active { transform: scale(0.96); }
+
+/* ── GameShell: universal game-session boundary ─────────────────────── */
+.game-shell { height: 100%; min-height: 0; background: var(--bg); }
+.game-shell > .game-layout { height: 100%; }
+.game-shell-play-area { position: relative; display: flex; flex: 1; min-width: 0; min-height: 0; width: 100%; }
+.game-shell-play-area > :first-child { flex: 1; min-width: 0; min-height: 0; }
+.game-shell-header-action {
+  display: inline-flex; align-items: center; min-height: 34px; padding: 6px 10px;
+  border: 1px solid var(--border); border-radius: 10px; background: var(--surface-strong);
+  color: var(--text); font: inherit; font-size: 0.78rem; font-weight: 700; cursor: pointer; text-decoration: none;
+}
+.game-shell-header-action:hover { border-color: var(--gold); }
+.game-shell-overlay, .game-shell-error {
+  position: absolute; inset: 0; z-index: 10; display: grid; place-items: center; padding: 20px;
+  background: color-mix(in srgb, var(--bg) 78%, transparent); backdrop-filter: blur(4px);
+}
+.game-shell-overlay-card, .game-shell-error {
+  width: min(100%, 430px); padding: 28px; border: 1px solid var(--border); border-radius: 20px;
+  background: var(--surface-strong); color: var(--text); text-align: center; box-shadow: 0 20px 60px rgb(0 0 0 / 0.28);
+}
+.game-shell-overlay-icon, .game-shell-error-icon { display: block; margin-bottom: 10px; font-size: 2.5rem; }
+.game-shell-overlay-card h2, .game-shell-error h2 { margin: 0 0 8px; font-family: var(--font-display, Syne); }
+.game-shell-overlay-card p, .game-shell-error p { margin: 0; color: var(--muted); }
+.game-shell-overlay-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+.game-shell-primary-action, .game-shell-secondary-action { min-height: 42px; border-radius: 11px; padding: 8px 14px; font: inherit; font-weight: 800; cursor: pointer; }
+.game-shell-primary-action { border: 0; background: var(--gold); color: #1e1600; }
+.game-shell-secondary-action { border: 1px solid var(--border); background: transparent; color: var(--text); }
+.game-shell-result-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 20px 0; }
+.game-shell-result-grid span { display: grid; gap: 3px; padding: 10px; border-radius: 10px; background: var(--surface-soft); color: var(--muted); font-size: 0.78rem; }
+.game-shell-result-grid b { color: var(--text); font-size: 1.1rem; }
+.game-shell-error { position: relative; min-height: 280px; }
+@media (max-width: 640px) { .game-shell-header-action { padding: 6px 8px; font-size: 0.7rem; } }

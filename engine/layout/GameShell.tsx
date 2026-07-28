@@ -1,32 +1,167 @@
 'use client';
-// engine/layout/GameShell.tsx
-//
-// Opinionated convenience wrapper around GameLayout for the common case —
-// a title, optional stats for the sidebar, optional controls, and a play
-// area — with no custom header/sidebar components to build. Games with
-// more specific HUD needs use GameLayout directly instead (see BlockFight).
 
-import { type ReactNode } from 'react';
+import Link from 'next/link';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import GameLayout from './GameLayout';
 import GameHeader from './GameHeader';
 import GameSidebar, { type GameStat } from './GameSidebar';
+import ErrorBoundary from '@/engine/errors/ErrorBoundary';
+
+export type GameSessionEvent = 'started' | 'paused' | 'resumed' | 'completed' | 'exited' | 'restarted';
+
+export interface GameCompletion {
+  score: number;
+  accuracy: number;
+}
 
 export interface GameShellProps {
+  /** Stable catalogue id used by session and analytics listeners. */
+  gameId: string;
   title: string;
   icon?: ReactNode;
   stats?: GameStat[];
   controls?: ReactNode;
   children: ReactNode;
+  /** Increment this when replacing a game instance (for example, after retry). */
+  sessionKey?: string | number;
+  completion?: GameCompletion | null;
+  onContinue?: () => void;
+  onRestart?: () => void;
+  onSessionEvent?: (event: GameSessionEvent) => void;
 }
 
-export default function GameShell({ title, icon, stats, controls, children }: GameShellProps) {
+/**
+ * The universal, game-route boundary. It owns page-level concerns—pause,
+ * fullscreen, lifecycle events, error recovery and completion presentation—
+ * while each game remains responsible only for its own mechanics and UI.
+ */
+export default function GameShell({
+  gameId, title, icon, stats, controls, children, sessionKey = 0,
+  completion, onContinue, onRestart, onSessionEvent,
+}: GameShellProps) {
+  const [paused, setPaused] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const shellRef = useRef<HTMLDivElement>(null);
+
+  const emit = useCallback((event: GameSessionEvent) => {
+    onSessionEvent?.(event);
+    window.dispatchEvent(new CustomEvent('esl-game-session', { detail: { gameId, event } }));
+  }, [gameId, onSessionEvent]);
+
+  useEffect(() => {
+    emit('started');
+    return () => emit('exited');
+  }, [emit, sessionKey]);
+
+  useEffect(() => {
+    if (completion) emit('completed');
+  }, [completion, emit]);
+
+  useEffect(() => {
+    const syncFullscreen = () => setIsFullscreen(document.fullscreenElement === shellRef.current);
+    document.addEventListener('fullscreenchange', syncFullscreen);
+    return () => document.removeEventListener('fullscreenchange', syncFullscreen);
+  }, []);
+
+  const resume = useCallback(() => {
+    setPaused(false);
+    emit('resumed');
+  }, [emit]);
+
+  const pause = useCallback(() => {
+    setPaused(true);
+    emit('paused');
+  }, [emit]);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' && event.key.toLowerCase() !== 'p') return;
+      const target = event.target as HTMLElement | null;
+      if (target?.matches('input, textarea, select, [contenteditable="true"]')) return;
+      if (event.key === 'Escape' && document.fullscreenElement) return;
+      event.preventDefault();
+      paused ? resume() : pause();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [pause, paused, resume]);
+
+  const restart = useCallback(() => {
+    setPaused(false);
+    onRestart?.();
+    emit('restarted');
+  }, [emit, onRestart]);
+
+  const toggleFullscreen = useCallback(async () => {
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else await shellRef.current?.requestFullscreen();
+    } catch {
+      // Some embedded browsers disallow fullscreen; play remains available.
+    }
+  }, []);
+
+  const accuracy = completion ? Math.min(100, Math.max(0, completion.accuracy)) : 0;
+  const completionStats: GameStat[] = completion ? [
+    { label: 'Score', value: completion.score, icon: '🏆' },
+    { label: 'Accuracy', value: `${accuracy}%`, icon: '🎯' },
+  ] : [];
+
   return (
-    <GameLayout
-      header={<GameHeader title={title} icon={icon} />}
-      sidebar={stats && stats.length > 0 ? <GameSidebar stats={stats} /> : undefined}
-      controls={controls}
-    >
-      {children}
-    </GameLayout>
+    <div ref={shellRef} className="game-shell" data-game-id={gameId} data-paused={paused || undefined}>
+      <GameLayout
+        header={
+          <GameHeader
+            title={title}
+            icon={icon}
+            actions={
+              <>
+                <button type="button" className="game-shell-header-action" onClick={paused ? resume : pause} aria-pressed={paused}>
+                  {paused ? 'Resume' : 'Pause'}
+                </button>
+                <button type="button" className="game-shell-header-action" onClick={toggleFullscreen}>
+                  {isFullscreen ? 'Exit full screen' : 'Full screen'}
+                </button>
+                <Link className="game-shell-header-action" href="/hub">Exit</Link>
+              </>
+            }
+          />
+        }
+        sidebar={stats && stats.length > 0 ? <GameSidebar stats={[...stats, ...completionStats]} /> : completionStats.length ? <GameSidebar stats={completionStats} /> : undefined}
+        controls={controls}
+      >
+        <ErrorBoundary resetKey={sessionKey} onRetry={restart} onExit={() => window.location.assign('/hub')}>
+          <div className="game-shell-play-area" aria-busy={paused}>
+            {children}
+            {paused && (
+              <section className="game-shell-overlay" role="dialog" aria-modal="true" aria-labelledby="game-paused-title">
+                <div className="game-shell-overlay-card">
+                  <span aria-hidden="true" className="game-shell-overlay-icon">⏸</span>
+                  <h2 id="game-paused-title">Game paused</h2>
+                  <p>Your progress in this round is still here.</p>
+                  <div className="game-shell-overlay-actions">
+                    <button type="button" className="game-shell-primary-action" onClick={resume}>Resume game</button>
+                    <button type="button" className="game-shell-secondary-action" onClick={restart}>Restart round</button>
+                  </div>
+                </div>
+              </section>
+            )}
+            {completion && (
+              <section className="game-shell-overlay" role="dialog" aria-modal="true" aria-labelledby="game-complete-title">
+                <div className="game-shell-overlay-card">
+                  <span aria-hidden="true" className="game-shell-overlay-icon">🏆</span>
+                  <h2 id="game-complete-title">Round complete — {title}</h2>
+                  <div className="game-shell-result-grid">
+                    <span><b>{completion.score}</b>Score</span><span><b>{accuracy}%</b>Accuracy</span>
+                    <span><b>+{Math.round(accuracy / 2)}</b>XP</span><span><b>+{Math.round(accuracy / 10)}</b>Coins</span>
+                  </div>
+                  <button type="button" className="game-shell-primary-action" onClick={onContinue}>Play again</button>
+                </div>
+              </section>
+            )}
+          </div>
+        </ErrorBoundary>
+      </GameLayout>
+    </div>
   );
 }
