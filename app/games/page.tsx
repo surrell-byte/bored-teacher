@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { onAuthStateChanged } from '@/lib/firebase';
 import { useGame } from '@/providers/GameProvider';
 import {
-  GAME_KEYS, NEW_GAME_KEYS, GAME_NAMES, GAME_ICONS, GAME_TAGS,
+  GAME_KEYS, NEW_GAME_KEYS, GAME_NAMES, GAME_TAGS,
   GAME_DIFFICULTY, GAME_DESC,
 } from '@/constants/index';
 import GameCard from '@/components/cards/GameCard';
@@ -22,10 +22,10 @@ const DIFFICULTY_OPTIONS = [
 ];
 
 const SORT_OPTIONS = [
+  { label: 'Sort: A–Z',         value: 'alpha' },
   { label: 'Sort: Newest',      value: 'newest' },
   { label: 'Sort: Best Score',  value: 'score' },
   { label: 'Sort: Most Played', value: 'played' },
-  { label: 'Sort: A–Z',         value: 'alpha' },
 ];
 
 export default function GamesPage() {
@@ -36,7 +36,7 @@ export default function GamesPage() {
   const [search,     setSearch]     = useState('');
   const [category,   setCategory]   = useState('All Categories');
   const [difficulty, setDifficulty] = useState('All Difficulties');
-  const [sort,       setSort]       = useState('newest');
+  const [sort,       setSort]       = useState('alpha');
   const [playedOnly, setPlayedOnly] = useState(false);
   const [showManage, setShowManage] = useState(false);
 
@@ -193,22 +193,15 @@ export default function GamesPage() {
             </div>
           </div>
         ) : (
-          <div className="games-list-grid">
+          <div className="hub-game-grid">
             {filteredGames.map((gameId, i) => (
-              <button
+              <div
                 key={gameId}
-                className="games-list-tile card-stagger"
+                className="card-stagger"
                 style={{ '--stagger-i': i } as React.CSSProperties}
-                onClick={() => handlePlay(gameId)}
               >
-                <span className="games-list-icon">{GAME_ICONS[gameId] ?? '🎮'}</span>
-                <span className="games-list-info">
-                  <span className="games-list-title">{GAME_NAMES[gameId] ?? 'Game'}</span>
-                  <span className="games-list-desc">{GAME_DESC[gameId] ?? ''}</span>
-                  <span className="games-list-level">{GAME_DIFFICULTY[gameId] ?? ''}</span>
-                </span>
-                <span className="games-list-chevron">›</span>
-              </button>
+                <GameCard gameId={gameId} onClick={handlePlay} />
+              </div>
             ))}
           </div>
         )}
@@ -218,4 +211,3 @@ export default function GamesPage() {
     </div>
   );
 }
-

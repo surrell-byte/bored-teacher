@@ -1029,7 +1029,7 @@ a { color: inherit; }
   position: fixed;
   bottom: 28px;
   left: 50%;
-  transform: translateX(-50%);
+  translate: -50% 0;
   background: var(--surface-strong);
   border: 1px solid var(--border-bright);
   color: var(--text);
@@ -2191,6 +2191,27 @@ a { color: inherit; }
 .achievement-toast.closing {
   animation: achOut 0.36s ease forwards;
 }
+.achievement-toast--game {
+  top: clamp(16px, 5vh, 56px);
+  right: auto;
+  bottom: auto;
+  left: 50%;
+  z-index: 510;
+  width: min(440px, calc(100vw - 32px));
+  transform: translateX(-50%);
+}
+.achievement-toast--game .ach-inner {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  grid-template-areas: "icon eyebrow" "icon title" "icon desc";
+  column-gap: 12px;
+  padding: 11px 18px;
+  text-align: left;
+}
+.achievement-toast--game .ach-eyebrow { grid-area: eyebrow; margin: 0; }
+.achievement-toast--game .ach-icon { grid-area: icon; align-self: center; margin: 0; font-size: 2.35rem; }
+.achievement-toast--game .ach-title { grid-area: title; margin: 1px 0; }
+.achievement-toast--game .ach-desc { grid-area: desc; }
 @media (max-width: 480px) {
   .achievement-toast {
     right: 50%;
@@ -2198,6 +2219,13 @@ a { color: inherit; }
     width: min(95vw, 320px);
     transform: translateX(50%);
     border-radius: 16px;
+  }
+  .achievement-toast--game {
+    top: max(12px, env(safe-area-inset-top));
+    bottom: auto;
+    left: 50%;
+    right: auto;
+    translate: -50% 0;
   }
 }
 

@@ -260,73 +260,20 @@ export default function HubPage() {
         </button>
       </div>
 
-      {/* ── Game count ────────────────────────────────── */}
-      <div className="hub-game-count">
-        <span className="hub-game-count-num">
-          {filteredGames.length === GAME_KEYS.length ? GAME_KEYS.length : filteredGames.length}
-        </span>
-        <span>
-          {filteredGames.length === GAME_KEYS.length ? 'games' : `of ${GAME_KEYS.length} games`}
-        </span>
-        {hasActiveFilters && (
-          <button
-            className="pill-btn"
-            style={{ fontSize: '0.7rem', padding: '3px 10px', marginLeft: 'auto' }}
-            onClick={clearFilters}
-          >
-            Clear filters
-          </button>
-        )}
-      </div>
-
-      {/* ── Game grid ─────────────────────────────────── */}
-      {filteredGames.length === 0 ? (
-        <div className="shell-card" style={{ padding: '56px 24px', textAlign: 'center' }}>
-          <div style={{ fontSize: '3rem', marginBottom: 14 }}>🔍</div>
-          <div className="hub-empty-title">No games match your filters</div>
-          <div style={{ color: 'var(--muted)', fontSize: '0.86rem' }}>
-            Try a different search term, tag, or difficulty level.
-          </div>
+      {/* The Hub is deliberately curated; the full searchable library lives on /games. */}
+      <section className="hub-section">
+        <h2 className="hub-section-title">🆕 New Games</h2>
+        <div className="hub-featured-grid">
+          {NEW_GAME_KEYS.slice(0, 4).map(gameId => <GameCard key={gameId} gameId={gameId} onClick={handlePlay} />)}
         </div>
-      ) : (
-        <>
-          {!search && tag === 'all' && (
-            <>
-              <section className="hub-section">
-                <h2 className="hub-section-title">🆕 New Games</h2>
-                <div className="hub-featured-grid">
-                  {NEW_GAME_KEYS.map(gameId => (
-                    <GameCard key={gameId} gameId={gameId} onClick={handlePlay} />
-                  ))}
-                </div>
-              </section>
+      </section>
 
-              <section className="hub-section">
-                <h2 className="hub-section-title">
-                  {totalPlayed === 0 ? '🎮 Featured Games' : '🆕 New For You'}
-                </h2>
-                <div className="hub-featured-grid">
-                  {featuredGames.map(gameId => (
-                    <GameCard key={gameId} gameId={gameId} onClick={handlePlay} />
-                  ))}
-                </div>
-              </section>
-            </>
-          )}
-
-          <div className="hub-game-grid">
-            {filteredGames.map((gameId, i) => (
-              <div
-                key={gameId}
-                className="card-stagger"
-                style={{ '--stagger-i': i } as React.CSSProperties}
-              >
-                <GameCard gameId={gameId} onClick={handlePlay} />
-              </div>
-            ))}
-          </div>
-        </>
-      )}
+      <section className="hub-section">
+        <h2 className="hub-section-title">🎮 Featured Games</h2>
+        <div className="hub-featured-grid">
+          {featuredGames.map(gameId => <GameCard key={gameId} gameId={gameId} onClick={handlePlay} />)}
+        </div>
+      </section>
 
       {showManage && <ManagePlayersModal onClose={() => setShowManage(false)} />}
     </div>

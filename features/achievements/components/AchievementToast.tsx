@@ -6,6 +6,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 interface Props {
+  className?: string;
   icon: string;
   title: string;
   description: string;
@@ -24,7 +25,7 @@ const PARTICLES = Array.from({ length: 28 }, (_, i) => ({
   rotate: Math.random() * 360,
 }));
 
-export default function AchievementToast({ icon, title, description, color, onDone }: Props) {
+export default function AchievementToast({ className, icon, title, description, color, onDone }: Props) {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dismissedRef = useRef(false);
@@ -50,7 +51,7 @@ export default function AchievementToast({ icon, title, description, color, onDo
 
   return (
     <div
-      className={`achievement-toast${closing ? ' closing' : ''}`}
+      className={`achievement-toast${className ? ` ${className}` : ''}${closing ? ' closing' : ''}`}
       role="status"
       aria-live="polite"
       style={{ '--ach-color': color } as React.CSSProperties}

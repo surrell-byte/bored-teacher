@@ -75,7 +75,9 @@ for (const id of compIds) {
 // separately flag any games/ folder that no entry points at all.
 console.log('\nChecking catalog entries resolve to real files on disk...');
 const importPathById = {};
-const importRe = /^\s*(\w+):\s*lazy\(\(\)\s*=>\s*import\('([^']+)'\)\)/gm;
+// Allow a lazy import to adapt a shared component with `.then(...)` as well
+// as returning the imported module directly.
+const importRe = /^\s*(\w+):\s*lazy\(\(\)\s*=>\s*import\('([^']+)'\)/gm;
 while ((m = importRe.exec(compSrc))) importPathById[m[1]] = m[2];
 
 const referencedFolders = new Set();

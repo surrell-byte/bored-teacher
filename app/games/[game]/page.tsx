@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense, useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useGame } from '@/lib/gameState';
 import { auth, saveStudentScore } from '@/lib/firebase';
@@ -49,13 +49,13 @@ function ResultModal({ result, gameName, onContinue }: {
 
 // ── Page ──────────────────────────────────────────────────────
 export default function GamePage() {
-  const router  = useRouter();
   const params  = useParams();
   const gameId  = (params?.game as string) ?? '';
   const { state, setState, updateGameStats, addXP } = useGame();
 
   const [result, setResult]   = useState<GameResult | null>(null);
   const [loading, setLoading] = useState(true);
+  const [gameSession, setGameSession] = useState(0);
 
   const gameName  = GAME_NAMES[gameId] ?? 'Game';
   const gameIcon  = GAME_ICONS[gameId] ?? '🎮';
@@ -106,7 +106,7 @@ export default function GamePage() {
 
   function handleContinue() {
     setResult(null);
-    router.push('/hub');
+    setGameSession(session => session + 1);
   }
 
   if (!GameComp && !legacyUrl) {
@@ -148,7 +148,7 @@ export default function GamePage() {
           </div>
         }>
           <div style={{ flex: '1 1 0', minHeight: 0, overflow: 'auto' }}>
-            <GameComp onComplete={handleComplete} />
+            <GameComp key={gameSession} onComplete={handleComplete} />
           </div>
         </Suspense>
       ) : (
@@ -162,6 +162,7 @@ export default function GamePage() {
             </div>
           )}
           <iframe
+            key={gameSession}
             src={`/${legacyUrl}`}
             title={gameName}
             style={{ flex: '1 1 0', minHeight: 0, border: 'none', width: '100%', display: 'block' }}

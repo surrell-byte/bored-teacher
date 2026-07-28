@@ -34,6 +34,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
       {pendingAchievement && (
         <AchievementToast
           key={pendingAchievement.id}
+          className={isGameRoute ? 'achievement-toast--game' : undefined}
           icon={pendingAchievement.icon}
           title={pendingAchievement.name}
           description={pendingAchievement.description}

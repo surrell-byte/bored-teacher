@@ -368,6 +368,7 @@ export default function FindMyFood({ onComplete }) {
   const [locked, setLocked] = useState(false);
   const [currentPlayer, setCurrentPlayer] = useState(1);
   const [scores, setScores] = useState({ 1:0, 2:0 });
+  const [pairStreaks, setPairStreaks] = useState({ 1:0, 2:0 });
   const [moveCount, setMoveCount] = useState(0);
   const [pairCount, setPairCount] = useState(4);
   const [popup, setPopup] = useState({ msg:"", mismatch:false });
@@ -395,6 +396,7 @@ export default function FindMyFood({ onComplete }) {
     setLocked(false);
     setCurrentPlayer(1);
     setScores({ 1:0, 2:0 });
+    setPairStreaks({ 1:0, 2:0 });
     setMoveCount(0);
     setPopup({ msg:"", mismatch:false });
     setCelebratingPair([]);
@@ -416,19 +418,25 @@ export default function FindMyFood({ onComplete }) {
         setCelebratingPair(next);
         setTimeout(() => {
           const newMatched = new Set([...matched, next[0], next[1]]);
-          const nextScore = scores[currentPlayer] + 10;
+          const nextStreak = pairStreaks[currentPlayer] + 1;
+          const bonus = nextStreak >= 2 ? 5 * (nextStreak - 1) : 0;
+          const pointsAwarded = 10 + bonus;
+          const nextScore = scores[currentPlayer] + pointsAwarded;
           setMatched(newMatched);
           setScores(s => ({ ...s, [currentPlayer]: nextScore }));
+          setPairStreaks(s => ({ ...s, [currentPlayer]: nextStreak }));
           setCelebratingPair([]);
           setFlipped([]);
           setLocked(false);
-          showPopup(`Matched! +10 for ${currentPlayer===1?p1.name:p2.name}`, false);
+          showPopup(`Matched! +${pointsAwarded} for ${currentPlayer===1?p1.name:p2.name}${bonus ? ` (${nextStreak}-pair streak +${bonus})` : ""}`, false);
           if (newMatched.size === cards.length) {
             const finalScores = { ...scores, [currentPlayer]: nextScore };
             const accuracy = finalScores[1] > finalScores[2] ? 100 : finalScores[1] === finalScores[2] ? 50 : 0;
             completeGame('find-my-food', accuracy, nextMoves);
             onComplete?.(accuracy, nextMoves);
             setScreen("end");
+          } else {
+            setCurrentPlayer(p => p === 1 ? 2 : 1);
           }
         }, 1400);
       } else {
@@ -437,6 +445,7 @@ export default function FindMyFood({ onComplete }) {
         setTimeout(() => {
           setFlipped([]);
           setWrongPair([]);
+          setPairStreaks(s => ({ ...s, [currentPlayer]: 0 }));
           setLocked(false);
           setCurrentPlayer(p => p === 1 ? 2 : 1);
         }, 900);
@@ -541,8 +550,8 @@ export default function FindMyFood({ onComplete }) {
             </div>
             <div className="ff-howto-steps">
               <div className="ff-howto-step"><span className="ff-howto-num">1</span><span><strong>Take turns.</strong> Choose any two cards to reveal.</span></div>
-              <div className="ff-howto-step"><span className="ff-howto-num">2</span><span><strong>Find a pair.</strong> Match an animal with the food it loves to score 10 points and play again.</span></div>
-              <div className="ff-howto-step"><span className="ff-howto-num">3</span><span><strong>Missed it?</strong> The cards turn back over and the other player takes a turn.</span></div>
+              <div className="ff-howto-step"><span className="ff-howto-num">2</span><span><strong>Find a pair.</strong> Match an animal with the food it loves for 10 points. A second pair in a row earns a bonus.</span></div>
+              <div className="ff-howto-step"><span className="ff-howto-num">3</span><span><strong>Switch turns.</strong> After every turn, the other player chooses next.</span></div>
             </div>
           </div>
           <button className="ff-btn ff-btn-gold" onClick={() => setScreen("welcome")}>Choose Players →</button>

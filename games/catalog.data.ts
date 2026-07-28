@@ -351,8 +351,7 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     difficulty: "Starter",
     barColor: "var(--green)",
     isNew: true,
-    hasComponent: false,
-    legacyUrl: "assets/legacy-games/count-and-add/count-and-add.html",
+    hasComponent: true,
   },
   moneyblocks: {
     name: "Money Blocks",
@@ -364,8 +363,7 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     difficulty: "Mixed Skills",
     barColor: "var(--gold)",
     isNew: true,
-    hasComponent: false,
-    legacyUrl: "assets/legacy-games/money-blocks/index.html",
+    hasComponent: true,
   },
   parachutedrop: {
     name: "Parachute Drop",
@@ -377,8 +375,7 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     difficulty: "Starter",
     barColor: "var(--blue)",
     isNew: true,
-    hasComponent: false,
-    legacyUrl: "assets/legacy-games/parachute-drop/index.html",
+    hasComponent: true,
   },
   superwings: {
     name: "Super Wings Races",
@@ -390,8 +387,7 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     difficulty: "Starter",
     barColor: "var(--red)",
     isNew: true,
-    hasComponent: false,
-    legacyUrl: "assets/legacy-games/super-wings-game/index.html",
+    hasComponent: true,
   },
   swampjump: {
     name: "Froggy Hop",
@@ -403,8 +399,7 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     difficulty: "Arcade",
     barColor: "var(--green)",
     isNew: true,
-    hasComponent: false,
-    legacyUrl: "assets/legacy-games/swamp-jump-game/index.html",
+    hasComponent: true,
   },
   treasurechest: {
     name: "Treasure Chest Showdown",
@@ -416,8 +411,7 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     difficulty: "Competitive",
     barColor: "var(--gold)",
     isNew: true,
-    hasComponent: false,
-    legacyUrl: "assets/legacy-games/treasure-chest-game/index.html",
+    hasComponent: true,
   },
   unicornwings: {
     name: "Unicorn Wing Races",
@@ -429,8 +423,7 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     difficulty: "Starter",
     barColor: "var(--purple)",
     isNew: true,
-    hasComponent: false,
-    legacyUrl: "assets/legacy-games/unicorn-wings-game/index.html",
+    hasComponent: true,
   },
   connect4: {
     name: "Connect 4",
@@ -474,8 +467,7 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     badge: "Count",
     difficulty: "Starter",
     barColor: "var(--green)",
-    hasComponent: false,
-    legacyUrl: "assets/legacy-games/feed-the-monster/index.html",
+    hasComponent: true,
     isNew: true,
   },
   higherorlower: {
@@ -487,8 +479,7 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     badge: "Guess",
     difficulty: "Puzzle",
     barColor: "var(--red)",
-    hasComponent: false,
-    legacyUrl: "assets/legacy-games/higher-or-lower/index.html",
+    hasComponent: true,
     isNew: true,
   },
   picturerace: {
@@ -500,8 +491,7 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     badge: "Race",
     difficulty: "Starter",
     barColor: "var(--gold)",
-    hasComponent: false,
-    legacyUrl: "assets/legacy-games/picture-race/index.html",
+    hasComponent: true,
     isNew: true,
   },
   redorblack: {
@@ -513,8 +503,7 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     badge: "Call It",
     difficulty: "Competitive",
     barColor: "var(--red)",
-    hasComponent: false,
-    legacyUrl: "assets/legacy-games/red-or-black/index.html",
+    hasComponent: true,
     isNew: true,
   },
   sentencebuilder: {
@@ -526,8 +515,7 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     badge: "Build It",
     difficulty: "Intermediate",
     barColor: "var(--blue)",
-    hasComponent: false,
-    legacyUrl: "assets/legacy-games/sentence-builder/index.html",
+    hasComponent: true,
     isNew: true,
   },
   tictacroll: {
@@ -551,8 +539,7 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     badge: "Guess It",
     difficulty: "Puzzle",
     barColor: "var(--green)",
-    hasComponent: false,
-    legacyUrl: "assets/legacy-games/what-am-i/index.html",
+    hasComponent: true,
     isNew: true,
   },
   whatsmissing: {
@@ -564,8 +551,7 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     badge: "Spot It",
     difficulty: "Puzzle",
     barColor: "var(--blue)",
-    hasComponent: false,
-    legacyUrl: "assets/legacy-games/whats-missing/index.html",
+    hasComponent: true,
     isNew: true,
   },
 };
