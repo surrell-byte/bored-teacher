@@ -3298,14 +3298,36 @@ a { color: inherit; }
   --game-shell-nav-muted: #cbd5e1;
   height: 100%; min-height: 0; background: var(--bg);
 }
-.game-shell > .game-layout { height: 100%; }
+.game-shell > .game-layout {
+  height: 100%;
+  padding: 0;
+  gap: 0;
+}
 .game-shell .game-layout-header {
   position: sticky; top: 0; z-index: 30; flex-shrink: 0;
   padding: 10px clamp(12px, 2vw, 24px);
   color: var(--game-shell-nav-text);
   background: linear-gradient(135deg, var(--game-shell-nav), var(--game-shell-nav-raised));
-  border: 1px solid rgb(255 255 255 / 0.18); border-radius: 14px;
+  border: 0;
+  border-bottom: 1px solid rgb(255 255 255 / 0.18);
+  border-radius: 0;
   box-shadow: 0 10px 26px rgb(0 0 0 / 0.3);
+}
+.game-shell .game-layout-body {
+  gap: var(--space-md);
+  padding: var(--space-md);
+}
+.game-shell .game-layout-mobile > :not(.game-layout-header) {
+  margin-inline: var(--space-xs);
+}
+.game-shell .game-layout-mobile .game-layout-play-area {
+  margin-block: var(--space-xs);
+}
+.game-shell .game-layout-tablet .game-layout-controls-row,
+.game-shell .game-layout-desktop .game-layout-controls-row,
+.game-shell .game-layout-large-desktop .game-layout-controls-row,
+.game-shell .game-layout-tv .game-layout-controls-row {
+  margin: 0 var(--space-md) var(--space-md);
 }
 .game-shell .game-header-default { min-width: 0; }
 .game-shell .game-header-title { min-width: 0; color: var(--game-shell-nav-text); font-size: clamp(0.95rem, 1.3vw, 1.15rem); }
@@ -3348,7 +3370,7 @@ a { color: inherit; }
 .game-shell-result-grid b { color: var(--text); font-size: 1.1rem; }
 .game-shell-error { position: relative; min-height: 280px; }
 @media (max-width: 640px) {
-  .game-shell .game-layout-header { border-radius: 10px; padding: 8px 10px; }
+  .game-shell .game-layout-header { border-radius: 0; padding: 8px 10px; }
   .game-shell .game-header-default { align-items: flex-start; }
   .game-shell .game-header-title { max-width: 36vw; padding-top: 5px; }
   .game-shell-header-action { padding: 6px 8px; font-size: 0.7rem; }
