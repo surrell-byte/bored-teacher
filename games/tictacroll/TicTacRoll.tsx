@@ -311,7 +311,8 @@ export default function TicTacRoll({ onComplete }: Props) {
 
   const responsiveBoardStyle: React.CSSProperties = {
     position: "relative",
-    width: "min(100%, 1000px)",
+    width: "100%",
+    maxWidth: "min(100%, 700px)",
     margin: "auto",
     aspectRatio: "1 / 1",
     display: "grid",
@@ -321,6 +322,8 @@ export default function TicTacRoll({ onComplete }: Props) {
     borderRadius: "clamp(14px, 2vw, 22px)",
     background: `linear-gradient(160deg, ${theme.accent}, ${theme.accent2 || theme.accent})`,
     boxShadow: `0 0 40px ${theme.glow}, 0 12px 40px rgba(0,0,0,0.18)`,
+    overflow: "hidden",
+    boxSizing: "border-box",
   };
 
   const gameLayoutStyle: React.CSSProperties = {

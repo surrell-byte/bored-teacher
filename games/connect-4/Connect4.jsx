@@ -310,8 +310,8 @@ export default function Connect4({ onComplete }) {
         )}
       </div>
 
-      {/* Board */}
-      <div style={{ background: "#1e3a8a", borderRadius: 16, padding: 12, boxShadow: "0 8px 40px #0006" }}>
+{/* Board */}
+       <div style={{ background: "#1e3a8a", borderRadius: 16, padding: 12, boxShadow: "0 8px 40px #0006", maxWidth: "min(100%, 700px)", margin: "0 auto", overflow: "hidden" }}>
         {/* Hover indicator */}
         <div style={{ display: "flex", gap: 8, marginBottom: 4, height: 18 }}>
           {Array.from({ length: COLS }, (_, c) => (
