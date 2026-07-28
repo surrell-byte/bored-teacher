@@ -279,6 +279,34 @@ select.fm-field-input { cursor:pointer; }
 .fm-region-meta { font-family:'DM Mono',monospace; font-size:.6rem; letter-spacing:.12em; color: var(--theme-sub-color); margin-top:4px; display:block; }
 .fm-region-lock-icon { position:absolute; right:16px; top:50%; transform: translateY(-50%); font-size:.9rem; opacity:.4; }
 
+/* Large screens use a landscape expedition board instead of a tall, narrow
+   passport. The compact mobile layout remains unchanged. */
+@media (min-width: 900px) {
+  .fm-root { padding:clamp(28px, 4vw, 64px); align-items:center; }
+  .fm-screen.fm-wide-screen { max-width:min(1320px, calc(100vw - 120px)); }
+  .fm-screen.fm-welcome-screen { max-width:min(940px, calc(100vw - 120px)); }
+  .fm-card-inner { padding:clamp(34px, 4vw, 58px); }
+  .fm-screen.fm-welcome-screen .fm-card-inner { padding:clamp(38px, 5vw, 68px) clamp(80px, 12vw, 160px); }
+  .fm-screen.fm-map-screen .fm-map-frame { height:460px; margin:26px 0; }
+  .fm-screen.fm-map-screen .fm-map-node { width:68px; height:68px; font-size:2rem; }
+  .fm-region-list { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:12px; text-align:left; }
+  .fm-region-list .fm-region-btn { margin:0; min-height:112px; font-size:1rem; }
+  .fm-region-list .fm-region-btn:last-child { grid-column:1 / -1; }
+  .fm-game-layout { display:grid; grid-template-columns:minmax(360px, .9fr) minmax(400px, 1.1fr); gap:clamp(28px, 4vw, 64px); align-items:center; }
+  .fm-game-top, .fm-game-progress { grid-column:1 / -1; }
+  .fm-game-top { display:flex; align-items:flex-start; justify-content:space-between; gap:28px; }
+  .fm-game-top .fm-nav-row { margin:0; }
+  .fm-game-top .fm-stat-strip { margin:0; width:min(520px, 56%); }
+  .fm-game-progress .fm-progress-track { margin-bottom:10px; }
+  .fm-game-visual .fm-flag-stage { width:min(100%, 480px); height:auto; aspect-ratio:3 / 2; margin-bottom:16px; }
+  .fm-game-visual .fm-flag-emoji-display { font-size:clamp(110px, 12vw, 180px); }
+  .fm-game-visual .fm-reveal-grid { gap:12px; margin-bottom:0; }
+  .fm-game-visual .fm-reveal-btn { padding:15px 8px; font-size:.75rem; }
+  .fm-game-answers .fm-options-grid { gap:12px; margin-bottom:14px; }
+  .fm-game-answers .fm-option-btn { padding:clamp(18px, 2vw, 26px) 24px; font-size:1.3rem; }
+  .fm-game-answers .fm-message-panel { min-height:64px; display:flex; align-items:center; font-size:1.1rem; }
+}
+
 .fm-pause-overlay { position:fixed; inset:0; background: rgba(11,22,40,0.92); backdrop-filter: blur(10px); z-index:999; display:flex; justify-content:center; align-items:center; flex-direction:column; }
 .fm-pause-content { text-align:center; border:1px solid rgba(201,168,76,0.3); padding:48px; border-radius:4px; background: rgba(253,246,227,0.04); }
 .fm-pause-title { font-family:'Cinzel',serif; font-size:2rem; font-weight:900; color: var(--gold-2); letter-spacing:.2em; margin-bottom:8px; }
@@ -483,7 +511,7 @@ export default function Flagmaster({ onComplete }) {
   // ═══ WELCOME ═══
   if (screen === "welcome") return (
     <div className={rootCls}><Style /><div className="fm-bg-layer" /><ThemeToggle />
-      <div className="fm-screen"><div className="fm-card"><div className="fm-card-inner">
+      <div className="fm-screen fm-welcome-screen"><div className="fm-card"><div className="fm-card-inner">
         <div className="fm-display-sub">Est. MMXXVI · World Expedition Series</div>
         <div className="fm-emblem">🌍</div>
         <h1 className="fm-display-title">FLAGMASTER</h1>
@@ -502,7 +530,7 @@ export default function Flagmaster({ onComplete }) {
     const preview = countryCode ? allCountries.find(c => c.code === countryCode) : null;
     return (
       <div className={rootCls}><Style /><div className="fm-bg-layer" /><ThemeToggle />
-        <div className="fm-screen"><div className="fm-card"><div className="fm-card-inner">
+        <div className="fm-screen fm-wide-screen"><div className="fm-card"><div className="fm-card-inner">
           <div className="fm-display-sub">Expedition Registration</div>
           <h2 className="fm-display-title">ISSUE PASSPORT</h2>
           <div className="fm-passport">
@@ -553,7 +581,7 @@ export default function Flagmaster({ onComplete }) {
   // ═══ WORLD MAP ═══
   if (screen === "worldMap") return (
     <div className={rootCls}><Style /><div className="fm-bg-layer" /><ThemeToggle />
-      <div className="fm-screen"><div className="fm-card"><div className="fm-card-inner">
+      <div className="fm-screen fm-wide-screen fm-map-screen"><div className="fm-card"><div className="fm-card-inner">
         <div className="fm-display-sub">Expedition Progress</div>
         <h2 className="fm-display-title">WORLD PROGRESSION</h2>
         {profile && (
@@ -606,7 +634,7 @@ export default function Flagmaster({ onComplete }) {
   // ═══ LEVEL SELECT ═══
   if (screen === "levelSelect") return (
     <div className={rootCls}><Style /><div className="fm-bg-layer" /><ThemeToggle />
-      <div className="fm-screen"><div className="fm-card"><div className="fm-card-inner">
+      <div className="fm-screen fm-wide-screen"><div className="fm-card"><div className="fm-card-inner">
         <div className="fm-nav-row"><button className="fm-btn-sm" onClick={goToWorldMap}>← World Map</button></div>
         <div className="fm-display-sub">Mission Select</div>
         <h2 className="fm-display-title">SELECT REGION</h2>
@@ -615,7 +643,7 @@ export default function Flagmaster({ onComplete }) {
             {getFlagEmoji(profile.country)} {profile.name.toUpperCase()} · Choose an unlocked region
           </div>
         )}
-        <div>
+        <div className="fm-region-list">
           {LEVELS.map((level, i) => {
             const unlocked = i === 0 || levelCompleted[i - 1];
             return (
@@ -654,7 +682,8 @@ export default function Flagmaster({ onComplete }) {
           </div>
         </div>
       )}
-      <div className="fm-screen"><div className="fm-card"><div className="fm-card-inner">
+      <div className="fm-screen fm-wide-screen"><div className="fm-card"><div className="fm-card-inner fm-game-layout">
+        <div className="fm-game-top">
         <div className="fm-nav-row">
           <button className="fm-btn-sm" onClick={exitToMap}>← Exit Region</button>
           <button className="fm-btn-sm" onClick={togglePause} disabled={waitingForNext}>⏸ Pause</button>
@@ -665,12 +694,16 @@ export default function Flagmaster({ onComplete }) {
           <div className="fm-stat-pill"><span className="fm-stat-val">{revealsUsed}</span><span className="fm-stat-lbl">Reveals</span></div>
           <div className="fm-stat-pill"><span className="fm-stat-val">+{bonusLeft}</span><span className="fm-stat-lbl">Bonus</span></div>
         </div>
+        </div>
 
+        <div className="fm-game-progress">
         <div className="fm-progress-track"><div className="fm-progress-fill" style={{ width: `${((currentQIndex + 1) / levelQuestions.length) * 100}%` }} /></div>
         {lvl.timerSec > 0 && (
           <div className="fm-timer-track"><div className="fm-timer-fill" style={{ width: `${timerPct}%` }} /></div>
         )}
+        </div>
 
+        <section className="fm-game-visual">
         <div className="fm-flag-stage">
           <div className="fm-flag-emoji-display">{currentCountry.emoji}</div>
           <div className={`fm-mask-tile fm-mask-1 ${revealed[0] ? "fm-revealed" : ""}`}>I</div>
@@ -687,7 +720,9 @@ export default function Flagmaster({ onComplete }) {
           <button className="fm-reveal-btn fm-rb-gold" disabled={waitingForNext || isPaused || revealed[2]} onClick={() => revealTile(2)}>▪ III</button>
           <button className="fm-reveal-btn fm-rb-teal" disabled={waitingForNext || isPaused || revealed[3]} onClick={() => revealTile(3)}>▪ IV</button>
         </div>
+        </section>
 
+        <section className="fm-game-answers">
         <div className="fm-options-grid">
           {options.map(opt => {
             const isCorrect = waitingForNext && opt === currentCountry.name;
@@ -708,6 +743,7 @@ export default function Flagmaster({ onComplete }) {
         <div className={`fm-message-panel ${message.type === "correct" ? "fm-msg-correct" : message.type === "wrong" ? "fm-msg-wrong" : ""}`}>
           {message.text}
         </div>
+        </section>
       </div></div></div>
     </div>
   );

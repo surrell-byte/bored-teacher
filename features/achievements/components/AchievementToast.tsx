@@ -26,28 +26,33 @@ const PARTICLES = Array.from({ length: 28 }, (_, i) => ({
 
 export default function AchievementToast({ icon, title, description, color, onDone }: Props) {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const dismissedRef = useRef(false);
   const [closing, setClosing] = useState(false);
 
-  useEffect(() => {
-    timerRef.current = setTimeout(() => {
-      setClosing(true);
-      setTimeout(onDone, 380);
-    }, 3800);
-    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
-  }, [onDone]);
-
   function dismiss() {
+    if (dismissedRef.current) return;
+    dismissedRef.current = true;
     if (timerRef.current) clearTimeout(timerRef.current);
     setClosing(true);
-    setTimeout(onDone, 380);
+    closeTimerRef.current = setTimeout(onDone, 380);
   }
+
+  useEffect(() => {
+    timerRef.current = setTimeout(dismiss, 3800);
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+    };
+  // The toast represents one specific queued achievement for its lifetime.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div
       className={`achievement-toast${closing ? ' closing' : ''}`}
       role="status"
       aria-live="polite"
-      onClick={dismiss}
       style={{ '--ach-color': color } as React.CSSProperties}
     >
       {/* Confetti particles */}

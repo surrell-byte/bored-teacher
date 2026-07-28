@@ -21,6 +21,7 @@ const THEMES = [
 ];
 
 const AVATARS = ["🐶","🐼","🦊","🐯","🐸","🐧","🦁","🐨"];
+const HOW_TO_PLAY_CARDS = ["🐕", "🦴", "🐱", "🐟", "🐰", "🥕", "🐵", "🍌", "🐭", "🧀", "🦁", "🍗", "🐦", "🪱", "🐴", "🍎"];
 
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
 
@@ -207,6 +208,21 @@ const STYLES = `
 .ff-match-popup { text-align:center; font-weight:600; font-size:0.95rem; min-height:28px; margin-bottom:12px; color: var(--green); letter-spacing:0.01em; transition: all 0.3s; }
 .ff-match-popup.mismatch { color: var(--red); }
 
+.ff-game-layout { display:flex; flex-direction:column; }
+.ff-game-board { min-width:0; }
+.ff-game-sidebar { min-width:0; order:-1; }
+.ff-game-sidebar-title { display:none; }
+.ff-game-actions { text-align:center; margin-top:16px; }
+.ff-match-popup-desktop { display:none; }
+
+.ff-howto-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; max-width:360px; margin:0 auto 22px; }
+.ff-howto-tile { aspect-ratio:1; display:flex; align-items:center; justify-content:center; border-radius:12px; background:var(--surface2); border:1px solid var(--border-bright); font-size:1.7rem; box-shadow:var(--shadow-sm); }
+.ff-howto-tile:nth-child(1), .ff-howto-tile:nth-child(2) { border-color:var(--green); background:var(--surface3); }
+.ff-howto-steps { display:grid; gap:10px; margin:0 auto 22px; max-width:460px; text-align:left; }
+.ff-howto-step { display:flex; gap:12px; align-items:flex-start; padding:12px 14px; border-radius:var(--radius-sm); background:var(--surface2); border:1px solid var(--border); color:var(--text-muted); font-size:.9rem; line-height:1.4; }
+.ff-howto-step strong { color:var(--text); }
+.ff-howto-num { flex:0 0 26px; height:26px; display:flex; align-items:center; justify-content:center; border-radius:50%; background:var(--accent-glow); color:var(--accent); font-family:'DM Mono',monospace; font-weight:700; }
+
 .ff-grid { display:grid; gap:10px; width:100%; margin:0 auto; grid-template-columns: repeat(4, 1fr); }
 
 .ff-tile { width:100%; aspect-ratio:1; cursor:pointer; position:relative; transform-style:preserve-3d; transition: transform 0.2s ease, box-shadow 0.2s ease; }
@@ -227,6 +243,74 @@ const STYLES = `
 .ff-tile.wrong-shake .ff-tile-inner { animation: ffShake 0.5s ease both; }
 @keyframes ffShake { 0%,100% {transform:translateX(0) rotateY(180deg);} 20% {transform:translateX(-6px) rotateY(180deg);} 40% {transform:translateX(6px) rotateY(180deg);} 60% {transform:translateX(-4px) rotateY(180deg);} 80% {transform:translateX(4px) rotateY(180deg);} }
 .ff-tile.locked, .ff-tile.matched { pointer-events:none; }
+
+/* On larger screens, the board and the game information each get a dedicated
+   column. This keeps the board prominent without making its cards oversized. */
+@media (min-width: 760px) {
+  .ff-root { padding: clamp(28px, 4vw, 64px); }
+  .ff-screen.ff-setup-screen { max-width: 1100px; }
+  .ff-setup-card { padding: 26px 32px 28px; }
+  .ff-setup-card .ff-logo-badge { margin-bottom:8px; }
+  .ff-setup-card .ff-hero-title { font-size:2.45rem; margin-bottom:4px; }
+  .ff-setup-card .ff-hero-sub { margin-bottom:12px; font-size:.9rem; }
+  .ff-setup-card .ff-pair-preview { margin-bottom:14px; }
+  .ff-setup-card .ff-pair-chip { padding:4px 10px; font-size:.95rem; }
+  .ff-setup-card .ff-theme-grid { grid-template-columns:repeat(5, minmax(74px, 104px)); justify-content:center; margin-bottom:14px; }
+  .ff-setup-card .ff-theme-swatch { aspect-ratio:1.45; }
+  .ff-setup-card .ff-divider { margin:16px 0; }
+  .ff-setup-card .ff-player-setup { gap:14px !important; }
+  .ff-setup-card .ff-player-setup > div { flex:1 1 300px; min-width:0 !important; }
+  .ff-setup-card .ff-avatar-btn { width:40px; height:40px; font-size:1.25rem; }
+  .ff-setup-card .ff-fancy-input { padding:10px 14px; }
+  .ff-setup-card .ff-btn { padding:11px 26px; }
+}
+
+@media (min-width: 960px) {
+  .ff-root { align-items:center; }
+  .ff-screen.ff-game-screen { max-width: 1240px; }
+  .ff-game-card { padding: clamp(28px, 3vw, 44px); }
+  .ff-game-layout {
+    display:grid;
+    grid-template-columns: minmax(460px, 1fr) minmax(290px, 360px);
+    align-items:start;
+    gap: clamp(28px, 4vw, 64px);
+  }
+  .ff-game-sidebar {
+    order:initial;
+    position:sticky;
+    top:28px;
+    padding:22px;
+    background:var(--surface2);
+    border:1px solid var(--border);
+    border-radius:var(--radius-md);
+  }
+  .ff-game-sidebar-title {
+    display:block;
+    margin-bottom:16px;
+    font-size:0.72rem;
+    font-weight:600;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--text-dim);
+  }
+  .ff-game-sidebar .ff-scoreboard { margin-bottom:14px; }
+  .ff-game-sidebar .ff-score-card { padding:16px; }
+  .ff-game-sidebar .ff-turn-bar { margin-bottom:16px; }
+  .ff-match-popup-mobile { display:none; }
+  .ff-match-popup-desktop {
+    display:block;
+    padding:14px 16px;
+    margin:0;
+    min-height:54px;
+    border:1px solid var(--border);
+    border-radius:var(--radius-sm);
+    background:var(--surface3);
+  }
+  .ff-game-actions { text-align:left; }
+  .ff-game-board .ff-progress-row { margin-bottom:18px; }
+  .ff-game-board .ff-match-popup { min-height:32px; margin-bottom:18px; }
+  .ff-game-board .ff-grid { gap:14px; max-width:760px; margin-left:0; }
+}
 
 .ff-winner-display { text-align:center; padding:20px 0; }
 .ff-winner-crown { font-size:3rem; margin-bottom:10px; display:block; }
@@ -344,8 +428,8 @@ export default function FindMyFood({ onComplete }) {
         {isDark ? "🌙" : "☀️"}
       </button>
 
-      <div className="ff-screen">
-        <div className="ff-card" style={{ textAlign:"center" }}>
+      <div className="ff-screen ff-setup-screen">
+        <div className="ff-card ff-setup-card" style={{ textAlign:"center" }}>
           <div className="ff-logo-badge">🌿 Two-Player Edition</div>
           <h1 className="ff-hero-title">Find My<br/>Food</h1>
           <p className="ff-hero-sub">Match each animal with the food it loves.<br/>Compete with a friend to see who knows best.</p>
@@ -393,12 +477,41 @@ export default function FindMyFood({ onComplete }) {
           <div className="ff-divider" />
           <div className="ff-section-label">Choose pairs</div>
           <div className="ff-btn-row">
+            <button className="ff-btn ff-btn-outline" onClick={() => setScreen("how-to-play")}>How to Play</button>
             {[4,6,8].map(n => (
               <button key={n} className="ff-btn ff-btn-gold" onClick={() => { setPairCount(n); startGame(n); }}>
                 {n} Pairs →
               </button>
             ))}
           </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  if (screen === "how-to-play") return (
+    <div className="ff-root" data-ff-theme={isDark ? "dark" : "light"} style={cssVarOverrides}>
+      <style>{STYLES}</style>
+      <div className="ff-noise" />
+      <div className="ff-ambient ff-ambient-1" />
+      <div className="ff-ambient ff-ambient-2" />
+      <button className="ff-theme-toggle" onClick={() => setIsDark(d => !d)} aria-label="Toggle light/dark mode">
+        {isDark ? "🌙" : "☀️"}
+      </button>
+      <div className="ff-screen">
+        <div className="ff-card" style={{ textAlign:"center" }}>
+          <div className="ff-logo-badge">📖 How to Play</div>
+          <h1 className="ff-hero-title" style={{ fontSize:"clamp(2.2rem, 5vw, 3.1rem)" }}>Find My Food</h1>
+          <p className="ff-hero-sub">Find every animal&apos;s favourite food in the 4 × 4 memory grid.</p>
+          <div className="ff-howto-grid" aria-label="Example 4 by 4 game grid">
+            {HOW_TO_PLAY_CARDS.map((card, index) => <div className="ff-howto-tile" key={`${card}-${index}`}>{card}</div>)}
+          </div>
+          <div className="ff-howto-steps">
+            <div className="ff-howto-step"><span className="ff-howto-num">1</span><span><strong>Take turns.</strong> Choose any two cards to reveal.</span></div>
+            <div className="ff-howto-step"><span className="ff-howto-num">2</span><span><strong>Find a pair.</strong> Match an animal with the food it loves to score 10 points and play again.</span></div>
+            <div className="ff-howto-step"><span className="ff-howto-num">3</span><span><strong>Missed it?</strong> The cards turn back over and the other player takes a turn.</span></div>
+          </div>
+          <button className="ff-btn ff-btn-gold" onClick={() => setScreen("welcome")}>Choose Players →</button>
         </div>
       </div>
     </div>
@@ -460,63 +573,71 @@ export default function FindMyFood({ onComplete }) {
         {isDark ? "🌙" : "☀️"}
       </button>
 
-      <div className="ff-screen">
-        <div className="ff-card">
-          <div className="ff-scoreboard">
-            <div className={`ff-score-card${currentPlayer===1?" active":""}`}>
-              <div className="ff-sc-top">
-                <span className="ff-sc-avatar">{p1.avatar}</span>
-                <span className="ff-sc-name">{p1.name}</span>
-              </div>
-              <div className="ff-sc-score">{scores[1]}</div>
-              <div className="ff-sc-label">points</div>
-            </div>
-            <div className={`ff-score-card${currentPlayer===2?" active":""}`}>
-              <div className="ff-sc-top">
-                <span className="ff-sc-avatar">{p2.avatar}</span>
-                <span className="ff-sc-name">{p2.name}</span>
-              </div>
-              <div className="ff-sc-score">{scores[2]}</div>
-              <div className="ff-sc-label">points</div>
-            </div>
-          </div>
-
-          <div className="ff-turn-bar">
-            <div className="ff-turn-dot" />
-            <span>{currentPlayer===1?p1.avatar:p2.avatar} {currentPlayer===1?p1.name:p2.name}'s turn</span>
-          </div>
-
-          <div className="ff-progress-row">
-            <span>{matchedPairs} / {totalPairs} pairs</span>
-            <div className="ff-progress-track">
-              <div className="ff-progress-fill" style={{ width: `${(matchedPairs/totalPairs)*100}%` }} />
-            </div>
-          </div>
-
-          <div className={`ff-match-popup${popup.mismatch?" mismatch":""}`}>{popup.msg}</div>
-
-          <div className="ff-grid">
-            {cards.map((card, idx) => {
-              const isFlipped = flipped.includes(idx) || matched.has(idx);
-              const isMatched = matched.has(idx);
-              const isWrong = wrongPair.includes(idx);
-              return (
-                <div key={idx} onClick={() => flip(idx)}
-                  className={`ff-tile${isFlipped?" flipped":""}${isMatched?" matched":""}${locked&&!isMatched?" locked":""}${isWrong?" wrong-shake":""}`}>
-                  <div className="ff-tile-inner">
-                    <div className="ff-tile-front">?</div>
-                    <div className="ff-tile-back">
-                      <div className="ff-emoji">{card.emoji}</div>
-                      <div className="ff-word">{card.label}</div>
-                    </div>
-                  </div>
+      <div className="ff-screen ff-game-screen">
+        <div className="ff-card ff-game-card">
+          <div className="ff-game-layout">
+            <section className="ff-game-board" aria-label="Find My Food board">
+              <div className="ff-progress-row">
+                <span>{matchedPairs} / {totalPairs} pairs</span>
+                <div className="ff-progress-track">
+                  <div className="ff-progress-fill" style={{ width: `${(matchedPairs/totalPairs)*100}%` }} />
                 </div>
-              );
-            })}
-          </div>
+              </div>
 
-          <div style={{ textAlign:"center", marginTop:16 }}>
-            <button className="ff-btn ff-btn-ghost" onClick={() => startGame(pairCount)}>↺ New Game</button>
+              <div className={`ff-match-popup ff-match-popup-mobile${popup.mismatch?" mismatch":""}`} aria-live="polite">{popup.msg}</div>
+
+              <div className="ff-grid">
+                {cards.map((card, idx) => {
+                  const isFlipped = flipped.includes(idx) || matched.has(idx);
+                  const isMatched = matched.has(idx);
+                  const isWrong = wrongPair.includes(idx);
+                  return (
+                    <div key={idx} onClick={() => flip(idx)}
+                      className={`ff-tile${isFlipped?" flipped":""}${isMatched?" matched":""}${locked&&!isMatched?" locked":""}${isWrong?" wrong-shake":""}`}>
+                      <div className="ff-tile-inner">
+                        <div className="ff-tile-front">?</div>
+                        <div className="ff-tile-back">
+                          <div className="ff-emoji">{card.emoji}</div>
+                          <div className="ff-word">{card.label}</div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="ff-game-actions">
+                <button className="ff-btn ff-btn-ghost" onClick={() => startGame(pairCount)}>↺ New Game</button>
+              </div>
+            </section>
+
+            <aside className="ff-game-sidebar" aria-label="Player status">
+              <div className="ff-game-sidebar-title">Player status</div>
+              <div className="ff-scoreboard">
+                <div className={`ff-score-card${currentPlayer===1?" active":""}`}>
+                  <div className="ff-sc-top">
+                    <span className="ff-sc-avatar">{p1.avatar}</span>
+                    <span className="ff-sc-name">{p1.name}</span>
+                  </div>
+                  <div className="ff-sc-score">{scores[1]}</div>
+                  <div className="ff-sc-label">points</div>
+                </div>
+                <div className={`ff-score-card${currentPlayer===2?" active":""}`}>
+                  <div className="ff-sc-top">
+                    <span className="ff-sc-avatar">{p2.avatar}</span>
+                    <span className="ff-sc-name">{p2.name}</span>
+                  </div>
+                  <div className="ff-sc-score">{scores[2]}</div>
+                  <div className="ff-sc-label">points</div>
+                </div>
+              </div>
+
+              <div className="ff-turn-bar">
+                <div className="ff-turn-dot" />
+                <span>{currentPlayer===1?p1.avatar:p2.avatar} {currentPlayer===1?p1.name:p2.name}'s turn</span>
+              </div>
+              <div className={`ff-match-popup ff-match-popup-desktop${popup.mismatch?" mismatch":""}`} aria-live="polite">{popup.msg}</div>
+            </aside>
           </div>
         </div>
       </div>

@@ -208,6 +208,9 @@
       const [pendingAchievement, setPending]      = useState<Achievement | null>(null);
       const achievementQueue                      = useRef<Achievement[]>([]);
       const showingAchievement                    = useRef(false);
+      // React may replay state updaters in development. Keep a session-level
+      // record so a single unlock is never queued more than once.
+      const announcedAchievementIds               = useRef<Set<string>>(new Set());
 
       function drainQueue() {
         if (showingAchievement.current || achievementQueue.current.length === 0) return;
@@ -232,12 +235,17 @@
         const before = getEarnedIds(prev);
         const after  = getEarnedIds(next);
         setEarnedIds(after);
-        const newOnes = getNewlyUnlocked(before, after);
-        if (newOnes.length === 0) return next;
+        const unlocked = getNewlyUnlocked(before, after);
+        const newOnes = unlocked.filter(a => {
+          if (announcedAchievementIds.current.has(a.id)) return false;
+          announcedAchievementIds.current.add(a.id);
+          return true;
+        });
+        if (unlocked.length === 0) return next;
 
         const now = new Date().toISOString();
         const earnedAt = { ...next.earnedAt };
-        for (const a of newOnes) earnedAt[a.id] = now;
+        for (const a of unlocked) earnedAt[a.id] = now;
 
         achievementQueue.current.push(...newOnes);
         drainQueue();
