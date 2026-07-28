@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { dragonFor } from '../data/dragons';
+import { ATLAS_URL, createAtlasSprites, createDragonSprite, dragonAnimation } from '../data/atlas';
 import { LEVELS } from '../data/levels';
 import { WORLD } from '../engine/physics';
 
@@ -12,6 +13,9 @@ export default function DragonCanvas({ game, onPointer, onAbility }) {
   useEffect(() => {
     const canvas = canvasRef.current;
     const context = canvas.getContext('2d');
+    const atlas = new Image();
+    atlas.src = ATLAS_URL;
+    const sprites = createAtlasSprites(atlas);
     let frame;
     const draw = tick => {
       const state = game.current;
@@ -25,13 +29,25 @@ export default function DragonCanvas({ game, onPointer, onAbility }) {
       context.globalAlpha = 1;
       context.fillStyle = '#1a1010'; context.fillRect(0, 378, WORLD.width, 42);
       if (state) {
-        state.blocks.filter(block => block.alive).forEach(block => { context.fillStyle = '#a86734'; context.fillRect(block.x, block.y, block.w, block.h); context.strokeStyle = '#e8b36e'; context.strokeRect(block.x, block.y, block.w, block.h); });
-        state.enemies.filter(enemy => enemy.alive).forEach(enemy => { context.save(); context.translate(enemy.x, enemy.y + Math.sin(tick / 210 + enemy.x) * 3); context.fillStyle = enemy.type === 'boss' ? '#7a113d' : '#3c7a14'; context.shadowColor = enemy.type === 'boss' ? '#ff1593' : '#a8ff44'; context.shadowBlur = 16; context.beginPath(); context.arc(0, 0, enemy.type === 'boss' ? 30 : 14, 0, Math.PI * 2); context.fill(); context.shadowBlur = 0; context.fillStyle = '#ffdd48'; context.fillRect(-7, -3, 4, 4); context.fillRect(3, -3, 4, 4); if (enemy.type === 'boss') { context.fillStyle = '#251020'; context.fillRect(-32, -47, 64, 7); context.fillStyle = '#ec4668'; context.fillRect(-32, -47, 64 * (enemy.hp / enemy.maxHp), 7); } context.restore(); });
+        state.blocks.filter(block => block.alive).forEach(block => {
+          if (atlas.complete) sprites.tower.draw(context, block.x + block.w / 2, block.y + block.h / 2, 0, { scale: Math.max(block.w / 93, block.h / 162) * 1.15 });
+          else { context.fillStyle = '#a86734'; context.fillRect(block.x, block.y, block.w, block.h); }
+        });
+        state.enemies.filter(enemy => enemy.alive).forEach(enemy => {
+          const y = enemy.y + Math.sin(tick / 210 + enemy.x) * 3;
+          if (atlas.complete) (enemy.type === 'boss' ? sprites.boss : sprites.goblin).draw(context, enemy.x, y);
+          else { context.fillStyle = enemy.type === 'boss' ? '#7a113d' : '#3c7a14'; context.beginPath(); context.arc(enemy.x, y, enemy.type === 'boss' ? 30 : 14, 0, Math.PI * 2); context.fill(); }
+          if (enemy.type === 'boss') { context.fillStyle = '#251020'; context.fillRect(enemy.x - 32, y - 54, 64, 7); context.fillStyle = '#ec4668'; context.fillRect(enemy.x - 32, y - 54, 64 * (enemy.hp / enemy.maxHp), 7); }
+        });
         const pull = state.pull;
         const dragon = state.dragon ?? { x: WORLD.sling.x + pull.x, y: WORLD.sling.y + pull.y };
         context.strokeStyle = '#a76e3c'; context.lineWidth = 8; context.beginPath(); context.moveTo(105, 350); context.lineTo(WORLD.sling.x, WORLD.sling.y); context.lineTo(155, 350); context.stroke();
         context.strokeStyle = '#ebd0a1'; context.lineWidth = 2; context.beginPath(); context.moveTo(105, 350); context.lineTo(dragon.x, dragon.y); context.lineTo(155, 350); context.stroke();
-        const dragonData = dragonFor(state.queue[state.dragonIndex]); context.font = '38px sans-serif'; context.textAlign = 'center'; context.textBaseline = 'middle'; context.shadowColor = dragonData.color; context.shadowBlur = 18; context.fillText(dragonData.emoji, dragon.x, dragon.y); context.shadowBlur = 0;
+        const dragonData = dragonFor(state.queue[state.dragonIndex]);
+        if (atlas.complete) {
+          const animationState = state.phase === 'flying' ? 'fly' : 'idle';
+          createDragonSprite(atlas, dragonData.id, animationState).draw(context, dragon.x, dragon.y, dragonAnimation.frameAt(tick));
+        } else { context.font = '38px sans-serif'; context.textAlign = 'center'; context.textBaseline = 'middle'; context.shadowColor = dragonData.color; context.shadowBlur = 18; context.fillText(dragonData.emoji, dragon.x, dragon.y); context.shadowBlur = 0; }
         if (state.dragging) { context.setLineDash([5, 7]); context.strokeStyle = 'rgba(255,220,130,.75)'; context.beginPath(); let x = dragon.x, y = dragon.y, vx = -pull.x * .31, vy = -pull.y * .31; for (let index = 0; index < 28; index += 1) { x += vx; y += vy; vy += .44; index ? context.lineTo(x, y) : context.moveTo(x, y); } context.stroke(); context.setLineDash([]); }
       }
       frame = requestAnimationFrame(draw);

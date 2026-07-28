@@ -112,34 +112,40 @@ export default function GameShell({
     <div ref={shellRef} className="game-shell" data-game-id={gameId} data-paused={paused || undefined}>
       <GameLayout
         header={
-          <GameHeader
-            title={title}
-            icon={icon}
-            actions={
-              <>
-                {topBarStats.length > 0 && (
-                  <div className="game-shell-topbar-stats" aria-label="Game stats">
-                    {topBarStats.map(stat => (
-                      <span key={stat.label} className="game-shell-topbar-stat">
-                        {stat.icon && <span aria-hidden="true">{stat.icon}</span>}
-                        <b>{stat.value}</b>
-                        <span>{stat.label}</span>
-                      </span>
-                    ))}
-                  </div>
-                )}
-                <button type="button" className="game-shell-header-action" onClick={paused ? resume : pause} aria-pressed={paused}>
-                  {paused ? 'Resume' : 'Pause'}
-                </button>
-                <button type="button" className="game-shell-header-action" onClick={toggleFullscreen}>
-                  {isFullscreen ? 'Exit full screen' : 'Full screen'}
-                </button>
-                <Link className="game-shell-header-action" href="/hub">Exit</Link>
-              </>
-            }
-          />
+          <>
+            <GameHeader
+              title={title}
+              icon={icon}
+              actions={
+                <>
+                  {topBarStats.length > 0 && (
+                    <div className="game-shell-topbar-stats" aria-label="Game stats">
+                      {topBarStats.map(stat => (
+                        <span key={stat.label} className="game-shell-topbar-stat">
+                          {stat.icon && <span aria-hidden="true">{stat.icon}</span>}
+                          <b>{stat.value}</b>
+                          <span>{stat.label}</span>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  <button type="button" className="game-shell-header-action" onClick={paused ? resume : pause} aria-pressed={paused}>
+                    {paused ? 'Resume' : 'Pause'}
+                  </button>
+                  <button type="button" className="game-shell-header-action" onClick={toggleFullscreen}>
+                    {isFullscreen ? 'Exit full screen' : 'Full screen'}
+                  </button>
+                  <Link className="game-shell-header-action" href="/hub">Exit</Link>
+                </>
+              }
+            />
+            {controls && (
+              <div className="game-shell-controls-bar">
+                {controls}
+              </div>
+            )}
+          </>
         }
-        controls={controls}
       >
         <ErrorBoundary resetKey={sessionKey} onRetry={restart} onExit={() => window.location.assign('/hub')}>
           <div className="game-shell-play-area" aria-busy={paused}>

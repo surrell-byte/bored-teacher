@@ -9,6 +9,7 @@ import { syncCurrentPlayerToLeaderboard } from '@/features/leaderboard/api';
 import { GAME_NAMES, GAME_ICONS } from '@/constants/index';
 import { GAME_COMPONENTS } from '@/games/catalog.components';
 import { GameShell } from '@/engine';
+import DesktopControls from '@/components/ui/controls/DesktopControls';
 
 // ── Types ─────────────────────────────────────────────────────
 interface GameResult {
@@ -81,6 +82,7 @@ export default function GamePage() {
         completion={result}
         onContinue={handleContinue}
         onRestart={handleContinue}
+        controls={<DesktopControls />}
         stats={[
           { label: 'Best', value: state.games[gameId]?.highScore ?? 0, icon: '⭐' },
           { label: 'Coins', value: state.coins, icon: '🪙' },
