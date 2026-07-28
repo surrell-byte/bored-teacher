@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import GameLayout from './GameLayout';
 import GameHeader from './GameHeader';
-import GameSidebar, { type GameStat } from './GameSidebar';
+import { type GameStat } from './GameSidebar';
 import ErrorBoundary from '@/engine/errors/ErrorBoundary';
 
 export type GameSessionEvent = 'started' | 'paused' | 'resumed' | 'completed' | 'exited' | 'restarted';
@@ -106,6 +106,7 @@ export default function GameShell({
     { label: 'Score', value: completion.score, icon: '🏆' },
     { label: 'Accuracy', value: `${accuracy}%`, icon: '🎯' },
   ] : [];
+  const topBarStats = [...(stats ?? []), ...completionStats];
 
   return (
     <div ref={shellRef} className="game-shell" data-game-id={gameId} data-paused={paused || undefined}>
@@ -116,6 +117,17 @@ export default function GameShell({
             icon={icon}
             actions={
               <>
+                {topBarStats.length > 0 && (
+                  <div className="game-shell-topbar-stats" aria-label="Game stats">
+                    {topBarStats.map(stat => (
+                      <span key={stat.label} className="game-shell-topbar-stat">
+                        {stat.icon && <span aria-hidden="true">{stat.icon}</span>}
+                        <b>{stat.value}</b>
+                        <span>{stat.label}</span>
+                      </span>
+                    ))}
+                  </div>
+                )}
                 <button type="button" className="game-shell-header-action" onClick={paused ? resume : pause} aria-pressed={paused}>
                   {paused ? 'Resume' : 'Pause'}
                 </button>
@@ -127,7 +139,6 @@ export default function GameShell({
             }
           />
         }
-        sidebar={stats && stats.length > 0 ? <GameSidebar stats={[...stats, ...completionStats]} /> : completionStats.length ? <GameSidebar stats={completionStats} /> : undefined}
         controls={controls}
       >
         <ErrorBoundary resetKey={sessionKey} onRetry={restart} onExit={() => window.location.assign('/hub')}>

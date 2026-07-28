@@ -3295,12 +3295,21 @@ a { color: inherit; }
 .game-shell > .game-layout { height: 100%; }
 .game-shell-play-area { position: relative; display: flex; flex: 1; min-width: 0; min-height: 0; width: 100%; }
 .game-shell-play-area > :first-child { flex: 1; min-width: 0; min-height: 0; }
+.game-shell .game-header-actions {
+  display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: var(--space-xs);
+}
 .game-shell-header-action {
   display: inline-flex; align-items: center; min-height: 34px; padding: 6px 10px;
   border: 1px solid var(--border); border-radius: 10px; background: var(--surface-strong);
   color: var(--text); font: inherit; font-size: 0.78rem; font-weight: 700; cursor: pointer; text-decoration: none;
 }
 .game-shell-header-action:hover { border-color: var(--gold); }
+.game-shell-topbar-stats { display: flex; align-items: center; gap: 6px; margin-right: 4px; }
+.game-shell-topbar-stat {
+  display: inline-flex; align-items: center; gap: 4px; min-height: 34px; padding: 6px 9px;
+  border-radius: 10px; background: var(--surface-soft); color: var(--muted); font-size: 0.78rem; white-space: nowrap;
+}
+.game-shell-topbar-stat b { color: var(--text); }
 .game-shell-overlay, .game-shell-error {
   position: absolute; inset: 0; z-index: 10; display: grid; place-items: center; padding: 20px;
   background: color-mix(in srgb, var(--bg) 78%, transparent); backdrop-filter: blur(4px);
@@ -3320,4 +3329,8 @@ a { color: inherit; }
 .game-shell-result-grid span { display: grid; gap: 3px; padding: 10px; border-radius: 10px; background: var(--surface-soft); color: var(--muted); font-size: 0.78rem; }
 .game-shell-result-grid b { color: var(--text); font-size: 1.1rem; }
 .game-shell-error { position: relative; min-height: 280px; }
-@media (max-width: 640px) { .game-shell-header-action { padding: 6px 8px; font-size: 0.7rem; } }
+@media (max-width: 640px) {
+  .game-shell-header-action { padding: 6px 8px; font-size: 0.7rem; }
+  .game-shell-topbar-stats { order: 2; width: 100%; justify-content: flex-end; }
+  .game-shell-topbar-stat { min-height: 28px; padding: 4px 7px; font-size: 0.7rem; }
+}
