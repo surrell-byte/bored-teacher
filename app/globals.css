@@ -3227,7 +3227,6 @@ a { color: inherit; }
 .game-layout-large-desktop { padding: var(--space-md); }
 .game-layout-desktop .game-layout-sidebar,
 .game-layout-large-desktop .game-layout-sidebar { width: clamp(200px, 16vw, 280px); }
-.game-layout-large-desktop .game-layout-play-area { max-width: 1400px; margin: 0 auto; }
 
 /* TV / smartboard — everything scales with the presentation-mode tokens;
    sidebar widens and tap targets grow for a viewer several feet away. */

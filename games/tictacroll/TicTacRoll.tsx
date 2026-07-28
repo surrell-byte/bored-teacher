@@ -327,9 +327,8 @@ export default function TicTacRoll({ onComplete }: Props) {
     display: "grid",
     gridTemplateColumns: window.innerWidth >= 1000 ? "340px 1fr" : "1fr",
     gap: "clamp(1rem, 2vw, 2rem)",
-    width: "clamp(900px, 92vw, 1800px)",
+    width: "100%",
     minHeight: "92vh",
-    margin: "0 auto",
     padding: "clamp(1.2rem, 2vw, 2.5rem)",
   };
 
@@ -350,7 +349,7 @@ export default function TicTacRoll({ onComplete }: Props) {
 
       {/* SETUP SCREEN */}
       {screen === "setup" && (
-        <div style={{ maxWidth: "clamp(400px, 60vw, 700px)", margin: "2rem auto", padding: "clamp(1.5rem, 3vw, 2.5rem)", background: theme.surface, borderRadius: "clamp(16px, 3vw, 24px)", border: `1px solid ${theme.border}`, boxShadow: theme.shadow }}>
+        <div style={{ maxWidth: "clamp(400px, 60vw, 700px)", margin: "2rem auto", padding: "clamp(1.5rem, 3vw, 2.5rem)", background: theme.surface, borderRadius: "clamp(16px, 3vw, 24px)", border: `1px solid ${theme.border}`, boxShadow: theme.shadow, overflowY: "auto", maxHeight: "100vh" }}>
           <button onClick={() => { tone(500, 0.08, 0.07); setScreen("welcome"); }} style={{ background: "none", border: "none", color: theme.muted, cursor: "pointer", fontSize: "0.9rem", marginBottom: "1rem" }}>← Back</button>
           <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.5rem, 4vw, 2.5rem)", margin: "0 0 0.3rem" }}>Create Your Profile</h2>
           <p style={{ color: theme.muted, fontSize: "0.9rem", marginBottom: "1.5rem" }}>Personalise your experience</p>
@@ -380,7 +379,7 @@ export default function TicTacRoll({ onComplete }: Props) {
 
       {/* MENU SCREEN */}
       {screen === "menu" && (
-        <div style={{ maxWidth: "clamp(400px, 60vw, 700px)", margin: "2rem auto", padding: "clamp(1.5rem, 3vw, 2.5rem)", background: theme.surface, borderRadius: "clamp(16px, 3vw, 24px)", border: `1px solid ${theme.border}`, boxShadow: theme.shadow }}>
+        <div style={{ maxWidth: "clamp(400px, 60vw, 700px)", margin: "2rem auto", padding: "clamp(1.5rem, 3vw, 2.5rem)", background: theme.surface, borderRadius: "clamp(16px, 3vw, 24px)", border: `1px solid ${theme.border}`, boxShadow: theme.shadow, overflowY: "auto", maxHeight: "100vh" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1.5rem" }}>
             <span style={{ fontSize: "2rem" }}>{profile.avatar}</span>
             <div><div style={{ fontWeight: 600 }}>{profile.name}</div><div style={{ fontSize: "0.8rem", color: theme.muted }}>Player</div></div>
@@ -406,7 +405,7 @@ export default function TicTacRoll({ onComplete }: Props) {
 
       {/* DIFFICULTY SCREEN */}
       {screen === "difficulty" && (
-        <div style={{ maxWidth: "clamp(400px, 60vw, 700px)", margin: "2rem auto", padding: "clamp(1.5rem, 3vw, 2.5rem)", background: theme.surface, borderRadius: "clamp(16px, 3vw, 24px)", border: `1px solid ${theme.border}`, boxShadow: theme.shadow }}>
+        <div style={{ maxWidth: "clamp(400px, 60vw, 700px)", margin: "2rem auto", padding: "clamp(1.5rem, 3vw, 2.5rem)", background: theme.surface, borderRadius: "clamp(16px, 3vw, 24px)", border: `1px solid ${theme.border}`, boxShadow: theme.shadow, overflowY: "auto", maxHeight: "100vh" }}>
           <button onClick={() => { tone(500, 0.08, 0.07); setScreen("menu"); }} style={{ background: "none", border: "none", color: theme.muted, cursor: "pointer", fontSize: "0.9rem", marginBottom: "1rem" }}>← Main Menu</button>
           <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.5rem, 4vw, 2.5rem)", margin: "0 0 0.3rem" }}>vs AI</h2>
           <p style={{ color: theme.muted, fontSize: "0.9rem", marginBottom: "1.5rem" }}>Select difficulty & your symbol</p>
@@ -430,7 +429,7 @@ export default function TicTacRoll({ onComplete }: Props) {
 
       {/* HOW TO PLAY */}
       {screen === "howtoplay" && (
-        <div style={{ maxWidth: "clamp(400px, 60vw, 700px)", margin: "2rem auto", padding: "clamp(1.5rem, 3vw, 2.5rem)", background: theme.surface, borderRadius: "clamp(16px, 3vw, 24px)", border: `1px solid ${theme.border}`, boxShadow: theme.shadow }}>
+        <div style={{ maxWidth: "clamp(400px, 60vw, 700px)", margin: "2rem auto", padding: "clamp(1.5rem, 3vw, 2.5rem)", background: theme.surface, borderRadius: "clamp(16px, 3vw, 24px)", border: `1px solid ${theme.border}`, boxShadow: theme.shadow, overflowY: "auto", maxHeight: "100vh" }}>
           <button onClick={() => { tone(500, 0.08, 0.07); setScreen(screen === "howtoplay" ? "welcome" : "menu"); }} style={{ background: "none", border: "none", color: theme.muted, cursor: "pointer", fontSize: "0.9rem", marginBottom: "1rem" }}>← Back</button>
           <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.5rem, 4vw, 2.5rem)", margin: "0 0 1rem" }}>How to Play</h2>
           <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem" }}>
