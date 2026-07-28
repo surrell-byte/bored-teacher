@@ -1,0 +1,329 @@
+:root {
+  --bg: #0f172a;
+  --bg2: #1e1b4b;
+  --surface: #1e293b;
+  --text: #f1f5f9;
+  --muted: #94a3b8;
+  --accent: #6366f1;
+  --radius: 18px;
+  --shadow: 0 15px 35px rgba(0, 0, 0, 0.35);
+  --board-bg: #1e3a8a;
+}
+
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--bg), var(--bg2));
+  color: var(--text);
+  padding: 1rem;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  text-align: center;
+}
+
+.card {
+  background: rgba(30, 41, 59, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+}
+
+.button {
+  padding: 14px 28px;
+  border: none;
+  border-radius: 999px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.button:hover {
+  transform: translateY(-2px);
+}
+
+.button:active {
+  transform: translateY(0);
+}
+
+.button:focus-visible {
+  outline: 3px solid #a5b4fc;
+  outline-offset: 2px;
+}
+
+.buttonPrimary {
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  color: white;
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
+}
+
+.buttonSecondary {
+  background: #334155;
+  color: white;
+}
+
+.buttonGhost {
+  background: transparent;
+  border: 1px solid #475569;
+  color: var(--muted);
+}
+
+.buttonDanger {
+  background: #dc2626;
+  color: white;
+}
+
+.title {
+  font-size: 2.5rem;
+  margin: 0 0 8px;
+  letter-spacing: 3px;
+  color: #e2e8f0;
+}
+
+.subtitle {
+  color: var(--muted);
+  margin-bottom: 2.5rem;
+}
+
+.emoji {
+  font-size: 3rem;
+  margin-bottom: 8px;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.buttonGroupSmall {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.setupGrid {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.setupColumn {
+  min-width: 200px;
+}
+
+.label {
+  display: block;
+  color: var(--muted);
+  margin-bottom: 6px;
+  font-size: 0.85rem;
+}
+
+.labelTop {
+  display: block;
+  color: var(--muted);
+  margin-top: 12px;
+  margin-bottom: 6px;
+  font-size: 0.85rem;
+}
+
+.input {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid #334155;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 1rem;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.themeGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.themeSwatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 3px solid transparent;
+  box-sizing: border-box;
+}
+
+.themeSwatchActive {
+  border-color: #fff;
+}
+
+.diffGrid {
+  display: flex;
+  gap: 8px;
+}
+
+.diffButton {
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+  font-family: inherit;
+  font-size: 0.85rem;
+  text-transform: capitalize;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.diffButtonActive {
+  background: var(--accent);
+  color: white;
+}
+
+.scorePanel {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+  align-items: center;
+}
+
+.scoreCard {
+  text-align: center;
+}
+
+.scoreAvatar {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  margin: 0 auto 4px;
+}
+
+.scoreName {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.scoreValue {
+  font-weight: 800;
+  font-size: 1.4rem;
+}
+
+.scoreDraws {
+  text-align: center;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.status {
+  min-height: 36px;
+  margin-bottom: 12px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.board {
+  background: var(--board-bg);
+  border-radius: 16px;
+  padding: 0.75rem;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+  max-width: min(100%, 700px);
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.hoverRow {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 4px;
+  height: 18px;
+}
+
+.hoverCell {
+  width: clamp(20px, calc(14vw - 24px), 48px);
+  display: flex;
+  justify-content: center;
+}
+
+.hoverDot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  opacity: 0.8;
+}
+
+.boardRow {
+  display: flex;
+  gap: 8px;
+}
+
+.cell {
+  width: clamp(20px, calc(14vw - 24px), 48px);
+  height: clamp(20px, calc(14vw - 24px), 48px);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  margin: 4px;
+}
+
+.cellEmpty {
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+.cellFilled {
+  background: radial-gradient(circle at 35% 30%, var(--cell-a), var(--cell-b));
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.cellWin {
+  animation: winPulse 0.6s ease-in-out infinite alternate;
+}
+
+.cell:hover {
+  transform: scale(1.04);
+}
+
+.cellDisabled {
+  cursor: default;
+}
+
+@keyframes winPulse {
+  from {
+    box-shadow: 0 0 8px var(--cell-a), 0 0 16px var(--cell-a);
+  }
+  to {
+    box-shadow: 0 0 16px var(--cell-a), 0 0 32px var(--cell-a);
+  }
+}
+
+@media (max-width: 640px) {
+  .card {
+    width: 100%;
+    padding: 1rem;
+  }
+
+  .board {
+    padding: 0.5rem;
+  }
+
+  .boardRow {
+    gap: 4px;
+  }
+
+  .cell {
+    margin: 2px;
+  }
+
+  .setupGrid {
+    gap: 1rem;
+  }
+}
