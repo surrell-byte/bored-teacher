@@ -168,7 +168,7 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     name: "Dragon Slingshot",
     icon: "🐉",
     desc: "Launch dragons, use magical abilities, and conquer ten fantasy realms.",
-    cover: "/assets/covers/block-fight-cover.webp",
+    cover: "/assets/covers/dragon-slingshot-cover.webp",
     tag: { label: "Action", color: "tag-vocab" },
     badge: "Launch",
     difficulty: "Adventure",

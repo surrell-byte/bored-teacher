@@ -15,7 +15,10 @@ export default function DragonCanvas({ game, onPointer, onAbility }) {
     const context = canvas.getContext('2d');
     const atlas = new Image();
     atlas.src = ATLAS_URL;
-    const sprites = createAtlasSprites(atlas);
+    let sprites = null;
+    let dragonSprite = null;
+    let lastDragonId = null;
+    let lastPhase = null;
     let frame;
     const draw = tick => {
       const state = game.current;
@@ -30,13 +33,11 @@ export default function DragonCanvas({ game, onPointer, onAbility }) {
       context.fillStyle = '#1a1010'; context.fillRect(0, 378, WORLD.width, 42);
       if (state) {
         state.blocks.filter(block => block.alive).forEach(block => {
-          if (atlas.complete) sprites.tower.draw(context, block.x + block.w / 2, block.y + block.h / 2, 0, { scale: Math.max(block.w / 93, block.h / 162) * 1.15 });
-          else { context.fillStyle = '#a86734'; context.fillRect(block.x, block.y, block.w, block.h); }
+          sprites.tower.draw(context, block.x + block.w / 2, block.y + block.h / 2, 0, { scale: Math.max(block.w / 93, block.h / 162) * 1.15 });
         });
         state.enemies.filter(enemy => enemy.alive).forEach(enemy => {
           const y = enemy.y + Math.sin(tick / 210 + enemy.x) * 3;
-          if (atlas.complete) (enemy.type === 'boss' ? sprites.boss : sprites.goblin).draw(context, enemy.x, y);
-          else { context.fillStyle = enemy.type === 'boss' ? '#7a113d' : '#3c7a14'; context.beginPath(); context.arc(enemy.x, y, enemy.type === 'boss' ? 30 : 14, 0, Math.PI * 2); context.fill(); }
+          (enemy.type === 'boss' ? sprites.boss : sprites.goblin).draw(context, enemy.x, y);
           if (enemy.type === 'boss') { context.fillStyle = '#251020'; context.fillRect(enemy.x - 32, y - 54, 64, 7); context.fillStyle = '#ec4668'; context.fillRect(enemy.x - 32, y - 54, 64 * (enemy.hp / enemy.maxHp), 7); }
         });
         const pull = state.pull;
@@ -44,15 +45,18 @@ export default function DragonCanvas({ game, onPointer, onAbility }) {
         context.strokeStyle = '#a76e3c'; context.lineWidth = 8; context.beginPath(); context.moveTo(105, 350); context.lineTo(WORLD.sling.x, WORLD.sling.y); context.lineTo(155, 350); context.stroke();
         context.strokeStyle = '#ebd0a1'; context.lineWidth = 2; context.beginPath(); context.moveTo(105, 350); context.lineTo(dragon.x, dragon.y); context.lineTo(155, 350); context.stroke();
         const dragonData = dragonFor(state.queue[state.dragonIndex]);
-        if (atlas.complete) {
-          const animationState = state.phase === 'flying' ? 'fly' : 'idle';
-          createDragonSprite(atlas, dragonData.id, animationState).draw(context, dragon.x, dragon.y, dragonAnimation.frameAt(tick));
-        } else { context.font = '38px sans-serif'; context.textAlign = 'center'; context.textBaseline = 'middle'; context.shadowColor = dragonData.color; context.shadowBlur = 18; context.fillText(dragonData.emoji, dragon.x, dragon.y); context.shadowBlur = 0; }
+        const animationState = state.phase === 'flying' ? 'fly' : 'idle';
+        if (dragonSprite === null || lastDragonId !== dragonData.id || lastPhase !== animationState) {
+          dragonSprite = createDragonSprite(atlas, dragonData.id, animationState);
+          lastDragonId = dragonData.id;
+          lastPhase = animationState;
+        }
+        dragonSprite.draw(context, dragon.x, dragon.y, dragonAnimation.frameAt(tick));
         if (state.dragging) { context.setLineDash([5, 7]); context.strokeStyle = 'rgba(255,220,130,.75)'; context.beginPath(); let x = dragon.x, y = dragon.y, vx = -pull.x * .31, vy = -pull.y * .31; for (let index = 0; index < 28; index += 1) { x += vx; y += vy; vy += .44; index ? context.lineTo(x, y) : context.moveTo(x, y); } context.stroke(); context.setLineDash([]); }
       }
       frame = requestAnimationFrame(draw);
     };
-    frame = requestAnimationFrame(draw);
+    atlas.onload = () => { sprites = createAtlasSprites(atlas); dragonSprite = null; lastDragonId = null; lastPhase = null; frame = requestAnimationFrame(draw); };
     return () => cancelAnimationFrame(frame);
   }, [game]);
   const position = event => { const rect = canvasRef.current.getBoundingClientRect(); return { x: (event.clientX - rect.left) * WORLD.width / rect.width, y: (event.clientY - rect.top) * WORLD.height / rect.height }; };
