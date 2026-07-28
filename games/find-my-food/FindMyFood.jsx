@@ -13,11 +13,11 @@ const PAIRS = [
 ];
 
 const THEMES = [
-  { name:"Gold",     key:"gold",     front:"linear-gradient(135deg,#c4a45a,#e8c97a)", border:"rgba(232,201,122,0.4)", emoji:"✨" },
-  { name:"Emerald",  key:"emerald",  front:"linear-gradient(135deg,#2ecc71,#1abc9c)", border:"rgba(46,204,113,0.4)",  emoji:"🌿" },
-  { name:"Sapphire", key:"sapphire", front:"linear-gradient(135deg,#3498db,#2980b9)", border:"rgba(52,152,219,0.4)",  emoji:"💎" },
-  { name:"Rose",     key:"rose",     front:"linear-gradient(135deg,#e91e63,#c2185b)", border:"rgba(233,30,99,0.4)",   emoji:"🌹" },
-  { name:"Violet",   key:"violet",   front:"linear-gradient(135deg,#9b59b6,#8e44ad)", border:"rgba(155,89,182,0.4)",  emoji:"💜" },
+  { name:"Gold",     key:"gold",     front:"linear-gradient(135deg,#c4a45a,#e8c97a)", border:"rgba(232,201,122,0.55)", accent:"#e8c97a", accent2:"#c4a45a", glow:"rgba(232,201,122,0.18)", glow2:"rgba(232,201,122,0.08)", bg:"#0d0d0f", surface:"#141416", surface2:"#1c1c20", surface3:"#252529", emoji:"✨" },
+  { name:"Emerald",  key:"emerald",  front:"linear-gradient(135deg,#22b96b,#45d49a)", border:"rgba(69,212,154,0.6)",  accent:"#62dfa6", accent2:"#22a966", glow:"rgba(69,212,154,0.20)", glow2:"rgba(69,212,154,0.09)", bg:"#09120e", surface:"#101b16", surface2:"#17261f", surface3:"#20342a", emoji:"🌿" },
+  { name:"Sapphire", key:"sapphire", front:"linear-gradient(135deg,#287dc5,#4eb2ee)", border:"rgba(78,178,238,0.6)",  accent:"#6bc4f4", accent2:"#318dd0", glow:"rgba(78,178,238,0.20)", glow2:"rgba(78,178,238,0.09)", bg:"#091018", surface:"#101923", surface2:"#182433", surface3:"#213145", emoji:"💎" },
+  { name:"Rose",     key:"rose",     front:"linear-gradient(135deg,#c72d67,#f06c99)", border:"rgba(240,108,153,0.6)", accent:"#ff8eb3", accent2:"#d94178", glow:"rgba(240,108,153,0.20)", glow2:"rgba(240,108,153,0.09)", bg:"#160a10", surface:"#211019", surface2:"#311724", surface3:"#432031", emoji:"🌹" },
+  { name:"Violet",   key:"violet",   front:"linear-gradient(135deg,#7142ac,#ad78db)", border:"rgba(173,120,219,0.6)", accent:"#c89bf0", accent2:"#8952bf", glow:"rgba(200,155,240,0.20)", glow2:"rgba(200,155,240,0.09)", bg:"#110a18", surface:"#1a1025", surface2:"#271837", surface3:"#352149", emoji:"💜" },
 ];
 
 const AVATARS = ["🐶","🐼","🦊","🐯","🐸","🐧","🦁","🐨"];
@@ -154,8 +154,8 @@ const STYLES = `
 
 .ff-btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:14px 32px; font-family:'DM Sans',sans-serif; font-size:0.95rem; font-weight:600; border:none; border-radius:100px; cursor:pointer; transition: all 0.22s cubic-bezier(0.23,1,0.32,1); letter-spacing:0.01em; position:relative; overflow:hidden; }
 .ff-btn:active { transform: scale(0.97); }
-.ff-btn-gold { background: linear-gradient(135deg, var(--accent) 0%, #c4a45a 100%); color:#1a1400; box-shadow: 0 4px 24px rgba(232,201,122,0.35), 0 1px 0 rgba(255,255,255,0.2) inset; }
-.ff-btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(232,201,122,0.45); }
+.ff-btn-gold { background:linear-gradient(135deg, var(--accent), var(--accent2)); color:#1a1400; box-shadow:0 4px 24px var(--accent-glow), 0 1px 0 rgba(255,255,255,0.2) inset; }
+.ff-btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 32px var(--accent-glow); }
 .ff-btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border-bright); }
 .ff-btn-outline:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
 .ff-btn-ghost { background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border); font-size:0.85rem; padding:10px 20px; }
@@ -244,6 +244,15 @@ const STYLES = `
 @keyframes ffShake { 0%,100% {transform:translateX(0) rotateY(180deg);} 20% {transform:translateX(-6px) rotateY(180deg);} 40% {transform:translateX(6px) rotateY(180deg);} 60% {transform:translateX(-4px) rotateY(180deg);} 80% {transform:translateX(4px) rotateY(180deg);} }
 .ff-tile.locked, .ff-tile.matched { pointer-events:none; }
 
+.ff-match-celebration { position:absolute; inset:0; z-index:30; display:flex; align-items:center; justify-content:center; padding:20px; background:rgba(5,5,7,.55); backdrop-filter:blur(5px); animation:ffCelebrationFade .22s ease both; }
+.ff-match-celebration-panel { width:min(100%, 430px); padding:24px; border:1px solid var(--green); border-radius:var(--radius-lg); background:var(--surface); box-shadow:0 20px 70px rgba(0,0,0,.55), 0 0 50px var(--green-glow); text-align:center; animation:ffCelebrationPop 1.35s cubic-bezier(.23,1,.32,1) both; }
+.ff-match-celebration-label { color:var(--green); font-size:.78rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; margin-bottom:14px; }
+.ff-match-celebration-cards { display:flex; justify-content:center; align-items:stretch; gap:14px; }
+.ff-celebration-card { flex:0 1 150px; min-height:150px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:7px; border:2px solid var(--green); border-radius:18px; background:var(--surface3); box-shadow:0 0 0 4px var(--green-glow), 0 12px 28px rgba(0,0,0,.28); }
+.ff-celebration-card .ff-emoji { font-size:3.2rem; }.ff-celebration-card .ff-word { color:var(--green); font-family:'DM Mono',monospace; font-size:.72rem; font-weight:700; letter-spacing:.09em; }
+@keyframes ffCelebrationFade { from{opacity:0} to{opacity:1} }
+@keyframes ffCelebrationPop { 0%{opacity:0;transform:scale(.55) translateY(25px)} 20%,75%{opacity:1;transform:scale(1)} 100%{opacity:0;transform:scale(.82) translateY(-10px)} }
+
 /* On larger screens, the board and the game information each get a dedicated
    column. This keeps the board prominent without making its cards oversized. */
 @media (min-width: 760px) {
@@ -312,6 +321,20 @@ const STYLES = `
   .ff-game-board .ff-grid { gap:14px; max-width:760px; margin-left:0; }
 }
 
+@media (min-width: 760px) {
+  .ff-screen.ff-howto-screen { max-width:1040px; }
+  .ff-howto-card { padding:26px 32px; }
+  .ff-howto-card .ff-logo-badge { margin-bottom:10px; }
+  .ff-howto-card .ff-hero-title { font-size:2.55rem !important; margin-bottom:4px; }
+  .ff-howto-card .ff-hero-sub { margin-bottom:16px; }
+  .ff-howto-content { display:grid; grid-template-columns:minmax(310px, .85fr) minmax(360px, 1fr); align-items:center; gap:28px; text-align:left; }
+  .ff-howto-grid { max-width:400px; margin:0 auto; gap:9px; }
+  .ff-howto-tile { font-size:1.55rem; }
+  .ff-howto-steps { max-width:none; margin:0; gap:9px; }
+  .ff-howto-step { padding:11px 13px; }
+  .ff-howto-card > .ff-btn { margin-top:18px; }
+}
+
 .ff-winner-display { text-align:center; padding:20px 0; }
 .ff-winner-crown { font-size:3rem; margin-bottom:10px; display:block; }
 .ff-winner-name { font-family:'Playfair Display',serif; font-size:2.1rem; font-weight:700; background: linear-gradient(135deg, var(--text) 30%, var(--accent) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
@@ -348,6 +371,7 @@ export default function FindMyFood({ onComplete }) {
   const [moveCount, setMoveCount] = useState(0);
   const [pairCount, setPairCount] = useState(4);
   const [popup, setPopup] = useState({ msg:"", mismatch:false });
+  const [celebratingPair, setCelebratingPair] = useState([]);
   const popupTimeout = useRef(null);
 
   useEffect(() => () => clearTimeout(popupTimeout.current), []);
@@ -373,6 +397,7 @@ export default function FindMyFood({ onComplete }) {
     setScores({ 1:0, 2:0 });
     setMoveCount(0);
     setPopup({ msg:"", mismatch:false });
+    setCelebratingPair([]);
     setScreen("game");
   }, []);
 
@@ -388,20 +413,24 @@ export default function FindMyFood({ onComplete }) {
       setMoveCount(nextMoves);
       const [a, b] = next.map(i => cards[i]);
       if (a.pairId === b.pairId) {
-        const newMatched = new Set([...matched, next[0], next[1]]);
-        setMatched(newMatched);
-        const nextScore = scores[currentPlayer] + 10;
-        setScores(s => ({ ...s, [currentPlayer]: nextScore }));
-        showPopup(`Matched! +10 for ${currentPlayer===1?p1.name:p2.name}`, false);
-        setFlipped([]);
-        setLocked(false);
-        if (newMatched.size === cards.length) {
-          const finalScores = { ...scores, [currentPlayer]: nextScore };
-          const accuracy = finalScores[1] > finalScores[2] ? 100 : finalScores[1] === finalScores[2] ? 50 : 0;
-          completeGame('find-my-food', accuracy, nextMoves);
+        setCelebratingPair(next);
+        setTimeout(() => {
+          const newMatched = new Set([...matched, next[0], next[1]]);
+          const nextScore = scores[currentPlayer] + 10;
+          setMatched(newMatched);
+          setScores(s => ({ ...s, [currentPlayer]: nextScore }));
+          setCelebratingPair([]);
+          setFlipped([]);
+          setLocked(false);
+          showPopup(`Matched! +10 for ${currentPlayer===1?p1.name:p2.name}`, false);
+          if (newMatched.size === cards.length) {
+            const finalScores = { ...scores, [currentPlayer]: nextScore };
+            const accuracy = finalScores[1] > finalScores[2] ? 100 : finalScores[1] === finalScores[2] ? 50 : 0;
+            completeGame('find-my-food', accuracy, nextMoves);
             onComplete?.(accuracy, nextMoves);
-          setScreen("end");
-        }
+            setScreen("end");
+          }
+        }, 1400);
       } else {
         showPopup("No match — turn switches!", true);
         setWrongPair(next);
@@ -416,7 +445,10 @@ export default function FindMyFood({ onComplete }) {
   };
 
   const t = THEMES[theme];
-  const cssVarOverrides = { "--tile-front": t.front, "--tile-front-border": t.border };
+  const cssVarOverrides = {
+    "--tile-front": t.front, "--tile-front-border": t.border, "--accent": t.accent, "--accent2": t.accent2, "--accent-glow": t.glow, "--accent-glow2": t.glow2,
+    ...(isDark ? { "--bg":t.bg, "--surface":t.surface, "--surface2":t.surface2, "--surface3":t.surface3 } : {}),
+  };
 
   if (screen === "welcome") return (
     <div className="ff-root" data-ff-theme={isDark ? "dark" : "light"} style={cssVarOverrides}>
@@ -498,18 +530,20 @@ export default function FindMyFood({ onComplete }) {
       <button className="ff-theme-toggle" onClick={() => setIsDark(d => !d)} aria-label="Toggle light/dark mode">
         {isDark ? "🌙" : "☀️"}
       </button>
-      <div className="ff-screen">
-        <div className="ff-card" style={{ textAlign:"center" }}>
+      <div className="ff-screen ff-howto-screen">
+        <div className="ff-card ff-howto-card" style={{ textAlign:"center" }}>
           <div className="ff-logo-badge">📖 How to Play</div>
           <h1 className="ff-hero-title" style={{ fontSize:"clamp(2.2rem, 5vw, 3.1rem)" }}>Find My Food</h1>
           <p className="ff-hero-sub">Find every animal&apos;s favourite food in the 4 × 4 memory grid.</p>
-          <div className="ff-howto-grid" aria-label="Example 4 by 4 game grid">
-            {HOW_TO_PLAY_CARDS.map((card, index) => <div className="ff-howto-tile" key={`${card}-${index}`}>{card}</div>)}
-          </div>
-          <div className="ff-howto-steps">
-            <div className="ff-howto-step"><span className="ff-howto-num">1</span><span><strong>Take turns.</strong> Choose any two cards to reveal.</span></div>
-            <div className="ff-howto-step"><span className="ff-howto-num">2</span><span><strong>Find a pair.</strong> Match an animal with the food it loves to score 10 points and play again.</span></div>
-            <div className="ff-howto-step"><span className="ff-howto-num">3</span><span><strong>Missed it?</strong> The cards turn back over and the other player takes a turn.</span></div>
+          <div className="ff-howto-content">
+            <div className="ff-howto-grid" aria-label="Example 4 by 4 game grid">
+              {HOW_TO_PLAY_CARDS.map((card, index) => <div className="ff-howto-tile" key={`${card}-${index}`}>{card}</div>)}
+            </div>
+            <div className="ff-howto-steps">
+              <div className="ff-howto-step"><span className="ff-howto-num">1</span><span><strong>Take turns.</strong> Choose any two cards to reveal.</span></div>
+              <div className="ff-howto-step"><span className="ff-howto-num">2</span><span><strong>Find a pair.</strong> Match an animal with the food it loves to score 10 points and play again.</span></div>
+              <div className="ff-howto-step"><span className="ff-howto-num">3</span><span><strong>Missed it?</strong> The cards turn back over and the other player takes a turn.</span></div>
+            </div>
           </div>
           <button className="ff-btn ff-btn-gold" onClick={() => setScreen("welcome")}>Choose Players →</button>
         </div>
@@ -595,7 +629,7 @@ export default function FindMyFood({ onComplete }) {
                     <div key={idx} onClick={() => flip(idx)}
                       className={`ff-tile${isFlipped?" flipped":""}${isMatched?" matched":""}${locked&&!isMatched?" locked":""}${isWrong?" wrong-shake":""}`}>
                       <div className="ff-tile-inner">
-                        <div className="ff-tile-front">?</div>
+                        <div className="ff-tile-front" aria-label={`Card ${idx + 1}`}>{idx + 1}</div>
                         <div className="ff-tile-back">
                           <div className="ff-emoji">{card.emoji}</div>
                           <div className="ff-word">{card.label}</div>
@@ -608,6 +642,7 @@ export default function FindMyFood({ onComplete }) {
 
               <div className="ff-game-actions">
                 <button className="ff-btn ff-btn-ghost" onClick={() => startGame(pairCount)}>↺ New Game</button>
+                <button className="ff-btn ff-btn-ghost" onClick={() => setScreen("welcome")}>← Back to Home</button>
               </div>
             </section>
 
@@ -639,6 +674,21 @@ export default function FindMyFood({ onComplete }) {
               <div className={`ff-match-popup ff-match-popup-desktop${popup.mismatch?" mismatch":""}`} aria-live="polite">{popup.msg}</div>
             </aside>
           </div>
+          {celebratingPair.length === 2 && (
+            <div className="ff-match-celebration" role="status" aria-live="assertive">
+              <div className="ff-match-celebration-panel">
+                <div className="ff-match-celebration-label">Perfect pair!</div>
+                <div className="ff-match-celebration-cards">
+                  {celebratingPair.map(index => (
+                    <div className="ff-celebration-card" key={cards[index].id}>
+                      <div className="ff-emoji">{cards[index].emoji}</div>
+                      <div className="ff-word">{cards[index].label}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
