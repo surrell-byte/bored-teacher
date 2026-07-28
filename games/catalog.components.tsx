@@ -6,8 +6,8 @@
 //
 // Every id in here MUST also exist in GAME_CATALOG (catalog.data.ts) with
 // hasComponent: true. Run `npm run check-games` to verify.
-// Legacy iframe games (hasComponent: false) are NOT listed here — they're
-// rendered via GAME_URLS + an <iframe> instead.
+// Every published game is loaded here as a React component. The older HTML
+// originals have been replaced by the shared React gameplay ports below.
 
 import { lazy } from 'react';
 

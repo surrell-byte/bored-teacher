@@ -16,8 +16,6 @@ export interface GameCatalogEntry {
   isNew?: boolean;
   /** true if this game renders as a React component (see catalog.components.tsx) */
   hasComponent: boolean;
-  /** iframe src, only set for legacy HTML games with no React component */
-  legacyUrl?: string;
 }
 
 export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
@@ -572,4 +570,5 @@ export const GAME_TAGS: Record<string, { label: string; color: string }> = Objec
 export const GAME_BADGE: Record<string, string> = Object.fromEntries(GAME_KEYS.map((id) => [id, GAME_CATALOG[id].badge]));
 export const GAME_DIFFICULTY: Record<string, string> = Object.fromEntries(GAME_KEYS.map((id) => [id, GAME_CATALOG[id].difficulty]));
 export const GAME_BAR_COLOR: Record<string, string> = Object.fromEntries(GAME_KEYS.map((id) => [id, GAME_CATALOG[id].barColor]));
-export const GAME_URLS: Record<string, string> = Object.fromEntries(GAME_KEYS.filter((id) => GAME_CATALOG[id].legacyUrl).map((id) => [id, GAME_CATALOG[id].legacyUrl as string]));
+/** @deprecated All catalog games are React components; retained for old backup snapshots. */
+export const GAME_URLS: Record<string, string> = {};
