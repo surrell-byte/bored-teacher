@@ -1,3 +1,17 @@
+#!/usr/bin/env bash
+# Run this from the root of your bored-teacher-react project.
+set -e
+TARGET="games/tictacroll/TicTacRoll.tsx"
+if [ ! -f "$TARGET" ]; then
+  echo "Could not find $TARGET — run this script from your project root."
+  exit 1
+fi
+BACKUP_DIR="backup/tictacroll-theme-overhaul-$(date +%Y%m%d-%H%M%S)"
+mkdir -p "$BACKUP_DIR"
+cp "$TARGET" "$BACKUP_DIR/TicTacRoll.tsx.bak"
+echo "Backed up existing file to $BACKUP_DIR"
+
+cat > "$TARGET" << 'FILE_EOF'
 'use client';
 import { useState, useEffect, useCallback, useRef } from "react";
 
@@ -611,3 +625,6 @@ export default function TicTacRoll({ onComplete }: Props) {
     </div>
   );
 }
+FILE_EOF
+
+echo "TicTacRoll.tsx updated with the 10 desert/magic themes, crystal X / ring O pieces, and dust-burst effects."
