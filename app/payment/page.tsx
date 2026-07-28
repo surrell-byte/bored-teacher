@@ -1,80 +1,32 @@
 'use client';
-// app/payment/page.tsx
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { onAuthStateChanged } from '@/lib/firebase';
+import { useGame } from '@/providers/GameProvider';
+import { SHOP_ITEMS } from '@/features/shop/catalog';
 
-const STRIPE_PAYMENT_LINK = 'https://buy.stripe.com/test_fZu4gs2kf04M1PNa8O6Na00';
-
-export default function PaymentPage() {
+export default function ShopPage() {
   const router = useRouter();
+  const { state, setState, applyTheme, showToast } = useGame();
   const [ready, setReady] = useState(false);
-
+  const [filter, setFilter] = useState<'all' | 'avatar' | 'theme' | 'effect'>('all');
   useEffect(() => {
     const isGuest = localStorage.getItem('guestUser') === 'true';
     if (isGuest) { setReady(true); return; }
-    const unsub = onAuthStateChanged(user => {
-      if (!user) { router.replace('/auth'); return; }
-      setReady(true);
-    });
+    const unsub = onAuthStateChanged(user => { if (!user) { router.replace('/auth'); return; } setReady(true); });
     return unsub;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
+  }, [router]);
+  const items = useMemo(() => filter === 'all' ? SHOP_ITEMS : SHOP_ITEMS.filter(item => item.type === filter), [filter]);
+  const buy = (id: string) => {
+    const item = SHOP_ITEMS.find(candidate => candidate.id === id);
+    if (!item || state.ownedItems.includes(id)) return;
+    if (state.coins < item.cost) { showToast(`You need ${item.cost - state.coins} more coins for ${item.name}.`); return; }
+    setState({ coins: state.coins - item.cost, ownedItems: [...state.ownedItems, item.id] });
+    if (item.type === 'theme') applyTheme(item.value);
+    if (item.type === 'avatar') setState({ avatar: item.value });
+    showToast(`${item.icon} ${item.name} added to your collection!`);
+  };
   if (!ready) return null;
-
-  return (
-    <div style={{ maxWidth: 980, margin: '0 auto', padding: 'clamp(14px,3vw,28px) clamp(14px,3vw,24px) 80px' }}>
-      <section className="shell-card" style={{ padding: 'clamp(22px, 4vw, 44px)', borderRadius: 28 }}>
-        <div style={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.18em', color: 'var(--gold)', marginBottom: 10 }}>
-          💳 Subscription
-        </div>
-        <h1 style={{ fontFamily: 'var(--font-display, Syne)', fontSize: 'clamp(1.8rem, 4vw, 3rem)', fontWeight: 800, marginBottom: 12 }}>
-          Bored Teacher Resources
-        </h1>
-        <p style={{ color: 'var(--muted)', fontSize: '0.96rem', maxWidth: '58ch', lineHeight: 1.7, marginBottom: 24 }}>
-          Monthly subscription fee to access Bored Teacher resources.
-        </p>
-
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-          gap: 14,
-          marginBottom: 26,
-        }}>
-          <div className="shell-card" style={{ padding: 18, borderRadius: 16, boxShadow: 'none' }}>
-            <div style={{ fontSize: '1.8rem', marginBottom: 8 }}>📚</div>
-            <div style={{ fontWeight: 800, marginBottom: 6 }}>Resource Access</div>
-            <div style={{ color: 'var(--muted)', fontSize: '0.84rem', lineHeight: 1.6 }}>
-              Unlock the Bored Teacher resource collection through a monthly subscription.
-            </div>
-          </div>
-          <div className="shell-card" style={{ padding: 18, borderRadius: 16, boxShadow: 'none' }}>
-            <div style={{ fontSize: '1.8rem', marginBottom: 8 }}>🔒</div>
-            <div style={{ fontWeight: 800, marginBottom: 6 }}>Secure Checkout</div>
-            <div style={{ color: 'var(--muted)', fontSize: '0.84rem', lineHeight: 1.6 }}>
-              Payment is handled securely through Stripe.
-            </div>
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
-          <a
-            href={STRIPE_PAYMENT_LINK}
-            target="_blank"
-            rel="noreferrer"
-            className="btn-primary"
-            style={{ textDecoration: 'none', width: 'auto', borderRadius: 999, padding: '13px 26px', display: 'inline-flex' }}
-          >
-            Subscribe with Stripe →
-          </a>
-          <Link href="/resources" className="pill-btn" style={{ textDecoration: 'none' }}>
-            View Resources
-          </Link>
-        </div>
-      </section>
-    </div>
-  );
+  return <div className="shop-page"><section className="shell-card shop-hero"><div><div className="hero-kicker">🛍️ Account Customisation</div><h1 className="hub-welcome-title">Coin Shop</h1><p className="hub-welcome-sub">Spend coins you earn in games on profile avatars, themes, and special extras.</p></div><div className="shop-wallet"><span>🪙</span><div><strong>{state.coins}</strong><small>coins available</small></div></div></section><div className="shop-filter-row" role="group" aria-label="Shop category">{(['all','avatar','theme','effect'] as const).map(type => <button key={type} className={`pill-btn${filter === type ? ' active' : ''}`} onClick={() => setFilter(type)}>{type === 'all' ? 'All items' : `${type[0].toUpperCase()}${type.slice(1)}s`}</button>)}</div><div className="shop-grid">{items.map(item => { const owned = state.ownedItems.includes(item.id); const affordable = state.coins >= item.cost; return <article key={item.id} className="shell-card shop-item"><div className="shop-item-icon">{item.icon}</div><span className="shop-item-type">{item.type}</span><h2>{item.name}</h2><p>{item.description}</p><button className={owned ? 'pill-btn' : 'btn-primary'} disabled={owned || !affordable} onClick={() => buy(item.id)}>{owned ? '✓ Owned' : <>🪙 {item.cost}</>}</button></article>; })}</div><p className="shop-note">Purchased avatars and themes can be managed anytime from your profile menu.</p></div>;
 }

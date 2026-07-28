@@ -4,13 +4,14 @@
 import { useState, useEffect } from 'react';
 import { useGame } from '@/providers/GameProvider';
 import { auth, setDisplayName } from '@/lib/firebase';
-import { AVATARS } from '@/constants/index';
+import { AVATARS, THEMES } from '@/constants/index';
+import { SHOP_ITEMS } from '@/features/shop/catalog';
 
 const ALL_AVATARS = [...new Set(Object.values(AVATARS).flat())];
 type Cat = 'all' | keyof typeof AVATARS;
 
 export default function ProfileModal({ onClose }: { onClose: () => void }) {
-  const { state, setState } = useGame();
+  const { state, setState, applyTheme } = useGame();
 
   const [name, setName]       = useState(state.name !== 'Explorer' ? state.name : '');
   const [username, setUname]  = useState(state.username || '');
@@ -20,6 +21,8 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
   const [saving, setSaving]   = useState(false);
 
   const avatarList = cat === 'all' ? ALL_AVATARS : (AVATARS[cat as keyof typeof AVATARS] ?? []);
+  const purchasedAvatars = SHOP_ITEMS.filter(item => item.type === 'avatar' && state.ownedItems.includes(item.id)).map(item => item.value);
+  const availableAvatars = [...new Set([...avatarList, ...purchasedAvatars])];
 
   // Lock body scroll while modal is open (prevents iOS background scroll)
   useEffect(() => {
@@ -169,7 +172,7 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
             aria-label="Choose an avatar"
             style={{ maxHeight: 220, overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}
           >
-            {avatarList.map(e => (
+            {availableAvatars.map(e => (
               <button
                 key={e}
                 className={`avatar-option${e === avatar ? ' selected' : ''}`}
@@ -182,6 +185,14 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
             ))}
           </div>
         </div>
+
+        <div style={{ marginBottom: 20 }}>
+          <label className="lb-field-label" htmlFor="profileTheme">Preferred theme</label>
+          <select id="profileTheme" className="lb-input" value={state.theme} onChange={e => applyTheme(e.target.value)}>
+            {THEMES.map(theme => <option key={theme.value} value={theme.value}>{theme.label}</option>)}
+          </select>
+        </div>
+        <div className="profile-subscription-card"><div><strong>📚 Resource subscription</strong><div style={{ fontSize:'0.78rem', color:'var(--muted)', marginTop:4 }}>Manage resource access and billing from your account.</div></div><a className="pill-btn" href="https://buy.stripe.com/test_fZu4gs2kf04M1PNa8O6Na00" target="_blank" rel="noreferrer">Manage</a></div>
 
         {/* Save button + feedback */}
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>

@@ -33,6 +33,7 @@
       loginStreak: number;
       classId: string;
       role: Role;
+      ownedItems: string[];
       games: Record<string, GameRecord>;
       /** ISO timestamp of when each achievement id was first earned. */
       earnedAt: Record<string, string>;
@@ -45,6 +46,7 @@
       sound: true, lastGame: null,
       xp: 0, level: 1, coins: 0, lastLogin: '', loginStreak: 0,
       classId: '', role: null,
+      ownedItems: [],
       games: Object.fromEntries(GAME_KEYS.map(k => [k, { ...DEFAULT_GAME }])),
       earnedAt: {},
     };
@@ -106,6 +108,7 @@
         ...value,
         games: { ...DEFAULT_STATE.games, ...(value.games || {}) },
         earnedAt: { ...(value.earnedAt || {}) },
+        ownedItems: Array.isArray(value.ownedItems) ? value.ownedItems : [],
       };
     }
 
@@ -175,6 +178,7 @@
         sound:       remote.sound       !== undefined ? remote.sound : local.sound,
         classId:     remote.classId || local.classId,
         role:        remote.role ?? local.role,
+        ownedItems:  [...new Set([...(local.ownedItems || []), ...(remote.ownedItems || [])])],
         games:       { ...DEFAULT_STATE.games },
         earnedAt:    mergeEarnedAt(local.earnedAt, remote.earnedAt),
       };

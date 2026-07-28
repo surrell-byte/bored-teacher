@@ -1,281 +1,36 @@
 'use client';
-// app/hub/page.tsx — Main game hub
 
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged } from '@/lib/firebase';
 import { useGame, xpForLevel } from '@/providers/GameProvider';
-import {
-  GAME_KEYS, NEW_GAME_KEYS, GAME_NAMES, GAME_ICONS, GAME_TAGS, GAME_DIFFICULTY,
-} from '@/constants/index';
+import { GAME_KEYS, NEW_GAME_KEYS } from '@/constants/index';
 import GameCard from '@/components/cards/GameCard';
-import ManagePlayersModal from '@/features/players/components/ManagePlayersModal';
+import { getSortedLeaderboard, type LBPlayerWithScore } from '@/features/leaderboard/api';
+import { ACHIEVEMENTS } from '@/features/achievements/achievements';
+import { LATEST_SHOP_ITEMS } from '@/features/shop/catalog';
 
-const TAG_FILTERS = [
-  { label: '⚡ All Games',     value: 'all' },
-  { label: '📚 Vocabulary',    value: 'Vocabulary' },
-  { label: '✍️ Grammar',       value: 'Grammar' },
-  { label: '🔗 Word Formation',value: 'Word Formation' },
-  { label: '🔬 Science',        value: 'Science' },
-  { label: '🔤 Phonics',       value: 'Phonics' },
-  { label: '💡 Logic',          value: 'Logic' },
-  { label: '🎨 Colours',        value: 'Colours' },
-  { label: '🚩 Geography',      value: 'Geography' },
-  { label: '📝 Spelling',       value: 'Spelling' },
-  { label: '🧠 Memory',         value: 'Memory' },
-];
-
-const DIFFICULTY_FILTERS = [
-  'All', 'Starter', 'Intermediate', 'Puzzle', 'Competitive', 'Mixed Skills', 'Arcade',
-];
-
-const SORT_OPTIONS = [
-  { label: '📋 Default',    value: 'default' },
-  { label: '🏆 Best Score', value: 'score' },
-  { label: '🎮 Most Played',value: 'played' },
-  { label: '🔠 A–Z',        value: 'alpha' },
+function PreviewHeader({ title, href, action = 'View all' }: { title: string; href: string; action?: string }) { return <div className="hub-preview-header"><h2 className="hub-section-title">{title}</h2><Link href={href} className="pill-btn">{action} →</Link></div>; }
+const FEATURED_RESOURCES = [
+  { id:'r1', icon:'📖', title:'ESL Game Hub — Teacher Guide', type:'Study Guide', subject:'English' },
+  { id:'t2', icon:'🏆', title:'Running a Games Tournament', type:'Tip Sheet', subject:'Life Skills' },
+  { id:'w3', icon:'📄', title:'Flags of the World — Reference Card', type:'Worksheet', subject:'Social Studies' },
 ];
 
 export default function HubPage() {
-  const router = useRouter();
-  const { state, checkDailyReward, showToast } = useGame();
-
-  const [ready,  setReady]  = useState(false);
-  const [search, setSearch] = useState('');
-  const [tag,    setTag]    = useState('all');
-  const [diff,   setDiff]   = useState('All');
-  const [sort,   setSort]   = useState('default');
-  const [showManage, setShowManage] = useState(false);
-  const [showPlayed, setShowPlayed] = useState(false);
-  const [filtersOpen, setFiltersOpen] = useState(false);
-
-  useEffect(() => {
-    const isGuest = localStorage.getItem('guestUser') === 'true';
-    if (isGuest) { setReady(true); checkDailyReward(); return; }
-    const unsub = onAuthStateChanged((user) => {
-      if (!user) { router.replace('/auth'); return; }
-      setReady(true);
-      checkDailyReward();
-    });
-    return unsub;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const handlePlay = useCallback((gameId: string) => {
-    router.push(`/games/${gameId}`);
+  const router = useRouter(); const { state, checkDailyReward } = useGame();
+  const [ready, setReady] = useState(false); const [leaders, setLeaders] = useState<LBPlayerWithScore[]>([]);
+  useEffect(() => { const guest = localStorage.getItem('guestUser') === 'true'; if (guest) { setReady(true); checkDailyReward(); return; } const unsubscribe = onAuthStateChanged(user => { if (!user) { router.replace('/auth'); return; } setReady(true); checkDailyReward(); }); return unsubscribe; // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
-
-  const filteredGames = useMemo(() => {
-    const q = search.toLowerCase().trim();
-    let games = [...GAME_KEYS];
-    if (showPlayed) games = games.filter(k => (state.games[k]?.completions ?? 0) > 0);
-    if (tag !== 'all') games = games.filter(k => GAME_TAGS[k]?.label === tag);
-    if (diff !== 'All') games = games.filter(k => GAME_DIFFICULTY[k] === diff);
-    if (q) {
-      games = games.filter(k =>
-        GAME_NAMES[k]?.toLowerCase().includes(q) ||
-        GAME_TAGS[k]?.label?.toLowerCase().includes(q) ||
-        GAME_DIFFICULTY[k]?.toLowerCase().includes(q)
-      );
-    }
-    if (sort === 'score')  games.sort((a, b) => (state.games[b]?.highScore ?? 0) - (state.games[a]?.highScore ?? 0));
-    if (sort === 'played') games.sort((a, b) => (state.games[b]?.completions ?? 0) - (state.games[a]?.completions ?? 0));
-    if (sort === 'alpha')  games.sort((a, b) => (GAME_NAMES[a] ?? '').localeCompare(GAME_NAMES[b] ?? ''));
-    return games;
-  }, [search, tag, diff, sort, showPlayed, state.games]);
-
-  // Show genuinely unplayed games first; fall back to highest scored
-  const featuredGames = useMemo(() => {
-    const unplayed = GAME_KEYS.filter(k => (state.games[k]?.completions ?? 0) === 0);
-    return unplayed.length >= 4
-      ? unplayed.slice(0, 4)
-      : [...GAME_KEYS]
-          .sort((a, b) => (state.games[b]?.highScore ?? 0) - (state.games[a]?.highScore ?? 0))
-          .slice(0, 4);
-  }, [state.games]);
-
-  const totalPlayed = GAME_KEYS.filter(k => (state.games[k]?.completions ?? 0) > 0).length;
-  const totalScore  = Object.values(state.games).reduce((a, g) => a + (g.highScore ?? 0), 0);
-  const xpNeeded    = xpForLevel(state.level);
-  const xpPct       = Math.min(100, Math.round((state.xp / xpNeeded) * 100));
-
-  const hasActiveFilters = tag !== 'all' || diff !== 'All' || !!search || showPlayed;
-
-  function clearFilters() {
-    setTag('all'); setDiff('All'); setSearch(''); setShowPlayed(false); setFiltersOpen(false);
-  }
-
+  useEffect(() => { if (ready) setLeaders(getSortedLeaderboard().slice(0, 3)); }, [ready]);
+  const play = useCallback((gameId: string) => router.push(`/games/${gameId}`), [router]);
+  const featuredGames = useMemo(() => { const unplayed = GAME_KEYS.filter(id => (state.games[id]?.completions ?? 0) === 0); return (unplayed.length ? unplayed : GAME_KEYS).slice(0, 4); }, [state.games]);
+  const latestTrophies = useMemo(() => ACHIEVEMENTS.filter(item => state.earnedAt[item.id]).sort((a,b) => state.earnedAt[b.id].localeCompare(state.earnedAt[a.id])).slice(0,3), [state.earnedAt]);
+  const totalPlayed = GAME_KEYS.filter(id => (state.games[id]?.completions ?? 0) > 0).length; const xpPct = Math.min(100, Math.round((state.xp / xpForLevel(state.level)) * 100));
   if (!ready) return null;
-
-  return (
-    <div className="hub-page">
-
-      {/* ── Hero / stats bar ──────────────────────────────── */}
-      <div className="hub-hero-grid">
-        <div className="shell-card hub-welcome-card">
-          <div className="hero-kicker">🎮 Game Library</div>
-          <h1 className="hub-welcome-title">
-            Welcome back, {state.name.split(' ')[0]} {state.avatar}
-          </h1>
-          <p className="hub-welcome-sub">
-            {totalPlayed === 0
-              ? "Pick a game and start your journey. Every round sharpens your English!"
-              : `You've completed ${totalPlayed} of ${GAME_KEYS.length} games. Keep the streak going!`}
-          </p>
-          <div className="hub-xp-row">
-            <span className="hub-xp-level">Lv {state.level}</span>
-            <div className="hub-xp-bar" style={{ flex: 1 }}>
-              <div className="hub-xp-fill progress-fill" style={{ width: `${xpPct}%` }} />
-            </div>
-            <span className="hub-xp-count">{state.xp} / {xpNeeded} XP</span>
-          </div>
-        </div>
-
-        <div className="shell-card hub-stats-card">
-          {[
-            { label: 'Games Played', val: totalPlayed,            color: 'var(--teal)',  icon: '🎮' },
-            { label: 'Total Score',  val: totalScore,             color: 'var(--gold)',  icon: '⭐' },
-            { label: 'Coins',        val: state.coins,            color: 'var(--green)', icon: '🪙' },
-            { label: 'Day Streak',   val: `${state.loginStreak || 0}🔥`, color: 'var(--coral)', icon: '📅' },
-          ].map(({ label, val, color, icon }) => (
-            <div key={label} className="hero-stat">
-              <div className="hero-stat-inner">
-                <span className="hero-stat-icon">{icon}</span>
-                <div>
-                  <div className="hero-stat-val" style={{ color }}>{val}</div>
-                  <div className="hero-stat-lbl">{label}</div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {state.lastGame && GAME_NAMES[state.lastGame] && (
-        <div className="continue-card">
-          <div className="continue-icon">
-            {GAME_ICONS[state.lastGame] ?? '🎮'}
-          </div>
-          <div className="continue-content">
-            <div className="continue-label">Continue Playing</div>
-            <div className="continue-title">
-              {GAME_NAMES[state.lastGame]}
-            </div>
-          </div>
-          <button
-            className="continue-btn"
-            onClick={() => handlePlay(state.lastGame!)}
-          >
-            Resume →
-          </button>
-        </div>
-      )}
-
-      {/* ── Filter & search row ────────────────────────────── */}
-      <div className="hub-filter-row">
-        <div className="hub-search">
-          <span className="hub-search-icon">🔍</span>
-          <input
-            type="search"
-            className="hub-search-input"
-            placeholder="Search games…"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            aria-label="Search games"
-          />
-          {search && (
-            <button className="hub-search-clear" onClick={() => setSearch('')} aria-label="Clear search">
-              ✕
-            </button>
-          )}
-        </div>
-        <select
-          value={sort}
-          onChange={e => setSort(e.target.value)}
-          className="theme-select"
-          style={{ borderRadius: 999 }}
-          aria-label="Sort games"
-        >
-          {SORT_OPTIONS.map(o => (
-            <option key={o.value} value={o.value}>{o.label}</option>
-          ))}
-        </select>
-        <button className="pill-btn" onClick={() => setShowManage(true)} style={{ marginLeft: 'auto' }}>
-          👥 Manage Players
-        </button>
-      </div>
-
-      {/* ── Mobile filter toggle ──────────────────────── */}
-      <button
-        className="hub-filters-toggle"
-        onClick={() => setFiltersOpen(o => !o)}
-        aria-expanded={filtersOpen}
-        aria-controls="hub-filters-collapsible"
-      >
-        <span>🎛️ Filters {hasActiveFilters ? '•' : ''}</span>
-        <span>{filtersOpen ? '▲' : '▼'}</span>
-      </button>
-
-      <div id="hub-filters-collapsible" className={`hub-filters-collapsible${filtersOpen ? ' open' : ''}`}>
-        <div
-          className="hub-tag-tabs"
-          style={{ display: 'flex', gap: 6, flexWrap: 'nowrap', overflowX: 'auto', paddingBottom: 6, scrollbarWidth: 'none' }}
-          role="group"
-          aria-label="Filter by topic"
-        >
-          {TAG_FILTERS.map(f => (
-            <button
-              key={f.value}
-              className={`lb-tab${tag === f.value ? ' active' : ''}`}
-              onClick={() => setTag(f.value)}
-              style={{ flexShrink: 0 }}
-              aria-pressed={tag === f.value}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
-
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }} role="group" aria-label="Filter by difficulty">
-          {DIFFICULTY_FILTERS.map(d => (
-            <button
-              key={d}
-              className={`pill-btn${diff === d ? ' active' : ''}`}
-              style={{ fontSize: '0.72rem', padding: '4px 12px' }}
-              onClick={() => setDiff(d)}
-              aria-pressed={diff === d}
-            >
-              {d}
-            </button>
-          ))}
-        </div>
-
-        <button
-          className={`pill-btn${showPlayed ? ' active' : ''}`}
-          onClick={() => setShowPlayed(p => !p)}
-          aria-pressed={showPlayed}
-          style={{ alignSelf: 'flex-start' }}
-        >
-          ✓ Played only
-        </button>
-      </div>
-
-      {/* The Hub is deliberately curated; the full searchable library lives on /games. */}
-      <section className="hub-section">
-        <h2 className="hub-section-title">🆕 New Games</h2>
-        <div className="hub-featured-grid">
-          {NEW_GAME_KEYS.slice(0, 4).map(gameId => <GameCard key={gameId} gameId={gameId} onClick={handlePlay} />)}
-        </div>
-      </section>
-
-      <section className="hub-section">
-        <h2 className="hub-section-title">🎮 Featured Games</h2>
-        <div className="hub-featured-grid">
-          {featuredGames.map(gameId => <GameCard key={gameId} gameId={gameId} onClick={handlePlay} />)}
-        </div>
-      </section>
-
-      {showManage && <ManagePlayersModal onClose={() => setShowManage(false)} />}
-    </div>
-  );
+  return <div className="hub-page hub-dashboard"><section className="hub-hero-grid"><div className="shell-card hub-welcome-card"><div className="hero-kicker">🎮 Your learning dashboard</div><h1 className="hub-welcome-title">Welcome back, {state.name.split(' ')[0]} {state.avatar}</h1><p className="hub-welcome-sub">A quick look at new games, classroom activity, resources, rewards, and the shop.</p><div className="hub-xp-row"><span className="hub-xp-level">Lv {state.level}</span><div className="hub-xp-bar" style={{ flex:1 }}><div className="hub-xp-fill progress-fill" style={{ width:`${xpPct}%` }} /></div><span className="hub-xp-count">{state.xp} / {xpForLevel(state.level)} XP</span></div></div><div className="shell-card hub-stats-card">{[{label:'Games played',value:totalPlayed,icon:'🎮',color:'var(--teal)'},{label:'Coins',value:state.coins,icon:'🪙',color:'var(--gold)'},{label:'Trophies',value:Object.keys(state.earnedAt).length,icon:'🏆',color:'var(--purple)'},{label:'Day streak',value:state.loginStreak || 0,icon:'🔥',color:'var(--coral)'}].map(stat => <div className="hero-stat" key={stat.label}><div className="hero-stat-inner"><span className="hero-stat-icon">{stat.icon}</span><div><div className="hero-stat-val" style={{ color:stat.color }}>{stat.value}</div><div className="hero-stat-lbl">{stat.label}</div></div></div></div>)}</div></section>
+    <section className="hub-section"><PreviewHeader title="🆕 New Games" href="/games" /><div className="hub-featured-grid">{NEW_GAME_KEYS.slice(0,4).map(id => <GameCard key={id} gameId={id} onClick={play} />)}</div></section><section className="hub-section"><PreviewHeader title="⭐ Featured Games" href="/games" /><div className="hub-featured-grid">{featuredGames.map(id => <GameCard key={id} gameId={id} onClick={play} />)}</div></section>
+    <div className="hub-preview-grid"><section className="shell-card hub-preview-card"><PreviewHeader title="🏆 Top scorers this week" href="/leaderboard" action="Leaderboard" />{leaders.length ? <ol className="hub-leader-list">{leaders.map((player,index) => <li key={player.id}><span className="hub-rank">{index + 1}</span><span className="hub-leader-avatar">{['🥇','🥈','🥉'][index]}</span><strong>{player.name}</strong><span>{player.score.total} pts</span></li>)}</ol> : <div className="hub-preview-empty"><span>🏆</span><div>No leaderboard scores yet this week.</div><small>Add players or finish a game to start the board.</small></div>}</section><section className="shell-card hub-preview-card"><PreviewHeader title="📚 Featured resources" href="/resources" action="Resources" /><div className="hub-mini-list">{FEATURED_RESOURCES.map(resource => <Link href="/resources" key={resource.id} className="hub-mini-row"><span>{resource.icon}</span><div><strong>{resource.title}</strong><small>{resource.type} · {resource.subject}</small></div><b>›</b></Link>)}</div></section><section className="shell-card hub-preview-card"><PreviewHeader title="🏅 Latest trophies" href="/trophy" action="Trophy room" />{latestTrophies.length ? <div className="hub-mini-list">{latestTrophies.map(trophy => <Link href="/trophy" key={trophy.id} className="hub-mini-row"><span>{trophy.icon}</span><div><strong>{trophy.name}</strong><small>{new Date(state.earnedAt[trophy.id]).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</small></div><b>›</b></Link>)}</div> : <div className="hub-preview-empty"><span>⭐</span><div>Your latest trophies will appear here.</div><small>Play games to start your collection.</small></div>}</section><section className="shell-card hub-preview-card"><PreviewHeader title="🛍️ New in the shop" href="/payment" action="Shop" /><div className="hub-mini-list">{LATEST_SHOP_ITEMS.map(item => <Link href="/payment" key={item.id} className="hub-mini-row"><span>{item.icon}</span><div><strong>{item.name}</strong><small>🪙 {item.cost} · {item.type}</small></div><b>›</b></Link>)}</div></section></div>
+  </div>;
 }
