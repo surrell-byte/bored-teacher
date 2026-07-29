@@ -73,7 +73,7 @@ export default function GamePage() {
   }
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'var(--bg)', overflow: 'hidden' }}>
+    <div style={{ position: 'fixed', inset: 0, background: '#080b12', overflow: 'hidden' }}>
       <GameShell
         gameId={gameId}
         title={gameName}

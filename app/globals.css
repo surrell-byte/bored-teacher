@@ -3175,8 +3175,8 @@ a { color: inherit; }
 }
 .game-layout-play-area {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: stretch;
+  justify-content: stretch;
   flex: 1;
   min-width: 0;
   min-height: 0;
@@ -3295,7 +3295,12 @@ a { color: inherit; }
   --game-shell-nav-raised: #1d2a40;
   --game-shell-nav-text: #f8fafc;
   --game-shell-nav-muted: #cbd5e1;
-  height: 100%; min-height: 0; background: var(--bg);
+  /* Fixed, theme-independent backdrop. This used to be `var(--bg)`, which
+     follows the hub's cosmetic theme (often a green forest gradient) — any
+     gap around the play area (padding below, safe-area margins, etc.) let
+     that theme colour show through as stray bars around every game. The
+     game screen should never depend on which hub theme is active. */
+  height: 100%; min-height: 0; background: #080b12;
 }
 .game-shell > .game-layout {
   height: 100%;
@@ -3313,20 +3318,32 @@ a { color: inherit; }
   box-shadow: 0 10px 26px rgb(0 0 0 / 0.3);
 }
 .game-shell .game-layout-body {
-  gap: var(--space-md);
-  padding: var(--space-md);
+  /* No gap/padding here — the play area now runs edge-to-edge instead of
+     leaving a themed-background margin around it. */
+  gap: 0;
+  padding: 0;
+}
+.game-shell .game-layout-play-area {
+  padding: 0;
+  margin: 0;
+}
+.game-shell .game-layout-large-desktop .game-layout-play-area {
+  /* Full width on big screens too — every game should cover all the space
+     it's given, not float in a capped column. */
+  max-width: none;
+  margin: 0;
 }
 .game-shell .game-layout-mobile > :not(.game-layout-header) {
-  margin-inline: var(--space-xs);
+  margin-inline: 0;
 }
 .game-shell .game-layout-mobile .game-layout-play-area {
-  margin-block: var(--space-xs);
+  margin-block: 0;
 }
 .game-shell .game-layout-tablet .game-layout-controls-row,
 .game-shell .game-layout-desktop .game-layout-controls-row,
 .game-shell .game-layout-large-desktop .game-layout-controls-row,
 .game-shell .game-layout-tv .game-layout-controls-row {
-  margin: 0 var(--space-md) var(--space-md);
+  margin: 0;
 }
 .game-shell .game-header-default { min-width: 0; }
 .game-shell .game-header-title { min-width: 0; color: var(--game-shell-nav-text); font-size: clamp(0.95rem, 1.3vw, 1.15rem); }

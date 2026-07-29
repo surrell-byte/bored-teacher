@@ -1,3 +1,179 @@
+#!/usr/bin/env bash
+# Run this from the root of your bored-teacher-react project.
+set -e
+
+if [ ! -f "app/globals.css" ] || [ ! -f "app/games/[game]/page.tsx" ] || [ ! -f "games/connect-4/Connect4.jsx" ]; then
+  echo "Could not find expected project files — run this script from your project root."
+  exit 1
+fi
+
+STAMP=$(date +%Y%m%d-%H%M%S)
+BACKUP_DIR="backup/connect4-fullbleed-fix-$STAMP"
+mkdir -p "$BACKUP_DIR"
+cp "app/globals.css" "$BACKUP_DIR/globals.css.bak"
+cp "app/games/[game]/page.tsx" "$BACKUP_DIR/page.tsx.bak"
+cp "games/connect-4/Connect4.jsx" "$BACKUP_DIR/Connect4.jsx.bak"
+echo "Backed up existing files to $BACKUP_DIR"
+
+python3 << 'PYEOF'
+import io, sys
+
+# ── 1. app/globals.css: fix the green background bleed ────────────────
+path = "app/globals.css"
+with io.open(path, "r", encoding="utf-8") as f:
+    css = f.read()
+
+old_shell_block = """.game-shell {
+  --game-shell-nav: #101827;
+  --game-shell-nav-raised: #1d2a40;
+  --game-shell-nav-text: #f8fafc;
+  --game-shell-nav-muted: #cbd5e1;
+  height: 100%; min-height: 0; background: var(--bg);
+}
+.game-shell > .game-layout {
+  height: 100%;
+  padding: 0;
+  gap: 0;
+}
+.game-shell .game-layout-header {
+  position: sticky; top: 0; z-index: 30; flex-shrink: 0;
+  padding: 10px clamp(12px, 2vw, 24px);
+  color: var(--game-shell-nav-text);
+  background: linear-gradient(135deg, var(--game-shell-nav), var(--game-shell-nav-raised));
+  border: 0;
+  border-bottom: 1px solid rgb(255 255 255 / 0.18);
+  border-radius: 0;
+  box-shadow: 0 10px 26px rgb(0 0 0 / 0.3);
+}
+.game-shell .game-layout-body {
+  gap: var(--space-md);
+  padding: var(--space-md);
+}
+.game-shell .game-layout-mobile > :not(.game-layout-header) {
+  margin-inline: var(--space-xs);
+}
+.game-shell .game-layout-mobile .game-layout-play-area {
+  margin-block: var(--space-xs);
+}
+.game-shell .game-layout-tablet .game-layout-controls-row,
+.game-shell .game-layout-desktop .game-layout-controls-row,
+.game-shell .game-layout-large-desktop .game-layout-controls-row,
+.game-shell .game-layout-tv .game-layout-controls-row {
+  margin: 0 var(--space-md) var(--space-md);
+}"""
+
+new_shell_block = """.game-shell {
+  --game-shell-nav: #101827;
+  --game-shell-nav-raised: #1d2a40;
+  --game-shell-nav-text: #f8fafc;
+  --game-shell-nav-muted: #cbd5e1;
+  /* Fixed, theme-independent backdrop. This used to be `var(--bg)`, which
+     follows the hub's cosmetic theme (often a green forest gradient) — any
+     gap around the play area (padding below, safe-area margins, etc.) let
+     that theme colour show through as stray bars around every game. The
+     game screen should never depend on which hub theme is active. */
+  height: 100%; min-height: 0; background: #080b12;
+}
+.game-shell > .game-layout {
+  height: 100%;
+  padding: 0;
+  gap: 0;
+}
+.game-shell .game-layout-header {
+  position: sticky; top: 0; z-index: 30; flex-shrink: 0;
+  padding: 10px clamp(12px, 2vw, 24px);
+  color: var(--game-shell-nav-text);
+  background: linear-gradient(135deg, var(--game-shell-nav), var(--game-shell-nav-raised));
+  border: 0;
+  border-bottom: 1px solid rgb(255 255 255 / 0.18);
+  border-radius: 0;
+  box-shadow: 0 10px 26px rgb(0 0 0 / 0.3);
+}
+.game-shell .game-layout-body {
+  /* No gap/padding here — the play area now runs edge-to-edge instead of
+     leaving a themed-background margin around it. */
+  gap: 0;
+  padding: 0;
+}
+.game-shell .game-layout-play-area {
+  padding: 0;
+  margin: 0;
+}
+.game-shell .game-layout-large-desktop .game-layout-play-area {
+  /* Full width on big screens too — every game should cover all the space
+     it's given, not float in a capped column. */
+  max-width: none;
+  margin: 0;
+}
+.game-shell .game-layout-mobile > :not(.game-layout-header) {
+  margin-inline: 0;
+}
+.game-shell .game-layout-mobile .game-layout-play-area {
+  margin-block: 0;
+}
+.game-shell .game-layout-tablet .game-layout-controls-row,
+.game-shell .game-layout-desktop .game-layout-controls-row,
+.game-shell .game-layout-large-desktop .game-layout-controls-row,
+.game-shell .game-layout-tv .game-layout-controls-row {
+  margin: 0;
+}"""
+
+old_play_area = """.game-layout-play-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}"""
+
+new_play_area = """.game-layout-play-area {
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}"""
+
+missing = []
+if old_shell_block in css:
+    css = css.replace(old_shell_block, new_shell_block, 1)
+else:
+    missing.append(".game-shell block")
+if old_play_area in css:
+    css = css.replace(old_play_area, new_play_area, 1)
+else:
+    missing.append(".game-layout-play-area block")
+
+if missing:
+    print("WARNING: could not find exact text for: " + ", ".join(missing) +
+          " in app/globals.css — it may already be patched, or has been edited "
+          "since this script was written. Skipping those replacements.")
+else:
+    with io.open(path, "w", encoding="utf-8") as f:
+        f.write(css)
+    print("Patched app/globals.css")
+
+# ── 2. app/games/[game]/page.tsx: match the same neutral backdrop ─────
+path2 = "app/games/[game]/page.tsx"
+with io.open(path2, "r", encoding="utf-8") as f:
+    page = f.read()
+
+old_line = "<div style={{ position: 'fixed', inset: 0, background: 'var(--bg)', overflow: 'hidden' }}>"
+new_line = "<div style={{ position: 'fixed', inset: 0, background: '#080b12', overflow: 'hidden' }}>"
+
+if old_line in page:
+    page = page.replace(old_line, new_line, 1)
+    with io.open(path2, "w", encoding="utf-8") as f:
+        f.write(page)
+    print("Patched app/games/[game]/page.tsx")
+else:
+    print("WARNING: could not find the expected line in app/games/[game]/page.tsx — skipping.")
+PYEOF
+
+# ── 3. games/connect-4/Connect4.jsx: full rebuild ──────────────────────
+cat > "games/connect-4/Connect4.jsx" << 'FILE_EOF'
 'use client';
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useGame } from "@/lib/gameState";
@@ -589,3 +765,8 @@ export default function Connect4({ onComplete }) {
     </div>
   );
 }
+FILE_EOF
+echo "Rewrote games/connect-4/Connect4.jsx (Prestige Edition)"
+
+echo ""
+echo "Done. Restart your dev server (the CSS changes affect every game, not just Connect 4)."
