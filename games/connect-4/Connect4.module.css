@@ -1,4 +1,4 @@
-:root {
+.page {
   --bg: #0f172a;
   --bg2: #1e1b4b;
   --surface: #1e293b;
@@ -8,9 +8,6 @@
   --radius: 18px;
   --shadow: 0 15px 35px rgba(0, 0, 0, 0.35);
   --board-bg: #1e3a8a;
-}
-
-.page {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
