@@ -552,6 +552,18 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     hasComponent: true,
     isNew: true,
   },
+  animalAdventureRace: {
+    name: "Animal Adventure Race",
+    icon: "🐾",
+    desc: "Race your animal across a snake-board by flipping colour cards — land on bonus, trap, treasure, and boost tiles!",
+    cover: "/assets/covers/animal-adventure-race-cover.webp",
+    tag: { label: "Logic", color: "tag-bio" },
+    badge: "Race",
+    difficulty: "Starter",
+    barColor: "var(--green)",
+    hasComponent: true,
+    isNew: true,
+  },
   whatami: {
     name: "Field Guide: What Am I?",
     icon: "🔎",

@@ -21,6 +21,8 @@ export interface GameShellProps {
   icon?: ReactNode;
   stats?: GameStat[];
   controls?: ReactNode;
+  /** Extra buttons rendered inline in the top bar, alongside stats/Pause/Full screen/Exit. */
+  headerExtra?: ReactNode;
   children: ReactNode;
   /** Increment this when replacing a game instance (for example, after retry). */
   sessionKey?: string | number;
@@ -36,7 +38,7 @@ export interface GameShellProps {
  * while each game remains responsible only for its own mechanics and UI.
  */
 export default function GameShell({
-  gameId, title, icon, stats, controls, children, sessionKey = 0,
+  gameId, title, icon, stats, controls, headerExtra, children, sessionKey = 0,
   completion, onContinue, onRestart, onSessionEvent,
 }: GameShellProps) {
   const [paused, setPaused] = useState(false);
@@ -129,6 +131,7 @@ export default function GameShell({
                       ))}
                     </div>
                   )}
+                  {headerExtra}
                   <button type="button" className="game-shell-header-action" onClick={paused ? resume : pause} aria-pressed={paused}>
                     {paused ? 'Resume' : 'Pause'}
                   </button>

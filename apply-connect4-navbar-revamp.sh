@@ -1,3 +1,35 @@
+#!/usr/bin/env bash
+# Run this from the root of your bored-teacher-react project.
+#
+# What this does:
+#   1. Backs up games/connect-4/Connect4.jsx and app/games/[game]/page.tsx
+#   2. Rewrites Connect4.jsx:
+#        - Bigger welcome screen (kid-visible on large screens, comfortable
+#          top/bottom breathing room)
+#        - Wider desktop customize screen, 12 colours, 12 avatars per player,
+#          side-by-side pickers, and a live player-badge preview pane
+#        - In-game HUD (player badges, reset/home) is handed off to the
+#          GameShell navbar instead of living inside the play area, and the
+#          board grows to fill the freed space (and is proportionally wider)
+#   3. Patches app/games/[game]/page.tsx to render that HUD in the
+#      GameShell's own controls bar for the connect4 route only — every
+#      other game is completely unaffected.
+set -e
+
+if [ ! -f "app/globals.css" ] || [ ! -f "app/games/[game]/page.tsx" ] || [ ! -f "games/connect-4/Connect4.jsx" ]; then
+  echo "Could not find expected project files — run this script from your project root."
+  exit 1
+fi
+
+STAMP=$(date +%Y%m%d-%H%M%S)
+BACKUP_DIR="backup/connect4-navbar-revamp-$STAMP"
+mkdir -p "$BACKUP_DIR"
+cp "games/connect-4/Connect4.jsx" "$BACKUP_DIR/Connect4.jsx.bak"
+cp "app/games/[game]/page.tsx" "$BACKUP_DIR/page.tsx.bak"
+echo "Backed up existing files to $BACKUP_DIR"
+
+# ── 1. Replace games/connect-4/Connect4.jsx wholesale ──────────────────
+cat > "games/connect-4/Connect4.jsx" << 'CONNECT4_JSX_EOF'
 'use client';
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { useGame } from "@/lib/gameState";
@@ -147,30 +179,23 @@ export function PlayerBadge({ name, avatar, theme, score, align = "left" }) {
   );
 }
 
-// ── Rendered inline in the GameShell's TOP bar, alongside Best/Coins/ ──
-// ── Pause/Full screen/Exit, so Reset + Home sit in the same row.
-export function Connect4HeaderActions({ hud }) {
+// ── Rendered inside the GameShell's own navbar (controls bar) while a ──
+// ── match is in progress: P1 badge left, Home/Reset centre, P2 badge right.
+export function Connect4Controls({ hud }) {
   if (!hud) return null;
-  const { onReset, onHome } = hud;
+  const { p1, p2, current, active, onReset, onHome } = hud;
   return (
-    <>
-      <button type="button" className="game-shell-header-action" onClick={onReset} title="Reset match">⟳ Reset</button>
-      <button type="button" className="game-shell-header-action" onClick={onHome} title="Back to menu">⌂ Home</button>
-    </>
-  );
-}
-
-// ── Portrait player panel — sits in the empty space to the left/right ──
-// ── of the board itself, instead of in a navbar row.
-function SidePanel({ name, avatar, theme, score, active, side }) {
-  return (
-    <div className={`c4-side-panel c4-side-${side}${active ? " active" : ""}`} style={{ "--badge-a": theme.a, "--badge-b": theme.b }}>
-      <div className="c4-side-avatar" style={{ background: `radial-gradient(circle at 35% 30%, ${theme.a}, ${theme.b})` }}>
-        <span>{avatar}</span>
+    <div className="c4-navbar-hud">
+      <div className={`c4-navbar-slot${active && current === 1 ? " turn" : ""}`} style={{ "--turn-a": p1.theme.a }}>
+        <PlayerBadge name={p1.name} avatar={p1.avatar} theme={p1.theme} score={p1.score} align="left" />
       </div>
-      <div className="c4-side-name">{name}</div>
-      <div className="c4-side-score">{score} win{score !== 1 ? "s" : ""}</div>
-      {active && <div className="c4-side-turn">Your turn</div>}
+      <div className="c4-navbar-center">
+        <button type="button" className="c4-navbar-btn" onClick={onReset} title="Reset match">⟳ Reset</button>
+        <button type="button" className="c4-navbar-btn" onClick={onHome} title="Back to menu">⌂ Home</button>
+      </div>
+      <div className={`c4-navbar-slot${active && current === 2 ? " turn" : ""}`} style={{ "--turn-a": p2.theme.a }}>
+        <PlayerBadge name={p2.name} avatar={p2.avatar} theme={p2.theme} score={p2.score} align="right" />
+      </div>
     </div>
   );
 }
@@ -341,7 +366,7 @@ export default function Connect4({ onComplete, onHudUpdate }) {
       "--p1-a": t1.a, "--p1-b": t1.b, "--p2-a": t2.a, "--p2-b": t2.b,
       minHeight: "100%", width: "100%", display: "flex", alignItems: "center", justifyContent: "center",
       background: "radial-gradient(circle at center, #0d1322 0%, #06080f 70%), #05070d",
-      fontFamily: "'DM Sans', sans-serif", color: "#e8edf5", position: "relative", overflow: "hidden", padding: "0.8rem",
+      fontFamily: "'DM Sans', sans-serif", color: "#e8edf5", position: "relative", overflow: "hidden", padding: "1.5rem",
     }}>
       {/* ambient glow wash */}
       <div style={{
@@ -482,9 +507,7 @@ export default function Connect4({ onComplete, onHudUpdate }) {
       )}
 
       {screen === "game" && (
-        <div className="c4-game-row" style={{ position: "relative", zIndex: 1, width: "100%", height: "100%" }}>
-          <SidePanel name={p1Name} avatar={p1Avatar} theme={t1} score={scores.p1} active={active && current === 1} side="left" />
-
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 0, position: "relative", zIndex: 1, width: "100%", height: "100%" }}>
           <div className={`c4-board-frame${!active ? " over" : ""}`}>
             <div className="c4-board-grid">
               {board.map((row, r) => row.map((cell, c) => {
@@ -517,8 +540,6 @@ export default function Connect4({ onComplete, onHudUpdate }) {
               ))}
             </div>
           </div>
-
-          <SidePanel name={p2Name} avatar={p2Avatar} theme={t2} score={scores.p2} active={active && current === 2} side="right" />
         </div>
       )}
 
@@ -653,51 +674,21 @@ export default function Connect4({ onComplete, onHudUpdate }) {
         .c4-badge-name { font-weight: 800; font-size: clamp(0.9rem, 1.6vw, 1.15rem); color: #e8edf5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 34vw; }
         .c4-badge-score { font-family: 'DM Mono', monospace; font-size: 0.72rem; opacity: 0.6; color: #9aa7bd; letter-spacing: 0.5px; }
 
-        /* ── Game screen: side panels flank the board, everything sized to ── */
-        /* ── fit within the viewport without scrolling.                     */
-        .c4-game-row {
-          display: flex; align-items: center; justify-content: center;
-          gap: clamp(0.8rem, 2.4vw, 2.2rem);
+        /* ── In-game navbar HUD, rendered by the page via GameShell's controls bar ── */
+        .c4-navbar-hud { display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 14px; white-space: normal; }
+        .c4-navbar-slot { border-radius: 100px; padding: 4px 12px 4px 4px; transition: box-shadow 0.2s; min-width: 0; }
+        .c4-navbar-slot.turn { box-shadow: 0 0 0 2px var(--turn-a), 0 0 16px var(--turn-a)66; background: rgba(255,255,255,0.05); }
+        .c4-navbar-hud .c4-badge-right.c4-badge { flex-direction: row-reverse; }
+        .c4-navbar-center { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+        .c4-navbar-btn {
+          display: inline-flex; align-items: center; gap: 4px; min-height: 32px; padding: 6px 12px;
+          border-radius: 100px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.06);
+          color: #e8edf5; font-family: 'DM Sans', sans-serif; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.18s;
         }
-
-        /* ── Portrait player panel — replaces the old navbar badges; lives ── */
-        /* ── in the empty space beside the board and grows to fill it.      */
-        .c4-side-panel {
-          display: flex; flex-direction: column; align-items: center; justify-content: center;
-          gap: clamp(0.5rem, 1.4vh, 1rem);
-          width: clamp(96px, 12vw, 176px);
-          padding: clamp(1rem, 2.4vh, 1.8rem) 0.8rem;
-          border-radius: 24px;
-          background: linear-gradient(160deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01)), rgba(10,14,24,0.55);
-          border: 1px solid rgba(255,255,255,0.08);
-          box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
-          transition: box-shadow 0.25s, border-color 0.25s, background 0.25s;
-          flex-shrink: 0;
-        }
-        .c4-side-panel.active {
-          border-color: var(--badge-a); background: rgba(255,255,255,0.06);
-          box-shadow: 0 0 0 2px var(--badge-a)55, 0 0 30px var(--badge-a)33, inset 0 1px 0 rgba(255,255,255,0.08);
-        }
-        .c4-side-avatar {
-          width: clamp(56px, 7vw, 104px); height: clamp(56px, 7vw, 104px); border-radius: 50%;
-          display: flex; align-items: center; justify-content: center;
-          font-size: clamp(1.8rem, 3.2vw, 3rem);
-          box-shadow: inset 0 4px 10px rgba(255,255,255,0.3), inset 0 -8px 16px rgba(0,0,0,0.35), 0 0 20px var(--badge-a)55;
-        }
-        .c4-side-panel.active .c4-side-avatar { animation: c4Float 2s ease-in-out infinite; }
-        .c4-side-name {
-          font-weight: 800; font-size: clamp(0.8rem, 1.1vw, 1rem); color: #e8edf5; text-align: center;
-          white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
-        }
-        .c4-side-score { font-family: 'DM Mono', monospace; font-size: 0.68rem; opacity: 0.6; color: #9aa7bd; letter-spacing: 0.5px; }
-        .c4-side-turn {
-          font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 1.5px; text-transform: uppercase;
-          color: var(--badge-a); background: var(--badge-a)1a; border: 1px solid var(--badge-a)55;
-          padding: 3px 10px; border-radius: 100px;
-        }
+        .c4-navbar-btn:hover { background: rgba(255,255,255,0.14); border-color: #d4a853; color: #f0c46a; }
 
         .c4-board-frame {
-          --cell: min(8.6vw, 11vh, 84px);
+          --cell: min(13vw, 15vh, 108px);
           --gap-x: calc(var(--cell) * 0.22);
           --gap-y: calc(var(--cell) * 0.14);
           --pad-x: calc(var(--cell) * 0.42);
@@ -708,7 +699,7 @@ export default function Connect4({ onComplete, onHudUpdate }) {
           border-radius: 28px;
           padding: var(--pad-y) var(--pad-x);
           box-shadow: 0 30px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -10px 30px rgba(0,0,0,0.5);
-          position: relative; margin: 0 auto; flex-shrink: 0;
+          position: relative; margin: 0.8rem auto 0;
         }
         .c4-board-grid {
           display: grid;
@@ -763,20 +754,112 @@ export default function Connect4({ onComplete, onHudUpdate }) {
           100% { transform: translate(var(--drift), 110vh) rotate(var(--rot)); opacity: 0.9; }
         }
 
-        @media (max-width: 720px) {
-          .c4-game-row { flex-direction: column; gap: 0.6rem; }
-          .c4-side-panel {
-            flex-direction: row; width: 100%; max-width: 380px; padding: 0.5rem 1rem;
-            gap: 0.7rem; justify-content: flex-start;
-          }
-          .c4-side-avatar { width: 34px; height: 34px; font-size: 1.1rem; }
-          .c4-side-name { font-size: 0.8rem; max-width: 40vw; }
-          .c4-side-turn { margin-left: auto; }
-        }
         @media (max-width: 520px) {
           .c4-board-frame { --cell: min(12vw, 52px); }
+          .c4-navbar-hud { gap: 8px; }
+          .c4-badge-avatar { width: 30px; height: 30px; font-size: 0.95rem; }
+          .c4-badge-name { max-width: 20vw; font-size: 0.72rem; }
+          .c4-badge-score { display: none; }
+          .c4-navbar-btn span { display: none; }
         }
       `}</style>
     </div>
   );
 }
+CONNECT4_JSX_EOF
+echo "Rewrote games/connect-4/Connect4.jsx"
+
+# ── 2. Patch app/games/[game]/page.tsx ──────────────────────────────────
+python3 << 'PYEOF'
+import io
+
+path = "app/games/[game]/page.tsx"
+with io.open(path, "r", encoding="utf-8") as f:
+    src = f.read()
+
+def apply_replace(text, old, new, label):
+    if old not in text:
+        raise SystemExit(f"Could not find anchor for: {label}\nAborting without modifying {path} further.")
+    return text.replace(old, new, 1)
+
+src = apply_replace(
+    src,
+    "import DesktopControls from '@/components/ui/controls/DesktopControls';",
+    "import DesktopControls from '@/components/ui/controls/DesktopControls';\n"
+    "import { Connect4Controls } from '@/games/connect-4/Connect4.jsx';",
+    "DesktopControls import",
+)
+
+src = apply_replace(
+    src,
+    "  const [result, setResult]   = useState<GameResult | null>(null);\n"
+    "  const [gameSession, setGameSession] = useState(0);\n"
+    "\n"
+    "  const gameName  = GAME_NAMES[gameId] ?? 'Game';\n"
+    "  const gameIcon  = GAME_ICONS[gameId] ?? '🎮';\n"
+    "  const GameComp  = GAME_COMPONENTS[gameId];",
+    "  const [result, setResult]   = useState<GameResult | null>(null);\n"
+    "  const [gameSession, setGameSession] = useState(0);\n"
+    "  // Connect 4 hands its in-match HUD (player badges + reset/home) up here so\n"
+    "  // it can render inside the GameShell navbar instead of the play area.\n"
+    "  const [c4Hud, setC4Hud] = useState<any>(null);\n"
+    "\n"
+    "  const gameName  = GAME_NAMES[gameId] ?? 'Game';\n"
+    "  const gameIcon  = GAME_ICONS[gameId] ?? '🎮';\n"
+    "  const GameComp  = GAME_COMPONENTS[gameId];\n"
+    "  const isConnect4 = gameId === 'connect4';",
+    "c4Hud state block",
+)
+
+src = apply_replace(
+    src,
+    "  function handleContinue() {\n"
+    "    setResult(null);\n"
+    "    setGameSession(session => session + 1);\n"
+    "  }",
+    "  function handleContinue() {\n"
+    "    setResult(null);\n"
+    "    setC4Hud(null);\n"
+    "    setGameSession(session => session + 1);\n"
+    "  }",
+    "handleContinue",
+)
+
+src = apply_replace(
+    src,
+    "        controls={<DesktopControls />}",
+    "        controls={isConnect4 ? (c4Hud ? <Connect4Controls hud={c4Hud} /> : null) : <DesktopControls />}",
+    "controls prop",
+)
+
+src = apply_replace(
+    src,
+    "        <div style={{ flex: '1 1 0', minHeight: 0, overflow: 'auto' }}>\n"
+    "          <GameComp key={gameSession} onComplete={handleComplete} />\n"
+    "        </div>",
+    "        <div style={{ flex: '1 1 0', minHeight: 0, overflow: 'auto' }}>\n"
+    "          <GameComp\n"
+    "            key={gameSession}\n"
+    "            onComplete={handleComplete}\n"
+    "            {...(isConnect4 ? { onHudUpdate: setC4Hud } : {})}\n"
+    "          />\n"
+    "        </div>",
+    "GameComp render",
+)
+
+with io.open(path, "w", encoding="utf-8") as f:
+    f.write(src)
+
+print("Patched app/games/[game]/page.tsx")
+PYEOF
+
+echo ""
+echo "Done. What changed:"
+echo "  • games/connect-4/Connect4.jsx  — bigger welcome screen, wider 12-colour/"
+echo "    12-avatar customize screen with live badge preview, and an enlarged"
+echo "    board with the HUD moved out of the play area"
+echo "  • app/games/[game]/page.tsx     — renders Connect 4's player badges and"
+echo "    reset/home buttons in the GameShell navbar (connect4 route only;"
+echo "    every other game keeps its existing DesktopControls)"
+echo ""
+echo "Next: npm run dev (or your usual build) and open /games/connect4 to check it."

@@ -10,6 +10,7 @@ import { GAME_NAMES, GAME_ICONS } from '@/constants/index';
 import { GAME_COMPONENTS } from '@/games/catalog.components';
 import { GameShell } from '@/engine';
 import DesktopControls from '@/components/ui/controls/DesktopControls';
+import { Connect4HeaderActions } from '@/games/connect-4/Connect4.jsx';
 
 // ── Types ─────────────────────────────────────────────────────
 interface GameResult {
@@ -26,10 +27,14 @@ export default function GamePage() {
 
   const [result, setResult]   = useState<GameResult | null>(null);
   const [gameSession, setGameSession] = useState(0);
+  // Connect 4 hands its in-match HUD (player badges + reset/home) up here so
+  // it can render inside the GameShell navbar instead of the play area.
+  const [c4Hud, setC4Hud] = useState<any>(null);
 
   const gameName  = GAME_NAMES[gameId] ?? 'Game';
   const gameIcon  = GAME_ICONS[gameId] ?? '🎮';
   const GameComp  = GAME_COMPONENTS[gameId];
+  const isConnect4 = gameId === 'connect4';
 
   // ── onComplete: called by React game components ──
   function handleComplete(score: number, accuracy: number) {
@@ -58,6 +63,7 @@ export default function GamePage() {
 
   function handleContinue() {
     setResult(null);
+    setC4Hud(null);
     setGameSession(session => session + 1);
   }
 
@@ -82,7 +88,8 @@ export default function GamePage() {
         completion={result}
         onContinue={handleContinue}
         onRestart={handleContinue}
-        controls={<DesktopControls />}
+        controls={isConnect4 ? null : <DesktopControls />}
+        headerExtra={isConnect4 && c4Hud ? <Connect4HeaderActions hud={c4Hud} /> : null}
         stats={[
           { label: 'Best', value: state.games[gameId]?.highScore ?? 0, icon: '⭐' },
           { label: 'Coins', value: state.coins, icon: '🪙' },
@@ -97,7 +104,11 @@ export default function GamePage() {
           </div>
       }>
         <div style={{ flex: '1 1 0', minHeight: 0, overflow: 'auto' }}>
-          <GameComp key={gameSession} onComplete={handleComplete} />
+          <GameComp
+            key={gameSession}
+            onComplete={handleComplete}
+            {...(isConnect4 ? { onHudUpdate: setC4Hud } : {})}
+          />
         </div>
       </Suspense>
       </GameShell>
