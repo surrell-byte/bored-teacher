@@ -13,9 +13,11 @@ import { lazy } from 'react';
 
 export type GameComponentProps = {
   onComplete: (score: number, accuracy: number) => void;
+  onHudUpdate?: (hud: any) => void;
+  [key: string]: unknown;
 };
 
-export const GAME_COMPONENTS: Partial<Record<string, React.LazyExoticComponent<React.ComponentType<GameComponentProps>>>> = {
+export const GAME_COMPONENTS: Partial<Record<string, React.LazyExoticComponent<React.ComponentType<any>>>> = {
   tilebattle: lazy(() => import('@/games/tile-battle/TileBattle')),
   quiztrail: lazy(() => import('@/games/quiz-trail/QuizTrail')),
   unicorn: lazy(() => import('@/games/unicorn-run/UnicornRun.jsx')),
