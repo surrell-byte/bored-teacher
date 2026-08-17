@@ -66,7 +66,8 @@ export const GAME_COMPONENTS: Partial<Record<string, React.LazyExoticComponent<R
   redorblack: lazy(() => import('@/games/legacy/LegacyGamePort').then(({ default: LegacyGamePort }) => ({ default: (props: GameComponentProps) => <LegacyGamePort {...props} gameId="redorblack" /> }))),
   sentencebuilder: lazy(() => import('@/games/legacy/LegacyGamePort').then(({ default: LegacyGamePort }) => ({ default: (props: GameComponentProps) => <LegacyGamePort {...props} gameId="sentencebuilder" /> }))),
   'sentence-builder': lazy(() => import('@/games/sentence-builder/SentenceBuilder.jsx')),
-  animalAdventureRace: lazy(() => import('@/games/animal-adventure-race/AnimalAdventureRace')),
+  animalAdventureRace: lazy(() => import('@/games/animal-adventure-race/AnimalAdventureRace.jsx')),
+  findthebee: lazy(() => import('@/games/find-the-bee/FindTheBee.jsx')),
   whatami: lazy(() => import('@/games/legacy/LegacyGamePort').then(({ default: LegacyGamePort }) => ({ default: (props: GameComponentProps) => <LegacyGamePort {...props} gameId="whatami" /> }))),
   whatsmissing: lazy(() => import('@/games/legacy/LegacyGamePort').then(({ default: LegacyGamePort }) => ({ default: (props: GameComponentProps) => <LegacyGamePort {...props} gameId="whatsmissing" /> }))),
 };

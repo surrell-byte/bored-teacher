@@ -588,6 +588,18 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     hasComponent: true,
     isNew: true,
   },
+  findthebee: {
+    name: "Find The Bee",
+    icon: "🐝",
+    desc: "Spot the bee hiding behind a flower before you run out of hearts. Three beautiful levels to master!",
+    cover: "/assets/covers/find-the-bee-cover.webp",
+    tag: { label: "Logic", color: "tag-bio" },
+    badge: "Puzzle",
+    difficulty: "Starter",
+    barColor: "var(--green)",
+    hasComponent: true,
+    isNew: true,
+  },
 };
 
 export const GAME_KEYS = Object.keys(GAME_CATALOG);
