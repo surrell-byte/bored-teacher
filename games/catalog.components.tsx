@@ -54,7 +54,7 @@ export const GAME_COMPONENTS: Partial<Record<string, React.LazyExoticComponent<R
   blockfight: lazy(() => import('@/games/block-fight/BlockFight')),
   tictacroll: lazy(() => import('@/games/tictacroll/TicTacRoll')),
   countadd: lazy(() => import('@/games/count-and-add/CountAndAdd')),
-  moneyblocks: lazy(() => import('@/games/legacy/LegacyGamePort').then(({ default: LegacyGamePort }) => ({ default: (props: GameComponentProps) => <LegacyGamePort {...props} gameId="moneyblocks" /> }))),
+  moneyblocks: lazy(() => import('@/games/money-blocks/MoneyBlocks.jsx')),
   parachutedrop: lazy(() => import('@/games/legacy/LegacyGamePort').then(({ default: LegacyGamePort }) => ({ default: (props: GameComponentProps) => <LegacyGamePort {...props} gameId="parachutedrop" /> }))),
   superwings: lazy(() => import('@/games/legacy/LegacyGamePort').then(({ default: LegacyGamePort }) => ({ default: (props: GameComponentProps) => <LegacyGamePort {...props} gameId="superwings" /> }))),
   swampjump: lazy(() => import('@/games/legacy/LegacyGamePort').then(({ default: LegacyGamePort }) => ({ default: (props: GameComponentProps) => <LegacyGamePort {...props} gameId="swampjump" /> }))),
