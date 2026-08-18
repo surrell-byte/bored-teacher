@@ -56,18 +56,48 @@ function buildTiles() {
   return shuffle(out);
 }
 
-// applies an outcome, MUTATES the hp array passed in, returns a description string
+// applies an outcome, MUTATES the hp array passed in, returns both description and floating numbers info
 function applyOutcome(type, actor, target, hp, names) {
   const p = names[actor], o = names[target];
+  const floatingNumbers = [];
+  let desc = "";
   switch (type) {
-    case 1: hp[target] -= 20; return `${p} lands a HEAVY ATTACK! −20% to ${o}`;
-    case 2: hp[target] -= 10; return `${p} lands a light attack. −10% to ${o}`;
-    case 3: hp[target] -= 15; hp[actor] = Math.min(100, hp[actor] + 15); return `${p} steals 15% health from ${o}!`;
-    case 4: hp[actor] = Math.min(100, hp[actor] + 20); return `${p} heals! +20% health.`;
-    case 5: hp[actor] = Math.min(100, hp[actor] + 10); return `${p} recovers! +10% health.`;
-    case 6: hp[target] -= 50; return `DEVASTATION! ${p} deals 50% damage to ${o}!`;
-    default: return "";
+    case 1:
+      hp[target] -= 20;
+      floatingNumbers.push({ player: target, amount: 20, heal: false });
+      desc = `${p} lands a HEAVY ATTACK! −20% to ${o}`;
+      break;
+    case 2:
+      hp[target] -= 10;
+      floatingNumbers.push({ player: target, amount: 10, heal: false });
+      desc = `${p} lands a light attack. −10% to ${o}`;
+      break;
+    case 3:
+      hp[target] -= 15;
+      hp[actor] = Math.min(100, hp[actor] + 15);
+      floatingNumbers.push({ player: target, amount: 15, heal: false });
+      floatingNumbers.push({ player: actor, amount: 15, heal: true });
+      desc = `${p} steals 15% health from ${o}!`;
+      break;
+    case 4:
+      hp[actor] = Math.min(100, hp[actor] + 20);
+      floatingNumbers.push({ player: actor, amount: 20, heal: true });
+      desc = `${p} heals! +20% health.`;
+      break;
+    case 5:
+      hp[actor] = Math.min(100, hp[actor] + 10);
+      floatingNumbers.push({ player: actor, amount: 10, heal: true });
+      desc = `${p} recovers! +10% health.`;
+      break;
+    case 6:
+      hp[target] -= 50;
+      floatingNumbers.push({ player: target, amount: 50, heal: false });
+      desc = `DEVASTATION! ${p} deals 50% damage to ${o}!`;
+      break;
+    default:
+      desc = "";
   }
+  return { desc, floatingNumbers };
 }
 
 // one-time global stylesheet for keyframe animations (can't express these as inline style objects)
@@ -78,8 +108,14 @@ const FX_STYLE = `
 @keyframes tb-victoryPop { 0% { opacity:0; transform:scale(.65) translateY(40px); } 60% { opacity:1; transform:scale(1.08) translateY(-6px); } 100% { opacity:1; transform:scale(1) translateY(0); } }
 @keyframes tb-winnerBounce { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-10px); } }
 @keyframes tb-confettiFall { to { transform:translateY(110vh) rotate(720deg); opacity:0; } }
+@keyframes tb-floatNumber { 0% { opacity:0; transform:translate(-50%,-50%) scale(.5); } 20% { opacity:1; transform:translate(-50%,-65%) scale(1.25); } 100% { opacity:0; transform:translate(-50%,-140%) scale(.9); } }
+@keyframes tb-tileBounce { 0% { transform:translateY(0); } 40% { transform:translateY(-8px); } 70% { transform:translateY(2px); } 100% { transform:translateY(0); } }
+@keyframes tb-flipFlash { 0% { opacity:0; } 25% { opacity:.75; } 100% { opacity:0; } }
 .tb-banner-show { animation: tb-bannerShow .6s forwards; }
 .tb-banner-hide { animation: tb-bannerHide .35s forwards; }
+.tb-floating-number { position:fixed; transform:translate(-50%,-50%); pointer-events:none; font-weight:800; font-size:clamp(22px,2vw,34px); z-index:9999; text-shadow:0 2px 8px rgba(0,0,0,.35); animation:tb-floatNumber .9s forwards; }
+.tb-floating-number.damage { color:#EF4444; }
+.tb-floating-number.heal { color:#22C55E; }
 `;
 
 export default function TileBattle({ onComplete }) {
@@ -103,6 +139,7 @@ export default function TileBattle({ onComplete }) {
   const [end, setEnd] = useState(null); // { emoji, title, msg, winner, hp }
   const [particles, setParticles] = useState([]);
   const [confetti, setConfetti] = useState([]);
+  const [floatingNumbers, setFloatingNumbers] = useState([]);
   const [muted, setMuted] = useState(false);
   const flipsRef = useRef(0);
   const bannerHideTimer = useRef(null);
@@ -178,6 +215,27 @@ export default function TileBattle({ onComplete }) {
     setTimeout(() => setConfetti([]), 5000);
   }, []);
 
+  // ── floating numbers ──
+  const showFloatingNumber = useCallback((player, amount, heal = false) => {
+    const pillarId = player === 0 ? "pillar1" : "pillar2";
+    const pillar = document.getElementById(pillarId);
+    if (!pillar) return;
+    const rect = pillar.getBoundingClientRect();
+    const id = `${Date.now()}-${Math.random()}`;
+    const fontSize = amount >= 50 ? "42px" : amount >= 20 ? "34px" : "clamp(22px,2vw,34px)";
+    setFloatingNumbers((prev) => [...prev, {
+      id,
+      left: rect.left + rect.width / 2,
+      top: rect.top + 40,
+      text: (heal ? "+" : "-") + amount,
+      heal,
+      fontSize,
+    }]);
+    setTimeout(() => {
+      setFloatingNumbers((prev) => prev.filter((n) => n.id !== id));
+    }, 900);
+  }, []);
+
   const selectAvatar = useCallback((pi, av) => {
     setAvatars((prev) => {
       const next = [...prev];
@@ -240,20 +298,52 @@ export default function TileBattle({ onComplete }) {
     const thisFlipCount = flipsRef.current;
 
     const actor = turn, target = 1 - actor, type = tiles[idx];
+    const tileEl = e.currentTarget;
+
+    // Lift animation
+    tileEl.animate([
+      { transform: "translateY(0px) scale(1)" },
+      { transform: "translateY(-12px) scale(1.05)" }
+    ], {
+      duration: 180,
+      easing: "ease-out",
+      fill: "forwards"
+    });
 
     playSound("flip");
     const rect = e.currentTarget.getBoundingClientRect();
     const cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2;
     spawnParticles(cx, cy, OUTCOME_COLOR[type], type === 6 ? 45 : 20);
 
+    // Flip after lift
     setTimeout(() => {
       setHp((prevHp) => {
         const newHp = [...prevHp];
-        const desc = applyOutcome(type, actor, target, newHp, names);
+        const { desc, floatingNumbers: nums } = applyOutcome(type, actor, target, newHp, names);
         newHp[0] = Math.max(0, Math.min(100, newHp[0]));
         newHp[1] = Math.max(0, Math.min(100, newHp[1]));
+        
+        // Show floating numbers
+        nums.forEach(({ player, amount, heal }) => {
+          setTimeout(() => {
+            showFloatingNumber(player, amount, heal);
+          }, 100);
+        });
+        
         showBanner(OD[type].e, desc, OUTCOME_COLOR[type]);
         playSound(SFX_FOR_OUTCOME[type]);
+
+        // Landing animation
+        setTimeout(() => {
+          tileEl.animate([
+            { transform: "translateY(-12px) scale(1.05)" },
+            { transform: "translateY(3px) scale(.98)" },
+            { transform: "translateY(0px) scale(1)" }
+          ], {
+            duration: 220,
+            easing: "ease-out"
+          });
+        }, 650);
 
         setTimeout(() => {
           const p1Dead = newHp[0] <= 0, p2Dead = newHp[1] <= 0;
@@ -267,8 +357,8 @@ export default function TileBattle({ onComplete }) {
 
         return newHp;
       });
-    }, 480);
-  }, [busy, flipped, turn, tiles, names, finishGame, playSound, spawnParticles, showBanner]);
+    }, 180);
+  }, [busy, flipped, turn, tiles, names, finishGame, playSound, spawnParticles, showBanner, showFloatingNumber]);
 
   // ── shared styling helpers (glass look — translucent surfaces over a themed gradient backdrop) ──
   const pageBg = {
@@ -331,6 +421,13 @@ export default function TileBattle({ onComplete }) {
           transform: `rotate(${c.rotate}deg)`,
           animation: `tb-confettiFall ${c.duration}s linear forwards`,
         }} />
+      ))}
+      {floatingNumbers.map((n) => (
+        <div key={n.id} className={`tb-floating-number ${n.heal ? "heal" : "damage"}`} style={{
+          left: `${n.left}px`,
+          top: `${n.top}px`,
+          fontSize: n.fontSize,
+        }}>{n.text}</div>
       ))}
     </>
   );
@@ -433,7 +530,7 @@ export default function TileBattle({ onComplete }) {
       }}>
         <div style={{ fontSize: 44 }}>{avatars[pi]}</div>
         <div style={{ fontSize: 17, fontWeight: 500, textAlign: "center" }}>{names[pi]}</div>
-        <div style={{ width: 34, flex: "0 0 180px", height: 180, background: t.surface2, borderRadius: 99, overflow: "hidden", position: "relative" }}>
+        <div id={pi === 0 ? "pillar1" : "pillar2"} style={{ width: 34, flex: "0 0 180px", height: 180, background: t.surface2, borderRadius: 99, overflow: "hidden", position: "relative" }}>
           <div style={{ position: "absolute", bottom: 0, left: 0, width: "100%", height: `${Math.max(0, Math.min(100, hp[pi]))}%`, background: colors[pi], borderRadius: 99, transition: "height .5s cubic-bezier(.4,0,.2,1)" }} />
         </div>
         <div style={{ fontSize: 15, color: t.text2 }}>{Math.round(Math.max(0, hp[pi]))}%</div>
@@ -460,29 +557,76 @@ export default function TileBattle({ onComplete }) {
             {tiles.map((type, i) => {
               const isFlipped = flipped.has(i);
               const od = OD[type];
+              const gradients = {
+                1: "linear-gradient(180deg,#ff6b6b,#dc2626)",
+                2: "linear-gradient(180deg,#ff9f43,#f97316)",
+                3: "linear-gradient(180deg,#a855f7,#7e22ce)",
+                4: "linear-gradient(180deg,#4ade80,#16a34a)",
+                5: "linear-gradient(180deg,#60a5fa,#2563eb)",
+                6: "linear-gradient(180deg,#4b5563,#111827)"
+              };
               return (
                 <div key={i} onClick={(e) => onTile(i, e)} style={{
-                  aspectRatio: "1", borderRadius: 12, cursor: isFlipped || busy ? "default" : "pointer",
-                  perspective: 700, position: "relative", userSelect: "none",
+                  aspectRatio: "1", borderRadius: 18, cursor: isFlipped || busy ? "default" : "pointer",
+                  perspective: 1200, position: "relative", userSelect: "none",
+                  transformStyle: "preserve-3d",
+                  transition: ".18s",
                 }}>
+                  {/* Flash overlay for flip effect */}
+                  <div style={{
+                    content: "",
+                    position: "absolute",
+                    inset: 0,
+                    borderRadius: 18,
+                    background: "white",
+                    opacity: isFlipped ? 1 : 0,
+                    pointerEvents: "none",
+                    zIndex: 50,
+                    animation: isFlipped ? "tb-flipFlash .35s ease" : "none",
+                  }} />
+                  
+                  {/* Shadow */}
+                  <div style={{
+                    position: "absolute",
+                    left: "10%",
+                    right: "10%",
+                    bottom: "-8px",
+                    height: "18px",
+                    borderRadius: "50%",
+                    background: "rgba(0,0,0,.18)",
+                    filter: "blur(10px)",
+                    zIndex: -1,
+                    transform: isFlipped ? "scale(1.15)" : "scale(1)",
+                    opacity: isFlipped ? 0.6 : 1,
+                    transition: ".18s",
+                  }} />
+                  
                   <div style={{
                     width: "100%", height: "100%", position: "relative", transformStyle: "preserve-3d",
-                    transition: "transform .45s cubic-bezier(.4,0,.2,1)",
-                    transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
+                    transition: "transform .65s cubic-bezier(.22,1,.36,1), filter .35s ease",
+                    transform: isFlipped ? "translateY(-10px) rotateY(180deg) scale(1.04)" : "rotateY(0deg)",
+                    animation: isFlipped ? "tb-tileBounce .35s .55s ease-out forwards" : "none",
                   }}>
                     <div style={{
-                      position: "absolute", inset: 0, borderRadius: 12, display: "flex",
+                      position: "absolute", inset: 0, borderRadius: 18, display: "flex",
                       alignItems: "center", justifyContent: "center", backfaceVisibility: "hidden",
-                      background: t.surface, border: `0.5px solid ${t.border}`, fontSize: 24, fontWeight: 500,
+                      background: `linear-gradient(180deg, ${t.surface}, ${t.surface2})`,
+                      border: `1.5px solid ${t.border}`,
+                      fontSize: 24, fontWeight: 500,
+                      boxShadow: "0 12px 24px rgba(0,0,0,.15), inset -1px -1px 2px rgba(255,255,255,.6)",
                     }}>{i + 1}</div>
                     <div style={{
-                      position: "absolute", inset: 0, borderRadius: 12, display: "flex", flexDirection: "column",
-                      alignItems: "center", justifyContent: "center", gap: 3, textAlign: "center", padding: 5,
+                      position: "absolute", inset: 0, borderRadius: 18, display: "flex", flexDirection: "column",
+                      alignItems: "center", justifyContent: "center", gap: 6, textAlign: "center", padding: 8,
                       backfaceVisibility: "hidden", transform: "rotateY(180deg)",
-                      background: t.surface2, border: `0.5px solid ${t.border2}`, fontSize: 26,
+                      background: gradients[type],
+                      border: `1.5px solid rgba(255,255,255,.2)`,
+                      fontSize: 26,
+                      color: "white",
+                      boxShadow: "0 12px 28px rgba(0,0,0,.25), inset -1px 1px 2px rgba(255,255,255,.3)",
                     }}>
-                      <span>{od.e}</span>
-                      <span style={{ fontSize: 11, color: t.text2, lineHeight: 1.25, fontWeight: 500 }}>{od.l}</span>
+                      <span style={{ fontSize: "calc(var(--tile-size, 130px)/3.2)" }}>{od.e}</span>
+                      <span style={{ fontSize: 11, color: "rgba(255,255,255,.95)", lineHeight: 1.2, fontWeight: 700 }}>{od.l}</span>
                     </div>
                   </div>
                 </div>
