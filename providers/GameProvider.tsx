@@ -77,7 +77,7 @@
       clearPendingAchievement: () => void;
     }
 
-    const GameContext = createContext<GameContextType | null>(null);
+    export const GameContext = createContext<GameContextType | null>(null);
 
     // ── XP helpers ────────────────────────────────────────────────
 

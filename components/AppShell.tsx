@@ -2,11 +2,11 @@
 // components/AppShell.tsx
 
 import { usePathname } from 'next/navigation';
-import { type ReactNode } from 'react';
+import { type ReactNode, useContext } from 'react';
 import Navbar from './Navbar';
 import Toast from './ui/Toast';
 import AchievementToast from '@/features/achievements/components/AchievementToast';
-import { useGame } from '@/providers/GameProvider';
+import { GameContext } from '@/providers/GameProvider';
 
 const NO_SHELL_PATHS = ['/', '/auth'];
 
@@ -14,7 +14,11 @@ export default function AppShell({ children }: { children: ReactNode }) {
   const pathname   = usePathname() ?? '';
   const isGameRoute = pathname.startsWith('/games/');
   const showShell  = !NO_SHELL_PATHS.includes(pathname) && !isGameRoute;
-  const { pendingAchievement, clearPendingAchievement } = useGame();
+  
+  // Safely get game context without throwing
+  const gameContext = useContext(GameContext);
+  const pendingAchievement = gameContext?.pendingAchievement ?? null;
+  const clearPendingAchievement = gameContext?.clearPendingAchievement ?? (() => {});
 
   return (
     <div className={`app-shell-wrap${showShell ? '' : ' no-shell'}`}>
