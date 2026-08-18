@@ -87,7 +87,7 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     hasComponent: true,
   },
   memory: {
-    name: "Memory Game",
+    name: "Memory Match",
     icon: "🧠",
     desc: "Flip cards and match pairs to sharpen recall and vocabulary retention.",
     cover: "/assets/covers/memory-match-cover.webp",
