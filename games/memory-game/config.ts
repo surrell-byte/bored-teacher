@@ -4,5 +4,32 @@ export default {
   category: "Vocabulary",
   type: "memory",
   difficulty: "easy",
-  description: "Match words and pictures."
+  description:
+    "Match pictures and words while practicing English vocabulary. Features 6 vocabulary categories, 3 difficulty levels, and 3 match types with pronunciation support.",
+  skills: [
+    "Vocabulary",
+    "Reading",
+    "Listening",
+    "Pronunciation",
+    "Memory",
+    "Spelling",
+  ],
+  features: [
+    "6 vocabulary categories (Animals, Food, Weather, School, Home, Transport)",
+    "3 difficulty levels (Easy, Medium, Hard)",
+    "3 match types (Picture ↔ Picture, Picture ↔ Word, Word ↔ Word)",
+    "Text-to-speech pronunciation",
+    "3-star rating system",
+    "Accuracy scoring",
+    "Timer (optional)",
+    "Immediate feedback",
+    "Results screen with learned words",
+    "Keyboard accessible",
+  ],
+  stats: {
+    categories: 6,
+    totalWords: 48,
+    difficulty_levels: 3,
+    match_types: 3,
+  },
 };

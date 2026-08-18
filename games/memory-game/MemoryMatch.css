@@ -2,6 +2,10 @@
    MEMORY MATCH - ESL GAME HUB
 ========================================================= */
 
+* {
+  box-sizing: border-box;
+}
+
 .memory-game {
   min-height: 100vh;
   width: 100%;
@@ -10,134 +14,532 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  background: linear-gradient(135deg, #0f172a 0%, #111827 50%, #172554 100%);
   color: #fff;
-  font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.memory-game--menu {
+  justify-content: flex-start;
+  padding-top: 60px;
+}
+
+.memory-game--won {
+  justify-content: flex-start;
+  padding-top: 40px;
 }
 
 /* =========================================================
-   HEADER
+   MENU
+========================================================= */
+
+.memory-menu {
+  width: 100%;
+  max-width: 700px;
+  text-align: center;
+}
+
+.memory-menu h1 {
+  font-size: clamp(2rem, 6vw, 3rem);
+  margin: 0 0 8px 0;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.memory-menu-subtitle {
+  font-size: 1.1rem;
+  color: #cbd5e1;
+  margin-bottom: 32px;
+  line-height: 1.5;
+}
+
+.memory-menu-section {
+  margin-bottom: 32px;
+  text-align: left;
+}
+
+.memory-menu-section h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #93c5fd;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.memory-menu-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+}
+
+.memory-menu-btn {
+  padding: 12px 16px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  background: rgba(30, 41, 59, 0.8);
+  color: #cbd5e1;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.memory-menu-btn:hover {
+  background: rgba(30, 41, 59, 1);
+  border-color: rgba(147, 197, 253, 0.4);
+  color: #93c5fd;
+}
+
+.memory-menu-btn.active {
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  border-color: #6366f1;
+  color: #fff;
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+}
+
+.memory-start-btn {
+  width: 100%;
+  padding: 18px 32px;
+  margin-top: 32px;
+  border: none;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: #fff;
+  font-weight: 800;
+  font-size: 1.1rem;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(34, 197, 94, 0.3);
+  transition: all 0.3s ease;
+}
+
+.memory-start-btn:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(34, 197, 94, 0.4);
+}
+
+.memory-start-btn:active {
+  transform: translateY(-2px);
+}
+
+/* =========================================================
+   HEADER & HUD
 ========================================================= */
 
 .memory-header {
+  width: 100%;
+  max-width: 900px;
   text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: 32px;
 }
 
 .memory-header h1 {
-  color: #e2b96f;
-  font-size: 2rem;
-  margin: 0 0 6px 0;
-  letter-spacing: 2px;
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  margin: 0 0 16px 0;
   font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
-.memory-moves {
+.memory-hud {
+  display: flex;
+  justify-content: center;
+  gap: clamp(16px, 3vw, 32px);
+  flex-wrap: wrap;
+}
+
+.memory-hud-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.memory-hud-label {
+  font-size: 0.8rem;
   color: #94a3b8;
-  margin: 0 0 18px 0;
-  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 600;
 }
 
-.memory-moves strong {
-  color: #f5c842;
+.memory-hud-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #fbbf24;
+}
+
+.memory-hud-value.warning {
+  color: #ef4444;
+  animation: pulse 0.8s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
 }
 
 /* =========================================================
-   GAME BOARD
+   FEEDBACK
+========================================================= */
+
+.memory-feedback {
+  margin-bottom: 20px;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1rem;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.memory-feedback--success {
+  background: rgba(34, 197, 94, 0.2);
+  border: 2px solid #22c55e;
+  color: #86efac;
+}
+
+.memory-feedback--error {
+  background: rgba(239, 68, 68, 0.2);
+  border: 2px solid #ef4444;
+  color: #fca5a5;
+}
+
+/* =========================================================
+   GAME BOARD & CARDS
 ========================================================= */
 
 .memory-board {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: clamp(8px, 1.5vw, 20px);
+  gap: clamp(8px, 2vw, 16px);
   width: 100%;
-  max-width: min(720px, calc(100vw - 48px));
+  max-width: 900px;
+  margin-bottom: 32px;
+  perspective: 1000px;
 }
 
 .memory-card {
-  width: 100%;
   aspect-ratio: 1;
+  border: none;
   border-radius: 16px;
   cursor: pointer;
+  padding: 0;
+  position: relative;
+  transform-style: preserve-3d;
+  background: transparent;
+  transition: all 0.3s ease;
+}
+
+.memory-card:disabled {
+  cursor: not-allowed;
+}
+
+.memory-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+}
+
+.memory-card--hidden .memory-card-inner {
+  transform: rotateY(0deg);
+}
+
+.memory-card--flipped .memory-card-inner,
+.memory-card--matched .memory-card-inner {
+  transform: rotateY(180deg);
+}
+
+.memory-card-front,
+.memory-card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: #fff;
-  transition: all 0.2s ease;
-  user-select: none;
-  gap: 2px;
-  border: 2px solid transparent;
+  backface-visibility: hidden;
+  border-radius: 16px;
+  font-weight: 700;
 }
 
-.memory-card--hidden {
+.memory-card-front {
   background: linear-gradient(135deg, #334155, #1e293b);
-  font-size: clamp(1.8rem, 4.2vw, 3.2rem);
+  font-size: clamp(2rem, 5vw, 3rem);
+  color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.1);
 }
 
-.memory-card--flipped {
+.memory-card-back {
   background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-  transform: scale(1.04);
-  font-size: clamp(1.3rem, 3.2vw, 2.4rem);
+  transform: rotateY(180deg);
   border: 2px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 4px 12px #0005;
+  gap: 8px;
 }
 
-.memory-card--matched {
+.memory-card--matched .memory-card-back {
   background: linear-gradient(135deg, #22c55e, #16a34a);
-  transform: scale(1.04);
-  font-size: clamp(1.3rem, 3.2vw, 2.4rem);
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 0 16px #22c55e66;
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.4);
 }
 
 .memory-card-emoji {
-  font-size: 1em;
+  font-size: clamp(1.5rem, 4vw, 3rem);
 }
 
 .memory-card-word {
-  font-size: 0.6rem;
-  opacity: 0.9;
+  font-size: clamp(0.9rem, 2vw, 1.3rem);
+  color: #fff;
+  text-align: center;
+  padding: 0 8px;
 }
 
-/* =========================================================
-   WIN SCREEN
-========================================================= */
-
-.memory-win {
-  margin-top: 24px;
-  padding: 20px 36px;
-  border-radius: 20px;
-  background: linear-gradient(135deg, #f5c842, #e2a02a);
-  color: #111;
-  font-weight: 800;
-  font-size: 1.2rem;
-  text-align: center;
+.memory-card:hover:not(:disabled) .memory-card-front {
+  border-color: rgba(147, 197, 253, 0.5);
 }
 
 /* =========================================================
    BUTTONS
 ========================================================= */
 
-.memory-restart-btn {
-  margin-top: 20px;
-  padding: 12px 32px;
-  border-radius: 999px;
-  border: none;
-  background: linear-gradient(135deg, #6366f1, #4f46e5);
-  color: #fff;
-  font-weight: 700;
-  font-size: 1rem;
+.memory-back-btn {
+  padding: 12px 28px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  background: rgba(30, 41, 59, 0.8);
+  color: #cbd5e1;
+  font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 4px 12px #6366f144;
   transition: all 0.2s ease;
 }
 
-.memory-restart-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px #6366f166;
+.memory-back-btn:hover {
+  border-color: rgba(147, 197, 253, 0.4);
+  color: #93c5fd;
 }
 
-.memory-restart-btn:active {
-  transform: translateY(0);
+/* =========================================================
+   WIN SCREEN
+========================================================= */
+
+.memory-win-screen {
+  width: 100%;
+  max-width: 600px;
+  text-align: center;
+  animation: slideIn 0.5s ease;
 }
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.memory-win-title {
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  font-weight: 900;
+  margin-bottom: 8px;
+  letter-spacing: -0.02em;
+}
+
+.memory-win-subtitle {
+  font-size: 1.2rem;
+  color: #cbd5e1;
+  margin-bottom: 24px;
+}
+
+.memory-stars {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  font-size: 3rem;
+  margin-bottom: 32px;
+}
+
+.star {
+  opacity: 0.3;
+  transform: scale(0.8);
+  transition: all 0.3s ease;
+}
+
+.star.filled {
+  opacity: 1;
+  transform: scale(1);
+  filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.6));
+}
+
+.memory-results {
+  background: rgba(30, 41, 59, 0.8);
+  border: 2px solid rgba(147, 197, 253, 0.2);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.memory-result-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.memory-result-label {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+}
+
+.memory-result-value {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #fbbf24;
+}
+
+.memory-words-learned {
+  margin-bottom: 32px;
+  text-align: left;
+}
+
+.memory-words-learned h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #93c5fd;
+}
+
+.memory-words-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+}
+
+.memory-word-badge {
+  background: rgba(99, 102, 241, 0.2);
+  border: 2px solid rgba(99, 102, 241, 0.4);
+  border-radius: 12px;
+  padding: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 0.95rem;
+}
+
+.memory-word-badge:hover {
+  background: rgba(99, 102, 241, 0.3);
+  border-color: rgba(99, 102, 241, 0.6);
+  transform: translateY(-2px);
+}
+
+.memory-win-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.memory-play-again-btn,
+.memory-menu-btn-primary {
+  padding: 14px 28px;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.memory-play-again-btn {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+.memory-play-again-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(34, 197, 94, 0.4);
+}
+
+.memory-menu-btn-primary {
+  background: rgba(99, 102, 241, 0.2);
+  border: 2px solid rgba(99, 102, 241, 0.4);
+  color: #93c5fd;
+}
+
+.memory-menu-btn-primary:hover {
+  background: rgba(99, 102, 241, 0.3);
+  border-color: rgba(99, 102, 241, 0.6);
+  transform: translateY(-2px);
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 640px) {
+  .memory-game {
+    padding: 20px 12px 40px;
+  }
+
+  .memory-menu-buttons {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .memory-results {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .memory-win-buttons {
+    flex-direction: column;
+  }
+
+  .memory-play-again-btn,
+  .memory-menu-btn-primary {
+    width: 100%;
+  }
+
+  .memory-words-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  }
+}
+
+/* =========================================================
+   ACCESSIBILITY
+========================================================= */
+
+.memory-card:focus-visible {
+  outline: 3px solid #93c5fd;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
