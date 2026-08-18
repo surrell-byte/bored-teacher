@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import "./MemoryMatch.css";
 
 const WORDS = [
   { word: "Apple", emoji: "🍎" },
@@ -66,45 +67,32 @@ export default function MemoryMatch({ onComplete }) {
   };
 
   return (
-    <div style={{
-      minHeight: "100vh", display: "flex", flexDirection: "column",
-      alignItems: "center", justifyContent: "center",
-      background: "linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%)",
-      fontFamily: "'Segoe UI', sans-serif", padding: 20,
-    }}>
-      <h1 style={{ color: "#e2b96f", fontSize: "2rem", margin: "0 0 6px", letterSpacing: 2 }}>🧠 Memory Match</h1>
-      <p style={{ color: "#94a3b8", margin: "0 0 18px" }}>Moves: <strong style={{ color: "#f5c842" }}>{moves}</strong></p>
+    <div className="memory-game">
+      <div className="memory-header">
+        <h1>🧠 Memory Match</h1>
+        <p className="memory-moves">Moves: <strong>{moves}</strong></p>
+      </div>
 
-      <div style={{
-        display: "grid", gridTemplateColumns: "repeat(4, 1fr)",
-        gap: "clamp(8px, 1.5vw, 20px)", width: "100%",
-        maxWidth: "min(720px, calc(100vw - 48px))",
-      }}>
+      <div className="memory-board">
         {cards.map((card, idx) => {
           const isFlipped = flipped.includes(idx) || matched.has(idx);
           const isMatched = matched.has(idx);
           return (
-            <div key={idx} onClick={() => flip(idx)} style={{
-              width: "100%", aspectRatio: "1", borderRadius: 16, cursor: "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: isFlipped ? "clamp(1.3rem, 3.2vw, 2.4rem)" : "clamp(1.8rem, 4.2vw, 3.2rem)",
-              background: isMatched
-                ? "linear-gradient(135deg,#22c55e,#16a34a)"
-                : isFlipped
-                  ? "linear-gradient(135deg,#3b82f6,#1d4ed8)"
-                  : "linear-gradient(135deg,#334155,#1e293b)",
-              color: "#fff",
-              boxShadow: isMatched ? "0 0 16px #22c55e66" : "0 4px 12px #0005",
-              transform: isFlipped ? "scale(1.04)" : "scale(1)",
-              transition: "all 0.2s ease",
-              userSelect: "none",
-              flexDirection: "column", gap: 2,
-              border: isFlipped ? "2px solid rgba(255,255,255,0.2)" : "2px solid transparent",
-            }}>
+            <div
+              key={idx}
+              onClick={() => flip(idx)}
+              className={`memory-card ${
+                isMatched
+                  ? "memory-card--matched"
+                  : isFlipped
+                    ? "memory-card--flipped"
+                    : "memory-card--hidden"
+              }`}
+            >
               {isFlipped ? (
                 <>
-                  <span>{card.emoji}</span>
-                  <span style={{ fontSize: "0.6rem", opacity: 0.9 }}>{card.word}</span>
+                  <span className="memory-card-emoji">{card.emoji}</span>
+                  <span className="memory-card-word">{card.word}</span>
                 </>
               ) : "❓"}
             </div>
@@ -113,21 +101,12 @@ export default function MemoryMatch({ onComplete }) {
       </div>
 
       {won && (
-        <div style={{
-          marginTop: 24, padding: "20px 36px", borderRadius: 20,
-          background: "linear-gradient(135deg,#f5c842,#e2a02a)",
-          color: "#111", fontWeight: 800, fontSize: "1.2rem", textAlign: "center",
-        }}>
+        <div className="memory-win">
           🎉 You won in {moves} moves!
         </div>
       )}
 
-      <button onClick={startGame} style={{
-        marginTop: 20, padding: "12px 32px", borderRadius: 999, border: "none",
-        background: "linear-gradient(135deg,#6366f1,#4f46e5)", color: "#fff",
-        fontWeight: 700, fontSize: "1rem", cursor: "pointer",
-        boxShadow: "0 4px 12px #6366f144",
-      }}>
+      <button onClick={startGame} className="memory-restart-btn">
         🔄 Restart
       </button>
     </div>

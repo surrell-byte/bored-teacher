@@ -13,6 +13,7 @@ export const BLOG_SECTIONS = [
     title: 'Getting Started as an ESL Teacher',
     description: 'These are ideal for new teachers.',
     posts: [
+      { slug: 'beginners-guide-teaching-esl', title: 'A Beginner\'s Guide to Teaching ESL', published: true },
       { slug: 'first-esl-class', title: 'Your First ESL Class: What to Do Before, During, and After', published: false },
       { slug: 'plan-first-lesson', title: 'How to Plan Your First ESL Lesson', published: false },
       { slug: 'first-month-teaching', title: 'What to Expect During Your First Month of Teaching', published: false },

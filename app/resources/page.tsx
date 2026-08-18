@@ -33,8 +33,8 @@ const RESOURCES: Resource[] = [
   { id: 'r3', icon: '✏️', title: 'Grammar Games in the Classroom',      desc: 'Pair Warriors Grammar Slam and Neon Bridge of Destiny with grammar lessons for maximum impact.', type: 'guide',     subject: 'English',        dateAdded: '2025-04-24' },
   { id: 'r4', icon: '🔬', title: 'Science + ESL Cross-Curricular Pack', desc: 'Lesson plans linking Animal Kingdom Quest, Ocean Quest and Animal Class Quest to science units.', type: 'guide',     subject: 'Science',        dateAdded: '2025-04-26' },
   { id: 'r5', icon: '🔤', title: 'Phonics Integration Guide',           desc: 'Use Phonics Adventure and Phonics World as warm-up activities aligned to phonics stages.',     type: 'guide',     subject: 'English',        dateAdded: '2025-04-28' },
-  { id: 'r6', icon: '👨‍🏫', title: 'A Beginner\'s Guide to Teaching ESL',    desc: '36 practical tips for new English teachers—from classroom management and grammar teaching to motivation, scaffolding, and building confidence.', type: 'guide', subject: 'English', dateAdded: '2026-08-18' },
-  { id: 'r7', icon: '🎓', title: 'Classroom Management and Conflict Resolution', desc: '40 practical strategies for ESL teachers—from establishing expectations and building relationships to handling conflicts, bullying, and maintaining authority.', type: 'guide', subject: 'English', dateAdded: '2026-08-18' },
+  { id: 'r6', icon: '🔤', title: 'A Beginner\'s Guide to Teaching ESL',    desc: '36 practical tips for new English teachers—from classroom management and grammar teaching to motivation, scaffolding, and building confidence.', type: 'guide', subject: 'English', dateAdded: '2026-08-18', link: '/blog/beginners-guide-teaching-esl' },
+  { id: 'r7', icon: '🎓', title: 'Classroom Management and Conflict Resolution', desc: '40 practical strategies for ESL teachers—from establishing expectations and building relationships to handling conflicts, bullying, and maintaining authority.', type: 'guide', subject: 'English', dateAdded: '2026-08-18', link: '/blog/classroom-management-conflict-resolution' },
   { id: 't1', icon: '💡', title: 'Setting Up the Leaderboard',          desc: 'Import your class list, assign students to accounts, and sync scores automatically.',          type: 'tip',       subject: 'Life Skills',    dateAdded: '2025-04-30' },
   { id: 't2', icon: '🏆', title: 'Running a Games Tournament',          desc: 'Step-by-step guide to hosting a 30-minute in-class games tournament using the Hub.',          type: 'tip',       subject: 'Life Skills',    dateAdded: '2025-05-01' },
   { id: 't3', icon: '📊', title: 'Reading Trophy Room Data',            desc: 'How to interpret badge progress to identify struggling vs. advanced learners.',               type: 'tip',       subject: 'Life Skills',    dateAdded: '2025-05-02' },
@@ -191,7 +191,12 @@ export default function ResourcesPage() {
                     </div>
                     <div className="resource-card-title">{r.title}</div>
                     <div className="resource-card-desc" style={{ marginBottom: 10 }}>{r.desc}</div>
-                    <button className="pill-btn" style={{ fontSize: '0.78rem', width: '100%', justifyContent: 'center' }} disabled={r.type === 'tool'}>
+                    <button 
+                      className="pill-btn" 
+                      style={{ fontSize: '0.78rem', width: '100%', justifyContent: 'center' }} 
+                      disabled={r.type === 'tool' || !r.link}
+                      onClick={() => r.link && router.push(r.link)}
+                    >
                       {TYPE_META[r.type].action}
                     </button>
                   </div>
@@ -242,7 +247,12 @@ export default function ResourcesPage() {
                       </div>
                       <div className="resource-card-title">{r.title}</div>
                       <div className="resource-card-desc" style={{ marginBottom: 10 }}>{r.desc}</div>
-                      <button className="pill-btn" style={{ fontSize: '0.78rem', width: '100%', justifyContent: 'center' }} disabled={r.type === 'tool'}>
+                      <button 
+                        className="pill-btn" 
+                        style={{ fontSize: '0.78rem', width: '100%', justifyContent: 'center' }} 
+                        disabled={r.type === 'tool' || !r.link}
+                        onClick={() => r.link && router.push(r.link)}
+                      >
                         {TYPE_META[r.type].action}
                       </button>
                     </div>
