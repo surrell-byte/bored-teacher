@@ -174,6 +174,14 @@ export default function Navbar() {
                   ✏️ Edit Profile
                 </button>
 
+                <button
+                  className="dropdown-item"
+                  role="menuitem"
+                  onClick={() => { router.push('/subscription'); setShowDropdown(false); }}
+                >
+                  💳 Manage Subscription
+                </button>
+
                 <div className="dropdown-divider" />
 
                 <div className="dropdown-item dropdown-theme" role="menuitem">

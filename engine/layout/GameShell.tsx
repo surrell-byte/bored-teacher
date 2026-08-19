@@ -138,7 +138,7 @@ export default function GameShell({
                   <button type="button" className="game-shell-header-action" onClick={toggleFullscreen}>
                     {isFullscreen ? 'Exit full screen' : 'Full screen'}
                   </button>
-                  <Link className="game-shell-header-action" href="/hub">Exit</Link>
+                  <Link className="game-shell-header-action" href="/games">Exit</Link>
                 </>
               }
             />
@@ -150,7 +150,7 @@ export default function GameShell({
           </>
         }
       >
-        <ErrorBoundary resetKey={sessionKey} onRetry={restart} onExit={() => window.location.assign('/hub')}>
+        <ErrorBoundary resetKey={sessionKey} onRetry={restart} onExit={() => window.location.assign('/games')}>
           <div className="game-shell-play-area" aria-busy={paused}>
             {children}
             {paused && (

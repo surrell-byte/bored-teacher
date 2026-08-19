@@ -67,6 +67,11 @@ const VISUAL_CATEGORIES = [
   { key: "food", emoji: "🍎", gradient: ["#ff9966", "#8a2a10"], match: ["fruit","food","honey","banana","apple","pizza","cheese","olive oil","eat"] },
   { key: "tech", emoji: "💻", gradient: ["#7c93ff", "#1a1a4a"], match: ["www","website","internet","computer","technology"] },
 ];
+const LEVEL_NAMES = {
+  1: "Explorer's Camp", 2: "Animal Kingdom", 3: "World Wonders", 4: "Science Station", 5: "Ocean Quest",
+  6: "History Hills", 7: "Space Mission", 8: "Sports Arena", 9: "Brain Mountain", 10: "Master's Peak",
+};
+function getLevelName(level) { return LEVEL_NAMES[level] || `Mystery Trail ${level}`; }
 const FALLBACK_VISUALS = [
   { key: "brain", emoji: "🧠", gradient: ["#d4a853", "#7a4a10"] },
   { key: "puzzle", emoji: "🧩", gradient: ["#8a6dff", "#2a1a6b"] },
@@ -82,7 +87,7 @@ function getVisual(question) {
 }
 
 const QUIZ_STYLES = `
-  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@500;600;700;800;900&display=swap');
   .qt-root * { box-sizing: border-box; }
   .qt-root { font-family: 'DM Sans', sans-serif; }
   .qt-brand { font-family: 'Bebas Neue', sans-serif; letter-spacing: 2px; }
@@ -208,6 +213,33 @@ const QUIZ_STYLES = `
   @keyframes qtPop { 0% { transform: scale(0.5); opacity: 0; } 70% { transform: scale(1.08); } 100% { transform: scale(1); opacity: 1; } }
   @keyframes qtToastIn { from { transform: translateX(-50%) translateY(-16px); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }
   @keyframes qtScreenEnter { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+  .qt-root { min-height: 100%; isolation: isolate; color: #fff; }
+  .qt-root::before { content: ""; position: fixed; inset: 0; z-index: -5; pointer-events: none; background: radial-gradient(circle at 15% 10%, rgba(91,196,255,.22), transparent 28%), radial-gradient(circle at 85% 20%, rgba(184,112,255,.2), transparent 28%), radial-gradient(circle at 50% 100%, rgba(52,211,153,.14), transparent 32%), linear-gradient(180deg, #101a38 0%, #081026 48%, #050917 100%); }
+  .qt-root::after { content: ""; position: fixed; inset: 0; z-index: -4; pointer-events: none; opacity: .28; background-image: radial-gradient(circle, rgba(255,255,255,.35) 1px, transparent 1px), radial-gradient(circle, rgba(255,255,255,.18) 1px, transparent 1px); background-size: 70px 70px, 120px 120px; background-position: 10px 20px, 40px 80px; animation: qtStars 24s linear infinite; }
+  .qt-hero { text-align: center; position: relative; z-index: 1; animation: qtScreenEnter .5s ease-out; }
+  .qt-title { font-family: 'Baloo 2', sans-serif; font-size: clamp(2.4rem, 6vw, 3.4rem); line-height: 1; margin: 4px 0 2px; background: linear-gradient(135deg, #ffe27a, #f0c46a 50%, #a86d0a); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .qt-subtitle { color: #b8d7ff; margin: 5px 0 0; font-size: .98rem; font-weight: 800; }
+  .qt-map { width: 100%; max-width: 720px; display: flex; flex-direction: column; gap: 10px; max-height: 62vh; overflow-y: auto; padding: 4px; animation: qtScreenEnter .6s ease-out; }
+  .qt-level-name { color: #edf5ff; font-size: 1rem; font-weight: 900; margin-bottom: 2px; }
+  .qt-level-card { min-height: 78px; background: linear-gradient(145deg, rgba(255,255,255,.1), rgba(255,255,255,.035)); box-shadow: 0 10px 22px rgba(0,0,0,.18); }
+  .qt-level-card:hover:not(:disabled) { transform: translateX(4px) translateY(-2px); border-color: rgba(88,200,255,.7); box-shadow: 0 14px 28px rgba(31,147,255,.18); }
+  .qt-level-card.done { border-color: rgba(61,232,160,.6); }
+  .qt-hud { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .qt-score-badge { padding: 6px 12px; border-radius: 999px; background: rgba(255,210,92,.13); color: #ffe27a; font-weight: 900; }
+  .qt-question-counter { display: flex; justify-content: space-between; color: rgba(255,255,255,.58); font-size: .72rem; font-weight: 900; letter-spacing: 1px; }
+  .qt-answers { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .qt-answer-btn { min-height: 64px; }
+  .qt-answer-btn.is-correct { animation: qtAnswerCorrect .35s ease-out; }
+  .qt-answer-btn.is-wrong { animation: qtAnswerWrong .35s ease-out; }
+  .qt-answer-btn:hover:not(:disabled) { background: rgba(88,200,255,.13) !important; border-color: #58c8ff !important; box-shadow: 0 8px 22px rgba(45,172,255,.16); }
+  .qt-answer-key { border: 1px solid rgba(255,255,255,.12); color: #b8d7ff; }
+  .qt-stars-big { display: flex; gap: 6px; font-size: 2.4rem; }
+  .qt-result { max-width: 650px; }
+  @keyframes qtStars { to { background-position: 80px 90px, 150px 20px; } }
+  @keyframes qtAnswerCorrect { 50% { transform: scale(1.03); box-shadow: 0 0 24px rgba(61,232,160,.35); } }
+  @keyframes qtAnswerWrong { 25%, 75% { transform: translateX(-5px); } 50% { transform: translateX(5px); } }
+  @media (max-width: 620px) { .qt-answers { grid-template-columns: 1fr; } .qt-hud { justify-content: center; } .qt-question-counter { margin-top: 2px; } }
 `;
 
 export default function QuizTrail({ onComplete }) {
@@ -453,17 +485,16 @@ export default function QuizTrail({ onComplete }) {
       <div className="qt-root" style={wrap}>
         <style>{QUIZ_STYLES}</style>
         {toast && <Toast toast={toast} />}
-        <div style={{ textAlign: "center", position: "relative", zIndex: 1, animation: "qtScreenEnter 0.5s ease-out" }}>
-          <div className="qt-hero-icon">🧠</div>
-          <h1 className="qt-brand" style={{ fontSize: "clamp(2.2rem, 6vw, 3rem)", margin: "4px 0 2px", background: "linear-gradient(135deg, #d4a853, #f0c46a 50%, #a86d0a)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>
-            Quiz Trail
-          </h1>
-          <p style={{ color: "#8b98b0", margin: 0, fontSize: "0.9rem" }}>
-            {playerName} · {TOTAL_LEVELS} levels · {QUESTIONS_PER_LEVEL} questions each
+        <div className="qt-hero">
+          <div className="qt-hero-icon">🗺️</div>
+          <h1 className="qt-title">Quiz Trail</h1>
+          <p className="qt-subtitle">🌟 Explore · Answer · Master</p>
+          <p style={{ color: "rgba(255,255,255,.45)", margin: "5px 0 0", fontSize: ".78rem", fontWeight: 800 }}>
+            {playerName} · {TOTAL_LEVELS} adventures · {QUESTIONS_PER_LEVEL} questions
           </p>
         </div>
 
-        <div className="qt-glass" style={{ ...card, display: "flex", flexDirection: "column", gap: 8, animation: "qtScreenEnter 0.6s ease-out", maxHeight: "56vh", overflowY: "auto" }}>
+        <div className="qt-map">
           {Array.from({ length: TOTAL_LEVELS }, (_, i) => i + 1).map((lv) => {
             const unlocked = lv <= progress.unlockedLevels;
             const done = progress.levelScores.hasOwnProperty(lv);
@@ -483,13 +514,14 @@ export default function QuizTrail({ onComplete }) {
                 </div>
                 <div className="qt-level-info">
                   <div className="qt-level-label">Level {lv}</div>
+                  <div className="qt-level-name">{getLevelName(lv)}</div>
                   <div className="qt-level-stars">
                     {[1, 2, 3].map((s) => (
-                      <span key={s} style={{ color: s <= stars ? "#d4a853" : "rgba(255,255,255,0.18)" }}>★</span>
+                      <span key={s} style={{ color: s <= stars ? "#ffd45c" : "rgba(255,255,255,.18)", textShadow: s <= stars ? "0 0 10px rgba(255,210,80,.45)" : "none" }}>★</span>
                     ))}
                   </div>
                 </div>
-                {done && <div className="qt-level-score">{progress.levelScores[lv]} pts</div>}
+                {done && <div className="qt-level-score">{progress.levelScores[lv]} XP</div>}
               </button>
             );
           })}
@@ -518,16 +550,21 @@ export default function QuizTrail({ onComplete }) {
     return (
       <div className="qt-root" style={wrap}>
         <style>{QUIZ_STYLES}</style>
-        <div className="qt-glass" style={{ ...card, textAlign: "center", display: "flex", flexDirection: "column", gap: 14, alignItems: "center", animation: "qtScreenEnter 0.5s ease-out" }}>
-          <div className="qt-celeb-icon">{resultData.isGameOver ? "😢" : "🎉"}</div>
-          <h2 className="qt-brand" style={{ fontSize: "1.8rem", letterSpacing: 1.5, margin: 0, color: "#e8edf5" }}>
-            {resultData.isGameOver ? "Game Over" : "Level Complete!"}
+        <div className="qt-glass qt-result" style={{ ...card, textAlign: "center", display: "flex", flexDirection: "column", gap: 16, alignItems: "center", animation: "qtScreenEnter 0.5s ease-out" }}>
+          <div className="qt-celeb-icon">{resultData.isGameOver ? "💪" : "🏆"}</div>
+          <h2 className="qt-brand" style={{ fontSize: "2rem", letterSpacing: 1.5, margin: 0, color: "#e8edf5" }}>
+            {resultData.isGameOver ? "Keep Exploring!" : "Trail Complete!"}
           </h2>
           <div className="qt-celeb-score">{resultData.score}</div>
+          <div style={{ color: "rgba(255,255,255,.55)", fontWeight: 900, fontSize: ".8rem", letterSpacing: 1 }}>FINAL XP</div>
+          <div className="qt-stars-big">
+            {[1, 2, 3].map((star) => (
+              <span key={star} style={{ opacity: star <= resultData.stars ? 1 : .2, transform: star <= resultData.stars ? "scale(1)" : "scale(.85)", filter: star <= resultData.stars ? "drop-shadow(0 0 10px rgba(255,215,80,.55))" : "none", transition: "all .3s ease" }}>⭐</span>
+            ))}
+          </div>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
             <StatPill label="✅ Correct" value={resultData.correct} />
             <StatPill label="❌ Wrong" value={resultData.wrong} />
-            <StatPill label="⭐ Stars" value={"⭐".repeat(resultData.stars) + "☆".repeat(3 - resultData.stars)} />
             <StatPill label="❤️ Lives Left" value={resultData.lives} />
           </div>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center", marginTop: 4 }}>
@@ -561,22 +598,21 @@ export default function QuizTrail({ onComplete }) {
       <style>{QUIZ_STYLES}</style>
       {toast && <Toast toast={toast} />}
       <div className="qt-glass" style={{ ...card, display: "flex", flexDirection: "column", gap: 14, animation: "qtScreenEnter 0.4s ease-out" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
-          <span className="qt-hud-pill">Level {currentLevel}</span>
+        <div className="qt-hud">
+          <span className="qt-hud-pill">🗺️ LEVEL {currentLevel}</span>
           <div className="qt-lives">
             {Array.from({ length: MAX_LIVES }, (_, i) => (
               <span key={i} className={`qt-life${i >= lives ? " spent" : ""}`}>❤️</span>
             ))}
           </div>
-          <span className="qt-mono" style={{ color: "#8b98b0", fontSize: "0.85rem" }}>
-            {questionIndex + 1}/{levelQuestions.length}
-          </span>
+          <span className="qt-score-badge">💎 {score}</span>
           <button onClick={quitLevel} className="qt-btn qt-btn-ghost qt-btn-danger" style={{ padding: "5px 14px", fontSize: "0.75rem" }}>
             ✕ Quit
           </button>
         </div>
 
-        <div className="qt-bar-track" style={{ height: 6 }}>
+        <div className="qt-question-counter"><span>QUESTION {questionIndex + 1}</span><span>{levelQuestions.length} TOTAL</span></div>
+        <div className="qt-bar-track" style={{ height: 7 }}>
           <Bar pct={progressPct} color="#d4a853" />
         </div>
         <div className="qt-bar-track" style={{ height: 5 }}>
@@ -593,7 +629,7 @@ export default function QuizTrail({ onComplete }) {
               {q.question}
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <div className="qt-answers">
               {answers.map((item, i) => {
                 let bg = "rgba(255,255,255,0.04)";
                 let border = "2px solid rgba(255,255,255,0.09)";
@@ -611,18 +647,20 @@ export default function QuizTrail({ onComplete }) {
                     key={i}
                     disabled={locked}
                     onClick={() => checkAnswer(i)}
-                    className="qt-answer-btn"
+                    className={`qt-answer-btn ${locked && i === correctIndex ? "is-correct" : ""} ${locked && i === selectedIndex && i !== correctIndex ? "is-wrong" : ""}`}
                     style={{ border, background: bg, cursor: locked ? "default" : "pointer" }}
                   >
                     <span className="qt-answer-key">{answerKeys[i]}</span>
-                    {item.text}
+                    <span style={{ flex: 1 }}>{item.text}</span>
+                    {locked && i === correctIndex && <span style={{ fontSize: "1.15rem" }}>✓</span>}
+                    {locked && i === selectedIndex && i !== correctIndex && <span style={{ fontSize: "1.15rem" }}>✕</span>}
                   </button>
                 );
               })}
             </div>
 
-            <div style={{ textAlign: "center", fontWeight: 700 }}>
-              Score: <span style={{ color: "#d4a853" }}>{score}</span>
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 8, marginTop: 2, color: "rgba(255,255,255,.55)", fontSize: ".8rem", fontWeight: 900 }}>
+              💎 <span style={{ color: "#ffd76a", fontSize: "1rem", textShadow: "0 0 12px rgba(255,210,80,.3)" }}>{score}</span> XP
             </div>
           </>
         )}

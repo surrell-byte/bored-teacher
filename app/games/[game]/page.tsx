@@ -9,8 +9,7 @@ import { syncCurrentPlayerToLeaderboard } from '@/features/leaderboard/api';
 import { GAME_NAMES, GAME_ICONS } from '@/constants/index';
 import { GAME_COMPONENTS } from '@/games/catalog.components';
 import { GameShell } from '@/engine';
-import DesktopControls from '@/components/ui/controls/DesktopControls';
-import { Connect4HeaderActions } from '@/games/connect-4/Connect4.jsx';
+import Connect4HeaderActions from '@/components/ui/controls/Connect4HeaderActions';
 
 // ── Types ─────────────────────────────────────────────────────
 interface GameResult {
@@ -89,13 +88,13 @@ export default function GamePage() {
         completion={result}
         onContinue={handleContinue}
         onRestart={handleContinue}
-        controls={isConnect4 ? null : <DesktopControls />}
+        controls={null}
         headerExtra={
           <>
             {isConnect4 && c4Hud ? <Connect4HeaderActions hud={c4Hud} /> : null}
             {isPhonicsAdventure && (
-              <Link className="game-shell-header-action" href="/games/phonicsadventure">
-                Back to Menu
+              <Link className="game-shell-header-action" href="/games/phonicsadventure?screen=menu">
+                Back to Home
               </Link>
             )}
           </>

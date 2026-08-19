@@ -1,4 +1,5 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 
 const LETTER_DATA = {
   A:{ word:"apple",     emoji:"🍎", extras:[["ant","🐜"],["alligator","🐊"]] },
@@ -88,27 +89,51 @@ function PhonicStyles() {
       }
 
       .learn-screen {
+        min-height: calc(100vh - 48px);
         flex-direction: row;
-        align-items: center;
+        align-items: stretch;
+        justify-content: center;
         gap: 24px;
         text-align: left;
+        padding: 18px 30px 20px;
       }
 
       .learn-main-column {
-        flex: 1 1 auto;
-        min-width: 0;
+        width: min(720px, 46vw);
+        flex: 1 1 0;
+        min-height: 0;
         display: flex;
         flex-direction: column;
         align-items: center;
+        justify-content: center;
+      }
+
+      .learn-card {
+        width: 100%;
+        min-height: 0;
+        padding: 28px 42px;
+        gap: 18px;
+        border-radius: 28px;
+        background: linear-gradient(145deg, rgba(67, 111, 160, .82), rgba(35, 78, 126, .82));
+        border: 1px solid rgba(139, 213, 255, .25);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, .25), inset 0 1px rgba(255, 255, 255, .08);
       }
 
       .learn-screen .alphabet-nav {
-        flex: 0 0 210px;
+        width: min(720px, 46vw);
+        flex: 1 1 0;
+        min-height: 0;
         margin: 0;
-        padding: 18px;
+        padding: 28px;
         background: rgba(255, 255, 255, .08);
         border: 1px solid rgba(255, 255, 255, .1);
         border-radius: 22px;
+        display: flex;
+        align-content: center;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 10px;
       }
 
       .phonic-panel {
@@ -155,6 +180,64 @@ function PhonicStyles() {
         justify-content: center;
         flex-wrap: wrap;
       }
+
+      .menu-levels {
+        display: grid;
+        gap: 12px;
+        width: 100%;
+      }
+
+      .menu-level {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        width: 100%;
+        padding: 18px 22px;
+        background: rgba(255, 255, 255, .1);
+        border: 1px solid rgba(255, 255, 255, .12);
+        border-radius: 16px;
+        color: white;
+        text-align: left;
+        cursor: pointer;
+        transition: transform .15s, background .2s;
+      }
+
+      .menu-level:hover {
+        transform: translateY(-2px);
+        background: rgba(255, 255, 255, .16);
+      }
+
+      .menu-level-icon { font-size: 30px; }
+      .menu-level-title { display: block; font-size: 20px; font-weight: 800; }
+      .menu-level-description { display: block; color: var(--text-secondary); font-size: 14px; margin-top: 3px; }
+
+      .back-home {
+        align-self: center;
+        background: transparent;
+        border: 0;
+        color: var(--text-secondary);
+        cursor: pointer;
+        font-size: 15px;
+        font-weight: 700;
+      }
+
+      .back-home:hover { color: white; }
+
+      .spelling-emoji { font-size: 92px; }
+
+      .spelling-input {
+        width: 100%;
+        padding: 15px 18px;
+        border: 2px solid rgba(255, 255, 255, .2);
+        border-radius: 14px;
+        background: rgba(255, 255, 255, .1);
+        color: white;
+        font: inherit;
+        font-size: 22px;
+        text-align: center;
+      }
+
+      .spelling-input:focus { outline: 2px solid var(--primary-light); outline-offset: 2px; }
 
       .question-letter {
         font-size: 120px;
@@ -699,16 +782,10 @@ function PhonicStyles() {
           min-height: calc(100vh - 36px);
         }
 
-        .learn-screen {
-          flex-direction: column;
-          gap: 18px;
-        }
-
-        .learn-screen .alphabet-nav {
-          flex: none;
-          width: min(100%, 560px);
-          margin: 0 auto;
-        }
+        .learn-screen { flex-direction: column; gap: 18px; padding: 18px 12px 20px; }
+        .learn-main-column,
+        .learn-screen .alphabet-nav { width: 100%; flex: none; }
+        .learn-card { padding: 30px 20px; }
 
         .quiz-card {
           padding: 32px;
@@ -770,7 +847,8 @@ function PhonicStyles() {
 }
 
 export default function PhonicAdventure({ onComplete }) {
-  const [screen, setScreen] = useState("menu"); // menu | learn | quiz | result
+  const searchParams = useSearchParams();
+  const [screen, setScreen] = useState(() => searchParams.get("screen") === "menu" ? "menu" : "welcome"); // welcome | menu | learn | quiz | spelling | result
   const [letterIdx, setLetterIdx] = useState(0);
   const [quizMode, setQuizMode] = useState("identify"); // identify | match
   const [quizLetters, setQuizLetters] = useState([]);
@@ -784,6 +862,13 @@ export default function PhonicAdventure({ onComplete }) {
   const [selected, setSelected] = useState(null);
   const [answered, setAnswered] = useState(false);
   const [completedLetters, setCompletedLetters] = useState(new Set());
+  const [spellingIdx, setSpellingIdx] = useState(0);
+  const [spellingInput, setSpellingInput] = useState("");
+  const [spellingResult, setSpellingResult] = useState(null);
+
+  useEffect(() => {
+    if (searchParams.get("screen") === "menu") setScreen("menu");
+  }, [searchParams]);
 
   const currentLetter = ALPHABET[letterIdx];
   const currentData = LETTER_DATA[currentLetter];
@@ -820,6 +905,31 @@ export default function PhonicAdventure({ onComplete }) {
   }, []);
 
   const currentQ = questions[qIdx] || null;
+  const spellingLetter = ALPHABET[spellingIdx];
+  const spellingWord = LETTER_DATA[spellingLetter];
+
+  const startSpelling = () => {
+    setSpellingIdx(Math.floor(Math.random() * ALPHABET.length));
+    setSpellingInput("");
+    setSpellingResult(null);
+    setScreen("spelling");
+  };
+
+  const checkSpelling = () => {
+    if (spellingResult || !spellingInput.trim()) return;
+    const isCorrect = spellingInput.trim().toLowerCase() === spellingWord.word;
+    setSpellingResult(isCorrect ? "correct" : "wrong");
+    if (isCorrect) {
+      setScore(s => s + 10);
+      setCompletedLetters(prev => new Set([...prev, spellingLetter]));
+    }
+  };
+
+  const nextSpelling = () => {
+    setSpellingIdx(Math.floor(Math.random() * ALPHABET.length));
+    setSpellingInput("");
+    setSpellingResult(null);
+  };
 
   const quizAnswer = (opt) => {
     if (answered) return;
@@ -853,24 +963,45 @@ export default function PhonicAdventure({ onComplete }) {
     setAnswered(false);
   };
 
+  if (screen === "welcome") return (
+    <div className="phonic-root">
+      <PhonicStyles />
+      <div className="phonic-screen">
+        <div className="phonic-panel quiz-card">
+          <h1 className="game-title">Phonics Adventure</h1>
+          <p className="game-subtitle">Explore sounds, learn new words, and build your phonics skills.</p>
+          <button className="primary-button" onClick={() => setScreen("menu")}>Let's Play</button>
+        </div>
+      </div>
+    </div>
+  );
+
   if (screen === "menu") return (
     <div className="phonic-root">
       <PhonicStyles />
       <div className="phonic-screen">
         <div className="phonic-panel quiz-card">
-          <div className="game-mark">🌟</div>
           <h1 className="game-title">Phonics Adventure</h1>
-          <p className="game-subtitle">Explore letters, discover words & earn stars!</p>
+          <p className="game-subtitle">Choose an adventure.</p>
           <div className="menu-stats">
             <div className="menu-stat"><span className="stat-icon">🔤</span><strong>26</strong><small>Letters</small></div>
             <div className="menu-stat"><span className="stat-icon">⭐</span><strong>{completedLetters.size}</strong><small>Learned</small></div>
             <div className="menu-stat"><span className="stat-icon">🏆</span><strong>{score}</strong><small>XP</small></div>
           </div>
-          <div className="menu-actions">
-            <button className="primary-button adventure-button" onClick={() => setScreen("learn")}>🌱 Start Learning</button>
-            <button className="secondary-button adventure-button" onClick={() => startQuiz("identify")}>🎯 Play Quiz</button>
+          <div className="menu-levels">
+            <button className="menu-level" onClick={() => setScreen("learn")}>
+              <span className="menu-level-icon">🌱</span>
+              <span><span className="menu-level-title">Learn</span><span className="menu-level-description">Learn phonics sounds and letter words.</span></span>
+            </button>
+            <button className="menu-level" onClick={() => startQuiz("identify")}>
+              <span className="menu-level-icon">🎯</span>
+              <span><span className="menu-level-title">Quizzes</span><span className="menu-level-description">Test your phonics knowledge.</span></span>
+            </button>
+            <button className="menu-level" onClick={startSpelling}>
+              <span className="menu-level-icon">✏️</span>
+              <span><span className="menu-level-title">Spelling Challenge</span><span className="menu-level-description">Spell the word shown by the emoji.</span></span>
+            </button>
           </div>
-          <div className="menu-tip">💡 Learn the letters, then test what you know!</div>
         </div>
       </div>
     </div>
@@ -897,7 +1028,7 @@ export default function PhonicAdventure({ onComplete }) {
           <div className="result-actions">
             <button className="primary-button" onClick={() => startQuiz(quizMode)}>🔄 Play Again</button>
             <button className="secondary-button" onClick={() => setScreen("learn")}>📚 Keep Learning</button>
-            <button className="secondary-button" onClick={() => setScreen("menu")}>🏠 Menu</button>
+            <button className="secondary-button" onClick={() => setScreen("menu")}>Back to Home</button>
           </div>
         </div>
       </div>
@@ -932,7 +1063,6 @@ export default function PhonicAdventure({ onComplete }) {
               ))}
             </div>
             </div>
-
             <div className="learn-nav">
               <button className="nav-button" onClick={() => setLetterIdx(i => Math.max(0, i - 1))} disabled={letterIdx === 0}>
                 ← Prev
@@ -942,6 +1072,7 @@ export default function PhonicAdventure({ onComplete }) {
                 Next →
               </button>
             </div>
+            <button className="back-home" onClick={() => setScreen("menu")}>Back to Home</button>
           </div>
 
           <div className="alphabet-nav" aria-label="Alphabet quick navigation">
@@ -955,10 +1086,45 @@ export default function PhonicAdventure({ onComplete }) {
               </button>
             ))}
           </div>
+
         </div>
       </div>
     );
   }
+
+  if (screen === "spelling") return (
+    <div className="phonic-root">
+      <PhonicStyles />
+      <div className="phonic-screen">
+        <div className="phonic-panel quiz-card question-card">
+          <div className="question-badge">SPELLING CHALLENGE</div>
+          <div className="spelling-emoji" aria-label="Emoji clue">{spellingWord.emoji}</div>
+          <p className="question">What is this word?</p>
+          <input
+            className="spelling-input"
+            value={spellingInput}
+            onChange={event => setSpellingInput(event.target.value)}
+            onKeyDown={event => event.key === "Enter" && checkSpelling()}
+            placeholder="Type the word"
+            aria-label="Spell the emoji word"
+            disabled={!!spellingResult}
+            autoFocus
+          />
+          {spellingResult && (
+            <div className={`feedback ${spellingResult === "correct" ? "" : "wrong"}`}>
+              <span className="feedback-main">{spellingResult === "correct" ? "🎉 Correct!" : "💪 Nice try!"}</span>
+              <span className="feedback-answer">{spellingWord.emoji} {spellingWord.word}</span>
+            </div>
+          )}
+          <div className="result-actions">
+            {!spellingResult && <button className="primary-button" onClick={checkSpelling}>Check Answer</button>}
+            {spellingResult && <button className="primary-button" onClick={nextSpelling}>Next Word</button>}
+            <button className="back-home" onClick={() => setScreen("menu")}>Back to Home</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   // Quiz mode
   if (screen === "quiz" && currentQ) return (
@@ -1018,6 +1184,7 @@ export default function PhonicAdventure({ onComplete }) {
               <button className="next-button" onClick={quizNext}>➡️ Next</button>
             </div>
           )}
+          <button className="back-home" onClick={() => setScreen("menu")}>Back to Home</button>
         </div>
       </div>
     </div>
