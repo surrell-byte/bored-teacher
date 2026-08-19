@@ -30,6 +30,7 @@ export const GAME_COMPONENTS: Partial<Record<string, React.LazyExoticComponent<R
   colourclash: lazy(() => import('@/games/colour-clash/ColourClash.jsx')),
   hiddencolours: lazy(() => import('@/games/hidden-colours/HiddenColours.jsx')),
   crimsonduel: lazy(() => import('@/games/crimson-color-duel/CrimsonColorDuel.jsx')),
+  archersduel: lazy(() => import('@/games/archers-duel/ArchersDuel.jsx')),
   deepseaReveal: lazy(() => import('@/games/deep-sea-reveal/DeepSeaReveal.jsx')),
   dragonslingshot: lazy(() => import('@/games/dragon-slingshot/DragonSlingshot')),
   emojimatch: lazy(() => import('@/games/emoji-match/EmojiMatch.jsx')),

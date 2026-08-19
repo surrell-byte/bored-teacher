@@ -87,6 +87,30 @@ function PhonicStyles() {
         text-align: center;
       }
 
+      .learn-screen {
+        flex-direction: row;
+        align-items: center;
+        gap: 24px;
+        text-align: left;
+      }
+
+      .learn-main-column {
+        flex: 1 1 auto;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .learn-screen .alphabet-nav {
+        flex: 0 0 210px;
+        margin: 0;
+        padding: 18px;
+        background: rgba(255, 255, 255, .08);
+        border: 1px solid rgba(255, 255, 255, .1);
+        border-radius: 22px;
+      }
+
       .phonic-panel {
         width: min(100%, 720px);
       }
@@ -675,6 +699,17 @@ function PhonicStyles() {
           min-height: calc(100vh - 36px);
         }
 
+        .learn-screen {
+          flex-direction: column;
+          gap: 18px;
+        }
+
+        .learn-screen .alphabet-nav {
+          flex: none;
+          width: min(100%, 560px);
+          margin: 0 auto;
+        }
+
         .quiz-card {
           padding: 32px;
           gap: 24px;
@@ -875,8 +910,9 @@ export default function PhonicAdventure({ onComplete }) {
     return (
       <div className="phonic-root">
         <PhonicStyles />
-        <div className="phonic-screen">
-          <div className="phonic-panel quiz-card learn-card" style={{ "--learn-bg": bg }}>
+        <div className="phonic-screen learn-screen">
+          <div className="learn-main-column">
+            <div className="phonic-panel quiz-card learn-card" style={{ "--learn-bg": bg }}>
             <div className="learn-badge">LETTER {letterIdx + 1}</div>
             <div className="learn-letter">{currentLetter}</div>
             <div className="learn-main-word">
@@ -895,16 +931,17 @@ export default function PhonicAdventure({ onComplete }) {
                 </div>
               ))}
             </div>
-          </div>
+            </div>
 
-          <div className="learn-nav">
-            <button className="nav-button" onClick={() => setLetterIdx(i => Math.max(0, i - 1))} disabled={letterIdx === 0}>
-              ← Prev
-            </button>
-            <span className="key">{letterIdx+1} / 26</span>
-            <button className="nav-button" onClick={() => setLetterIdx(i => Math.min(25, i + 1))} disabled={letterIdx === 25}>
-              Next →
-            </button>
+            <div className="learn-nav">
+              <button className="nav-button" onClick={() => setLetterIdx(i => Math.max(0, i - 1))} disabled={letterIdx === 0}>
+                ← Prev
+              </button>
+              <span className="key">{letterIdx+1} / 26</span>
+              <button className="nav-button" onClick={() => setLetterIdx(i => Math.min(25, i + 1))} disabled={letterIdx === 25}>
+                Next →
+              </button>
+            </div>
           </div>
 
           <div className="alphabet-nav" aria-label="Alphabet quick navigation">
@@ -918,8 +955,6 @@ export default function PhonicAdventure({ onComplete }) {
               </button>
             ))}
           </div>
-
-          <button className="secondary-button" onClick={() => setScreen("menu")} style={{ marginTop: 18 }}>🏠 Menu</button>
         </div>
       </div>
     );

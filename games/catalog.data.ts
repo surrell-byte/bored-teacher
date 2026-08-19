@@ -153,6 +153,18 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     barColor: "var(--red)",
     hasComponent: true,
   },
+  archersduel: {
+    name: "Archer's Duel",
+    icon: "🏹",
+    desc: "A two-player classroom archery challenge where students and teachers compete to reach 200 points.",
+    cover: "/assets/covers/dragon-slingshot-cover.webp",
+    tag: { label: "Competitive", color: "tag-grammar" },
+    badge: "Duel",
+    difficulty: "Two Player",
+    barColor: "var(--gold)",
+    isNew: true,
+    hasComponent: true,
+  },
   deepseaReveal: {
     name: "Deep Sea Reveal",
     icon: "🌊",

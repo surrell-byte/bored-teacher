@@ -35,6 +35,7 @@ export default function GamePage() {
   const gameIcon  = GAME_ICONS[gameId] ?? '🎮';
   const GameComp  = GAME_COMPONENTS[gameId];
   const isConnect4 = gameId === 'connect4';
+  const isPhonicsAdventure = gameId === 'phonicsadventure';
 
   // ── onComplete: called by React game components ──
   function handleComplete(score: number, accuracy: number) {
@@ -89,7 +90,16 @@ export default function GamePage() {
         onContinue={handleContinue}
         onRestart={handleContinue}
         controls={isConnect4 ? null : <DesktopControls />}
-        headerExtra={isConnect4 && c4Hud ? <Connect4HeaderActions hud={c4Hud} /> : null}
+        headerExtra={
+          <>
+            {isConnect4 && c4Hud ? <Connect4HeaderActions hud={c4Hud} /> : null}
+            {isPhonicsAdventure && (
+              <Link className="game-shell-header-action" href="/games/phonicsadventure">
+                Back to Menu
+              </Link>
+            )}
+          </>
+        }
         stats={[
           { label: 'Best', value: state.games[gameId]?.highScore ?? 0, icon: '⭐' },
           { label: 'Coins', value: state.coins, icon: '🪙' },
