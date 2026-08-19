@@ -16,7 +16,14 @@ const SHOT_POOLS = [
   [{ label: 'Steady hand', icon: '🤚', pts: 25, desc: 'Calm, controlled release' }, { label: 'Wind deflect', icon: '🌬️', pts: 0, desc: 'Gust pushes it wide — no score' }, { label: 'Dropped nock', icon: '💢', pts: -5, desc: 'Arrow slips off the string' }],
 ];
 
-const shuffle = (items) => [...items].sort(() => Math.random() - 0.5);
+function shuffle(items) {
+  const result = [...items];
+  for (let index = result.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+    [result[index], result[randomIndex]] = [result[randomIndex], result[index]];
+  }
+  return result;
+}
 
 function ArcherSvg({ colorKey, facing, ...props }) {
   if (!colorKey) return <svg {...props} aria-hidden="true" />;
@@ -84,7 +91,9 @@ export default function ArchersDuel({ onComplete }) {
   const animationRef = useRef(null);
 
   const newRound = (turn) => {
-    setCurrentShots(shuffle(SHOT_POOLS[Math.floor(Math.random() * SHOT_POOLS.length)]));
+    // Draw three fresh outcomes from the complete pool so tile positions never
+    // inherit a recognizable pattern from a fixed outcome trio.
+    setCurrentShots(shuffle(SHOT_POOLS.flat()).slice(0, 3));
     setRevealedIdx(null); setChosenIdx(null); setResultCls(''); setBusy(false);
     setResultText(`${turn === 'student' ? 'Student' : 'Teacher'} — choose your shot.`);
   };
