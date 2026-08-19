@@ -71,9 +71,9 @@ const VOCABULARY_SETS = {
    DIFFICULTY SETTINGS
 ========================================================= */
 const DIFFICULTIES = {
-  Easy: { pairs: 4, columns: 4, time: 0 },
+  Easy: { pairs: 6, columns: 4, time: 0 },
   Medium: { pairs: 6, columns: 4, time: 120 },
-  Hard: { pairs: 8, columns: 4, time: 90 },
+  Hard: { pairs: 6, columns: 4, time: 90 },
 };
 
 /* =========================================================
@@ -101,14 +101,6 @@ function getStars(accuracy) {
   if (accuracy >= 90) return 3;
   if (accuracy >= 70) return 2;
   return 1;
-}
-
-function speak(text) {
-  if (!window.speechSynthesis) return;
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.rate = 0.9;
-  utterance.pitch = 1.2;
-  window.speechSynthesis.speak(utterance);
 }
 
 /* =========================================================
@@ -143,6 +135,7 @@ export default function MemoryMatch({ onComplete }) {
   const [category, setCategory] = useState("Animals");
   const [difficulty, setDifficulty] = useState("Easy");
   const [matchType, setMatchType] = useState("mixed");
+  const [theme, setTheme] = useState("dark"); // dark or light
 
   // Gameplay state
   const [cards, setCards] = useState([]);
@@ -153,6 +146,12 @@ export default function MemoryMatch({ onComplete }) {
   const [timeLeft, setTimeLeft] = useState(0);
   const [startTime, setStartTime] = useState(null);
   const [feedback, setFeedback] = useState(null);
+
+  // Player state
+  const [currentPlayer, setCurrentPlayer] = useState(1);
+  const [player1Matches, setPlayer1Matches] = useState(0);
+  const [player2Matches, setPlayer2Matches] = useState(0);
+  const [notification, setNotification] = useState("");
 
   const settings = useMemo(() => DIFFICULTIES[difficulty], [difficulty]);
   const vocabulary = useMemo(() => VOCABULARY_SETS[category], [category]);
@@ -172,6 +171,17 @@ export default function MemoryMatch({ onComplete }) {
     setFeedback(null);
   }, [vocabulary, matchType, settings]);
 
+  // Reset player state at game start
+  useEffect(() => {
+    if (gameState === "playing") {
+      setCurrentPlayer(1);
+      setPlayer1Matches(0);
+      setPlayer2Matches(0);
+      setNotification("Player 1 starts!");
+      const timer = setTimeout(() => setNotification(""), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [gameState]);
   // Timer
   useEffect(() => {
     if (gameState !== "playing" || settings.time === 0) return;
@@ -193,10 +203,6 @@ export default function MemoryMatch({ onComplete }) {
       
       const next = [...flipped, idx];
       setFlipped(next);
-      
-      // Announce card when flipped
-      const card = cards[idx];
-      speak(card.word);
 
       if (next.length === 2) {
         setLocked(true);
@@ -210,6 +216,14 @@ export default function MemoryMatch({ onComplete }) {
             newMatched.add(next[0]);
             newMatched.add(next[1]);
 
+            // Update current player's score
+            if (currentPlayer === 1) {
+              setPlayer1Matches((prev) => prev + 1);
+              setNotification("Player 1 found a match! ✓");
+            } else {
+              setPlayer2Matches((prev) => prev + 1);
+              setNotification("Player 2 found a match! ✓");
+            }
             // Check win condition
             if (newMatched.size === cards.length) {
               const elapsed = Math.floor((Date.now() - startTime) / 1000);
@@ -237,6 +251,10 @@ export default function MemoryMatch({ onComplete }) {
             setLocked(false);
             setFeedback(null);
           }, 1200);
+                    // Switch player on failed match
+                    setCurrentPlayer((prev) => (prev === 1 ? 2 : 1));
+                    const nextPlayer = currentPlayer === 1 ? 2 : 1;
+                    setNotification(`Player ${nextPlayer}'s turn`);
           setMoves((m) => m + 1);
         }
       }
@@ -247,7 +265,7 @@ export default function MemoryMatch({ onComplete }) {
   // Render menu
   if (gameState === "menu") {
     return (
-      <div className="memory-game memory-game--menu">
+      <div className={`memory-game memory-game--menu memory-theme-${theme}`}>
         <div className="memory-menu">
           <h1>🧠 Memory Match</h1>
           <p className="memory-menu-subtitle">Learn English vocabulary through interactive matching!</p>
@@ -297,6 +315,24 @@ export default function MemoryMatch({ onComplete }) {
             </div>
           </div>
 
+          <div className="memory-menu-section">
+            <h3>🎨 Theme</h3>
+            <div className="memory-menu-buttons">
+              <button
+                className={`memory-menu-btn ${theme === "dark" ? "active" : ""}`}
+                onClick={() => setTheme("dark")}
+              >
+                🌙 Dark
+              </button>
+              <button
+                className={`memory-menu-btn ${theme === "light" ? "active" : ""}`}
+                onClick={() => setTheme("light")}
+              >
+                ☀️ Light
+              </button>
+            </div>
+          </div>
+
           <button onClick={startGame} className="memory-start-btn">
             🚀 Start Game
           </button>
@@ -308,78 +344,115 @@ export default function MemoryMatch({ onComplete }) {
   // Render game
   if (gameState === "playing") {
     return (
-      <div className="memory-game">
-        <div className="memory-header">
-          <h1>🧠 Memory Match</h1>
-          <div className="memory-hud">
-            <div className="memory-hud-item">
-              <span className="memory-hud-label">Moves</span>
-              <span className="memory-hud-value">{moves}</span>
+      <div className={`memory-game memory-theme-${theme} memory-game-layout`}>
+        {/* Left Sidebar - Player Panels */}
+        <aside className="memory-sidebar">
+          {/* Player 1 Panel */}
+          <div className={`memory-player-panel ${currentPlayer === 1 ? "active" : ""}`}>
+            <div className="memory-player-header">
+              <span className="memory-player-icon">🎮</span>
+              <span className="memory-player-name">Player 1</span>
             </div>
-            <div className="memory-hud-item">
-              <span className="memory-hud-label">Matched</span>
-              <span className="memory-hud-value">{matched.size / 2} / {cards.length / 2}</span>
-            </div>
-            {settings.time > 0 && (
-              <div className="memory-hud-item">
-                <span className="memory-hud-label">⏱ Time</span>
-                <span className={`memory-hud-value ${timeLeft < 10 ? "warning" : ""}`}>
-                  {timeLeft}s
-                </span>
+            <div className="memory-player-stats">
+              <div className="memory-player-stat">
+                <span className="memory-stat-label">Matches</span>
+                <span className="memory-stat-value">{player1Matches}</span>
               </div>
-            )}
+            </div>
           </div>
-        </div>
 
-        {feedback && (
-          <div className={`memory-feedback memory-feedback--${feedback.type}`}>
-            {feedback.text}
+          {/* Notification Panel */}
+          <div className="memory-notification-panel">
+            <div className="memory-notification-title">📢 Notifications</div>
+            <div className="memory-notification-content">
+              {notification || "Waiting for your move..."}
+            </div>
           </div>
-        )}
 
-        <div 
-          className="memory-board"
-          style={{ gridTemplateColumns: `repeat(${settings.columns}, 1fr)` }}
-        >
-          {cards.map((card, idx) => {
-            const isFlipped = flipped.includes(idx) || matched.has(idx);
-            const isMatched = matched.has(idx);
-            return (
-              <button
-                key={idx}
-                onClick={() => flip(idx)}
-                disabled={isMatched}
-                className={`memory-card ${
-                  isMatched
-                    ? "memory-card--matched"
-                    : isFlipped
-                      ? "memory-card--flipped"
-                      : "memory-card--hidden"
-                }`}
-                aria-label={`Card ${idx + 1}`}
-              >
-                <div className="memory-card-inner">
-                  <div className="memory-card-front">❓</div>
-                  <div className="memory-card-back">
-                    {card.type === "emoji" ? (
-                      <>
-                        <span className="memory-card-emoji">{card.emoji}</span>
-                      </>
-                    ) : (
-                      <>
-                        <span className="memory-card-word">{card.word}</span>
-                      </>
-                    )}
-                  </div>
+          {/* Player 2 Panel */}
+          <div className={`memory-player-panel ${currentPlayer === 2 ? "active" : ""}`}>
+            <div className="memory-player-header">
+              <span className="memory-player-icon">🎮</span>
+              <span className="memory-player-name">Player 2</span>
+            </div>
+            <div className="memory-player-stats">
+              <div className="memory-player-stat">
+                <span className="memory-stat-label">Matches</span>
+                <span className="memory-stat-value">{player2Matches}</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        {/* Main Game Area */}
+        <main className="memory-main">
+          <div className="memory-header">
+            <h1>🧠 Memory Match</h1>
+            <div className="memory-hud">
+              <div className="memory-hud-item">
+                <span className="memory-hud-label">Moves</span>
+                <span className="memory-hud-value">{moves}</span>
+              </div>
+              <div className="memory-hud-item">
+                <span className="memory-hud-label">Matched</span>
+                <span className="memory-hud-value">{matched.size / 2} / {cards.length / 2}</span>
+              </div>
+              {settings.time > 0 && (
+                <div className="memory-hud-item">
+                  <span className="memory-hud-label">⏱ Time</span>
+                  <span className={`memory-hud-value ${timeLeft < 10 ? "warning" : ""}`}>
+                    {timeLeft}s
+                  </span>
                 </div>
-              </button>
-            );
-          })}
-        </div>
+              )}
+            </div>
+          </div>
 
-        <button onClick={() => setGameState("menu")} className="memory-back-btn">
-          ← Back to Menu
-        </button>
+          {feedback && (
+            <div className={`memory-feedback memory-feedback--${feedback.type}`}>
+              {feedback.text}
+            </div>
+          )}
+
+          <div 
+            className="memory-board"
+            style={{ gridTemplateColumns: `repeat(${settings.columns}, 1fr)` }}
+          >
+            {cards.map((card, idx) => {
+              const isFlipped = flipped.includes(idx) || matched.has(idx);
+              const isMatched = matched.has(idx);
+              return (
+                <button
+                  key={idx}
+                  onClick={() => flip(idx)}
+                  disabled={isMatched}
+                  className={`memory-card ${
+                    isMatched
+                      ? "memory-card--matched"
+                      : isFlipped
+                        ? "memory-card--flipped"
+                        : "memory-card--hidden"
+                  }`}
+                  aria-label={`Card ${idx + 1}`}
+                >
+                  <div className="memory-card-inner">
+                    <div className="memory-card-front">
+                      <div className="memory-card-number">{idx + 1}</div>
+                    </div>
+                    <div className="memory-card-back">
+                      <span className="memory-card-emoji">{card.emoji}</span>
+                      <span className="memory-card-word">{card.word}</span>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          <button onClick={() => setGameState("menu")} className="memory-back-btn">
+            ← Back to Menu
+          </button>
+        </main>
       </div>
     );
   }
@@ -391,7 +464,7 @@ export default function MemoryMatch({ onComplete }) {
     const time = feedback?.time || 0;
 
     return (
-      <div className="memory-game memory-game--won">
+      <div className={`memory-game memory-game--won memory-theme-${theme}`}>
         <div className="memory-win-screen">
           <div className="memory-win-title">🎉 EXCELLENT! 🎉</div>
           <p className="memory-win-subtitle">You matched all {cards.length / 2} pairs!</p>

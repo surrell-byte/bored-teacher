@@ -211,7 +211,20 @@ export default function ResourcesPage() {
               <h2 className="hub-section-title">Recently Added</h2>
               <div className="resources-recent-grid">
                 {recentlyAdded.map(r => (
-                  <div key={r.id} className="resources-recent-row">
+                  <div
+                    key={r.id}
+                    className="resources-recent-row"
+                    role={r.link ? 'link' : undefined}
+                    tabIndex={r.link ? 0 : undefined}
+                    onClick={() => r.link && router.push(r.link)}
+                    onKeyDown={e => {
+                      if (r.link && (e.key === 'Enter' || e.key === ' ')) {
+                        e.preventDefault();
+                        router.push(r.link);
+                      }
+                    }}
+                    style={r.link ? { cursor: 'pointer' } : undefined}
+                  >
                     <span className="resources-recent-icon">{r.icon}</span>
                     <div className="resources-recent-info">
                       <div className="resources-recent-title">{r.title}</div>
