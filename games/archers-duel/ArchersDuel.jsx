@@ -21,7 +21,7 @@ const shuffle = (items) => [...items].sort(() => Math.random() - 0.5);
 function ArcherSvg({ colorKey, facing, ...props }) {
   if (!colorKey) return <svg {...props} aria-hidden="true" />;
   const c = COLORS[colorKey];
-  const transform = facing === 'left' ? 'scale(-1,1) translate(-72,0)' : undefined;
+  const transform = facing === 'right' ? 'scale(-1,1) translate(-72,0)' : undefined;
   return (
     <svg {...props} aria-label={`${c.name} archer`} role="img">
       <g transform={transform}>
@@ -108,7 +108,7 @@ export default function ArchersDuel({ onComplete }) {
     const canvas = canvasRef.current; if (!canvas) return;
     const ctx = canvas.getContext('2d'); const start = performance.now(); const color = pts >= 40 ? '#ffe36e' : pts >= 25 ? '#ffcc44' : '#ff8844';
     const frame = (now) => {
-      const t = Math.min((now - start) / 700, 1); ctx.clearRect(0, 0, canvas.width, canvas.height); drawArrow(ctx, x - 8, y, 0, pts);
+      const t = Math.min((now - start) / 700, 1); ctx.clearRect(0, 0, canvas.width, canvas.height); drawArrow(ctx, x - 8, y, Math.PI, pts);
       ctx.save(); ctx.globalAlpha = (1 - t) * .85; ctx.beginPath(); ctx.arc(x, y, t * 65, 0, Math.PI * 2); ctx.strokeStyle = color; ctx.lineWidth = 5; ctx.shadowBlur = 18; ctx.shadowColor = color; ctx.stroke();
       ctx.globalAlpha = (1 - t) * .9;
       for (let index = 0; index < 8; index += 1) {
@@ -135,7 +135,7 @@ export default function ArchersDuel({ onComplete }) {
     const endX = pts > 0 ? targetX : targetX + 80;
     const endY = pts > 0 ? targetY : targetY - 38;
     const started = performance.now(); const ctx = canvas.getContext('2d');
-    const frame = (now) => { const raw = Math.min((now - started) / 560, 1); const t = 1 - Math.pow(1 - raw, 3); ctx.clearRect(0, 0, width, height); const x = startX + (endX - startX) * t; const y = startY + (endY - startY) * t - Math.sin(raw * Math.PI) * 35; drawArrow(ctx, x, y, Math.atan2(endY - startY, endX - startX), pts); if (raw < 1) animationRef.current = requestAnimationFrame(frame); else { if (pts > 0) impact(endX, endY, pts); setTimeout(() => { ctx.clearRect(0, 0, width, height); done(); }, pts > 0 ? 850 : 350); } };
+    const frame = (now) => { const raw = Math.min((now - started) / 560, 1); const t = 1 - Math.pow(1 - raw, 3); ctx.clearRect(0, 0, width, height); const x = startX + (endX - startX) * t; const y = startY + (endY - startY) * t - Math.sin(raw * Math.PI) * 35; drawArrow(ctx, x, y, Math.atan2(endY - startY, endX - startX) + Math.PI, pts); if (raw < 1) animationRef.current = requestAnimationFrame(frame); else { if (pts > 0) impact(endX, endY, pts); setTimeout(() => { ctx.clearRect(0, 0, width, height); done(); }, pts > 0 ? 850 : 350); } };
     animationRef.current = requestAnimationFrame(frame);
   };
 
