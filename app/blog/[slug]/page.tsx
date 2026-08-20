@@ -61,7 +61,7 @@ export default function BlogPostPage() {
   const nextPost = postIndex < allPosts.length - 1 ? allPosts[postIndex + 1] : null;
 
   return (
-    <div style={{ maxWidth: 900, margin: '0 auto', padding: 'clamp(14px,3vw,28px) clamp(14px,3vw,24px) 80px' }}>
+    <div className="blog-post-page" style={{ maxWidth: 1180, margin: '0 auto', padding: 'clamp(14px,3vw,28px) clamp(14px,3vw,24px) 80px' }}>
       {/* Breadcrumb */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px', fontSize: '0.9rem', color: 'var(--muted)' }}>
         <Link href="/blog" style={{ color: 'var(--teal)', textDecoration: 'none', cursor: 'pointer' }}>

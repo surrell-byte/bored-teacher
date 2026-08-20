@@ -3446,6 +3446,38 @@ a { color: inherit; }
   .lb-hero-title { white-space: normal; font-size: clamp(1.8rem, 10vw, 2.7rem); }
 }
 
+.blog-post-page {
+  min-width: 0;
+}
+.blog-article-content {
+  overflow-wrap: anywhere;
+  word-break: normal;
+  text-align: left;
+}
+.blog-article-content h1,
+.blog-article-content h2,
+.blog-article-content h3 {
+  font-family: var(--font-display, Syne);
+  color: var(--text);
+  line-height: 1.2;
+  margin: 1.6em 0 0.55em;
+}
+.blog-article-content h1 { font-size: clamp(1.55rem, 3vw, 2.2rem); margin-top: 0; }
+.blog-article-content h2 { font-size: clamp(1.2rem, 2.4vw, 1.55rem); }
+.blog-article-content h3 { font-size: 1.1rem; }
+.blog-article-content p,
+.blog-article-content li {
+  max-width: 78ch;
+  color: var(--text);
+  font-family: var(--font-body, 'DM Sans', sans-serif);
+  font-size: clamp(0.92rem, 1.4vw, 1rem);
+  line-height: 1.75;
+}
+.blog-article-content p { margin: 0 0 1.15em; }
+.blog-article-content ol,
+.blog-article-content ul { max-width: 78ch; padding-left: 1.4em; margin: 0 0 1.2em; }
+.blog-article-content strong { color: var(--text); }
+
 .subscription-page {
   max-width: 1100px;
   margin: 0 auto;

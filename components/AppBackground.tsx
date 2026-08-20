@@ -75,6 +75,7 @@ export default function AppBackground() {
   return (
     <>
       <div
+        key={entry.src}
         className="app-background"
         style={{
           backgroundImage: `url(${entry.src})`,
