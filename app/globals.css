@@ -1235,6 +1235,7 @@ a { color: inherit; }
 .lb-hero-panel {
   padding: 36px 40px;
   border-radius: 28px;
+  min-width: 0;
 }
 .lb-hero-eyebrow {
   font-size: 0.68rem;
@@ -3437,9 +3438,8 @@ a { color: inherit; }
 .lb-hero-title {
   word-break: normal;
   overflow-wrap: normal;
-  white-space: nowrap;
-  overflow: visible;
-  text-overflow: clip;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 @media (max-width: 639px) {

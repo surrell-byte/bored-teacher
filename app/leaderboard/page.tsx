@@ -82,7 +82,7 @@ export default function LeaderboardPage() {
       {/* ── Hero ──────────────────────────────────────────── */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+        gridTemplateColumns: 'minmax(0, 1.15fr) minmax(280px, 0.85fr)',
         gap: 20,
         marginBottom: 20,
         alignItems: 'start',

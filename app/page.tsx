@@ -50,10 +50,8 @@ export default function SplashPage() {
 
     finishRef.current = setTimeout(() => {
       setProgress(100);
-      setClickable(true);
-      window.dispatchEvent(new CustomEvent('splashBackgroundChange', { detail: { stage: 'start-playing' } }));
       setExiting(true);
-      redirectRef.current = setTimeout(() => router.replace(destinationRef.current), 450);
+      router.replace(destinationRef.current);
     }, SPLASH_DURATION_MS);
 
     const isGuest = localStorage.getItem('guestUser') === 'true';

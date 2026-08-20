@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { onAuthStateChanged } from '@/lib/firebase';
 import { getBlogPostBySlug, getBlogSection, getAllBlogPosts } from '@/lib/blogData';
 import Link from 'next/link';
+import ReactMarkdown from 'react-markdown';
 
 export default function BlogPostPage() {
   const router = useRouter();
@@ -136,26 +137,16 @@ export default function BlogPostPage() {
         </header>
 
         {/* Article Content */}
-        <div className="shell-card" style={{
+        <div className="shell-card blog-article-content" style={{
           padding: 'clamp(24px, 4vw, 40px)',
           borderRadius: '20px',
           marginBottom: '40px',
           minHeight: '400px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          textAlign: 'center',
-          flexDirection: 'column',
-          gap: '16px'
+          lineHeight: 1.75,
+          color: 'var(--text)'
         }}>
           {post.published ? (
-            <div>
-              <div style={{ fontSize: '3rem', marginBottom: '12px' }}>📖</div>
-              <div style={{ color: 'var(--muted)' }}>
-                <p style={{ marginBottom: '12px', fontSize: '1.1rem', fontWeight: 600 }}>Article content loading...</p>
-                <p style={{ fontSize: '0.95rem' }}>This article is published and ready to read. Full content coming soon!</p>
-              </div>
-            </div>
+            <ReactMarkdown>{post.content ?? 'This article is being prepared.'}</ReactMarkdown>
           ) : (
             <div>
               <div style={{ fontSize: '3rem', marginBottom: '12px' }}>🔜</div>

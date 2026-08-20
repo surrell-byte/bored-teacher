@@ -13,7 +13,31 @@ export const BLOG_SECTIONS = [
     title: 'Getting Started as an ESL Teacher',
     description: 'These are ideal for new teachers.',
     posts: [
-      { slug: 'beginners-guide-teaching-esl', title: 'A Beginner\'s Guide to Teaching ESL', published: true },
+      { slug: 'beginners-guide-teaching-esl', title: 'A Beginner\'s Guide to Teaching ESL', published: true, content: `# A Beginner's Guide to Teaching ESL
+
+    Teaching English as a second language is a practical, people-first job. Your students need clear language, useful repetition, and enough confidence to try. You do not need a perfect lesson every time; you need a dependable structure that helps learners participate.
+
+    ## Start with a clear objective
+
+    Choose one outcome students can demonstrate by the end of the lesson. For example: "Students can ask and answer three questions about their daily routine." Keep the objective visible, model the target language, and return to it during the closing activity.
+
+    ## Build a predictable lesson rhythm
+
+    1. Warm up with a short question, image, or review game.
+    2. Present a small amount of new language in context.
+    3. Practise together before asking students to work independently.
+    4. Give students a meaningful reason to speak, read, listen, or write.
+    5. End with a quick check of the objective.
+
+    ## Make participation achievable
+
+    Give thinking time before calling on students, allow pair rehearsal, and offer sentence starters for learners who need support. Correct selectively: focus on the language that matters for the objective, then let the conversation continue.
+
+    ## Keep improving one lesson at a time
+
+    After class, note one activity that produced useful language and one moment when students became confused or quiet. Adjust that single part for next time. Small, deliberate changes build strong teaching habits faster than trying to redesign everything at once.
+
+    The best ESL lessons are clear, active, and humane. Plan less content, create more opportunities to use it, and let student communication guide your next decision.`, },
       { slug: 'first-esl-class', title: 'Your First ESL Class: What to Do Before, During, and After', published: false },
       { slug: 'plan-first-lesson', title: 'How to Plan Your First ESL Lesson', published: false },
       { slug: 'first-month-teaching', title: 'What to Expect During Your First Month of Teaching', published: false },
@@ -58,7 +82,27 @@ export const BLOG_SECTIONS = [
     title: 'Classroom Management',
     description: 'You already have a great starting point here.',
     posts: [
-      { slug: 'classroom-management-conflict-resolution', title: 'Classroom Management and Conflict Resolution', published: true, content: 'Published resource' },
+      { slug: 'classroom-management-conflict-resolution', title: 'Classroom Management and Conflict Resolution', published: true, content: `# Classroom Management and Conflict Resolution
+
+    Good classroom management is not about controlling every movement. It is about making expectations visible, routines familiar, and repair possible when something goes wrong. Students participate more readily when they know what will happen next and believe they will be treated fairly.
+
+    ## Establish routines before problems appear
+
+    Teach the small procedures explicitly: how students enter, get materials, change partners, ask for help, and finish an activity. Practise the routine briefly, then reinforce it with specific feedback such as, "This group moved to pairs quickly and quietly."
+
+    ## Address behaviour calmly and specifically
+
+    Describe the behaviour and its impact rather than judging the student. A useful sequence is: remind the class expectation, give the student a private choice, and explain the next step. Keep your voice neutral and your instruction short.
+
+    ## Resolve conflict with a reset
+
+    Separate students from the audience when possible. Let each person explain what happened without interruption, identify the shared classroom expectation, and agree on one repair action. The goal is restored participation, not a public victory.
+
+    ## Prevent recurring disruption
+
+    Look for patterns: time of day, task difficulty, seating, unclear instructions, or a student who needs a more active role. Change the condition that is feeding the problem, then check in privately with the learner.
+
+    Consistent routines and respectful follow-through create a safer classroom than punishment alone. Be firm about the boundary, curious about the cause, and ready to welcome students back into the lesson.`, },
       { slug: 'deal-disruptive-students', title: 'How to Deal With Disruptive Students', published: false },
       { slug: 'students-refuse-participate', title: 'How to Deal With Students Who Refuse to Participate', published: false },
       { slug: 'handle-chatty-students', title: 'How to Handle Chatty Students', published: false },

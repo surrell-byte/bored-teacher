@@ -69,6 +69,7 @@ export const GAME_COMPONENTS: Partial<Record<string, React.LazyExoticComponent<R
   'sentence-builder': lazy(() => import('@/games/sentence-builder/SentenceBuilder.jsx')),
   animalAdventureRace: lazy(() => import('@/games/animal-adventure-race/AnimalAdventureRace.jsx')),
   findthebee: lazy(() => import('@/games/find-the-bee/FindTheBee.jsx')),
+  riddlebombs: lazy(() => import('@/games/riddle-bombs/RiddleBombs.jsx')),
   whatami: lazy(() => import('@/games/legacy/LegacyGamePort').then(({ default: LegacyGamePort }) => ({ default: (props: GameComponentProps) => <LegacyGamePort {...props} gameId="whatami" /> }))),
   whatsmissing: lazy(() => import('@/games/legacy/LegacyGamePort').then(({ default: LegacyGamePort }) => ({ default: (props: GameComponentProps) => <LegacyGamePort {...props} gameId="whatsmissing" /> }))),
 };

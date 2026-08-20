@@ -9,12 +9,15 @@ import { usePathname } from 'next/navigation';
 const BACKGROUNDS: Record<string, { src: string; position: string }> = {
   welcome:      { src: '/assets/images/welcome-page.webp',        position: 'center' },
   startPlaying: { src: '/assets/images/start-playing-page.webp',  position: 'center' },
+  auth:         { src: '/assets/images/auth-screen-bg.webp',     position: 'center' },
   hub:          { src: '/assets/images/hub-bg-desktop.webp',      position: 'center' },
   games:        { src: '/assets/images/games-bg-desktop.webp',    position: '75% center' },
   leaderboard:  { src: '/assets/images/leaderboard-bg-desktop.webp', position: 'center' },
   trophy:       { src: '/assets/images/trophy-room-bg-desktop.webp', position: 'center' },
   shop:         { src: '/assets/images/shop-bg-desktop.webp',     position: 'center' },
   resources:    { src: '/assets/images/resources-bg-desktop.webp', position: 'center' },
+  blog:         { src: '/assets/images/blog-bg.webp',             position: 'center' },
+  subscription: { src: '/assets/images/subscription-bg.webp',    position: 'center' },
 };
 
 export default function AppBackground() {
@@ -50,7 +53,7 @@ export default function AppBackground() {
   if (pathname === '/') {
     entry = splashStage === 'start-playing' ? BACKGROUNDS.startPlaying : BACKGROUNDS.welcome;
   } else if (pathname === '/auth') {
-    entry = BACKGROUNDS.welcome;
+    entry = BACKGROUNDS.auth;
   } else if (pathname.startsWith('/hub')) {
     entry = BACKGROUNDS.hub;
   } else if (pathname === '/games' || pathname.startsWith('/games/')) {
@@ -63,6 +66,10 @@ export default function AppBackground() {
     entry = BACKGROUNDS.shop;
   } else if (pathname.startsWith('/resources')) {
     entry = BACKGROUNDS.resources;
+  } else if (pathname.startsWith('/blog')) {
+    entry = BACKGROUNDS.blog;
+  } else if (pathname.startsWith('/subscription')) {
+    entry = BACKGROUNDS.subscription;
   }
 
   return (
