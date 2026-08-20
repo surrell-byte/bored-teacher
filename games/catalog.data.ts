@@ -624,6 +624,18 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     hasComponent: true,
     isNew: true,
   },
+  finnthefox: {
+    name: "Finn the Fox",
+    icon: "🦊",
+    desc: "Read a magical story, answer comprehension questions, and retell the adventure to earn stars.",
+    cover: "/assets/covers/what-am-i-cover.webp",
+    tag: { label: "Reading", color: "tag-words" },
+    badge: "Story Quest",
+    difficulty: "Starter",
+    barColor: "var(--coral)",
+    hasComponent: true,
+    isNew: true,
+  },
 };
 
 export const GAME_KEYS = Object.keys(GAME_CATALOG);

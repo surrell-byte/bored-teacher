@@ -3449,11 +3449,24 @@ a { color: inherit; }
 .blog-post-page {
   min-width: 0;
 }
+.blog-route-page { position: relative; min-height: 100%; isolation: isolate; }
+.blog-route-background {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: url('/assets/images/blog-bg.webp') center / cover no-repeat;
+}
+.blog-route-content { position: relative; z-index: 1; min-width: 0; }
 .blog-article-content {
   overflow-wrap: anywhere;
   word-break: normal;
   text-align: left;
+  white-space: normal;
 }
+.blog-article-content > * { max-width: 100%; min-width: 0; }
+.blog-article-content pre,
+.blog-article-content code { white-space: pre-wrap; overflow-wrap: anywhere; }
 .blog-article-content h1,
 .blog-article-content h2,
 .blog-article-content h3 {

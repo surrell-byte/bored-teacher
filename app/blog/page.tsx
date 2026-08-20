@@ -29,7 +29,9 @@ export default function BlogPage() {
   if (!ready) return null;
 
   return (
-    <div style={{ maxWidth: 1280, margin: '0 auto', padding: 'clamp(14px,3vw,28px) clamp(14px,3vw,24px) 80px' }}>
+    <div className="blog-route-page">
+      <div className="blog-route-background" aria-hidden="true" />
+      <div className="blog-route-content" style={{ maxWidth: 1280, margin: '0 auto', padding: 'clamp(14px,3vw,28px) clamp(14px,3vw,24px) 80px' }}>
       {/* Hero Section */}
       <div className="shell-card resources-hero" style={{ padding: 'clamp(20px, 4vw, 40px)', marginBottom: 24, borderRadius: 32 }}>
         <div>
@@ -202,6 +204,7 @@ export default function BlogPage() {
             <div style={{ fontSize: '0.9rem', color: 'var(--muted)' }}>Published</div>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

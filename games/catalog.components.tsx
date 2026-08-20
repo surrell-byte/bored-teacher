@@ -56,7 +56,7 @@ export const GAME_COMPONENTS: Partial<Record<string, React.LazyExoticComponent<R
   tictacroll: lazy(() => import('@/games/tictacroll/TicTacRoll')),
   countadd: lazy(() => import('@/games/count-and-add/CountAndAdd')),
   moneyblocks: lazy(() => import('@/games/money-blocks/MoneyBlocks.jsx')),
-  parachutedrop: lazy(() => import('@/games/legacy/LegacyGamePort').then(({ default: LegacyGamePort }) => ({ default: (props: GameComponentProps) => <LegacyGamePort {...props} gameId="parachutedrop" /> }))),
+  parachutedrop: lazy(() => import('@/games/parachute-drop/ParachuteDrop.jsx')),
   superwings: lazy(() => import('@/games/legacy/LegacyGamePort').then(({ default: LegacyGamePort }) => ({ default: (props: GameComponentProps) => <LegacyGamePort {...props} gameId="superwings" /> }))),
   swampjump: lazy(() => import('@/games/legacy/LegacyGamePort').then(({ default: LegacyGamePort }) => ({ default: (props: GameComponentProps) => <LegacyGamePort {...props} gameId="swampjump" /> }))),
   treasurechest: lazy(() => import('@/games/legacy/LegacyGamePort').then(({ default: LegacyGamePort }) => ({ default: (props: GameComponentProps) => <LegacyGamePort {...props} gameId="treasurechest" /> }))),
@@ -70,6 +70,7 @@ export const GAME_COMPONENTS: Partial<Record<string, React.LazyExoticComponent<R
   animalAdventureRace: lazy(() => import('@/games/animal-adventure-race/AnimalAdventureRace.jsx')),
   findthebee: lazy(() => import('@/games/find-the-bee/FindTheBee.jsx')),
   riddlebombs: lazy(() => import('@/games/riddle-bombs/RiddleBombs.jsx')),
+  finnthefox: lazy(() => import('@/games/finn-the-fox/FinnTheFox.jsx')),
   whatami: lazy(() => import('@/games/legacy/LegacyGamePort').then(({ default: LegacyGamePort }) => ({ default: (props: GameComponentProps) => <LegacyGamePort {...props} gameId="whatami" /> }))),
   whatsmissing: lazy(() => import('@/games/legacy/LegacyGamePort').then(({ default: LegacyGamePort }) => ({ default: (props: GameComponentProps) => <LegacyGamePort {...props} gameId="whatsmissing" /> }))),
 };
