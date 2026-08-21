@@ -8,6 +8,7 @@ import { THEMES } from '@/constants/index';
 import { usePathname, useRouter } from 'next/navigation';
 import ProfileModal from '@/features/profiles/components/ProfileModal';
 import { useResponsive } from '@/hooks/useResponsive';
+import { isSoundEnabled, setSoundEnabled } from '@/lib/sound/beep';
 
 const NAV_ITEMS = [
   { href: '/hub',         label: 'Dashboard',   icon: '🏠' },
@@ -26,6 +27,7 @@ export default function Navbar() {
   const [showProfile, setShowProfile] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [soundOn, setSoundOn] = useState(true);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { isMobile, presentationMode, setPresentationMode } = useResponsive();
 
@@ -56,6 +58,14 @@ export default function Navbar() {
       document.removeEventListener('touchstart', handler);
     };
   }, []);
+
+  useEffect(() => {
+    setSoundOn(isSoundEnabled());
+  }, []);
+
+  useEffect(() => {
+    setSoundEnabled(soundOn);
+  }, [soundOn]);
 
   useEffect(() => { setMobileOpen(false); }, [pathname]);
 
@@ -110,8 +120,14 @@ export default function Navbar() {
             <span className="stat-icon">✨</span>{state.xp}/{xpMax} XP
           </span>
 
-          <button className="notif-bell" aria-label="Notifications" type="button">
-            🔔
+          <button
+            className="notif-bell"
+            aria-label={soundOn ? 'Turn sound off' : 'Turn sound on'}
+            type="button"
+            onClick={() => setSoundOn(value => !value)}
+            title={soundOn ? 'Sound on' : 'Sound off'}
+          >
+            {soundOn ? '🔊' : '🔇'}
           </button>
 
           {showPresentationToggle && (

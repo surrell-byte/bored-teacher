@@ -48,6 +48,7 @@ html,body{
   z-index:10;
   overflow-y:auto;
   min-height:100dvh;
+    background: url('/assets/images/tornado-game-screen-bg.webp') center / cover;
 }
 
 .screen.active{
@@ -805,9 +806,11 @@ export default function TornadoGame() {
   );
 
   if (screen === "game") return (
-    <div className="screen active" style={{justifyContent: 'center'}}>
-      <div style={{textAlign: 'center', width: '100%'}}>
-        <h1 style={{fontSize: 'clamp(1.6rem, 4vw, 2.8rem)', background: 'linear-gradient(135deg,#EAF2FF,#7CB8FF)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginBottom: 8}}>🌪️ TORNADO</h1>
+    <div className="screen active tornado-game-screen">
+      <div className="tornado-game-layout">
+        <div className="tornado-art" aria-hidden="true" />
+        <main className="tornado-board">
+          <div className="tornado-board-heading"><span>🌪️</span><div><small>HUB ARENA</small><h1>TORNADO</h1></div></div>
 
         <div className="scoreboard">
           {[0, 1].map(i => (
@@ -839,6 +842,15 @@ export default function TornadoGame() {
         <div className="tiles-left">{16 - revealed.size} tiles left</div>
 
         {msg && <div className="msg">{msg}</div>}
+        </main>
+        <aside className="tornado-rail">
+          <div className="rail-kicker">⚡ COMBO x{stats.combos || 0}</div>
+          <div className="rail-turn">{teamNames[currentPlayer] || `TEAM ${currentPlayer ? 'RED' : 'BLUE'}`}'S TURN</div>
+          <div className="rail-count">{16 - revealed.size} TILES REMAINING</div>
+          <div className="rail-actions"><button className="rail-button" onClick={() => setMsg('Game paused')}>Ⅱ Pause</button><button className="rail-button" onClick={startGame}>↻ Restart</button></div>
+          <div className="rail-stats"><span>⚡ JACKPOTS LEFT: 0</span><span>🌪️ TORNADOES LEFT: 0</span></div>
+          <div className="rail-log"><b>LIVE RESULTS</b><p>{msg || 'Reveal a tile to change the score.'}</p><p>☑ {teamNames[0]} is ready</p><p>☑ {teamNames[1]} is ready</p></div>
+        </aside>
       </div>
     </div>
   );

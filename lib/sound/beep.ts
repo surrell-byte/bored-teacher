@@ -1,13 +1,23 @@
 /**
- * Shared Web Audio "beep" tone generator.
+ * Shared Web Audio helpers.
  *
- * Extracted from two nearly-identical `playBeep()` implementations that
- * were hand-rolled inside ColourClash.jsx and AnimalClassQuest.jsx.
- * Behavior is unchanged — same oscillator/gain ramp shape, same silent
- * failure if AudioContext is unavailable/blocked.
+ * These keep sound state consistent across the app shell and game screens.
  */
-export function playBeep(frequency: number, duration = 0.2, gain = 0.3) {
+const SOUND_KEY = 'boredTeacherSoundEnabled';
+
+export function isSoundEnabled() {
+  if (typeof window === 'undefined') return true;
+  const value = window.localStorage.getItem(SOUND_KEY);
+  return value === null ? true : value !== 'false';
+}
+
+export function setSoundEnabled(enabled: boolean) {
   if (typeof window === 'undefined') return;
+  window.localStorage.setItem(SOUND_KEY, String(enabled));
+}
+
+export function playBeep(frequency: number, duration = 0.2, gain = 0.3) {
+  if (!isSoundEnabled() || typeof window === 'undefined') return;
   try {
     const AudioCtx: typeof AudioContext =
       (window as any).AudioContext || (window as any).webkitAudioContext;

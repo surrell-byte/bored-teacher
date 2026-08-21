@@ -6,6 +6,7 @@ import GameLayout from './GameLayout';
 import GameHeader from './GameHeader';
 import { type GameStat } from './GameSidebar';
 import ErrorBoundary from '@/engine/errors/ErrorBoundary';
+import { isSoundEnabled, setSoundEnabled } from '@/lib/sound/beep';
 
 export type GameSessionEvent = 'started' | 'paused' | 'resumed' | 'completed' | 'exited' | 'restarted';
 
@@ -43,6 +44,7 @@ export default function GameShell({
 }: GameShellProps) {
   const [paused, setPaused] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [soundOn, setSoundOn] = useState(true);
   const shellRef = useRef<HTMLDivElement>(null);
 
   const emit = useCallback((event: GameSessionEvent) => {
@@ -58,6 +60,14 @@ export default function GameShell({
   useEffect(() => {
     if (completion) emit('completed');
   }, [completion, emit]);
+
+  useEffect(() => {
+    setSoundOn(isSoundEnabled());
+  }, []);
+
+  useEffect(() => {
+    setSoundEnabled(soundOn);
+  }, [soundOn]);
 
   useEffect(() => {
     const syncFullscreen = () => setIsFullscreen(document.fullscreenElement === shellRef.current);
@@ -132,6 +142,14 @@ export default function GameShell({
                     </div>
                   )}
                   {headerExtra}
+                  <button
+                    type="button"
+                    className="game-shell-header-action"
+                    onClick={() => setSoundOn(value => !value)}
+                    aria-label={soundOn ? 'Mute sound' : 'Enable sound'}
+                  >
+                    {soundOn ? '🔊 Sound' : '🔇 Sound'}
+                  </button>
                   <button type="button" className="game-shell-header-action" onClick={paused ? resume : pause} aria-pressed={paused}>
                     {paused ? 'Resume' : 'Pause'}
                   </button>

@@ -58,7 +58,7 @@ export const GAME_COMPONENTS: Partial<Record<string, React.LazyExoticComponent<R
   moneyblocks: lazy(() => import('@/games/money-blocks/MoneyBlocks.jsx')),
   parachutedrop: lazy(() => import('@/games/parachute-drop/ParachuteDrop.jsx')),
   superwings: lazy(() => import('@/games/legacy/LegacyGamePort').then(({ default: LegacyGamePort }) => ({ default: (props: GameComponentProps) => <LegacyGamePort {...props} gameId="superwings" /> }))),
-  swampjump: lazy(() => import('@/games/legacy/LegacyGamePort').then(({ default: LegacyGamePort }) => ({ default: (props: GameComponentProps) => <LegacyGamePort {...props} gameId="swampjump" /> }))),
+  swampjump: lazy(() => import('@/games/swamp-jump/FroggyHop.jsx')),
   treasurechest: lazy(() => import('@/games/legacy/LegacyGamePort').then(({ default: LegacyGamePort }) => ({ default: (props: GameComponentProps) => <LegacyGamePort {...props} gameId="treasurechest" /> }))),
   unicornwings: lazy(() => import('@/games/legacy/LegacyGamePort').then(({ default: LegacyGamePort }) => ({ default: (props: GameComponentProps) => <LegacyGamePort {...props} gameId="unicornwings" /> }))),
   feedmonster: lazy(() => import('@/games/legacy/LegacyGamePort').then(({ default: LegacyGamePort }) => ({ default: (props: GameComponentProps) => <LegacyGamePort {...props} gameId="feedmonster" /> }))),

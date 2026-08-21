@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useGame } from '@/lib/gameState';
@@ -18,6 +18,12 @@ interface GameResult {
   gameId: string;
 }
 
+const GAMES_WITH_WELCOME = new Set([
+  'animalAdventureRace', 'connect4', 'farmgame', 'findmyfood', 'flagmaster',
+  'finnthefox', 'hiddencolours', 'oceanquest', 'parachutedrop',
+  'phonicsadventure', 'riddlebombs', 'tictacroll', 'tornado',
+]);
+
 // ── Page ──────────────────────────────────────────────────────
 export default function GamePage() {
   const params  = useParams();
@@ -29,12 +35,16 @@ export default function GamePage() {
   // Connect 4 hands its in-match HUD (player badges + reset/home) up here so
   // it can render inside the GameShell navbar instead of the play area.
   const [c4Hud, setC4Hud] = useState<any>(null);
+  const [showRouteWelcome, setShowRouteWelcome] = useState(!GAMES_WITH_WELCOME.has(gameId));
+
+  useEffect(() => {
+    setShowRouteWelcome(!GAMES_WITH_WELCOME.has(gameId));
+  }, [gameId]);
 
   const gameName  = GAME_NAMES[gameId] ?? 'Game';
   const gameIcon  = GAME_ICONS[gameId] ?? '🎮';
   const GameComp  = GAME_COMPONENTS[gameId];
   const isConnect4 = gameId === 'connect4';
-  const isPhonicsAdventure = gameId === 'phonicsadventure';
 
   // ── onComplete: called by React game components ──
   function handleComplete(score: number, accuracy: number) {
@@ -92,11 +102,9 @@ export default function GamePage() {
         headerExtra={
           <>
             {isConnect4 && c4Hud ? <Connect4HeaderActions hud={c4Hud} /> : null}
-            {isPhonicsAdventure && (
-              <Link className="game-shell-header-action" href="/games/phonicsadventure?screen=menu">
-                Back to Home
-              </Link>
-            )}
+            <Link className="game-shell-header-action" href="/games">
+              Back to Menu
+            </Link>
           </>
         }
         stats={[
@@ -113,11 +121,25 @@ export default function GamePage() {
           </div>
       }>
         <div style={{ flex: '1 1 0', minHeight: 0, overflow: 'auto' }}>
-          <GameComp
-            key={gameSession}
-            onComplete={handleComplete}
-            {...(isConnect4 ? { onHudUpdate: setC4Hud } : {})}
-          />
+          {showRouteWelcome ? (
+            <section className="route-game-welcome" aria-labelledby="route-game-welcome-title">
+              <div className="route-game-welcome-card">
+                <div className="route-game-welcome-icon" aria-hidden="true">{gameIcon}</div>
+                <p className="route-game-welcome-kicker">Welcome to</p>
+                <h1 id="route-game-welcome-title">{gameName}</h1>
+                <p>Get ready to play, learn, and build your best score.</p>
+                <button type="button" className="game-shell-primary-action" onClick={() => setShowRouteWelcome(false)}>
+                  Start Game
+                </button>
+              </div>
+            </section>
+          ) : (
+            <GameComp
+              key={gameSession}
+              onComplete={handleComplete}
+              {...(isConnect4 ? { onHudUpdate: setC4Hud } : {})}
+            />
+          )}
         </div>
       </Suspense>
       </GameShell>
