@@ -10,6 +10,7 @@ import { GAME_NAMES, GAME_ICONS } from '@/constants/index';
 import { GAME_COMPONENTS } from '@/games/catalog.components';
 import { GameShell } from '@/engine';
 import Connect4HeaderActions from '@/components/ui/controls/Connect4HeaderActions';
+import { TIC_TAC_ROLL_THEMES, type TicTacRollTheme } from '@/games/tictacroll/themes';
 
 // ── Types ─────────────────────────────────────────────────────
 interface GameResult {
@@ -35,6 +36,7 @@ export default function GamePage() {
   // Connect 4 hands its in-match HUD (player badges + reset/home) up here so
   // it can render inside the GameShell navbar instead of the play area.
   const [c4Hud, setC4Hud] = useState<any>(null);
+  const [ticTheme, setTicTheme] = useState<TicTacRollTheme>(TIC_TAC_ROLL_THEMES[0]);
   const [showRouteWelcome, setShowRouteWelcome] = useState(!GAMES_WITH_WELCOME.has(gameId));
 
   useEffect(() => {
@@ -45,6 +47,7 @@ export default function GamePage() {
   const gameIcon  = GAME_ICONS[gameId] ?? '🎮';
   const GameComp  = GAME_COMPONENTS[gameId];
   const isConnect4 = gameId === 'connect4';
+  const isTicTacRoll = gameId === 'tictacroll';
 
   // ── onComplete: called by React game components ──
   function handleComplete(score: number, accuracy: number) {
@@ -89,7 +92,7 @@ export default function GamePage() {
   }
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: '#080b12', overflow: 'hidden' }}>
+    <div style={{ position: 'fixed', inset: 0, background: 'transparent', overflow: 'hidden' }}>
       <GameShell
         gameId={gameId}
         title={gameName}
@@ -99,9 +102,34 @@ export default function GamePage() {
         onContinue={handleContinue}
         onRestart={handleContinue}
         controls={null}
+        themeVars={isTicTacRoll ? {
+          nav: ticTheme.surface,
+          navRaised: ticTheme.bg,
+          navText: ticTheme.text,
+          navMuted: ticTheme.muted,
+          background: ticTheme.bg,
+        } : undefined}
         headerExtra={
           <>
             {isConnect4 && c4Hud ? <Connect4HeaderActions hud={c4Hud} /> : null}
+            {isTicTacRoll && (
+              <>
+                <button className="game-shell-header-action" type="button" onClick={() => window.dispatchEvent(new Event('tictacroll:new-game'))}>
+                  New Game
+                </button>
+                <label className="game-shell-header-action" style={{ gap: 6 }}>
+                  <span aria-hidden="true">🎨</span>
+                  <select
+                    value={ticTheme.id}
+                    onChange={event => setTicTheme(TIC_TAC_ROLL_THEMES.find(theme => theme.id === event.target.value) ?? TIC_TAC_ROLL_THEMES[0])}
+                    aria-label="Choose Tic-Tac-Roll theme"
+                    style={{ border: 0, background: 'transparent', color: 'inherit', font: 'inherit', fontWeight: 800, outline: 0, cursor: 'pointer' }}
+                  >
+                    {TIC_TAC_ROLL_THEMES.map(theme => <option key={theme.id} value={theme.id}>{theme.name}</option>)}
+                  </select>
+                </label>
+              </>
+            )}
             <Link className="game-shell-header-action" href="/games">
               Back to Menu
             </Link>
@@ -137,6 +165,7 @@ export default function GamePage() {
             <GameComp
               key={gameSession}
               onComplete={handleComplete}
+              {...(isTicTacRoll ? { themeId: ticTheme.id, onThemeChange: setTicTheme } : {})}
               {...(isConnect4 ? { onHudUpdate: setC4Hud } : {})}
             />
           )}

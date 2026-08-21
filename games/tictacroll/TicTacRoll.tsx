@@ -1,22 +1,9 @@
 'use client';
 import { useState, useEffect, useCallback, useRef } from "react";
+import { TIC_TAC_ROLL_THEMES, type TicTacRollTheme } from "./themes";
 
 const AVATARS = ["🎮","🦁","🐺","🦊","🐸","🐧","🦄","🌟","⚡","🔥","🌙","💎"];
 
-// Each theme carries its own X-crystal / O-ring colour pair plus a sand tone
-// used for the carved-sandstone board.
-const THEMES = [
-  { id: "kalahari", name: "Kalahari Dawn", bg: "#FFF4D7", surface: "#FFE9BE", sand: "#E8B260", accent: "#FFBE3B", accent2: "#F07A2F", glow: "rgba(255,190,59,0.35)", card: "#FFE9BE", text: "#3B2A18", muted: "#8a7355", border: "rgba(224,164,74,0.35)", shadow: "0 8px 30px rgba(184,120,40,0.18)", xColor: "#3AB8FF", oColor: "#F07A2F", ok: "#42C97B" },
-  { id: "mirage", name: "Sunset Mirage", bg: "#FFE6B3", surface: "#FFD9A0", sand: "#FFB95A", accent: "#FF7F4D", accent2: "#FF4D8D", glow: "rgba(255,79,141,0.32)", card: "#FFDEB0", text: "#503042", muted: "#8a5e6e", border: "rgba(166,94,255,0.3)", shadow: "0 8px 30px rgba(255,79,141,0.18)", xColor: "#A65EFF", oColor: "#FF7F4D", ok: "#FFB95A" },
-  { id: "night", name: "Desert Night", bg: "#101928", surface: "#1E273B", sand: "#2A3550", accent: "#2D9CDB", accent2: "#8A5CFF", glow: "rgba(255,216,110,0.25)", card: "#1E273B", text: "#F7F7F7", muted: "#8b93a8", border: "rgba(138,92,255,0.35)", shadow: "0 8px 30px rgba(0,0,0,0.5)", xColor: "#2D9CDB", oColor: "#FFD86E", ok: "#4BE88B" },
-  { id: "emerald", name: "Emerald Oasis", bg: "#FFF7E2", surface: "#FDEFCB", sand: "#E9C46A", accent: "#43AA8B", accent2: "#2E7D63", glow: "rgba(67,170,139,0.3)", card: "#FBEBC6", text: "#1f3d33", muted: "#6c8a7e", border: "rgba(67,170,139,0.3)", shadow: "0 8px 30px rgba(46,125,99,0.18)", xColor: "#57C7FF", oColor: "#43AA8B", ok: "#43AA8B" },
-  { id: "crystal", name: "Crystal Dunes", bg: "#FFFDF8", surface: "#FFF4DE", sand: "#FFC857", accent: "#8B5CF6", accent2: "#FF5FA2", glow: "rgba(139,92,246,0.3)", card: "#FFF1D6", text: "#3a2a4d", muted: "#8d7fa3", border: "rgba(139,92,246,0.3)", shadow: "0 8px 30px rgba(139,92,246,0.18)", xColor: "#53D8FB", oColor: "#FF944D", ok: "#8B5CF6" },
-  { id: "fire", name: "Fire & Sand", bg: "#FFF7D6", surface: "#FFEBB0", sand: "#B9782A", accent: "#F97316", accent2: "#EF4444", glow: "rgba(249,115,22,0.32)", card: "#FFE7A8", text: "#3a1d0a", muted: "#a37c56", border: "rgba(185,120,42,0.35)", shadow: "0 8px 30px rgba(185,120,42,0.2)", xColor: "#EF4444", oColor: "#FACC15", ok: "#F97316" },
-  { id: "rainbow", name: "Rainbow Adventure", bg: "#FFFDF7", surface: "#FFF4E8", sand: "#FFD93D", accent: "#4DA3FF", accent2: "#8B5CF6", glow: "rgba(255,105,180,0.3)", card: "#FFF0DE", text: "#2a2036", muted: "#8a7fa0", border: "rgba(139,92,246,0.3)", shadow: "0 8px 30px rgba(255,159,67,0.2)", xColor: "#4DA3FF", oColor: "#FF9F43", ok: "#4CD964" },
-  { id: "dice", name: "Magic Dice", bg: "#FFF9EE", surface: "#FFF1D2", sand: "#FFC83D", accent: "#59C6FF", accent2: "#8A5CFF", glow: "rgba(89,198,255,0.32)", card: "#FFF0CE", text: "#2e2a1c", muted: "#948a6e", border: "rgba(138,92,255,0.3)", shadow: "0 8px 30px rgba(138,92,255,0.18)", xColor: "#59C6FF", oColor: "#FFC83D", ok: "#8A5CFF" },
-  { id: "ancient", name: "Ancient Desert", bg: "#EFE3C8", surface: "#E6D6AE", sand: "#D9A441", accent: "#46C6D8", accent2: "#C65D3B", glow: "rgba(70,198,216,0.3)", card: "#E8DAB4", text: "#3a2e18", muted: "#8c7c56", border: "rgba(156,122,77,0.35)", shadow: "0 8px 30px rgba(156,122,77,0.2)", xColor: "#46C6D8", oColor: "#EFC75E", ok: "#46C6D8" },
-  { id: "neon", name: "Neon Oasis", bg: "#6ED8FF", surface: "#FFFDF7", sand: "#F8C75D", accent: "#9B5BFF", accent2: "#FF5DA8", glow: "rgba(155,91,255,0.35)", card: "#FFFDF7", text: "#1c2a3a", muted: "#5c7a94", border: "rgba(155,91,255,0.3)", shadow: "0 8px 30px rgba(58,213,255,0.25)", xColor: "#3AD5FF", oColor: "#FF8C3A", ok: "#79F24D" },
-];
 
 function winLen(n: number) { return n === 3 ? 3 : 4; }
 function computeWinLines(n: number, w: number) {
@@ -29,11 +16,17 @@ function computeWinLines(n: number, w: number) {
 }
 
 type Screen = "welcome" | "setup" | "menu" | "difficulty" | "game" | "howtoplay";
-interface Props { onComplete: (score: number, accuracy: number) => void; }
+interface Props {
+  onComplete: (score: number, accuracy: number) => void;
+  themeId?: string;
+  onThemeChange?: (theme: TicTacRollTheme) => void;
+}
 
-export default function TicTacRoll({ onComplete }: Props) {
+export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeChange }: Props) {
   const [screen, setScreen] = useState<Screen>("welcome");
-  const [profile, setProfile] = useState({ name: "Player", avatar: "🎮", theme: "kalahari" as string });
+  const [profile, setProfile] = useState({ name: "Player", avatar: "🎮", theme: themeId });
+  const [player2, setPlayer2] = useState({ name: "Player 2", avatar: "🐺" });
+  const [playerCount, setPlayerCount] = useState<1 | 2 | null>(null);
   const [burst, setBurst] = useState<{ id: number; x: number; y: number; color: string }[]>([]);
   const burstId = useRef(0);
   const [gridSize, setGridSize] = useState(3);
@@ -53,13 +46,12 @@ export default function TicTacRoll({ onComplete }: Props) {
   const [skipNext, setSkipNext] = useState({ X: 0, O: 0 });
   const [lastMove, setLastMove] = useState<string>("");
   const [status, setStatus] = useState({ main: "Your turn", hint: "Choose any empty tile" });
-  const [showPause, setShowPause] = useState(false);
   const [wonLine, setWonLine] = useState<number[] | null>(null);
   const [htpTab, setHtpTab] = useState("classic");
   const rollTimer = useRef<number | null>(null);
   const audioCtx = useRef<AudioContext | null>(null);
 
-  const theme = THEMES.find(t => t.id === profile.theme) || THEMES[0];
+  const theme = TIC_TAC_ROLL_THEMES.find(t => t.id === profile.theme) || TIC_TAC_ROLL_THEMES[0];
   const X_COLOR = theme.xColor;
   const O_COLOR = theme.oColor;
   const winLines = computeWinLines(gridSize, winLen(gridSize));
@@ -80,7 +72,22 @@ export default function TicTacRoll({ onComplete }: Props) {
   }
   const snd = { move: () => tone(700, 0.08, 0.08), win: () => { tone(620, 0.12, 0.12); setTimeout(() => tone(840, 0.2, 0.15), 120); }, draw: () => tone(380, 0.4, 0.08), reset: () => { tone(540, 0.07, 0.07); setTimeout(() => tone(480, 0.06, 0.06), 80); }, start: () => tone(860, 0.04, 0.06), stop: () => tone(640, 0.06, 0.07), skip: () => tone(320, 0.3, 0.08) };
 
-  const getName = (p: string) => gameMode === "ai" && p === (playerSymbol === "X" ? "O" : "X") ? "AI" : (gameMode === "ai" ? profile.name : p);
+  useEffect(() => {
+    if (themeId !== profile.theme) setProfile(current => ({ ...current, theme: themeId }));
+  }, [profile.theme, themeId]);
+
+  useEffect(() => {
+    const selected = TIC_TAC_ROLL_THEMES.find(t => t.id === profile.theme) || TIC_TAC_ROLL_THEMES[0];
+    onThemeChange?.(selected);
+  }, [onThemeChange, profile.theme]);
+
+  useEffect(() => {
+    const handleNewGame = () => { if (screen === "game") startNewGame(); };
+    window.addEventListener("tictacroll:new-game", handleNewGame);
+    return () => window.removeEventListener("tictacroll:new-game", handleNewGame);
+  }, [screen, gameMode, aiDiff, playerSymbol]);
+
+  const getName = (p: string) => gameMode === "ai" && p === (playerSymbol === "X" ? "O" : "X") ? "AI" : p === "X" ? profile.name : player2.name;
 
   function buildBoard() {
     const newBoard: (string | null)[] = Array(totalCells).fill(null);
@@ -138,7 +145,7 @@ export default function TicTacRoll({ onComplete }: Props) {
       const newSkip = { ...skipNext }; newSkip[next]--; setSkipNext(newSkip);
       setStatus({ main: `Player ${next} loses this turn`, hint: "Skipped by a roll of 2" });
       snd.skip();
-      setTimeout(() => { if (gameActive && !showPause) nextTurn(next); }, 900);
+      setTimeout(() => { if (gameActive) nextTurn(next); }, 900);
       return;
     }
     if (gameMode === "roll") {
@@ -148,7 +155,7 @@ export default function TicTacRoll({ onComplete }: Props) {
       setPhase("play");
       if (gameMode === "ai" && next === (playerSymbol === "X" ? "O" : "X")) {
         setStatus({ main: "AI is thinking...", hint: "" });
-        setTimeout(() => { if (gameActive && !showPause) doAiMove(); }, 600);
+        setTimeout(() => { if (gameActive) doAiMove(); }, 600);
       } else {
         setStatus({ main: `${getName(next)}'s turn`, hint: "Choose a tile" });
       }
@@ -157,7 +164,6 @@ export default function TicTacRoll({ onComplete }: Props) {
 
   function handleCellClick(idx: number) {
     if (!gameActive || phase === "over" || phase === "roll") return;
-    if (showPause) return;
     if (gameMode === "ai" && currentPlayer === (playerSymbol === "X" ? "O" : "X")) return;
     if (board[idx] !== null) return;
     if (gameMode === "roll" && canConvert) {
@@ -282,11 +288,6 @@ export default function TicTacRoll({ onComplete }: Props) {
     }
   }
 
-  function togglePause() {
-    if (!gameActive) return;
-    setShowPause(!showPause);
-  }
-
   function launchGame(mode: "classic" | "roll" | "ai", opts?: { difficulty?: string; symbol?: "X" | "O" }) {
     setGameMode(mode);
     if (mode === "ai") { setAiDiff(opts?.difficulty || "easy"); setPlayerSymbol(opts?.symbol || "X"); }
@@ -298,7 +299,7 @@ export default function TicTacRoll({ onComplete }: Props) {
 
   function startNewGame() {
     if (rollTimer.current) { clearInterval(rollTimer.current); rollTimer.current = null; }
-    setRolling(false); setShowPause(false);
+    setRolling(false);
     setScores({ X: 0, O: 0, draw: 0 });
     buildBoard();
     setTimeout(() => { resetGame(); }, 50);
@@ -331,12 +332,12 @@ export default function TicTacRoll({ onComplete }: Props) {
     gridTemplateColumns: window.innerWidth >= 1000 ? "340px 1fr" : "1fr",
     gap: "clamp(1rem, 2vw, 2rem)",
     width: "100%",
-    minHeight: "92vh",
+    minHeight: "100%",
     padding: "clamp(1.2rem, 2vw, 2.5rem)",
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: theme.bg, color: theme.text, fontFamily: "'DM Sans', 'Segoe UI', sans-serif", transition: "background 0.4s, color 0.4s" }}>
+    <div style={{ minHeight: "100vh", background: "transparent", color: theme.text, fontFamily: "'DM Sans', 'Segoe UI', sans-serif", transition: "background 0.4s, color 0.4s" }}>
 
       {/* WELCOME SCREEN */}
       {screen === "welcome" && (
@@ -356,27 +357,27 @@ export default function TicTacRoll({ onComplete }: Props) {
           <button onClick={() => { tone(500, 0.08, 0.07); setScreen("welcome"); }} style={{ background: "none", border: "none", color: theme.muted, cursor: "pointer", fontSize: "0.9rem", marginBottom: "1rem" }}>← Back</button>
           <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.5rem, 4vw, 2.5rem)", margin: "0 0 0.3rem" }}>Create Your Profile</h2>
           <p style={{ color: theme.muted, fontSize: "0.9rem", marginBottom: "1.5rem" }}>Personalise your experience</p>
-          <label style={{ fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: theme.muted, display: "block", marginBottom: "0.5rem" }}>Your Name</label>
-          <input value={profile.name} onChange={e => setProfile({ ...profile, name: e.target.value })} placeholder="Enter your name..." maxLength={18} style={{ width: "100%", padding: "0.8rem 1rem", borderRadius: 12, border: `1px solid ${theme.border}`, background: theme.card, color: theme.text, fontSize: "1rem", marginBottom: "1.5rem", outline: "none" }} />
+          <label style={{ fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: theme.muted, display: "block", marginBottom: "0.5rem" }}>Players</label>
+          <div style={{ display: "flex", gap: "0.75rem", marginBottom: "1.5rem" }}>
+            {([1, 2] as const).map(count => <button key={count} onClick={() => setPlayerCount(count)} style={{ flex: 1, padding: "0.8rem", borderRadius: 12, border: playerCount === count ? `2px solid ${theme.accent}` : `1px solid ${theme.border}`, background: playerCount === count ? theme.glow : theme.card, color: theme.text, cursor: "pointer", fontWeight: 600 }}>{count} Player{count === 2 ? "s" : ""}</button>)}
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: playerCount === 2 ? "repeat(2, 1fr)" : "1fr", gap: "1rem", marginBottom: "1.5rem" }}>
+            <div style={{ padding: "1rem", borderRadius: 12, border: `1px solid ${theme.border}`, background: theme.card }}>
+              <label style={{ fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: theme.muted, display: "block", marginBottom: "0.5rem" }}>Player 1</label>
+              <input disabled={playerCount === null} value={profile.name} onChange={e => setProfile({ ...profile, name: e.target.value })} placeholder="Enter your name..." maxLength={18} style={{ width: "100%", padding: "0.8rem 1rem", borderRadius: 12, border: `1px solid ${theme.border}`, background: theme.bg, color: theme.text, fontSize: "1rem", outline: "none" }} />
+            </div>
+            <div style={{ padding: "1rem", borderRadius: 12, border: `1px solid ${theme.border}`, background: playerCount === 1 ? `${theme.muted}33` : theme.card, opacity: playerCount === 1 || playerCount === null ? 0.55 : 1 }}>
+              <label style={{ fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: theme.muted, display: "block", marginBottom: "0.5rem" }}>Player 2</label>
+              <input disabled={playerCount !== 2} value={player2.name} onChange={e => setPlayer2({ ...player2, name: e.target.value })} placeholder="Enter player 2 name..." maxLength={18} style={{ width: "100%", padding: "0.8rem 1rem", borderRadius: 12, border: `1px solid ${theme.border}`, background: theme.bg, color: theme.text, fontSize: "1rem", outline: "none" }} />
+            </div>
+          </div>
           <label style={{ fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: theme.muted, display: "block", marginBottom: "0.5rem" }}>Choose Avatar</label>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: "0.5rem", marginBottom: "1.5rem" }}>
             {AVATARS.map(av => (
-              <button key={av} onClick={() => setProfile({ ...profile, avatar: av })} style={{ fontSize: "1.5rem", padding: "0.6rem", borderRadius: 12, border: profile.avatar === av ? `2px solid ${theme.accent}` : `1px solid ${theme.border}`, background: profile.avatar === av ? theme.glow : theme.card, cursor: "pointer", boxShadow: profile.avatar === av ? `0 0 0 3px ${theme.glow}` : "none" }}>{av}</button>
+              <button key={av} disabled={playerCount === null} onClick={() => setProfile({ ...profile, avatar: av })} style={{ fontSize: "1.5rem", padding: "0.6rem", borderRadius: 12, border: profile.avatar === av ? `2px solid ${theme.accent}` : `1px solid ${theme.border}`, background: profile.avatar === av ? theme.glow : theme.card, cursor: playerCount === null ? "not-allowed" : "pointer", opacity: playerCount === null ? 0.5 : 1, boxShadow: profile.avatar === av ? `0 0 0 3px ${theme.glow}` : "none" }}>{av}</button>
             ))}
           </div>
-          <label style={{ fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: theme.muted, display: "block", marginBottom: "0.5rem" }}>Choose Theme</label>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "0.75rem", marginBottom: "2rem" }}>
-            {THEMES.map(t => (
-              <button key={t.id} onClick={() => setProfile({ ...profile, theme: t.id })} style={{ padding: "0.75rem", borderRadius: 12, border: profile.theme === t.id ? `2px solid ${theme.accent}` : `1px solid ${theme.border}`, background: t.card, cursor: "pointer", textAlign: "left", boxShadow: profile.theme === t.id ? `0 0 0 3px ${theme.glow}` : "none" }}>
-                <div style={{ fontSize: "0.85rem", fontWeight: 600, color: t.text }}>{t.name}</div>
-                <div style={{ display: "flex", gap: 4, marginTop: 4 }}>
-                  <div style={{ width: 16, height: 16, borderRadius: 4, background: t.bg, border: `1px solid ${t.accent}44` }} />
-                  <div style={{ width: 16, height: 16, borderRadius: 4, background: t.surface, border: `1px solid ${t.accent}44` }} />
-                </div>
-              </button>
-            ))}
-          </div>
-          <button onClick={() => { tone(500, 0.08, 0.07); setScreen("menu"); }} style={{ width: "100%", padding: "1rem", fontSize: "1rem", fontWeight: 600, borderRadius: 50, border: "none", background: `linear-gradient(160deg, ${theme.accent}, ${theme.accent}dd)`, color: "#fff", cursor: "pointer", boxShadow: `0 4px 15px ${theme.glow}` }}>Continue →</button>
+          <button disabled={playerCount === null} onClick={() => { tone(500, 0.08, 0.07); setScreen("menu"); }} style={{ width: "100%", padding: "1rem", fontSize: "1rem", fontWeight: 600, borderRadius: 50, border: "none", background: `linear-gradient(160deg, ${theme.accent}, ${theme.accent}dd)`, color: "#fff", cursor: playerCount === null ? "not-allowed" : "pointer", opacity: playerCount === null ? 0.5 : 1, boxShadow: `0 4px 15px ${theme.glow}` }}>Continue →</button>
         </div>
       )}
 
@@ -399,7 +400,7 @@ export default function TicTacRoll({ onComplete }: Props) {
           </div>
           <label style={{ fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: theme.muted, display: "block", marginBottom: "0.5rem" }}>Grid Size</label>
           <div style={{ display: "flex", gap: "0.5rem" }}>
-            {[3, 5, 6, 7].map(s => (
+            {[3, 4, 5, 6, 7].map(s => (
               <button key={s} onClick={() => setGridSize(s)} style={{ flex: 1, padding: "0.6rem", borderRadius: 12, border: gridSize === s ? `2px solid ${theme.accent}` : `1px solid ${theme.border}`, background: gridSize === s ? theme.glow : theme.card, cursor: "pointer", fontWeight: gridSize === s ? 700 : 400, color: theme.text, fontSize: "clamp(0.8rem, 2vw, 0.9rem)" }}>{s}×{s}</button>
             ))}
           </div>
@@ -459,7 +460,7 @@ export default function TicTacRoll({ onComplete }: Props) {
             <div style={{ padding: "clamp(1rem, 2vw, 1.5rem)", background: theme.card, borderRadius: "clamp(12px, 2vw, 16px)", border: `1px solid ${theme.border}`, boxShadow: theme.shadow, borderLeft: `4px solid ${currentPlayer === "X" && gameActive ? theme.accent : "transparent"}` }}>
               <div style={{ fontSize: "0.65rem", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", color: theme.muted, marginBottom: "0.3rem" }}>Player X</div>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
-                <span style={{ fontSize: "1.5rem" }}>😀</span>
+                <span style={{ fontSize: "1.5rem" }}>{profile.avatar}</span>
                 <span style={{ fontWeight: 600 }}>{getName("X")}</span>
               </div>
               <div style={{ fontSize: "clamp(1.5rem, 4vw, 2rem)", fontWeight: 700, color: X_COLOR, fontFamily: "'Cormorant Garamond', Georgia, serif" }}>{scores.X}</div>
@@ -469,7 +470,7 @@ export default function TicTacRoll({ onComplete }: Props) {
             <div style={{ padding: "clamp(1rem, 2vw, 1.5rem)", background: theme.card, borderRadius: "clamp(12px, 2vw, 16px)", border: `1px solid ${theme.border}`, boxShadow: theme.shadow, borderLeft: `4px solid ${currentPlayer === "O" && gameActive ? theme.accent : "transparent"}` }}>
               <div style={{ fontSize: "0.65rem", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", color: theme.muted, marginBottom: "0.3rem" }}>Player O</div>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
-                <span style={{ fontSize: "1.5rem" }}>🐺</span>
+                <span style={{ fontSize: "1.5rem" }}>{player2.avatar}</span>
                 <span style={{ fontWeight: 600 }}>{getName("O")}</span>
               </div>
               <div style={{ fontSize: "clamp(1.5rem, 4vw, 2rem)", fontWeight: 700, color: O_COLOR, fontFamily: "'Cormorant Garamond', Georgia, serif" }}>{scores.O}</div>
@@ -491,30 +492,10 @@ export default function TicTacRoll({ onComplete }: Props) {
                 </div>
               )}
             </div>
-            {/* Controls */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-              <button onClick={() => { if (rollTimer.current) clearInterval(rollTimer.current); setRolling(false); setShowPause(false); launchGame(gameMode, gameMode === "ai" ? { difficulty: aiDiff, symbol: playerSymbol } : undefined); }} style={{ padding: "0.75rem", borderRadius: 50, border: `1px solid ${theme.border}`, background: theme.card, color: theme.text, cursor: "pointer", fontWeight: 600, fontSize: "0.85rem" }}>New Game</button>
-              <button onClick={() => { setScreen("menu"); setShowPause(false); }} style={{ padding: "0.75rem", borderRadius: 50, border: `1px solid ${theme.border}`, background: theme.card, color: theme.text, cursor: "pointer", fontWeight: 600, fontSize: "0.85rem" }}>Main Menu</button>
-              <button onClick={() => togglePause()} style={{ padding: "0.75rem", borderRadius: 50, border: `1px solid ${theme.border}`, background: theme.card, color: theme.text, cursor: "pointer", fontWeight: 600, fontSize: "0.85rem" }}>{showPause ? "▶ Resume" : "⏸ Pause"}</button>
-            </div>
           </div>
 
           {/* MAIN BOARD AREA */}
           <div style={{ display: "flex", flexDirection: "column", gap: "clamp(0.75rem, 1.5vw, 1.2rem)" }}>
-            {/* Toolbar */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "clamp(0.5rem, 1vw, 0.75rem) clamp(1rem, 2vw, 1.5rem)", background: theme.card, borderRadius: "clamp(10px, 1.5vw, 14px)", border: `1px solid ${theme.border}`, boxShadow: theme.shadow, flexWrap: "wrap", gap: "0.5rem" }}>
-              <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-                <button onClick={() => { if (rollTimer.current) clearInterval(rollTimer.current); setRolling(false); setShowPause(false); setScreen("menu"); }} style={{ width: 36, height: 36, borderRadius: 10, border: `1px solid ${theme.border}`, background: theme.surface, color: theme.text, cursor: "pointer", fontSize: "1rem" }}>⌂</button>
-                <button onClick={() => togglePause()} style={{ width: 36, height: 36, borderRadius: 10, border: `1px solid ${theme.border}`, background: theme.surface, color: theme.text, cursor: "pointer", fontSize: "1rem" }}>{showPause ? "▶" : "⏸"}</button>
-              </div>
-              <div style={{ fontWeight: 600, fontSize: "clamp(0.8rem, 2vw, 0.95rem)" }}>{gameMode === "ai" ? `vs AI · ${aiDiff.charAt(0).toUpperCase() + aiDiff.slice(1)}` : gameMode === "roll" ? "Roll Mode" : "Classic Mode"} {gridSize !== 3 ? ` · ${gridSize}×${gridSize}` : ""}</div>
-              <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-                <button onClick={() => { setHtpTab(gameMode === "roll" ? "roll" : gameMode === "ai" ? "ai" : "classic"); setScreen("howtoplay"); }} style={{ width: 36, height: 36, borderRadius: 10, border: `1px solid ${theme.border}`, background: theme.surface, color: theme.text, cursor: "pointer", fontSize: "1rem" }}>?</button>
-                <button onClick={() => setSoundOn(!soundOn)} style={{ width: 36, height: 36, borderRadius: 10, border: `1px solid ${theme.border}`, background: theme.surface, color: theme.text, cursor: "pointer", fontSize: "1rem" }}>{soundOn ? "♪" : "♩"}</button>
-                <button onClick={() => startNewGame()} style={{ width: 36, height: 36, borderRadius: 10, border: `1px solid ${theme.border}`, background: theme.surface, color: theme.text, cursor: "pointer", fontSize: "1rem" }}>↺</button>
-              </div>
-            </div>
-
             {/* Board */}
             <div style={responsiveBoardStyle}>
               {boardDisplay.map(cell => (
@@ -583,21 +564,6 @@ export default function TicTacRoll({ onComplete }: Props) {
                   })}
                 </div>
               ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* PAUSE OVERLAY */}
-      {showPause && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50 }}>
-          <div style={{ padding: "2rem", background: theme.surface, borderRadius: "clamp(16px, 3vw, 24px)", border: `1px solid ${theme.border}`, textAlign: "center", boxShadow: theme.shadow, minWidth: "280px" }}>
-            <div style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.5rem, 4vw, 2rem)", marginBottom: "0.5rem" }}>Paused</div>
-            <div style={{ color: theme.muted, fontSize: "0.9rem", marginBottom: "1.5rem" }}>Take a breather</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-              <button onClick={() => togglePause()} style={{ padding: "0.9rem", borderRadius: 50, border: "none", background: `linear-gradient(160deg, ${theme.accent}, ${theme.accent}dd)`, color: "#fff", fontWeight: 600, cursor: "pointer" }}>▶ Resume</button>
-              <button onClick={() => { setShowPause(false); setScreen("howtoplay"); }} style={{ padding: "0.9rem", borderRadius: 50, border: `1px solid ${theme.border}`, background: theme.card, color: theme.text, fontWeight: 600, cursor: "pointer" }}>◈ How to Play</button>
-              <button onClick={() => { setShowPause(false); setScreen("menu"); }} style={{ padding: "0.9rem", borderRadius: 50, border: `1px solid ${theme.border}`, background: theme.card, color: theme.text, fontWeight: 600, cursor: "pointer" }}>⌂ Main Menu</button>
             </div>
           </div>
         </div>

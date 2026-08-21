@@ -31,6 +31,13 @@ export interface GameShellProps {
   onContinue?: () => void;
   onRestart?: () => void;
   onSessionEvent?: (event: GameSessionEvent) => void;
+  themeVars?: {
+    nav: string;
+    navRaised: string;
+    navText: string;
+    navMuted: string;
+    background?: string;
+  };
 }
 
 /**
@@ -40,7 +47,7 @@ export interface GameShellProps {
  */
 export default function GameShell({
   gameId, title, icon, stats, controls, headerExtra, children, sessionKey = 0,
-  completion, onContinue, onRestart, onSessionEvent,
+  completion, onContinue, onRestart, onSessionEvent, themeVars,
 }: GameShellProps) {
   const [paused, setPaused] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -121,7 +128,19 @@ export default function GameShell({
   const topBarStats = [...(stats ?? []), ...completionStats];
 
   return (
-    <div ref={shellRef} className="game-shell" data-game-id={gameId} data-paused={paused || undefined}>
+    <div
+      ref={shellRef}
+      className="game-shell"
+      data-game-id={gameId}
+      data-paused={paused || undefined}
+      style={themeVars ? {
+        '--game-shell-nav': themeVars.nav,
+        '--game-shell-nav-raised': themeVars.navRaised,
+        '--game-shell-nav-text': themeVars.navText,
+        '--game-shell-nav-muted': themeVars.navMuted,
+        background: themeVars.background,
+      } as React.CSSProperties : undefined}
+    >
       <GameLayout
         header={
           <>

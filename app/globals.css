@@ -3693,7 +3693,7 @@ a { color: inherit; }
      gap around the play area (padding below, safe-area margins, etc.) let
      that theme colour show through as stray bars around every game. The
      game screen should never depend on which hub theme is active. */
-  height: 100%; min-height: 0; background: #080b12;
+  height: 100%; min-height: 0; background: transparent;
 }
 .game-shell > .game-layout {
   height: 100%;
