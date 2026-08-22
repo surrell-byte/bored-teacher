@@ -604,10 +604,17 @@ body.lightning{
 }
 `;
 
-export default function TornadoGame() {
+export const TORNADO_THEMES = [
+  { id: 'ocean', emoji: '🌊', name: 'Ocean', gold: '#7FD6FF', surface: '#16304D' },
+  { id: 'sunset', emoji: '🌅', name: 'Sunset', gold: '#FFB36B', surface: '#4A241C' },
+  { id: 'forest', emoji: '🌲', name: 'Forest', gold: '#8BE28B', surface: '#183524' },
+  { id: 'neon', emoji: '⚡', name: 'Neon', gold: '#D06BFF', surface: '#2A1740' },
+];
+
+export default function TornadoGame({ themeId }) {
   const [screen, setScreen] = useState("welcome");
   const [teamNames, setTeamNames] = useState(["Team Blue","Team Red"]);
-  const [selectedTheme, setSelectedTheme] = useState("ocean");
+  const selectedTheme = TORNADO_THEMES.some(theme => theme.id === themeId) ? themeId : "ocean";
   const [tiles, setTiles] = useState([]);
   const [scores, setScores] = useState([0, 0]);
   const [currentPlayer, setCurrentPlayer] = useState(0);
@@ -738,13 +745,6 @@ export default function TornadoGame() {
     return () => style.remove();
   }, []);
 
-  const THEMES = [
-    { id: 'ocean', emoji: '🌊', name: 'Ocean' },
-    { id: 'sunset', emoji: '🌅', name: 'Sunset' },
-    { id: 'forest', emoji: '🌲', name: 'Forest' },
-    { id: 'neon', emoji: '⚡', name: 'Neon' },
-  ];
-
   if (screen === "welcome") return (
     <div className="screen active">
       <div className="panel" style={{marginBlock: 'auto'}}>
@@ -753,28 +753,7 @@ export default function TornadoGame() {
         <p style={{color: 'var(--text-dim)', marginBottom: 32}}>Flip · Steal · Win</p>
         <div className="divider" />
         <p className="welcome-desc">A team-based tile-flipping game where every reveal changes everything.</p>
-        <button className="btn btn-primary" onClick={() => setScreen('theme')}>Begin →</button>
-      </div>
-    </div>
-  );
-
-  if (screen === "theme") return (
-    <div className="screen active">
-      <div className="panel" style={{marginBlock: 'auto'}}>
-        <h2 style={{fontSize: '2rem', marginBottom: 6, fontFamily: 'Oxanium', fontWeight: 800}}>Choose Theme</h2>
-        <div className="divider" />
-        <div className="theme-grid">
-          {THEMES.map(t => (
-            <button key={t.id} className={`theme-card ${selectedTheme === t.id ? 'selected' : ''}`}
-              onClick={() => setSelectedTheme(t.id)}>
-              <div className="theme-icon">{t.emoji}</div>
-              <div className="theme-name">{t.name}</div>
-            </button>
-          ))}
-        </div>
-        <button className="btn btn-primary" onClick={() => setScreen('setup')}>Continue →</button>
-        <br />
-        <button className="btn btn-ghost" onClick={() => setScreen('welcome')}>← Back</button>
+        <button className="btn btn-primary" onClick={() => setScreen('setup')}>Begin →</button>
       </div>
     </div>
   );
@@ -800,7 +779,7 @@ export default function TornadoGame() {
         </div>
         <button className="btn btn-primary" onClick={startGame}>Play! ⚡</button>
         <br />
-        <button className="btn btn-ghost" onClick={() => setScreen('theme')}>← Back</button>
+        <button className="btn btn-ghost" onClick={() => setScreen('welcome')}>← Back</button>
       </div>
     </div>
   );

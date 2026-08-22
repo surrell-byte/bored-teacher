@@ -234,8 +234,8 @@ export default function Connect4({ onComplete, onHudUpdate }) {
       const isP1 = mover === 1;
       setScores(s => ({ ...s, [isP1 ? "p1" : "p2"]: s[isP1 ? "p1" : "p2"] + 1 }));
       const score = isP1 ? 100 : 0;
-      completeGame('connect-4', score, nextMoves);
-      onComplete?.(score, nextMoves);
+      completeGame('connect4', score, nextMoves);
+      onComplete?.(score, isP1 ? 100 : 0, nextMoves);
       setTimeout(() => {
         launchConfetti(isP1 ? t1.a : t2.a);
         setCeleb({
@@ -250,8 +250,8 @@ export default function Connect4({ onComplete, onHudUpdate }) {
     if (full) {
       setActive(false);
       setScores(s => ({ ...s, draws: s.draws + 1 }));
-      completeGame('connect-4', 50, nextMoves);
-      onComplete?.(50, nextMoves);
+      completeGame('connect4', 50, nextMoves);
+      onComplete?.(50, 50, nextMoves);
       setTimeout(() => {
         setCeleb({ icon: "🤝", title: "DRAW", sub: "An equal match." });
         setScreen("celeb");
@@ -372,17 +372,6 @@ export default function Connect4({ onComplete, onHudUpdate }) {
                 <input className="c4-input" maxLength={14} value={p1Name} onChange={e => setP1Name(e.target.value)} placeholder="Your name" />
                 <div className="c4-picker-row">
                   <div className="c4-picker-col">
-                    <div className="c4-label">Your Colour</div>
-                    <div className="c4-swatches">
-                      {THEME_KEYS.map(k => (
-                        <div key={k} className={`c4-swatch${p1Theme === k ? " picked" : ""}`}
-                          style={{ background: `radial-gradient(circle at 35% 30%, ${THEMES[k].a}, ${THEMES[k].b})` }}
-                          title={THEMES[k].label}
-                          onClick={() => setP1Theme(k)} />
-                      ))}
-                    </div>
-                  </div>
-                  <div className="c4-picker-col">
                     <div className="c4-label">Your Avatar</div>
                     <div className="c4-avatar-grid">
                       {AVATARS.map(a => (
@@ -410,17 +399,6 @@ export default function Connect4({ onComplete, onHudUpdate }) {
                 <input className="c4-input" maxLength={12} value={p1Name} onChange={e => setP1Name(e.target.value)} placeholder="Name" />
                 <div className="c4-picker-row">
                   <div className="c4-picker-col">
-                    <div className="c4-label">Colour</div>
-                    <div className="c4-swatches">
-                      {THEME_KEYS.map(k => (
-                        <div key={k} className={`c4-swatch${p1Theme === k ? " picked" : ""}`}
-                          style={{ background: `radial-gradient(circle at 35% 30%, ${THEMES[k].a}, ${THEMES[k].b})` }}
-                          title={THEMES[k].label}
-                          onClick={() => setP1Theme(k)} />
-                      ))}
-                    </div>
-                  </div>
-                  <div className="c4-picker-col">
                     <div className="c4-label">Avatar</div>
                     <div className="c4-avatar-grid">
                       {AVATARS.map(a => (
@@ -438,17 +416,6 @@ export default function Connect4({ onComplete, onHudUpdate }) {
                 <div className="c4-label">Player 2</div>
                 <input className="c4-input" maxLength={12} value={p2Name} onChange={e => setP2Name(e.target.value)} placeholder="Name" />
                 <div className="c4-picker-row">
-                  <div className="c4-picker-col">
-                    <div className="c4-label">Colour</div>
-                    <div className="c4-swatches">
-                      {THEME_KEYS.map(k => (
-                        <div key={k} className={`c4-swatch${p2Theme === k ? " picked" : ""}`}
-                          style={{ background: `radial-gradient(circle at 35% 30%, ${THEMES[k].a}, ${THEMES[k].b})` }}
-                          title={THEMES[k].label}
-                          onClick={() => setP2Theme(k)} />
-                      ))}
-                    </div>
-                  </div>
                   <div className="c4-picker-col">
                     <div className="c4-label">Avatar</div>
                     <div className="c4-avatar-grid">

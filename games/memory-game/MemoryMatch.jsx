@@ -129,13 +129,13 @@ function generateDeck(vocabulary, matchType, pairs) {
 /* =========================================================
    MAIN COMPONENT
 ========================================================= */
-export default function MemoryMatch({ onComplete }) {
+export default function MemoryMatch({ onComplete, themeId }) {
   // Game state
   const [gameState, setGameState] = useState("menu"); // menu, playing, won
   const [category, setCategory] = useState("Animals");
   const [difficulty, setDifficulty] = useState("Easy");
   const [matchType, setMatchType] = useState("mixed");
-  const [theme, setTheme] = useState("dark"); // dark or light
+  const theme = themeId === "light" ? "light" : "dark";
 
   // Gameplay state
   const [cards, setCards] = useState([]);
@@ -312,24 +312,6 @@ export default function MemoryMatch({ onComplete }) {
                   {type.label}
                 </button>
               ))}
-            </div>
-          </div>
-
-          <div className="memory-menu-section">
-            <h3>🎨 Theme</h3>
-            <div className="memory-menu-buttons">
-              <button
-                className={`memory-menu-btn ${theme === "dark" ? "active" : ""}`}
-                onClick={() => setTheme("dark")}
-              >
-                🌙 Dark
-              </button>
-              <button
-                className={`memory-menu-btn ${theme === "light" ? "active" : ""}`}
-                onClick={() => setTheme("light")}
-              >
-                ☀️ Light
-              </button>
             </div>
           </div>
 

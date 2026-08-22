@@ -23,7 +23,7 @@ const PARTICLE_SHAPES = ["●", "✦", "✧", "★", "✸", "✹"];
 const TILE_COUNT = 24; // 6x4 board
 const TILE_DIST = [7, 7, 3, 2, 3, 2]; // count of each outcome 1-6
 
-const THEMES = {
+export const THEMES = {
   default: { bg: "#f5f5f7", surface: "#ffffff", surface2: "#f0f0f4", border: "#e0e0e6", border2: "#c8c8d2", text: "#1a1a2e", text2: "#6b6b80", accent: "#534AB7", accent2: "#3C3489" },
   dusk:    { bg: "#1a1025", surface: "#261835", surface2: "#321f45", border: "#4a3060", border2: "#6a4888", text: "#f0e6ff", text2: "#b09ac8", accent: "#9b59b6", accent2: "#7d3c98" },
   fire:    { bg: "#1a0a00", surface: "#2a1000", surface2: "#3d1800", border: "#6b2800", border2: "#a03a00", text: "#ffe8d0", text2: "#c48050", accent: "#e05a00", accent2: "#b04500" },
@@ -118,12 +118,13 @@ const FX_STYLE = `
 .tb-floating-number.heal { color:#22C55E; }
 `;
 
-export default function TileBattle({ onComplete }) {
+export default function TileBattle({ onComplete, themeId }) {
   const { completeGame } = useGame();
 
   const [screen, setScreen] = useState("setup"); // setup | howto | game | end
   const [howtoReturn, setHowtoReturn] = useState("setup");
-  const [themeKey, setThemeKey] = useState("default");
+  const [localThemeKey] = useState("default");
+  const themeKey = themeId && THEMES[themeId] ? themeId : localThemeKey;
   const t = THEMES[themeKey];
 
   const [names, setNames] = useState(["Player 1", "Player 2"]);
@@ -437,20 +438,6 @@ export default function TileBattle({ onComplete }) {
     <div style={screenWrap}>
       {fx}
       <h1 style={{ fontSize: "2.2rem", fontWeight: 500 }}>⚔️ Tile Battle</h1>
-
-      <div>
-        <p style={{ color: t.text2, marginBottom: 8 }}>Choose a theme</p>
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
-          {THEME_KEYS.map((k) => (
-            <div key={k} onClick={() => setThemeKey(k)} title={k} style={{
-              width: 36, height: 36, borderRadius: "50%", cursor: "pointer",
-              border: themeKey === k ? `3px solid ${t.text}` : "3px solid transparent",
-              transform: themeKey === k ? "scale(1.15)" : "scale(1)",
-              background: `linear-gradient(135deg, ${THEMES[k].accent} 50%, ${THEMES[k].accent2} 50%)`,
-            }} />
-          ))}
-        </div>
-      </div>
 
       <div style={{ display: "flex", gap: "2rem", flexWrap: "wrap", justifyContent: "center", width: "100%", maxWidth: 1200 }}>
         {[0, 1].map((pi) => (

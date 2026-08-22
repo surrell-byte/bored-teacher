@@ -81,6 +81,12 @@ export default function GamesPage() {
 
   const totalPlayed = GAME_KEYS.filter(k => (state.games[k]?.completions ?? 0) > 0).length;
   const totalScore  = Object.values(state.games).reduce((a, g) => a + (g.highScore ?? 0), 0);
+  const likelyNextGame = filteredGames[0] ?? NEW_GAME_KEYS[0] ?? GAME_KEYS[0];
+
+  useEffect(() => {
+    if (!likelyNextGame) return;
+    router.prefetch(`/games/${likelyNextGame}`);
+  }, [likelyNextGame, router]);
 
   const hasActiveFilters = category !== 'All Categories' || difficulty !== 'All Difficulties' || !!search || playedOnly;
 

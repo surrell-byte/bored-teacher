@@ -12,7 +12,7 @@ const PAIRS = [
   { animal:"🐵", animalWord:"MONKEY", food:"🍌", foodWord:"BANANA" },
 ];
 
-const THEMES = [
+export const THEMES = [
   { name:"Gold",     key:"gold",     front:"linear-gradient(135deg,#c4a45a,#e8c97a)", border:"rgba(232,201,122,0.55)", accent:"#e8c97a", accent2:"#c4a45a", glow:"rgba(232,201,122,0.18)", glow2:"rgba(232,201,122,0.08)", bg:"#0d0d0f", surface:"#141416", surface2:"#1c1c20", surface3:"#252529", emoji:"✨" },
   { name:"Emerald",  key:"emerald",  front:"linear-gradient(135deg,#22b96b,#45d49a)", border:"rgba(69,212,154,0.6)",  accent:"#62dfa6", accent2:"#22a966", glow:"rgba(69,212,154,0.20)", glow2:"rgba(69,212,154,0.09)", bg:"#09120e", surface:"#101b16", surface2:"#17261f", surface3:"#20342a", emoji:"🌿" },
   { name:"Sapphire", key:"sapphire", front:"linear-gradient(135deg,#287dc5,#4eb2ee)", border:"rgba(78,178,238,0.6)",  accent:"#6bc4f4", accent2:"#318dd0", glow:"rgba(78,178,238,0.20)", glow2:"rgba(78,178,238,0.09)", bg:"#091018", surface:"#101923", surface2:"#182433", surface3:"#213145", emoji:"💎" },
@@ -354,11 +354,11 @@ const STYLES = `
 }
 `;
 
-export default function FindMyFood({ onComplete }) {
+export default function FindMyFood({ onComplete, themeId }) {
   const { completeGame } = useGame();
   const [screen, setScreen] = useState("welcome");
-  const [theme, setTheme] = useState(0);
-  const [isDark, setIsDark] = useState(true);
+  const theme = Math.max(0, THEMES.findIndex(item => item.key === themeId));
+  const isDark = true;
   const [p1, setP1] = useState({ name:"Player 1", avatar:"🐶" });
   const [p2, setP2] = useState({ name:"Player 2", avatar:"🐼" });
   const [cards, setCards] = useState([]);
@@ -465,9 +465,6 @@ export default function FindMyFood({ onComplete }) {
       <div className="ff-noise" />
       <div className="ff-ambient ff-ambient-1" />
       <div className="ff-ambient ff-ambient-2" />
-      <button className="ff-theme-toggle" onClick={() => setIsDark(d => !d)} aria-label="Toggle light/dark mode">
-        {isDark ? "🌙" : "☀️"}
-      </button>
 
       <div className="ff-screen ff-setup-screen">
         <div className="ff-card ff-setup-card" style={{ textAlign:"center" }}>
@@ -480,17 +477,6 @@ export default function FindMyFood({ onComplete }) {
             <div className="ff-pair-chip">🐱<span className="ff-connector">×</span>🐟</div>
             <div className="ff-pair-chip">🐰<span className="ff-connector">×</span>🥕</div>
             <div className="ff-pair-chip">🐵<span className="ff-connector">×</span>🍌</div>
-          </div>
-
-          <div className="ff-section-label">Select a theme</div>
-          <div className="ff-theme-grid">
-            {THEMES.map((th, i) => (
-              <div key={th.key} onClick={() => setTheme(i)}
-                className={`ff-theme-swatch${theme===i?" selected":""}`}
-                style={{ background: th.front }} title={th.name}>
-                <span style={{ fontSize:"1.3rem", position:"relative", zIndex:1 }}>{th.emoji}</span>
-              </div>
-            ))}
           </div>
 
           <div className="ff-divider" />
@@ -536,9 +522,6 @@ export default function FindMyFood({ onComplete }) {
       <div className="ff-noise" />
       <div className="ff-ambient ff-ambient-1" />
       <div className="ff-ambient ff-ambient-2" />
-      <button className="ff-theme-toggle" onClick={() => setIsDark(d => !d)} aria-label="Toggle light/dark mode">
-        {isDark ? "🌙" : "☀️"}
-      </button>
       <div className="ff-screen ff-howto-screen">
         <div className="ff-card ff-howto-card" style={{ textAlign:"center" }}>
           <div className="ff-logo-badge">📖 How to Play</div>
@@ -568,9 +551,6 @@ export default function FindMyFood({ onComplete }) {
         <div className="ff-noise" />
         <div className="ff-ambient ff-ambient-1" />
         <div className="ff-ambient ff-ambient-2" />
-        <button className="ff-theme-toggle" onClick={() => setIsDark(d => !d)} aria-label="Toggle light/dark mode">
-          {isDark ? "🌙" : "☀️"}
-        </button>
 
         <div className="ff-screen">
           <div className="ff-card">
@@ -612,9 +592,6 @@ export default function FindMyFood({ onComplete }) {
       <div className="ff-noise" />
       <div className="ff-ambient ff-ambient-1" />
       <div className="ff-ambient ff-ambient-2" />
-      <button className="ff-theme-toggle" onClick={() => setIsDark(d => !d)} aria-label="Toggle light/dark mode">
-        {isDark ? "🌙" : "☀️"}
-      </button>
 
       <div className="ff-screen ff-game-screen">
         <div className="ff-card ff-game-card">

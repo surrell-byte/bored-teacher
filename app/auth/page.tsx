@@ -16,9 +16,11 @@ function AuthPageInner() {
   const [email, setEmail]     = useState('');
   const [password, setPwd]    = useState('');
   const [name, setName]       = useState('');
+  const [role, setRole]       = useState<'student' | 'teacher'>('student');
   const [error, setError]     = useState('');
   const [info, setInfo]       = useState('');
   const [loading, setLoading] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
   const [ready, setReady]     = useState(false);
   const [showPwd, setShowPwd] = useState(false);
 
@@ -44,15 +46,16 @@ function AuthPageInner() {
     setError(''); setInfo(''); setLoading(true);
     try {
       if (tab === 'login') {
-        await signIn(email, password);
+        await signIn(email.trim(), password);
         router.replace('/hub');
         return;
       }
 
       // ── Register ──
       if (!name.trim()) { setError('Please enter your username.'); setLoading(false); return; }
+      if (role !== 'student' && role !== 'teacher') { setError('Please choose Student or Teacher.'); setLoading(false); return; }
 
-      await signUp(email, password, name.trim());
+      await signUp(email.trim(), password, name.trim(), role);
       router.replace('/hub');
     } catch (err: unknown) {
       setError(friendlyError(err));
@@ -62,11 +65,14 @@ function AuthPageInner() {
 
   async function handleReset() {
     if (!email) { setError('Enter your email address first.'); return; }
+    setError(''); setInfo(''); setResetLoading(true);
     try {
-      await resetPassword(email);
+      await resetPassword(email.trim());
       setInfo('✅ Reset email sent — check your inbox.');
     } catch (err: unknown) {
       setError(friendlyError(err));
+    } finally {
+      setResetLoading(false);
     }
   }
 
@@ -110,12 +116,30 @@ function AuthPageInner() {
 
           <form onSubmit={handleSubmit} noValidate>
             {tab === 'register' && (
-              <div className="field">
-                <label htmlFor="name">Username</label>
-                <input id="name" type="text" value={name}
-                  onChange={e => setName(e.target.value)}
-                  placeholder="e.g. Alex" autoComplete="username" required />
-              </div>
+              <>
+                <div className="field">
+                  <label htmlFor="name">Username</label>
+                  <input id="name" type="text" value={name}
+                    onChange={e => setName(e.target.value)}
+                    placeholder="e.g. Alex" autoComplete="username" required />
+                </div>
+                <div className="field">
+                  <label>Sign up as</label>
+                  <div className="role-selector" role="group" aria-label="Choose account type">
+                    {(['student', 'teacher'] as const).map(option => (
+                      <button
+                        key={option}
+                        type="button"
+                        className={`role-option${role === option ? ' active' : ''}`}
+                        onClick={() => setRole(option)}
+                        aria-pressed={role === option}
+                      >
+                        {option === 'student' ? '🎒 Student' : '🍎 Teacher'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
             )}
 
             <div className="field">
@@ -151,8 +175,8 @@ function AuthPageInner() {
             </button>
 
             {tab === 'login' && (
-              <button type="button" className="forgot-btn" onClick={handleReset}>
-                Forgot password?
+              <button type="button" className="forgot-btn" onClick={handleReset} disabled={resetLoading || loading}>
+                {resetLoading ? 'Sending reset email…' : 'Forgot password?'}
               </button>
             )}
           </form>
@@ -171,8 +195,8 @@ function AuthPageInner() {
       <style>{`
         .auth-page {
           min-height: 100vh;
-          display: flex; align-items: center; justify-content: center;
-          padding: 24px;
+          display: flex; align-items: center; justify-content: flex-start;
+          padding: 24px clamp(24px, 8vw, 120px);
           background: transparent;
         }
         .deco {
@@ -189,7 +213,7 @@ function AuthPageInner() {
           border: 1.5px solid var(--border);
           border-radius: 26px;
           padding: 2.25rem 2.5rem;
-          width: 100%; max-width: 420px;
+          width: min(100%, 520px); max-width: 520px;
           box-shadow: 0 28px 80px rgba(0,0,0,0.5);
           position: relative; z-index: 1;
           animation: cardUp 0.5s cubic-bezier(0.22,1,0.36,1) both;
@@ -252,6 +276,14 @@ function AuthPageInner() {
         }
         .field input::placeholder { color: var(--muted); }
 
+        .role-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .role-option {
+          padding: .7rem .6rem; border: 1.5px solid var(--border); border-radius: 11px;
+          background: var(--surface-soft); color: var(--muted); font-family: 'DM Sans',sans-serif;
+          font-size: .86rem; font-weight: 700; cursor: pointer; transition: border-color .2s, color .2s, background .2s;
+        }
+        .role-option.active { border-color: var(--teal); background: rgba(93,189,181,.14); color: var(--text); }
+
         .auth-submit {
           width: 100%; border: none; padding: 13px;
           border-radius: 12px; cursor: pointer;
@@ -269,6 +301,7 @@ function AuthPageInner() {
           font-size: .8rem; cursor: pointer; padding: 6px 0; width: 100%;
           margin-top: 8px; transition: color .2s;
         }
+        .forgot-btn:disabled { opacity: .6; cursor: not-allowed; }
         .forgot-btn:hover { color: var(--text); }
 
         .auth-divider {

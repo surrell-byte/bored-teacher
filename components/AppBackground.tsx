@@ -41,13 +41,6 @@ export default function AppBackground() {
     }
   }, [pathname]);
 
-  useEffect(() => {
-    Object.values(BACKGROUNDS).forEach(({ src }) => {
-      const img = new Image();
-      img.src = src;
-    });
-  }, []);
-
   let entry = BACKGROUNDS.startPlaying;
 
   if (pathname === '/') {
@@ -71,6 +64,12 @@ export default function AppBackground() {
   } else if (pathname.startsWith('/subscription')) {
     entry = BACKGROUNDS.subscription;
   }
+
+  useEffect(() => {
+    const img = new Image();
+    img.decoding = 'async';
+    img.src = entry.src;
+  }, [entry.src]);
 
   return (
     <>

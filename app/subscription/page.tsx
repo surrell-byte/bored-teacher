@@ -91,7 +91,11 @@ export default function SubscriptionPage() {
               <ul>
                 {plan.features.map(feature => <li key={feature}>✓ {feature}</li>)}
               </ul>
-              <button className="pill-btn" disabled={plan.name === 'Free'}>
+              <button
+                className="pill-btn"
+                disabled={plan.name === 'Free'}
+                onClick={() => plan.name !== 'Free' && router.push('/payment?plan=resource-library')}
+              >
                 {plan.name === 'Free' ? 'Current Plan' : 'Choose Plan'}
               </button>
             </article>
@@ -99,16 +103,6 @@ export default function SubscriptionPage() {
         </div>
       </section>
 
-      <section className="shell-card shop-payment">
-        <div>
-          <div className="hero-kicker">💳 Subscribe securely</div>
-          <h2>Pay with Paynow</h2>
-          <p>Use the payment link to subscribe to the Resource Library.</p>
-        </div>
-        <a href="https://www.paynow.co.zw/Payment/Link/?q=c2VhcmNoPXJ1c3NlbGxta2FoYW5hbmElNDBnbWFpbC5jb20mYW1vdW50PTcuMDAmcmVmZXJlbmNlPSZsPTE%3d" target="_blank" rel="noreferrer">
-          <img src="https://www.paynow.co.zw/Content/Buttons/Medium_buttons/button_pay-now_medium.png" alt="Subscribe with Paynow" style={{ border: 0 }} />
-        </a>
-      </section>
     </div>
   );
 }

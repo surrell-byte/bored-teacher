@@ -51,10 +51,10 @@ export function onAuthStateChanged(cb: (user: User | null) => void) {
   return _onAuthStateChanged(auth, cb);
 }
 
-export async function signUp(email: string, password: string, displayName: string) {
+export async function signUp(email: string, password: string, displayName: string, role: 'teacher' | 'student') {
   const cred = await createUserWithEmailAndPassword(auth, email, password);
   await updateProfile(cred.user, { displayName });
-  await createUserProfile(cred.user.uid, displayName, email);
+  await createUserProfile(cred.user.uid, displayName, email, role);
   return cred.user;
 }
 
@@ -89,12 +89,12 @@ interface UserState {
   classId?: string; role?: 'teacher' | 'student' | null;
 }
 
-async function createUserProfile(uid: string, name: string, email: string) {
+async function createUserProfile(uid: string, name: string, email: string, role: 'teacher' | 'student') {
   try {
     await setDoc(doc(db, 'users', uid), {
       name, email, username: '', avatar: '👤', theme: 'chalkboard',
       xp: 0, level: 1, coins: 0, lastGame: null, lastLogin: '', sound: true,
-      games: {}, classId: '', role: null,
+      games: {}, classId: '', role,
       createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
     });
   } catch (_) {}

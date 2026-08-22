@@ -15,6 +15,11 @@ export interface GameCompletion {
   accuracy: number;
 }
 
+export interface GameThemeOption {
+  id: string;
+  name: string;
+}
+
 export interface GameShellProps {
   /** Stable catalogue id used by session and analytics listeners. */
   gameId: string;
@@ -24,6 +29,9 @@ export interface GameShellProps {
   controls?: ReactNode;
   /** Extra buttons rendered inline in the top bar, alongside stats/Pause/Full screen/Exit. */
   headerExtra?: ReactNode;
+  themeOptions?: GameThemeOption[];
+  themeValue?: string;
+  onThemeChange?: (themeId: string) => void;
   children: ReactNode;
   /** Increment this when replacing a game instance (for example, after retry). */
   sessionKey?: string | number;
@@ -48,6 +56,7 @@ export interface GameShellProps {
 export default function GameShell({
   gameId, title, icon, stats, controls, headerExtra, children, sessionKey = 0,
   completion, onContinue, onRestart, onSessionEvent, themeVars,
+  themeOptions, themeValue, onThemeChange,
 }: GameShellProps) {
   const [paused, setPaused] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -159,6 +168,19 @@ export default function GameShell({
                         </span>
                       ))}
                     </div>
+                  )}
+                  {themeOptions && themeValue && onThemeChange && (
+                    <label className="game-shell-header-action" style={{ gap: 6 }}>
+                      <span aria-hidden="true">🎨</span>
+                      <select
+                        value={themeValue}
+                        onChange={event => onThemeChange(event.target.value)}
+                        aria-label={`Choose ${title} theme`}
+                        style={{ border: 0, background: 'transparent', color: 'inherit', font: 'inherit', fontWeight: 800, outline: 0, cursor: 'pointer' }}
+                      >
+                        {themeOptions.map(theme => <option key={theme.id} value={theme.id}>{theme.name}</option>)}
+                      </select>
+                    </label>
                   )}
                   {headerExtra}
                   <button

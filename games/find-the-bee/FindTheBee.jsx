@@ -368,8 +368,9 @@ export default function FindTheBee({ onComplete }) {
           max-width: 1180px;
           margin: 0 auto;
           position: relative;
-            background: linear-gradient(180deg, rgba(255,250,238,.72), rgba(255,250,238,.42)), url('/assets/images/find-the-bee-game-screen-bg.webp') center / cover;
-            border-radius: 24px;
+          width: 100%;
+          background: url('/assets/images/find-the-bee-game-screen-bg.webp') center / cover;
+          border-radius: 0;
         }
         .ftb-eyebrow {
           display: inline-flex; align-items: center; gap: 8px;

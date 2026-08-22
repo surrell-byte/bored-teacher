@@ -16,6 +16,7 @@ const NAV_ITEMS = [
   { href: '/leaderboard', label: 'Leaderboard', icon: '🏆' },
   { href: '/resources',   label: 'Resources',   icon: '📚' },
   { href: '/blog',        label: 'Blog',        icon: '✍️' },
+  { href: '/about',       label: 'About',        icon: 'ℹ️' },
   { href: '/trophy',      label: 'Trophy Room', icon: '⭐' },
   { href: '/payment',     label: 'Shop',        icon: '💳' },
 ];

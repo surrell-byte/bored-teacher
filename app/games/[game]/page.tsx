@@ -109,6 +109,9 @@ export default function GamePage() {
           navMuted: ticTheme.muted,
           background: ticTheme.bg,
         } : undefined}
+        themeOptions={isTicTacRoll ? TIC_TAC_ROLL_THEMES.map(theme => ({ id: theme.id, name: theme.name })) : undefined}
+        themeValue={isTicTacRoll ? ticTheme.id : undefined}
+        onThemeChange={isTicTacRoll ? themeId => setTicTheme(TIC_TAC_ROLL_THEMES.find(theme => theme.id === themeId) ?? TIC_TAC_ROLL_THEMES[0]) : undefined}
         headerExtra={
           <>
             {isConnect4 && c4Hud ? <Connect4HeaderActions hud={c4Hud} /> : null}
@@ -117,17 +120,6 @@ export default function GamePage() {
                 <button className="game-shell-header-action" type="button" onClick={() => window.dispatchEvent(new Event('tictacroll:new-game'))}>
                   New Game
                 </button>
-                <label className="game-shell-header-action" style={{ gap: 6 }}>
-                  <span aria-hidden="true">🎨</span>
-                  <select
-                    value={ticTheme.id}
-                    onChange={event => setTicTheme(TIC_TAC_ROLL_THEMES.find(theme => theme.id === event.target.value) ?? TIC_TAC_ROLL_THEMES[0])}
-                    aria-label="Choose Tic-Tac-Roll theme"
-                    style={{ border: 0, background: 'transparent', color: 'inherit', font: 'inherit', fontWeight: 800, outline: 0, cursor: 'pointer' }}
-                  >
-                    {TIC_TAC_ROLL_THEMES.map(theme => <option key={theme.id} value={theme.id}>{theme.name}</option>)}
-                  </select>
-                </label>
               </>
             )}
             <Link className="game-shell-header-action" href="/games">
