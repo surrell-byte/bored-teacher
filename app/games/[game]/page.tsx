@@ -48,6 +48,7 @@ export default function GamePage() {
   const GameComp  = GAME_COMPONENTS[gameId];
   const isConnect4 = gameId === 'connect4';
   const isTicTacRoll = gameId === 'tictacroll';
+  const isFlagmaster = gameId === 'flagmaster';
 
   // ── onComplete: called by React game components ──
   function handleComplete(score: number, accuracy: number) {
@@ -101,6 +102,8 @@ export default function GamePage() {
         completion={result}
         onContinue={handleContinue}
         onRestart={handleContinue}
+        hidePauseControl={isFlagmaster}
+        hideExitControl={isFlagmaster}
         controls={null}
         themeVars={isTicTacRoll ? {
           nav: ticTheme.surface,

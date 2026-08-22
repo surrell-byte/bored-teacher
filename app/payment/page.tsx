@@ -56,6 +56,7 @@ export default function ShopPage() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className="payment-qr" src="/assets/images/thai-payment-qr-code.jpg" alt="Scan to pay with the payment QR code" />
           <span>Thai QR payment option</span>
+          {isResourceLibrary && <div className="thai-prices"><strong>330 THB <span>/ month</span></strong><strong>3,600 THB <span>/ year</span></strong></div>}
           {isResourceLibrary && <small className="payment-proof-note">After paying, email a screenshot of your transaction or payment receipt to boredteacherapp@gmail.com.</small>}
         </div>
       </section>

@@ -12,14 +12,25 @@ function getFlagEmoji(code) {
 const allCountries = countryData.map(([code, name]) => ({ name, emoji: getFlagEmoji(code), code }));
 
 const LEVELS = [
-  { name: "Beginner Lands",  icon:"🌿", timerSec: 0,  sub:"Relaxed · No timer" },
-  { name: "Knowledge Coast", icon:"📘", timerSec: 20, sub:"20 second challenge" },
-  { name: "Storm Desert",    icon:"🔥", timerSec: 12, sub:"12 second challenge" },
-  { name: "Shadow Peaks",    icon:"💀", timerSec: 8,  sub:"8 second challenge" },
-  { name: "Final Frontier",  icon:"⚠️", timerSec: 5,  sub:"5 seconds · Are you ready?" },
+  { name: "World Map", icon:"🌍", region:"world", timerSec: 0, sub:"Global country mapping · No timer" },
+  { name: "Europe Zone", icon:"🏰", region:"europe", timerSec: 20, sub:"Identify countries in Europe" },
+  { name: "Africa Zone", icon:"🌍", region:"africa", timerSec: 20, sub:"Identify countries in Africa" },
+  { name: "Asia Zone", icon:"⛩️", region:"asia", timerSec: 16, sub:"Identify countries in Asia" },
+  { name: "Americas Zone", icon:"🗽", region:"americas", timerSec: 16, sub:"North, Central and South America" },
+  { name: "Oceania Zone", icon:"🏝️", region:"oceania", timerSec: 12, sub:"Australia and Pacific islands" },
+  { name: "Caribbean Islands", icon:"🌴", region:"caribbean", timerSec: 12, sub:"Identify island nations of the Caribbean" },
 ];
 
-const NODE_POSITIONS = [{x:55,y:275},{x:125,y:210},{x:205,y:168},{x:285,y:115},{x:360,y:65}];
+const REGION_CODES = {
+  europe: "AL AD AT BY BE BA BG HR CY CZ DK EE FI FR DE GR HU IS IE IT XK LV LI LT LU MT MD MC ME NL MK NO PL PT RO RU SM RS SK SI ES SE CH UA GB VA".split(" "),
+  africa: "DZ AO BJ BW BF BI CV CM CF TD KM CG CD CI DJ EG GQ ER SZ ET GA GM GH GN GW KE LS LR LY MG MW ML MR MU MA MZ NA NE NG RW ST SN SC SL SO ZA SS SD TZ TG TN UG ZM ZW".split(" "),
+  asia: "AF AM AZ BH BD BT BN KH CN GE HK IN ID IR IQ IL JP JO KZ KW KG LA LB MY MV MN MM NP KP OM PK PS PH QA SA SG KR LK SY TW TJ TH TL TR TM AE UZ VN YE".split(" "),
+  americas: "CA US MX GT BZ SV HN NI CR PA CO VE GUY SR GF EC PE BO PY CL AR UY BR CU HT DO JM PR BS BB TT GD DM LC VC KN AG AI AW CW KY BQ BM".split(" "),
+  oceania: "AU NZ PG FJ SB VU NC PF WS TO FM PW MH KI NR TV TL".split(" "),
+  caribbean: "AG AI AW BS BB BM BZ BQ KY CU CW DM DO GD GP HT JM MQ MS PR BL KN LC MF VC SX TT TC VG VI".split(" "),
+};
+
+const NODE_POSITIONS = [{x:8,y:78},{x:23,y:62},{x:38,y:48},{x:53,y:34},{x:68,y:48},{x:82,y:30},{x:92,y:62}];
 
 const popularityCodes = {
   US:10,GB:10,FR:10,DE:10,JP:10,CN:10,AU:10,BR:10,CA:10,IN:10,
@@ -56,7 +67,10 @@ function buildLevelPools() {
   const chunk = Math.ceil(total / 5);
   return [0,1,2,3,4].map(i => shuffle(sorted.slice(i * chunk, (i + 1) * chunk)));
 }
-const levelPools = buildLevelPools();
+const levelPools = [
+  shuffle(allCountries),
+  ...Object.values(REGION_CODES).map(codes => shuffle(codes.map(code => allCountries.find(country => country.code === code)).filter(Boolean))),
+];
 
 function buildOptions(country) {
   const wrong = shuffle(allCountries.filter(c => c.name !== country.name)).slice(0, 3);
@@ -97,7 +111,7 @@ const THEME_CSS = `
   font-family: 'Cormorant Garamond', Georgia, serif;
   background: var(--theme-body-bg);
   color: var(--cream);
-  min-height: 100vh;
+  min-height: 100%; height: 100%; width: 100%;
   display: flex; justify-content: center; align-items: flex-start;
   padding: 24px 16px 48px; position: relative; overflow-x: hidden;
 }
@@ -226,7 +240,7 @@ select.fm-field-input { cursor:pointer; }
 .fm-flag-emoji-display { font-size:90px; width:100%; height:100%; display:flex; align-items:center; justify-content:center; background: radial-gradient(circle, rgba(253,246,227,0.05), transparent); filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3)); }
 @media (max-width:480px) { .fm-flag-stage { width:220px; height:155px; } .fm-flag-emoji-display { font-size:75px; } }
 
-.fm-mask-tile { position:absolute; width:50%; height:50%; z-index:10; display:flex; align-items:center; justify-content:center; font-family:'Cinzel',serif; font-size:.65rem; font-weight:700; letter-spacing:.15em; color: rgba(255,255,255,0.7); transition: opacity .4s ease, transform .4s cubic-bezier(.2,.9,.3,1); }
+.fm-mask-tile { position:absolute; width:50%; height:50%; z-index:10; display:flex; align-items:center; justify-content:center; font-family:'Cinzel',serif; font-size:.65rem; font-weight:700; letter-spacing:.15em; color: rgba(255,255,255,0.7); transition: opacity .4s ease, transform .4s cubic-bezier(.2,.9,.3,1); cursor:pointer; border:0; }
 .fm-mask-1 { top:0; left:0; background: linear-gradient(135deg,#8b1a1a,#c0392b); }
 .fm-mask-2 { top:0; right:0; background: linear-gradient(135deg,#1a3a6b,#1e6091); }
 .fm-mask-3 { bottom:0; left:0; background: linear-gradient(135deg,#6b5a1a,#c9a84c); color: rgba(0,0,0,0.5); }
@@ -327,7 +341,7 @@ export default function Flagmaster({ onComplete }) {
   const [profile, setProfile] = useStorage("flagPlayerProfile", null); // {name, age, country}
 
   // Progress
-  const [levelCompleted, setLevelCompleted] = useState([false, false, false, false, false]);
+  const [levelCompleted, setLevelCompleted] = useState(() => LEVELS.map(() => false));
   const [totalScore, setTotalScore] = useState(0);
 
   // Active level/game
@@ -342,7 +356,6 @@ export default function Flagmaster({ onComplete }) {
   const [waitingForNext, setWaitingForNext] = useState(false);
   const [selected, setSelected] = useState(null);
   const [message, setMessage] = useState({ text: "", type: "" });
-  const [isPaused, setIsPaused] = useState(false);
 
   const advanceTimeoutRef = useRef(null);
 
@@ -377,14 +390,14 @@ export default function Flagmaster({ onComplete }) {
   // ── NAVIGATION ──
   const stopPending = () => { if (advanceTimeoutRef.current) { clearTimeout(advanceTimeoutRef.current); advanceTimeoutRef.current = null; } };
 
-  const goToWorldMap = () => { stopPending(); setIsPaused(false); setScreen("worldMap"); };
+  const goToWorldMap = () => { stopPending(); setScreen("worldMap"); };
   const goToLevelSelect = () => setScreen("levelSelect");
   const goToTitle = () => {
-    stopPending(); setIsPaused(false);
-    setTotalScore(0); setLevelCompleted([false, false, false, false, false]);
+    stopPending();
+    setTotalScore(0); setLevelCompleted(LEVELS.map(() => false));
     setScreen("title");
   };
-  const exitToMap = () => { stopPending(); setIsPaused(false); setWaitingForNext(false); setScreen("worldMap"); };
+  const exitToMap = () => { stopPending(); setWaitingForNext(false); setScreen("worldMap"); };
 
   // ── QUESTION LOADING ──
   const loadQuestion = useCallback((levelIdx, qIdx, questions) => {
@@ -409,7 +422,6 @@ export default function Flagmaster({ onComplete }) {
     setCurrentLevelIdx(idx);
     setLevelQuestions(questions);
     setCurrentQIndex(0);
-    setIsPaused(false);
     setScreen("game");
     loadQuestion(idx, 0, questions);
   };
@@ -440,7 +452,7 @@ export default function Flagmaster({ onComplete }) {
 
   // ── TIMER ──
   useEffect(() => {
-    if (screen !== "game" || waitingForNext || isPaused) return;
+    if (screen !== "game" || waitingForNext) return;
     if (lvl.timerSec <= 0) return; // relaxed mode, no timer
     if (timeLeft <= 0) {
       setWaitingForNext(true);
@@ -450,11 +462,11 @@ export default function Flagmaster({ onComplete }) {
     }
     const t = setTimeout(() => setTimeLeft(x => x - 1), 1000);
     return () => clearTimeout(t);
-  }, [screen, timeLeft, waitingForNext, isPaused, lvl.timerSec, nextQuestion]);
+  }, [screen, timeLeft, waitingForNext, lvl.timerSec, nextQuestion]);
 
   // ── ANSWERING ──
   const checkAnswer = (opt) => {
-    if (waitingForNext || isPaused || !currentCountry) return;
+    if (waitingForNext || !currentCountry) return;
     setSelected(opt);
     setWaitingForNext(true);
 
@@ -473,7 +485,7 @@ export default function Flagmaster({ onComplete }) {
   };
 
   const revealTile = (tileIdx) => {
-    if (waitingForNext || isPaused || revealed[tileIdx]) return;
+    if (waitingForNext || revealed[tileIdx]) return;
     setRevealed(prev => { const next = [...prev]; next[tileIdx] = true; return next; });
     setRevealsUsed(r => {
       const used = r + 1;
@@ -483,15 +495,9 @@ export default function Flagmaster({ onComplete }) {
     });
   };
 
-  const togglePause = () => {
-    if (waitingForNext) return;
-    setIsPaused(p => !p);
-  };
-
-  // Escape toggles pause during gameplay; Enter submits the passport form
+  // Enter submits the passport form.
   useEffect(() => {
     const onKey = (e) => {
-      if (e.key === "Escape" && screen === "game") togglePause();
       if (e.key === "Enter" && screen === "title") enterGame();
     };
     document.addEventListener("keydown", onKey);
@@ -598,7 +604,7 @@ export default function Flagmaster({ onComplete }) {
                 <stop offset="100%" stopColor="#c0392b" stopOpacity="0.7" />
               </linearGradient>
             </defs>
-            <path d="M55 275 L125 210 L205 168 L285 115 L360 65" stroke="url(#fmRouteGrad)" strokeWidth="2" fill="none" strokeLinecap="round" opacity="0.8" />
+            <polyline points={NODE_POSITIONS.map(pos => `${pos.x}%,${pos.y}%`).join(" ")} vectorEffect="non-scaling-stroke" stroke="url(#fmRouteGrad)" strokeWidth="2" fill="none" strokeLinecap="round" opacity="0.8" />
           </svg>
           {LEVELS.map((level, i) => {
             const completed = !!levelCompleted[i];
@@ -609,7 +615,7 @@ export default function Flagmaster({ onComplete }) {
               <div
                 key={i}
                 className={`fm-map-node ${completed ? "fm-node-completed" : ""} ${locked ? "fm-node-locked" : ""} ${isCurrent ? "fm-node-current" : ""} ${!completed && !locked ? "fm-breathe" : ""}`}
-                style={{ left: pos.x, top: pos.y }}
+                style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
                 onClick={() => !locked && startLevel(i)}
               >
                 {level.icon}
@@ -617,8 +623,8 @@ export default function Flagmaster({ onComplete }) {
               </div>
             );
           })}
-          <div className="fm-player-marker" style={{ left: nodePos.x, top: nodePos.y }}>🚩</div>
-          <div className="fm-player-pulse" style={{ left: nodePos.x, top: nodePos.y }} />
+          <div className="fm-player-marker" style={{ left: `${nodePos.x}%`, top: `${nodePos.y}%` }}>🚩</div>
+          <div className="fm-player-pulse" style={{ left: `${nodePos.x}%`, top: `${nodePos.y}%` }} />
         </div>
         <p className="fm-mono" style={{ fontSize: "0.6rem", textAlign: "center", marginBottom: 20 }}>
           ✦ Completed regions glow teal · Click a node to enter that region
@@ -673,22 +679,8 @@ export default function Flagmaster({ onComplete }) {
 
   return (
     <div className={rootCls}><Style /><div className="fm-bg-layer" /><ThemeToggle />
-      {isPaused && (
-        <div className="fm-pause-overlay">
-          <div className="fm-pause-content">
-            <div className="fm-pause-title">⏸ EXPEDITION PAUSED</div>
-            <p className="fm-pause-sub">YOUR PROGRESS IS SAFE</p>
-            <button className="fm-btn-expedition" style={{ maxWidth: 200 }} onClick={togglePause}>Resume ›</button>
-          </div>
-        </div>
-      )}
       <div className="fm-screen fm-wide-screen"><div className="fm-card"><div className="fm-card-inner fm-game-layout">
         <div className="fm-game-top">
-        <div className="fm-nav-row">
-          <button className="fm-btn-sm" onClick={exitToMap}>← Exit Region</button>
-          <button className="fm-btn-sm" onClick={togglePause} disabled={waitingForNext}>⏸ Pause</button>
-        </div>
-
         <div className="fm-stat-strip">
           <div className="fm-stat-pill"><span className="fm-stat-val">{totalScore}</span><span className="fm-stat-lbl">Score</span></div>
           <div className="fm-stat-pill"><span className="fm-stat-val">{revealsUsed}</span><span className="fm-stat-lbl">Reveals</span></div>
@@ -706,19 +698,10 @@ export default function Flagmaster({ onComplete }) {
         <section className="fm-game-visual">
         <div className="fm-flag-stage">
           <div className="fm-flag-emoji-display">{currentCountry.emoji}</div>
-          <div className={`fm-mask-tile fm-mask-1 ${revealed[0] ? "fm-revealed" : ""}`}>I</div>
-          <div className={`fm-mask-tile fm-mask-2 ${revealed[1] ? "fm-revealed" : ""}`}>II</div>
-          <div className={`fm-mask-tile fm-mask-3 ${revealed[2] ? "fm-revealed" : ""}`}>III</div>
-          <div className={`fm-mask-tile fm-mask-4 ${revealed[3] ? "fm-revealed" : ""}`}>IV</div>
-        </div>
-
-        <div className="fm-ornament-divider" style={{ fontSize: "0.7rem", margin: "8px 0 12px" }}>Reveal a sector · each costs −1 bonus</div>
-
-        <div className="fm-reveal-grid">
-          <button className="fm-reveal-btn fm-rb-red" disabled={waitingForNext || isPaused || revealed[0]} onClick={() => revealTile(0)}>▪ I</button>
-          <button className="fm-reveal-btn fm-rb-blue" disabled={waitingForNext || isPaused || revealed[1]} onClick={() => revealTile(1)}>▪ II</button>
-          <button className="fm-reveal-btn fm-rb-gold" disabled={waitingForNext || isPaused || revealed[2]} onClick={() => revealTile(2)}>▪ III</button>
-          <button className="fm-reveal-btn fm-rb-teal" disabled={waitingForNext || isPaused || revealed[3]} onClick={() => revealTile(3)}>▪ IV</button>
+          <button aria-label="Reveal top-left part of the flag" className={`fm-mask-tile fm-mask-1 ${revealed[0] ? "fm-revealed" : ""}`} disabled={waitingForNext || revealed[0]} onClick={() => revealTile(0)}>I</button>
+          <button aria-label="Reveal top-right part of the flag" className={`fm-mask-tile fm-mask-2 ${revealed[1] ? "fm-revealed" : ""}`} disabled={waitingForNext || revealed[1]} onClick={() => revealTile(1)}>II</button>
+          <button aria-label="Reveal bottom-left part of the flag" className={`fm-mask-tile fm-mask-3 ${revealed[2] ? "fm-revealed" : ""}`} disabled={waitingForNext || revealed[2]} onClick={() => revealTile(2)}>III</button>
+          <button aria-label="Reveal bottom-right part of the flag" className={`fm-mask-tile fm-mask-4 ${revealed[3] ? "fm-revealed" : ""}`} disabled={waitingForNext || revealed[3]} onClick={() => revealTile(3)}>IV</button>
         </div>
         </section>
 
@@ -730,7 +713,7 @@ export default function Flagmaster({ onComplete }) {
             return (
               <button
                 key={opt}
-                disabled={waitingForNext || isPaused}
+                disabled={waitingForNext}
                 className={`fm-option-btn ${isCorrect ? "fm-correct" : ""} ${isWrong ? "fm-wrong" : ""}`}
                 onClick={() => checkAnswer(opt)}
               >

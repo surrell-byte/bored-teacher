@@ -3579,6 +3579,8 @@ a { color: inherit; }
 .subscription-prices strong span { color: var(--muted); font-size: .72rem; font-weight: 600; }
 .subscription-prices small { grid-column: 1 / -1; color: var(--green); font-size: .78rem; line-height: 1.45; }
 .payment-proof-note { max-width: 32ch; color: var(--gold); font-size: .76rem; line-height: 1.5; }
+.thai-prices { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 4px; color: var(--gold); font-size: .92rem; }
+.thai-prices span { color: var(--muted); font-size: .72rem; }
 
 @media (max-width: 680px) {
   .subscription-header,
