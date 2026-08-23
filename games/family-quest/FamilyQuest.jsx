@@ -24,14 +24,6 @@ const FamilyQuestPremium_HTML = `<canvas id="confettiCanvas"></canvas>
       <p class="welcome-subtitle">Explore, learn & celebrate every family member</p>
       <button class="cta-btn" id="btnGoLevels">🌳 Start Family Tree</button>
 
-      <div class="theme-row">
-        <button class="theme-chip" data-theme="default">🌅 Warm</button>
-        <button class="theme-chip" data-theme="jungle">🌿 Jungle</button>
-        <button class="theme-chip" data-theme="ocean">🌊 Ocean</button>
-        <button class="theme-chip" data-theme="space">🌟 Space</button>
-        <button class="theme-chip" data-theme="candy">🍬 Candy</button>
-        <button class="theme-chip" data-theme="safari">🦁 Safari</button>
-      </div>
       <div class="acc-row">
         <button class="acc-btn" id="togDyslexia">📖 Font</button>
         <button class="acc-btn" id="togMotion">🎯 Motion</button>
@@ -280,15 +272,6 @@ body::after {
   letter-spacing: -.01em;
 }
 .cta-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #8b4a1a, 0 4px 12px rgba(200,105,42,.3); }
-
-/* theme row */
-.theme-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 24px 0 12px; }
-.theme-chip {
-  background: var(--parchment); border: 1.5px solid var(--parchment2);
-  color: var(--ink2); font-size: .78rem; font-weight: 700; padding: 6px 14px; border-radius: 30px;
-  cursor: pointer; transition: all .15s; box-shadow: var(--shadow-sm);
-}
-.theme-chip:hover { background: var(--gold2); color: #fff; border-color: var(--gold2); }
 
 .acc-row { display: flex; gap: 8px; justify-content: center; margin-top: 10px; }
 .acc-btn {
@@ -1295,17 +1278,12 @@ document.querySelectorAll(".level-card").forEach(c=>c.onclick=()=>{
   if(c.dataset.level!=="tree"){refill();loadMember(nextMemberFromQueue());}
   showPage($("pageGame"));
 });
-document.querySelectorAll(".theme-chip").forEach(b=>b.onclick=()=>{
-  document.body.dataset.theme=b.dataset.theme;
-  try{localStorage.setItem("fqTheme",b.dataset.theme);}catch(e){}
-});
 $("togDyslexia").onclick=()=>document.body.classList.toggle("dyslexia");
 $("togMotion").onclick=()=>document.body.classList.toggle("no-motion");
 $("togLarge").onclick=()=>document.body.classList.toggle("large");
 
 /* ── INIT ─────────────────────────────────────── */
 load();
-try{document.body.dataset.theme=localStorage.getItem("fqTheme")||"default";}catch(e){}
 updateScore(); updateXP(); updateCombo();
 setDiff("tree");
 showPage($("pageWelcome"));

@@ -37,6 +37,8 @@ export default function GamePage() {
   // it can render inside the GameShell navbar instead of the play area.
   const [c4Hud, setC4Hud] = useState<any>(null);
   const [ticTheme, setTicTheme] = useState<TicTacRollTheme>(TIC_TAC_ROLL_THEMES[0]);
+  const [flagDarkMode, setFlagDarkMode] = useState(false);
+  const [zooTheme, setZooTheme] = useState('savanna');
   const [showRouteWelcome, setShowRouteWelcome] = useState(!GAMES_WITH_WELCOME.has(gameId));
 
   useEffect(() => {
@@ -49,6 +51,13 @@ export default function GamePage() {
   const isConnect4 = gameId === 'connect4';
   const isTicTacRoll = gameId === 'tictacroll';
   const isFlagmaster = gameId === 'flagmaster';
+  const isZooGame = gameId === 'zoogame';
+  const isFruitWordHunt = gameId === 'fruitwordhunt';
+  const zooShellTheme = {
+    savanna: { nav: '#4a3728', navRaised: '#b8863a', navText: '#fff8e7', navMuted: '#fce9c8', background: '#d9c9a8' },
+    ocean: { nav: '#16445a', navRaised: '#2f8da3', navText: '#effcff', navMuted: '#bde8ec', background: '#8ed1d5' },
+    jungle: { nav: '#183d2c', navRaised: '#3c8150', navText: '#f2ffe9', navMuted: '#c9e6af', background: '#9fc27b' },
+  }[zooTheme] ?? { nav: '#4a3728', navRaised: '#b8863a', navText: '#fff8e7', navMuted: '#fce9c8', background: '#d9c9a8' };
 
   // ── onComplete: called by React game components ──
   function handleComplete(score: number, accuracy: number) {
@@ -105,16 +114,10 @@ export default function GamePage() {
         hidePauseControl={isFlagmaster}
         hideExitControl={isFlagmaster}
         controls={null}
-        themeVars={isTicTacRoll ? {
-          nav: ticTheme.surface,
-          navRaised: ticTheme.bg,
-          navText: ticTheme.text,
-          navMuted: ticTheme.muted,
-          background: ticTheme.bg,
-        } : undefined}
-        themeOptions={isTicTacRoll ? TIC_TAC_ROLL_THEMES.map(theme => ({ id: theme.id, name: theme.name })) : undefined}
-        themeValue={isTicTacRoll ? ticTheme.id : undefined}
-        onThemeChange={isTicTacRoll ? themeId => setTicTheme(TIC_TAC_ROLL_THEMES.find(theme => theme.id === themeId) ?? TIC_TAC_ROLL_THEMES[0]) : undefined}
+        themeVars={isTicTacRoll ? { nav: ticTheme.surface, navRaised: ticTheme.bg, navText: ticTheme.text, navMuted: ticTheme.muted, background: ticTheme.bg } : isZooGame ? zooShellTheme : isFruitWordHunt ? { nav: '#a5662a', navRaised: '#f7b05e', navText: '#fffbee', navMuted: '#fff0cf', background: '#ffe0b5' } : isFlagmaster ? { nav: flagDarkMode ? '#05070d' : '#0b1628', navRaised: flagDarkMode ? '#121a2c' : '#1a3358', navText: flagDarkMode ? '#d4daf0' : '#f9f3e3', navMuted: flagDarkMode ? '#aebbd2' : '#f0e6c8', background: flagDarkMode ? '#05070d' : '#0b1628' } : undefined}
+        themeOptions={isTicTacRoll ? TIC_TAC_ROLL_THEMES.map(theme => ({ id: theme.id, name: theme.name })) : isZooGame ? [{ id: 'savanna', name: 'Savanna' }, { id: 'ocean', name: 'Ocean' }, { id: 'jungle', name: 'Jungle' }] : undefined}
+        themeValue={isTicTacRoll ? ticTheme.id : isZooGame ? zooTheme : undefined}
+        onThemeChange={isTicTacRoll ? themeId => setTicTheme(TIC_TAC_ROLL_THEMES.find(theme => theme.id === themeId) ?? TIC_TAC_ROLL_THEMES[0]) : isZooGame ? setZooTheme : undefined}
         headerExtra={
           <>
             {isConnect4 && c4Hud ? <Connect4HeaderActions hud={c4Hud} /> : null}
@@ -125,6 +128,7 @@ export default function GamePage() {
                 </button>
               </>
             )}
+            {isFlagmaster && <button className="game-shell-header-action" type="button" onClick={() => setFlagDarkMode(value => !value)} aria-label="Toggle Flagmaster theme">{flagDarkMode ? '☀️ Light' : '🌙 Dark'}</button>}
             <Link className="game-shell-header-action" href="/games">
               Back to Menu
             </Link>
@@ -162,6 +166,8 @@ export default function GamePage() {
               onComplete={handleComplete}
               {...(isTicTacRoll ? { themeId: ticTheme.id, onThemeChange: setTicTheme } : {})}
               {...(isConnect4 ? { onHudUpdate: setC4Hud } : {})}
+              {...(isFlagmaster ? { darkMode: flagDarkMode } : {})}
+              {...(isZooGame ? { themeId: zooTheme } : {})}
             />
           )}
         </div>

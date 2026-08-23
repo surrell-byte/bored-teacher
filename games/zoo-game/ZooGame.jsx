@@ -11,11 +11,9 @@ import React, { useEffect, useRef } from 'react';
  */
 const ZooGame_HTML = `<div class="game-wrapper" role="main" aria-label="Zoo animal guessing game">
 
-        <!-- HEADER -->
-        <header class="zoo-header">
-            <h1>🦁 Zoo <span>Game</span></h1>
-            <div class="score-badge">⭐ <span id="scoreDisplay">0</span></div>
-        </header>
+        <div class="question-counter" id="questionCounter"></div>
+        <span id="scoreDisplay" hidden>0</span>
+        <div class="zoo-victory" id="zooVictory" hidden></div>
 
         <!-- CATEGORY TABS -->
         <div class="category-tabs" role="tablist" aria-label="Animal categories">
@@ -99,8 +97,8 @@ const ZooGame_HTML = `<div class="game-wrapper" role="main" aria-label="Zoo anim
             </div>
 
             <div class="sentence-builder" id="sentenceBuilder">
-                <span class="word">I</span>
-                <span class="word">see</span>
+                <span class="word">I</span><span class="word">see</span>
+                <span class="word" id="lookArticle">a</span>
                 <span class="blank" id="lookBlank">⋯</span>
                 <span class="word">in</span>
                 <span class="word">the</span>
@@ -147,15 +145,16 @@ const ZooGame_CSS = `/* ---------- RESET & BASE ---------- */
 
         /* ---------- GAME CONTAINER ---------- */
         .game-wrapper {
-            max-width: 980px;
+            max-width: none;
             width: 100%;
-            max-height: calc(100vh - 36px);
+            min-height: 100%;
+            max-height: none;
             background: #fff8e7;
-            border-radius: 40px 40px 30px 30px;
+            border-radius: 0;
             padding: 20px 26px 20px;
             box-shadow: 0 16px 50px rgba(0, 0, 0, 0.20),
                 0 4px 12px rgba(0, 0, 0, 0.08);
-            border: 6px solid #c7b28b;
+            border: 0;
             position: relative;
             display: flex;
             flex-direction: column;
@@ -198,6 +197,10 @@ const ZooGame_CSS = `/* ---------- RESET & BASE ---------- */
             align-items: center;
             gap: 10px;
         }
+
+        .question-counter { text-align:center; color:#7a6248; font-weight:bold; font-size:16px; margin:4px 0 12px; }
+        .zoo-victory { position:absolute; inset:0; z-index:30; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; background:#fff8e7; color:#4a3728; text-align:center; font-size:clamp(1.8rem,4vw,3rem); font-weight:bold; }
+        .zoo-victory button { font:inherit; font-size:1rem; padding:12px 22px; border:0; border-radius:40px; background:#fcdb8a; color:#4a3728; cursor:pointer; }
 
         .zoo-header h1 span {
             background: #fce9c8;
@@ -816,7 +819,7 @@ const ZooGame_CSS = `/* ---------- RESET & BASE ---------- */
             }
         }`;
 
-export default function ZooGame() {
+export default function ZooGame({ themeId = 'savanna' }) {
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -893,6 +896,7 @@ export default function ZooGame() {
         };
         let score = 0;
         const MAX_ATTEMPTS = 3;
+        let categoryComplete = false;
 
         // Per‑mode flags (to prevent double actions)
         let guessAttempted = false;     // true once question is fully resolved (correct or out of attempts)
@@ -909,6 +913,9 @@ export default function ZooGame() {
         // ================================================================
         const $ = (id) => document.getElementById(id);
         const scoreDisplay = $('scoreDisplay');
+        const questionCounter = $('questionCounter');
+        const zooVictory = $('zooVictory');
+        const lookArticle = $('lookArticle');
 
         // Guess
         const guessEmoji = $('guessEmoji');
@@ -981,6 +988,28 @@ export default function ZooGame() {
             return str.charAt(0).toUpperCase() + str.slice(1);
         }
 
+        function article(str) {
+            return /^[aeiou]/i.test(str) ? 'an' : 'a';
+        }
+
+        function updateQuestionCounter() {
+            const left = Math.max(0, getCategoryAnimals().length - getCurrentIndex());
+            questionCounter.textContent = categoryComplete ? CATEGORIES[currentCategory].name + ' level complete' : left + ' questions left in ' + CATEGORIES[currentCategory].name;
+        }
+
+        function showCategoryVictory() {
+            categoryComplete = true;
+            updateQuestionCounter();
+            zooVictory.hidden = false;
+            zooVictory.innerHTML = '🏆 ' + cap(CATEGORIES[currentCategory].name) + ' Level Complete!<small>You used every animal in this category.</small><button type="button">Play this level again</button>';
+            zooVictory.querySelector('button').addEventListener('click', () => {
+                categoryIndices[currentCategory] = 0;
+                categoryComplete = false;
+                zooVictory.hidden = true;
+                initGuess();
+            });
+        }
+
         // Set a new emoji into an element already blurred, with no
         // transition flash of the unblurred image while it loads in.
         function setEmojiBlurred(el, emoji) {
@@ -1007,6 +1036,8 @@ export default function ZooGame() {
         function switchCategory(catKey) {
             if (catKey === currentCategory) return;
             currentCategory = catKey;
+            categoryComplete = false;
+            zooVictory.hidden = true;
             // Update category buttons
             catBtns.forEach(btn => {
                 const isActive = btn.dataset.category === catKey;
@@ -1053,6 +1084,7 @@ export default function ZooGame() {
         function initGuess() {
             if (guessAdvanceTimer) { clearTimeout(guessAdvanceTimer); guessAdvanceTimer = null; }
             const idx = getCurrentIndex();
+            if (idx >= getCategoryAnimals().length) { showCategoryVictory(); return; }
             const animal = getAnimal(idx);
             setEmojiBlurred(guessEmoji, animal.emoji);
             guessName.textContent = cap(animal.name);
@@ -1064,6 +1096,7 @@ export default function ZooGame() {
             updateAttemptsTrack(guessAttemptsTrack, 0);
             buildGuessOptions(animal.name);
             guessOptions.classList.remove('answered');
+            updateQuestionCounter();
         }
 
         function buildGuessOptions(correctName) {
@@ -1130,6 +1163,7 @@ export default function ZooGame() {
             if (guessAdvanceTimer) { clearTimeout(guessAdvanceTimer); guessAdvanceTimer = null; }
             let idx = getCurrentIndex() + 1;
             setCurrentIndex(idx);
+            if (idx >= getCategoryAnimals().length) { showCategoryVictory(); return; }
             initGuess();
         }
 
@@ -1139,15 +1173,17 @@ export default function ZooGame() {
         function initAct() {
             if (actAdvanceTimer) { clearTimeout(actAdvanceTimer); actAdvanceTimer = null; }
             const idx = getCurrentIndex();
+            if (idx >= getCategoryAnimals().length) { showCategoryVictory(); return; }
             const animal = getAnimal(idx);
             setEmojiBlurred(actEmoji, animal.emoji);
             actName.textContent = cap(animal.name);
             actName.className = 'animal-name hidden';
-            actSentence.textContent = \`I see a \${animal.name}.\`;
-            actFeedback.textContent = \`🎭 Act like a \${animal.name}! Say: "I see a \${animal.name}."\`;
+            actSentence.textContent = \`I see \${article(animal.name)} \${animal.name}.\`;
+            actFeedback.textContent = \`🎭 Act like a \${animal.name}! Say: "I see \${article(animal.name)} \${animal.name}."\`;
             actFeedback.className = 'feedback hint';
             actDone = false;
             actCheckBtn.disabled = false;
+            updateQuestionCounter();
         }
 
         actCheckBtn.addEventListener('click', () => {
@@ -1157,13 +1193,14 @@ export default function ZooGame() {
             actCheckBtn.disabled = true;
             // reveal the animal
             revealAnimal(actEmoji, actName);
-            actFeedback.textContent = \`🌟 Great job! You acted and said "I see a \${animal.name}." ⭐ +1\`;
+            actFeedback.textContent = \`🌟 Great job! You acted and said "I see \${article(animal.name)} \${animal.name}." ⭐ +1\`;
             actFeedback.className = 'feedback correct';
             updateScore(1);
             // auto next after 2.5s
             actAdvanceTimer = setTimeout(() => {
                 let idx = getCurrentIndex() + 1;
                 setCurrentIndex(idx);
+                if (idx >= getCategoryAnimals().length) { showCategoryVictory(); return; }
                 initAct();
             }, 2500);
         });
@@ -1174,6 +1211,7 @@ export default function ZooGame() {
         function initLook() {
             if (lookAdvanceTimer) { clearTimeout(lookAdvanceTimer); lookAdvanceTimer = null; }
             const idx = getCurrentIndex();
+            if (idx >= getCategoryAnimals().length) { showCategoryVictory(); return; }
             const animal = getAnimal(idx);
             setEmojiBlurred(lookEmoji, animal.emoji);
             lookName.textContent = cap(animal.name);
@@ -1181,14 +1219,16 @@ export default function ZooGame() {
             lookBlank.textContent = '⋯';
             lookBlank.className = 'blank';
             lookBlank.dataset.correct = animal.name;
+            lookArticle.textContent = article(animal.name);
             lookAnswered = false;
             lookAttemptsUsed = 0;
             updateAttemptsTrack(lookAttemptsTrack, 0);
-            lookFeedback.textContent = \`🔤 Choose the right word: "I see ___ in the zoo."\`;
+            lookFeedback.textContent = \`🔤 Choose the right word: "I see \${article(animal.name)} ___ in the zoo."\`;
             lookFeedback.className = 'feedback hint';
             lookHintBtn.disabled = false;
             buildLookOptions(animal.name);
             lookOptions.classList.remove('answered');
+            updateQuestionCounter();
         }
 
         function buildLookOptions(correctName) {
@@ -1224,7 +1264,7 @@ export default function ZooGame() {
                 lookBlank.textContent = cap(correctName);
                 lookBlank.className = 'blank filled';
                 revealAnimal(lookEmoji, lookName);
-                lookFeedback.textContent = \`✅ Perfect! "I see \${correctName} in the zoo." ⭐ +1\`;
+                lookFeedback.textContent = \`✅ Perfect! "I see \${article(correctName)} \${correctName} in the zoo." ⭐ +1\`;
                 lookFeedback.className = 'feedback correct';
                 updateScore(1);
                 lookAdvanceTimer = setTimeout(goNextLook, 1800);
@@ -1268,6 +1308,7 @@ export default function ZooGame() {
             if (lookAdvanceTimer) { clearTimeout(lookAdvanceTimer); lookAdvanceTimer = null; }
             let idx = getCurrentIndex() + 1;
             setCurrentIndex(idx);
+            if (idx >= getCategoryAnimals().length) { showCategoryVictory(); return; }
             initLook();
         }
 
@@ -1286,6 +1327,8 @@ export default function ZooGame() {
             // Set initial category (zoo)
             currentCategory = 'zoo';
             categoryIndices = { farm: 0, zoo: 0, sea: 0 };
+            categoryComplete = false;
+            zooVictory.hidden = true;
             score = 0;
             scoreDisplay.textContent = '0';
             // Activate zoo category button
@@ -1329,9 +1372,10 @@ export default function ZooGame() {
   return (
     <>
       <style>{ZooGame_CSS}</style>
+            <style>{`.zoogame-root{min-height:100%;width:100%;display:block}.zoogame-root.zoo-theme-ocean .game-wrapper{background:#effcff;border-color:#73b9c4}.zoogame-root.zoo-theme-ocean .zoo-header{background:#9edfe4;border-color:#4f9aaa}.zoogame-root.zoo-theme-ocean .cat-btn.active,.zoogame-root.zoo-theme-ocean .tab-btn.active{background:#8ed1d5;border-color:#438c9b}.zoogame-root.zoo-theme-jungle .game-wrapper{background:#f2ffe9;border-color:#83a866}.zoogame-root.zoo-theme-jungle .zoo-header{background:#b7d992;border-color:#638b55}.zoogame-root.zoo-theme-jungle .cat-btn.active,.zoogame-root.zoo-theme-jungle .tab-btn.active{background:#9fc27b;border-color:#5c8b4f}`}</style>
       <div
         ref={containerRef}
-        className="zoogame-root"
+        className={`zoogame-root zoo-theme-${themeId}`}
         dangerouslySetInnerHTML={{ __html: ZooGame_HTML }}
       />
     </>

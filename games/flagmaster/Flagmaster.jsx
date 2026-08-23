@@ -329,9 +329,8 @@ select.fm-field-input { cursor:pointer; }
 
 const Style = () => <style>{THEME_CSS}</style>;
 
-export default function Flagmaster({ onComplete }) {
+export default function Flagmaster({ onComplete, darkMode = false }) {
   const [screen, setScreen] = useState("welcome"); // welcome | title | worldMap | levelSelect | game
-  const [darkMode, setDarkMode] = useState(false);
 
   // Passport
   const [nameInput, setNameInput] = useState("");
@@ -504,19 +503,13 @@ export default function Flagmaster({ onComplete }) {
     return () => document.removeEventListener("keydown", onKey);
   });
 
-  const furthest = (() => { let f = 0; levelCompleted.forEach((c, i) => { if (c) f = i + 1; }); return Math.min(f, 4); })();
+  const furthest = (() => { let f = 0; levelCompleted.forEach((c, i) => { if (c) f = i + 1; }); return Math.min(f, LEVELS.length - 1); })();
   const nodePos = NODE_POSITIONS[furthest];
 
   const rootCls = `fm-root${darkMode ? " fm-dark" : ""}`;
-  const ThemeToggle = () => (
-    <button className="fm-theme-toggle" onClick={() => setDarkMode(d => !d)} aria-label="Toggle dark mode">
-      {darkMode ? "☀️" : "🌙"}
-    </button>
-  );
-
   // ═══ WELCOME ═══
   if (screen === "welcome") return (
-    <div className={rootCls}><Style /><div className="fm-bg-layer" /><ThemeToggle />
+    <div className={rootCls}><Style /><div className="fm-bg-layer" />
       <div className="fm-screen fm-welcome-screen"><div className="fm-card"><div className="fm-card-inner">
         <div className="fm-display-sub">Est. MMXXVI · World Expedition Series</div>
         <div className="fm-emblem">🌍</div>
@@ -577,7 +570,6 @@ export default function Flagmaster({ onComplete }) {
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             <button className="fm-btn-expedition" onClick={enterGame}>Issue Passport ›</button>
-            <button className="fm-btn-ghost" onClick={() => setDarkMode(d => !d)}>Toggle Dark Mode</button>
           </div>
         </div></div></div>
       </div>
@@ -586,7 +578,7 @@ export default function Flagmaster({ onComplete }) {
 
   // ═══ WORLD MAP ═══
   if (screen === "worldMap") return (
-    <div className={rootCls}><Style /><div className="fm-bg-layer" /><ThemeToggle />
+    <div className={rootCls}><Style /><div className="fm-bg-layer" />
       <div className="fm-screen fm-wide-screen fm-map-screen"><div className="fm-card"><div className="fm-card-inner">
         <div className="fm-display-sub">Expedition Progress</div>
         <h2 className="fm-display-title">WORLD PROGRESSION</h2>
@@ -639,7 +631,7 @@ export default function Flagmaster({ onComplete }) {
 
   // ═══ LEVEL SELECT ═══
   if (screen === "levelSelect") return (
-    <div className={rootCls}><Style /><div className="fm-bg-layer" /><ThemeToggle />
+    <div className={rootCls}><Style /><div className="fm-bg-layer" />
       <div className="fm-screen fm-wide-screen"><div className="fm-card"><div className="fm-card-inner">
         <div className="fm-nav-row"><button className="fm-btn-sm" onClick={goToWorldMap}>← World Map</button></div>
         <div className="fm-display-sub">Mission Select</div>
@@ -678,7 +670,7 @@ export default function Flagmaster({ onComplete }) {
   const bonusLeft = Math.max(0, 3 - revealsUsed);
 
   return (
-    <div className={rootCls}><Style /><div className="fm-bg-layer" /><ThemeToggle />
+    <div className={rootCls}><Style /><div className="fm-bg-layer" />
       <div className="fm-screen fm-wide-screen"><div className="fm-card"><div className="fm-card-inner fm-game-layout">
         <div className="fm-game-top">
         <div className="fm-stat-strip">

@@ -10,15 +10,25 @@ const PLANS = [
     name: 'Free',
     price: '$0',
     cadence: 'forever',
-    description: 'Core games and learning activities for every classroom.',
-    features: ['Access to the game library', 'Progress tracking', 'Class leaderboard'],
+    description: 'A simple way to explore the hub before upgrading.',
+    features: ['Core game library', 'Personal progress tracking', 'Basic class leaderboard'],
+    action: 'Current Plan',
   },
   {
-    name: 'Resource Library',
-    price: 'Paid',
-    cadence: 'monthly or yearly',
-    description: 'Unlock the full teaching resource library alongside the game hub.',
-    features: ['Everything in Free', 'Premium teaching resources', 'Ongoing resource updates'],
+    name: 'Teacher Pro',
+    price: '$10',
+    cadence: 'per month',
+    description: 'Everything a teacher needs for planning, practice, and repeat classroom use.',
+    features: ['Everything in Free', 'Full teaching resource library', 'Premium worksheets and guides', 'Ongoing resource updates'],
+    action: 'Choose Teacher Pro',
+  },
+  {
+    name: 'School',
+    price: '$300',
+    cadence: 'per year · from',
+    description: 'A shared plan for schools coordinating multiple teachers and classes.',
+    features: ['Everything in Teacher Pro', 'Multiple teacher accounts', 'Shared class reporting', 'Onboarding support'],
+    action: 'Contact Russell',
   },
 ];
 
@@ -58,7 +68,7 @@ export default function SubscriptionPage() {
         <div>
           <div className="hero-kicker">💳 Account Billing</div>
           <h1 className="hub-welcome-title">Manage Subscription</h1>
-          <p className="hub-welcome-sub">Review your plan and choose the access that fits your classroom.</p>
+          <p className="hub-welcome-sub">Start free, upgrade when your classroom needs more, or ask about a school plan.</p>
         </div>
         <Link href="/hub" className="pill-btn" style={{ textDecoration: 'none' }}>← Back to Dashboard</Link>
       </div>
@@ -88,15 +98,19 @@ export default function SubscriptionPage() {
                 <span className="subscription-cadence">{plan.cadence}</span>
               </div>
               <p>{plan.description}</p>
+              {plan.name === 'Teacher Pro' && <div className="subscription-annual-note">Annual option: <strong>$110/year</strong> · save $10 (8.3%)</div>}
               <ul>
                 {plan.features.map(feature => <li key={feature}>✓ {feature}</li>)}
               </ul>
               <button
                 className="pill-btn"
                 disabled={plan.name === 'Free'}
-                onClick={() => plan.name !== 'Free' && router.push('/payment?plan=resource-library')}
+                onClick={() => {
+                  if (plan.name === 'Teacher Pro') router.push('/payment?plan=resource-library');
+                  if (plan.name === 'School') window.location.href = 'mailto:boredteacherapp@gmail.com?subject=School%20plan%20enquiry';
+                }}
               >
-                {plan.name === 'Free' ? 'Current Plan' : 'Choose Plan'}
+                {plan.action}
               </button>
             </article>
           ))}

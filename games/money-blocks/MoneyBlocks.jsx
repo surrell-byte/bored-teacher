@@ -32,37 +32,6 @@ export default function MoneyBlocks() {
       const board = document.getElementById("board");
       const GOAL = 1000000;
 
-      // ========== THEME PICKER ==========
-      const themes = [
-        { key:"black",  name:"Black",  swatch:"#111215", border:"#555" },
-        { key:"white",  name:"White",  swatch:"#F0EDE6", border:"#bbb" },
-        { key:"red",    name:"Red",    swatch:"#EF4444", border:"#FF7A7A" },
-        { key:"blue",   name:"Blue",   swatch:"#3B82F6", border:"#7AAEFF" },
-        { key:"green",  name:"Green",  swatch:"#22C55E", border:"#4ADE80" },
-        { key:"yellow", name:"Yellow", swatch:"#FACC15", border:"#FDE047" }
-      ];
-
-      function applyTheme(key){
-        document.body.setAttribute("data-theme", key);
-        document.querySelectorAll(".theme-swatch").forEach(btn =>
-          btn.classList.toggle("active", btn.dataset.theme === key)
-        );
-      }
-
-      const swatchContainer = document.getElementById("themeSwatches");
-      themes.forEach(theme => {
-        const swatch = document.createElement("button");
-        swatch.className = "theme-swatch";
-        swatch.dataset.theme = theme.key;
-        swatch.dataset.name = theme.name;
-        swatch.title = theme.name;
-        swatch.style.background = theme.swatch;
-        swatch.style.borderColor = theme.border;
-        swatch.onclick = () => applyTheme(theme.key);
-        swatchContainer.appendChild(swatch);
-      });
-      applyTheme("black");
-
       // ========== WELCOME & SETUP SCREENS ==========
       const AVATARS = ["🦁","🐯","🐺","🦊","🐻","🐼","🦅","🦋","🐲","🦄","👑","💀","🎩","🤖","👾","🎭","🌟","⚡","🔥","💎"];
 
@@ -769,20 +738,6 @@ export default function MoneyBlocks() {
           border-radius:12px; padding:10px 14px;
           transition:border-color .6s;
         }
-        .theme-picker-label{
-          font:600 10px 'Inter'; letter-spacing:.14em; text-transform:uppercase;
-          color:var(--ivory-dim); white-space:nowrap; margin-right:4px;
-        }
-        .theme-swatches{ display:flex; gap:7px; align-items:center; }
-        .theme-swatch{
-          width:24px; height:24px; border-radius:50%;
-          cursor:pointer; padding:0; position:relative;
-          transition:transform .18s, box-shadow .18s;
-          border:2px solid rgba(255,255,255,.15);
-        }
-        .theme-swatch:hover{ transform:scale(1.2); }
-        .theme-swatch.active{ box-shadow:0 0 0 2px #fff, 0 0 10px rgba(255,255,255,.4); transform:scale(1.1); }
-
         .account-card{
           background:var(--panel); border:1px solid var(--panel-border);
           border-radius:16px; padding:16px 18px;
@@ -1195,10 +1150,6 @@ export default function MoneyBlocks() {
                 <div class="side-buttons">
                   <button class="side-btn" id="howToPlayBtn">How to Play</button>
                   <button class="side-btn" id="resetBtn">Reset Table</button>
-                </div>
-                <div class="theme-picker" id="themePicker">
-                  <span class="theme-picker-label">Theme</span>
-                  <div class="theme-swatches" id="themeSwatches"></div>
                 </div>
                 <div class="turn-pill" id="turnDisplay"><span class="dot"></span> Player One to move</div>
               </div>

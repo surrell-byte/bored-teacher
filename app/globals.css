@@ -3532,6 +3532,7 @@ a { color: inherit; }
 .subscription-plan h3 { font-size: 2rem; }
 .subscription-cadence { color: var(--muted); font-size: .78rem; }
 .subscription-plan ul { display: grid; gap: 8px; margin: 20px 0; padding: 0; list-style: none; color: var(--text); font-size: .86rem; }
+.subscription-annual-note { margin-top: 12px; padding: 9px 10px; border-radius: 10px; background: rgb(125 187 138 / .1); color: var(--green); font-size: .78rem; }
 .subscription-plan button:disabled { opacity: .7; cursor: default; }
 
 .shop-payment {
@@ -3824,6 +3825,12 @@ a { color: inherit; }
   width: min(100%, 430px); padding: 28px; border: 1px solid var(--border); border-radius: 20px;
   background: var(--surface-strong); color: var(--text); text-align: center; box-shadow: 0 20px 60px rgb(0 0 0 / 0.28);
 }
+.game-shell[data-game-id="zoogame"] .game-shell-completion .game-shell-overlay-card { border: 5px solid #c7b28b; border-radius: 32px; background: #fff8e7; color: #4a3728; box-shadow: 0 20px 60px rgb(0 0 0 / .3); }
+.game-shell[data-game-id="zoogame"] .game-shell-completion .game-shell-overlay-card h2 { color: #4a3728; }
+.game-shell[data-game-id="zoogame"] .game-shell-completion .game-shell-primary-action { background: #fcdb8a; color: #4a3728; }
+.game-shell[data-game-id="fruitwordhunt"] .game-shell-completion .game-shell-overlay-card { border: 4px solid #ffb347; border-radius: 28px; background: linear-gradient(135deg, #ff8c42, #d6321e); color: #fff; }
+.game-shell[data-game-id="fruitwordhunt"] .game-shell-completion .game-shell-primary-action { background: #fff0cf; color: #a5662a; }
+.game-shell[data-game-id="flagmaster"] .game-shell-completion .game-shell-overlay-card { border: 2px solid #c9a84c; border-radius: 4px; background: linear-gradient(160deg, #fdf6e3, #f0e6c8); color: #1c2a3a; }
 .game-shell-overlay-icon, .game-shell-error-icon { display: block; margin-bottom: 10px; font-size: 2.5rem; }
 .game-shell-overlay-card h2, .game-shell-error h2 { margin: 0 0 8px; font-family: var(--font-display, Syne); }
 .game-shell-overlay-card p, .game-shell-error p { margin: 0; color: var(--muted); }

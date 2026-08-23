@@ -228,7 +228,7 @@ export default function GameShell({
               </section>
             )}
             {completion && (
-              <section className="game-shell-overlay" role="dialog" aria-modal="true" aria-labelledby="game-complete-title">
+              <section className="game-shell-overlay game-shell-completion" role="dialog" aria-modal="true" aria-labelledby="game-complete-title">
                 <div className="game-shell-overlay-card">
                   <span aria-hidden="true" className="game-shell-overlay-icon">🏆</span>
                   <h2 id="game-complete-title">Round complete — {title}</h2>

@@ -31,23 +31,22 @@ const FruitWordHunt_HTML = `<div id="correctPopup" class="popup"></div>
 
   <div class="controls">
     <button class="btn btn-del" id="deleteBtn">⌫ DELETE</button>
-    <button class="btn btn-check" id="checkBtn">✅ CHECK</button>
-    <button class="btn btn-next" id="nextBtn">🍉 NEXT FRUIT</button>
     <button class="btn btn-reset" id="resetGameBtn">🏆 RESET GAME</button>
   </div>
 </div>`;
 
 const FruitWordHunt_CSS = `/* Base Styling */
     body {
-      background: linear-gradient(145deg, #fef5e7 0%, #ffe0b5 100%);
+      background: transparent;
       font-family: 'Segoe UI', 'Comic Neue', 'Comic Sans MS', 'Chalkboard SE', system-ui, sans-serif;
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
       margin: 0;
-      padding: 16px;
+      padding: 0;
     }
+    .fruitwordhunt-root { min-height: 100%; width: 100%; display: flex; justify-content: center; align-items: center; padding: 18px; background: linear-gradient(145deg, #fef5e7 0%, #ffe0b5 100%); }
     .game-box {
       width: 100%;
       max-width: 650px;
@@ -215,7 +214,7 @@ const FruitWordHunt_CSS = `/* Base Styling */
       .current-word { font-size: 1.3rem; letter-spacing: 5px; }
     }`;
 
-export default function FruitWordHunt() {
+export default function FruitWordHunt({ onComplete }) {
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -292,6 +291,8 @@ export default function FruitWordHunt() {
   let targetWord = "";
   let currentSpelling = [];
   let currentTiles = [];
+  let remainingFruits = levels.map(() => null);
+  let wrongAttempts = 0;
   let isLocked = false;            // after correct answer until next fruit
   let gameComplete = false;        // victory already triggered
 
@@ -330,13 +331,16 @@ export default function FruitWordHunt() {
   // Check if all levels are fully completed → show victory screen
   function checkVictory() {
     if (gameComplete) return true;
-    const easyDone = score[0] >= levels[0].required;
-    const mediumDone = score[1] >= levels[1].required;
-    const hardDone = score[2] >= levels[2].required;
+    const easyDone = remainingFruits[0]?.length === 0;
+    const mediumDone = remainingFruits[1]?.length === 0;
+    const hardDone = remainingFruits[2]?.length === 0;
     if (easyDone && mediumDone && hardDone) {
       gameComplete = true;
       victoryPopupDiv.innerHTML = \`🏆🎉 GRAND VICTORY! 🎉🏆<br>🍎🍌🍓 You completed ALL 3 levels! 🍒🥝🍍<br>⭐ Fruit Word Master! ⭐<br><span style="font-size:0.9rem;">Press "RESET GAME" to play again!</span>\`;
       victoryPopupDiv.classList.add('show');
+      const totalCorrect = score.reduce((sum, value) => sum + value, 0);
+      const totalQuestions = levels.reduce((sum, level) => sum + level.fruits.length, 0);
+      window.dispatchEvent(new CustomEvent('fruitwordhunt:complete', { detail: { score: totalCorrect, accuracy: Math.round((totalCorrect / totalQuestions) * 100) } }));
       setTimeout(() => {
         victoryPopupDiv.classList.remove('show');
       }, 4000);
@@ -368,10 +372,11 @@ export default function FruitWordHunt() {
     // Update progress info text
     const currentReq = levels[currentLevelIdx].required;
     const currentScore = score[currentLevelIdx];
+    const questionsLeft = Math.max(0, (remainingFruits[currentLevelIdx]?.length || 0) + (isLocked ? 0 : 1));
     if (currentLevelIdx < 2 && !unlocked[currentLevelIdx + 1]) {
       progressInfo.innerHTML = \`⭐ Level \${levels[currentLevelIdx].name}: \${currentScore}/\${currentReq} correct → Unlock \${levels[currentLevelIdx+1].name}! ⭐\`;
     } else {
-      progressInfo.innerHTML = \`🌟 Level \${levels[currentLevelIdx].name} Mastered! (\${currentScore} fruits spelled) 🌟\`;
+      progressInfo.innerHTML = \`🌟 Level \${levels[currentLevelIdx].name}: \${questionsLeft} questions left · \${currentScore} fruits spelled 🌟\`;
     }
     if (gameComplete) progressInfo.innerHTML = "🏆 ALL LEVELS COMPLETE! VICTORY! 🏆";
   }
@@ -385,12 +390,25 @@ export default function FruitWordHunt() {
     }
     isLocked = false;
     const levelData = levels[currentLevelIdx];
-    const fruitNameList = levelData.fruits;
-    const randomFruitName = fruitNameList[Math.floor(Math.random() * fruitNameList.length)];
+    if (remainingFruits[currentLevelIdx] === null) remainingFruits[currentLevelIdx] = shuffleArray([...levelData.fruits]);
+    if (!remainingFruits[currentLevelIdx].length) {
+      if (currentLevelIdx < levels.length - 1) {
+        unlocked[currentLevelIdx + 1] = true;
+        currentLevelIdx++;
+        document.querySelectorAll('.level-btn').forEach((btn, idx) => btn.classList.toggle('active', idx === currentLevelIdx));
+        updateUIAndUnlocks();
+        loadNewFruit();
+      } else {
+        checkVictory();
+      }
+      return;
+    }
+    const randomFruitName = remainingFruits[currentLevelIdx].pop();
     const fruitObj = getFruitByName(randomFruitName);
     if (!fruitObj) return;
     targetWord = fruitObj.name.toLowerCase();
     currentSpelling = [];
+    wrongAttempts = 0;
     
     // Build tiles
     const extraCount = levelData.extra;
@@ -402,6 +420,7 @@ export default function FruitWordHunt() {
     // Render everything
     renderWordDisplay();
     renderTiles();
+    updateUIAndUnlocks();
   }
 
   function renderWordDisplay() {
@@ -454,7 +473,7 @@ export default function FruitWordHunt() {
         renderTiles();
         
         if (currentSpelling.length === targetWord.length) {
-          showPopupMessage("🎯 Word complete! Press CHECK.", false);
+          checkSpelling();
         }
       });
       tilesGrid.appendChild(tileBtn);
@@ -498,7 +517,7 @@ export default function FruitWordHunt() {
       showPopupMessage(\`🎉 PERFECT! "\${targetWord.toUpperCase()}" is correct! 🎉\`, false);
       
       // Check if this completion unlocks victory
-      const allCompleted = (score[0] >= levels[0].required && score[1] >= levels[1].required && score[2] >= levels[2].required);
+      const allCompleted = remainingFruits.every(queue => queue && queue.length === 0);
       if (allCompleted && !gameComplete) {
         checkVictory();  // triggers victory popup and sets gameComplete
         renderTiles();   // disable tiles visually
@@ -506,12 +525,24 @@ export default function FruitWordHunt() {
       } else {
         // Re-render tiles to disable them
         renderTiles();
+        setTimeout(nextFruit, 1200);
       }
     } else {
       // Wrong spelling: shake effect
       wordDisplaySpan.style.color = 'red';
       setTimeout(() => wordDisplaySpan.style.color = '#5a3e1b', 400);
-      showPopupMessage(\`❌ "\${builtWord.toUpperCase() || '???'}" is not correct. Try again!\`, true);
+      wrongAttempts++;
+      if (wrongAttempts >= 3) {
+        showPopupMessage(\`❌ The answer is "\${targetWord.toUpperCase()}". Moving on…\`, true);
+        isLocked = true;
+        setTimeout(nextFruit, 1200);
+      } else {
+        showPopupMessage(\`❌ "\${builtWord.toUpperCase() || '???'}" is not correct. Try again! \${3 - wrongAttempts} tries left.\`, true);
+        currentSpelling = [];
+        currentTiles = buildTileSet(targetWord, levels[currentLevelIdx].extra);
+        renderWordDisplay();
+        renderTiles();
+      }
     }
   }
 
@@ -538,6 +569,7 @@ export default function FruitWordHunt() {
   function resetGame() {
     gameComplete = false;
     score = [0, 0, 0];
+    remainingFruits = levels.map(() => null);
     unlocked = [true, false, false];
     currentLevelIdx = 0;
     isLocked = false;
@@ -588,9 +620,7 @@ export default function FruitWordHunt() {
   }
 
   // ---------- Event listeners ----------
-  document.getElementById('checkBtn').addEventListener('click', checkSpelling);
   document.getElementById('deleteBtn').addEventListener('click', deleteLastLetter);
-  document.getElementById('nextBtn').addEventListener('click', nextFruit);
   document.getElementById('resetGameBtn').addEventListener('click', resetGame);
   
   document.getElementById('btn0').addEventListener('click', () => setLevel(0));
@@ -602,11 +632,14 @@ export default function FruitWordHunt() {
 })();`;
     container.appendChild(script);
 
+    const handleComplete = (event) => onComplete?.(event.detail.score, event.detail.accuracy);
+    window.addEventListener('fruitwordhunt:complete', handleComplete);
     return () => {
       // Clean up injected script tag on unmount
       if (script.parentNode) script.parentNode.removeChild(script);
+      window.removeEventListener('fruitwordhunt:complete', handleComplete);
     };
-  }, []);
+  }, [onComplete]);
 
   return (
     <>
