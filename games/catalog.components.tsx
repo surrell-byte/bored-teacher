@@ -75,5 +75,6 @@ export const GAME_COMPONENTS: Partial<Record<string, React.LazyExoticComponent<R
   findthebee: lazy(() => import('@/games/find-the-bee/FindTheBee.jsx')),
   riddlebombs: lazy(() => import('@/games/riddle-bombs/RiddleBombs.jsx')),
   finnthefox: lazy(() => import('@/games/finn-the-fox/FinnTheFox.jsx')),
+  monsterbound: lazy(() => import('@/games/monsterbound/Monsterbound.jsx')),
   whatsmissing: lazy(() => import('@/games/legacy/LegacyGamePort').then(({ default: LegacyGamePort }) => ({ default: (props: GameComponentProps) => <LegacyGamePort {...props} gameId="whatsmissing" /> }))),
 };

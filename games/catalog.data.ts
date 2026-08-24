@@ -672,6 +672,18 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     hasComponent: true,
     isNew: true,
   },
+  monsterbound: {
+    name: "Monsterbound",
+    icon: "🐉",
+    desc: "Travel the Wild Frontier, catch monsters, battle champions, and build your team into a legendary party.",
+    cover: "/assets/covers/what-am-i-cover.webp",
+    tag: { label: "Adventure", color: "tag-bio" },
+    badge: "Quest",
+    difficulty: "Adventure",
+    barColor: "var(--gold)",
+    hasComponent: true,
+    isNew: true,
+  },
 };
 
 export const GAME_KEYS = Object.keys(GAME_CATALOG);
