@@ -387,6 +387,18 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     barColor: "var(--red)",
     hasComponent: true,
   },
+  turbodash: {
+    name: "Turbo Dash",
+    icon: "🏁",
+    desc: "A fast two-player board racer with vehicle picks, dice rolls, bonuses, hazards, and a dramatic finish.",
+    cover: "/assets/covers/w-grand-prix.webp",
+    tag: { label: "Vocabulary", color: "tag-vocab" },
+    badge: "Race",
+    difficulty: "Competitive",
+    barColor: "var(--gold)",
+    isNew: true,
+    hasComponent: true,
+  },
   countadd: {
     name: "Count & Add",
     icon: "➕",

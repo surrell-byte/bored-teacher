@@ -1,162 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 
+import { DB, CHAMPIONS, MOVE_COLOR, MW, MH, TILE_BG, tileAt } from "./data";
+import { createMonster, createWildEncounter, performAttack, attemptCapture, awardXpAndApplyProgression } from "./game";
+
 /* =========================================================
    MONSTER DATABASE
 ========================================================= */
-
-const DB = {
-  Embercub: {
-    emoji: "🐯", type: "fire", rarity: "Common",
-    hp: 45, attack: 13, defense: 9, speed: 12,
-    evolution: { level: 16, name: "Flareclaw" },
-    moves: [
-      ["Flame Bite", "fire", 18],
-      ["Scratch", "normal", 13],
-      ["Roar", "normal", 8],
-      ["Inferno", "fire", 25],
-    ],
-  },
-  Aquafin: {
-    emoji: "🐬", type: "water", rarity: "Common",
-    hp: 48, attack: 11, defense: 10, speed: 13,
-    evolution: { level: 16, name: "Tiderex" },
-    moves: [
-      ["Water Blast", "water", 18],
-      ["Tackle", "normal", 13],
-      ["Splash Rush", "water", 15],
-      ["Tidal Wave", "water", 25],
-    ],
-  },
-  Mossprout: {
-    emoji: "🌱", type: "nature", rarity: "Common",
-    hp: 52, attack: 10, defense: 12, speed: 8,
-    evolution: { level: 16, name: "Thornback" },
-    moves: [
-      ["Vine Whip", "nature", 18],
-      ["Tackle", "normal", 13],
-      ["Leaf Storm", "nature", 24],
-      ["Guard", "normal", 8],
-    ],
-  },
-  Voltiger: {
-    emoji: "⚡", type: "electric", rarity: "Uncommon",
-    hp: 42, attack: 15, defense: 8, speed: 17,
-    evolution: { level: 20, name: "Stormclaw" },
-    moves: [
-      ["Spark", "electric", 18],
-      ["Bite", "normal", 14],
-      ["Thunder Rush", "electric", 22],
-      ["Quick Strike", "normal", 12],
-    ],
-  },
-  Stonejaw: {
-    emoji: "🐊", type: "earth", rarity: "Uncommon",
-    hp: 65, attack: 15, defense: 18, speed: 5,
-    evolution: { level: 22, name: "Terradon" },
-    moves: [
-      ["Rock Smash", "earth", 18],
-      ["Bite", "normal", 14],
-      ["Earthquake", "earth", 27],
-      ["Guard", "normal", 8],
-    ],
-  },
-  Nightwing: {
-    emoji: "🦇", type: "shadow", rarity: "Rare",
-    hp: 40, attack: 14, defense: 8, speed: 18,
-    evolution: { level: 24, name: "Dreadwing" },
-    moves: [
-      ["Shadow Claw", "shadow", 19],
-      ["Bite", "normal", 14],
-      ["Dark Pulse", "shadow", 24],
-      ["Quick Strike", "normal", 12],
-    ],
-  },
-  Frosthorn: {
-    emoji: "🦏", type: "ice", rarity: "Rare",
-    hp: 58, attack: 16, defense: 14, speed: 7,
-    evolution: { level: 26, name: "Glacierhorn" },
-    moves: [
-      ["Ice Charge", "ice", 18],
-      ["Horn Rush", "normal", 15],
-      ["Frozen Blast", "ice", 25],
-      ["Guard", "normal", 8],
-    ],
-  },
-  Pyrodrake: {
-    emoji: "🐲", type: "fire", rarity: "Legendary",
-    hp: 80, attack: 23, defense: 17, speed: 18,
-    moves: [
-      ["Dragon Flame", "fire", 28],
-      ["Claw Strike", "normal", 20],
-      ["Infernal Roar", "fire", 35],
-      ["Skybreaker", "normal", 25],
-    ],
-  },
-};
-
-const TYPES = {
-  fire: { nature: 2, ice: 2, water: 0.5, fire: 0.5 },
-  water: { fire: 2, earth: 2, nature: 0.5, water: 0.5 },
-  nature: { water: 2, earth: 2, fire: 0.5, ice: 0.5 },
-  electric: { water: 2, shadow: 2, earth: 0 },
-  earth: { electric: 2, fire: 2, nature: 0.5 },
-  ice: { nature: 2, earth: 2, fire: 0.5 },
-  shadow: { shadow: 0.5 },
-  normal: {},
-};
-
-const CHAMPIONS = [
-  { name: "Mara", title: "Flame Champion", monster: "Embercub", level: 14, reward: 300 },
-  { name: "Kai", title: "Tide Champion", monster: "Aquafin", level: 18, reward: 400 },
-  { name: "Rhea", title: "Forest Champion", monster: "Mossprout", level: 22, reward: 500 },
-  { name: "Volt", title: "Storm Champion", monster: "Voltiger", level: 26, reward: 600 },
-  { name: "Bram", title: "Earth Champion", monster: "Stonejaw", level: 30, reward: 700 },
-  { name: "Nox", title: "Shadow Champion", monster: "Nightwing", level: 34, reward: 800 },
-  { name: "Frey", title: "Frost Champion", monster: "Frosthorn", level: 38, reward: 900 },
-  { name: "Astra", title: "Grand Champion", monster: "Pyrodrake", level: 45, reward: 2000 },
-];
-
-const MOVE_COLOR = {
-  fire: "#d84a3d", water: "#327fd1", nature: "#3d9d54", electric: "#d1a82e",
-  earth: "#8c6c4b", ice: "#55aabe", shadow: "#674c9b", normal: "#64748b",
-};
-
-function createMonster(name, level) {
-  const b = DB[name];
-  const maxHP = b.hp + level * 3;
-  return {
-    id: Math.random().toString(36).slice(2),
-    name, emoji: b.emoji, type: b.type, rarity: b.rarity, level,
-    maxHP, hp: maxHP,
-    attack: b.attack + level,
-    defense: b.defense + Math.floor(level / 2),
-    speed: b.speed + level,
-    xp: 0, xpNeeded: 100,
-    status: null,
-    moves: b.moves.map((m) => ({ name: m[0], type: m[1], power: m[2] })),
-  };
-}
-
-const MW = 16;
-const MH = 10;
-const WILD_POOL = ["Embercub", "Aquafin", "Mossprout", "Voltiger", "Stonejaw", "Nightwing", "Frosthorn"];
-
-function tileAt(x, y) {
-  if (x < 2 && y < 3) return "water";
-  if (x > 13 && y > 7) return "water";
-  if (x >= 5 && x <= 10 && y >= 3 && y <= 6) return "town";
-  if (y === 5 || x === 7) return "path";
-  if ((x < 3 && y > 6) || (x > 12 && y < 3)) return "forest";
-  return "grass";
-}
-
-const TILE_BG = {
-  grass: "linear-gradient(135deg,#5fae48,#6bc054)",
-  path: "linear-gradient(135deg,#d4ac66,#e0bc7c)",
-  water: "linear-gradient(160deg,#2f7fc4,#4bb3e8)",
-  town: "linear-gradient(135deg,#a998cc,#c0b2df)",
-  forest: "linear-gradient(135deg,#316030,#3d7a3b)",
-};
 
 function HPBar({ ratio }) {
   const color = ratio <= 0.25 ? "#ef4444" : ratio <= 0.5 ? "#facc15" : "#22c55e";
@@ -276,12 +125,10 @@ export default function Monsterbound({ onComplete } = {}) {
   }, [move, screen]);
 
   function startWildBattle() {
-    const name = WILD_POOL[Math.floor(Math.random() * WILD_POOL.length)];
-    const lvl = Math.max(2, (party[0]?.level || 5) + Math.floor(Math.random() * 5) - 2);
-    const enemy = createMonster(name, lvl);
-    discover(name);
+    const enemy = createWildEncounter(party[0]?.level || 5);
+    discover(enemy.name);
     setBattle({ enemy, type: "wild" });
-    setBattleMsg(`A wild ${name} appeared!`);
+    setBattleMsg(`A wild ${enemy.name} appeared!`);
   }
 
   function challengeChampion() {
@@ -299,30 +146,23 @@ export default function Monsterbound({ onComplete } = {}) {
     const moveData = player.moves[idx];
     const enemy = { ...battle.enemy };
 
-    let mult = TYPES[moveData.type]?.[enemy.type] ?? 1;
-    let dmg = moveData.power + player.attack - enemy.defense / 2;
-    dmg *= mult;
-    const crit = Math.random() < 0.08;
-    if (crit) dmg *= 1.8;
-    dmg *= 0.85 + Math.random() * 0.3;
-    dmg = Math.max(1, Math.floor(dmg));
+    const result = performAttack({ attacker: player, defender: enemy, move: moveData });
+    const updatedEnemy = result.defender;
 
-    enemy.hp = Math.max(0, enemy.hp - dmg);
+    let text = `${player.name} used ${moveData.name}! ${result.damage} damage.`;
+    if (result.critical) text += " CRITICAL HIT!";
+    if (result.multiplier > 1) text += " Super effective!";
+    if (result.multiplier < 1) text += " Not very effective.";
 
-    let text = `${player.name} used ${moveData.name}! ${dmg} damage.`;
-    if (crit) text += " CRITICAL HIT!";
-    if (mult > 1) text += " Super effective!";
-    if (mult < 1) text += " Not very effective.";
-
-    setBattle((b) => ({ ...b, enemy }));
+    setBattle((b) => ({ ...b, enemy: updatedEnemy }));
     setBattleMsg(text);
     setBusy(true);
 
-    if (enemy.hp <= 0) {
-      setTimeout(() => winBattle(enemy), 700);
+    if (updatedEnemy.hp <= 0) {
+      setTimeout(() => winBattle(updatedEnemy), 700);
       return;
     }
-    setTimeout(() => enemyTurn(enemy), 850);
+    setTimeout(() => enemyTurn(updatedEnemy), 850);
   }
 
   function enemyTurn(enemySnapshot) {
@@ -363,22 +203,11 @@ export default function Monsterbound({ onComplete } = {}) {
   }
 
   function levelUpAndEvolve(mon) {
-    let m = { ...mon };
-    while (m.xp >= m.xpNeeded) {
-      m.xp -= m.xpNeeded;
-      m.level++;
-      m.xpNeeded = Math.floor(m.xpNeeded * 1.25);
-      m.maxHP += 5; m.hp = m.maxHP;
-      m.attack += 2; m.defense += 2; m.speed += 2;
-      setBattleMsg((prev) => prev + ` ✨ Lv.${m.level}!`);
-      const base = DB[m.name];
-      if (base?.evolution && m.level >= base.evolution.level) {
-        const old = m.name;
-        m.name = base.evolution.name;
-        m.maxHP += 15; m.hp = m.maxHP; m.attack += 5; m.defense += 5; m.speed += 3;
-        setBattleMsg(`✨ ${old} evolved into ${m.name}!`);
-      }
-    }
+    const outcome = awardXpAndApplyProgression(mon, 0);
+    const current = { ...mon };
+    const result = awardXpAndApplyProgression(current, 0);
+    let m = result.monster;
+    result.messages.forEach((msg) => setBattleMsg((prev) => prev + ` ${msg}`));
     return m;
   }
 
@@ -386,9 +215,12 @@ export default function Monsterbound({ onComplete } = {}) {
     const xp = enemy.level * 15 + 25;
     setParty((prev) => {
       const p = [...prev];
-      let mon = { ...p[active], xp: p[active].xp + xp };
-      mon = levelUpAndEvolve(mon);
-      p[active] = mon;
+      const baseMon = { ...p[active] };
+      const outcome = awardXpAndApplyProgression(baseMon, xp);
+      p[active] = outcome.monster;
+      outcome.messages.forEach((msg) => {
+        setBattleMsg((prev) => prev + ` ${msg}`);
+      });
       return p;
     });
     setMoney((m) => m + enemy.level * 5 + (battle?.type === "champion" ? battle.champion.reward : 0));
@@ -412,12 +244,9 @@ export default function Monsterbound({ onComplete } = {}) {
     setBusy(true);
 
     const enemy = battle.enemy;
-    const ratio = enemy.hp / enemy.maxHP;
-    let chance = 0.15 + (1 - ratio) * 0.7;
-    if (enemy.rarity === "Rare") chance *= 0.8;
-    if (enemy.rarity === "Legendary") chance *= 0.45;
+    const success = attemptCapture(enemy);
 
-    if (Math.random() < chance) {
+    if (success) {
       setParty((p) => [...p, enemy]);
       setQuests((q) => ({ ...q, catchCount: q.catchCount + 1 }));
       discover(enemy.name);

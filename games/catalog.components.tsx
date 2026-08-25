@@ -51,6 +51,7 @@ export const GAME_COMPONENTS: Partial<Record<string, React.LazyExoticComponent<R
   shuttlecock: lazy(() => import('@/games/shuttlecock-smash/ShuttlecockSmash.jsx')),
   tornado: lazy(() => import('@/games/tornado/Tornado.jsx')),
   wgrandprix: lazy(() => import('@/games/w-grand-prix/WGrandPrix.jsx')),
+  turbodash: lazy(() => import('@/games/turbo-dash/TurboDash.jsx')),
   connect4: lazy(() => import('@/games/connect-4/Connect4.jsx')),
   monkeytree: lazy(() => import('@/games/monkey-tree-climb/MonkeyTreeClimb.jsx')),
   blockfight: lazy(() => import('@/games/block-fight/BlockFight')),
