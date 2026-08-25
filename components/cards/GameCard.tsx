@@ -8,6 +8,7 @@ import {
   GAME_BAR_COLOR,
   GAME_COVERS,
 } from '@/constants/index';
+import { preloadGame } from '@/games/catalog.components';
 
 interface GameCardProps {
   gameId: string;
@@ -25,7 +26,12 @@ export default function GameCard({
   return (
     <button
       className="game-card"
-      onClick={() => onClick(gameId)}
+      onPointerEnter={() => preloadGame(gameId)}
+      onFocus={() => preloadGame(gameId)}
+      onClick={() => {
+        preloadGame(gameId);
+        onClick(gameId);
+      }}
     >
       <div
         className={`card-cover${cover ? ' has-image' : ''}`}

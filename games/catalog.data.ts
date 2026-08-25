@@ -399,6 +399,18 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     isNew: true,
     hasComponent: true,
   },
+  volcanoracer: {
+    name: "Volcano Racer",
+    icon: "🌋",
+    desc: "Race through volcanic hazards by choosing the right card to gain ground, freeze rivals, or trigger a boost.",
+    cover: "/assets/covers/w-grand-prix.webp",
+    tag: { label: "Strategy", color: "tag-bio" },
+    badge: "Card Racer",
+    difficulty: "Competitive",
+    barColor: "var(--red)",
+    isNew: true,
+    hasComponent: true,
+  },
   countadd: {
     name: "Count & Add",
     icon: "➕",

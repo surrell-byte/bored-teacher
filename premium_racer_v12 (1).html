@@ -1,0 +1,1467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>🏁 TURBO DASH</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;user-select:none;}
+
+/* ── Upgrade 6: UI palette matches the map's grassy/earthy tones ── */
+:root{
+  --gold:#e8a800;
+  --gold2:#ffc93c;
+  --p1:#d63027;
+  --p2:#1565c0;
+  --bg:#1c2416;          /* dark olive — echoes the grass */
+  --surface:#252e1c;
+  --surface2:#2e381f;
+  --border1:rgba(255,255,255,.07);
+  --white:#f0f2ec;
+  --muted:#7a8a6a;
+  --accent:#a8c060;      /* light grass accent */
+}
+
+html,body{width:100%;height:100%;
+  background:radial-gradient(ellipse at 30% 20%, #2a3520 0%, var(--bg) 70%);
+  font-family:'Rajdhani',sans-serif;overflow:hidden;
+  font-size:clamp(12px, 1.2vw, 16px);
+}
+
+.stage{
+  width:100vw;height:100vh;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+}
+
+.game-shell{
+  width:100%;
+  max-width:1200px;
+  position:relative;
+}
+
+.screen{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .42s ease,transform .42s ease;z-index:10;}
+.screen.hidden{opacity:0;pointer-events:none;transform:scale(.97);}
+.screen.visible{opacity:1;pointer-events:all;transform:scale(1);}
+
+.game-shell{position:relative;width:100%;max-width:1200px;height:100vh;}
+
+#bgCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+
+/* ════ TITLE ════ */
+.title-eyebrow{font-family:'Orbitron',monospace;font-size:clamp(.6rem,1.6vw,.82rem);letter-spacing:.55em;color:var(--muted);margin-bottom:.5rem;text-align:center;}
+.title-logo{font-family:'Orbitron',monospace;font-weight:900;font-size:clamp(3.5rem,9vw,7.5rem);letter-spacing:.04em;line-height:.88;text-align:center;background:linear-gradient(140deg,var(--gold2) 0%,#ff8c00 50%,#d63027 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.title-cars{font-size:clamp(2rem,5vw,3.2rem);margin:1.6rem 0;display:flex;gap:.6rem;align-items:center;}
+.title-cars span{display:inline-block;animation:carBob 2.2s ease-in-out infinite;}
+.title-cars span:nth-child(2){animation-delay:.4s;}
+.title-cars span:nth-child(3){animation-delay:.8s;}
+@keyframes carBob{0%,100%{transform:translateY(0);}50%{transform:translateY(-9px);}}
+.btn-start{font-family:'Orbitron',monospace;font-weight:700;font-size:clamp(.88rem,2.3vw,1.15rem);letter-spacing:.2em;padding:.95rem 3rem;background:linear-gradient(135deg,var(--gold2),#d47800);color:#141a0d;border:none;border-radius:60px;cursor:pointer;position:relative;overflow:hidden;transition:transform .1s,box-shadow .2s;box-shadow:0 0 22px rgba(232,168,0,.35),0 6px 20px rgba(0,0,0,.5);}
+.btn-start:hover{transform:scale(1.05);box-shadow:0 0 42px rgba(232,168,0,.6);}
+.btn-start:active{transform:scale(.97);}
+.btn-start::before{content:'';position:absolute;top:0;left:-110%;width:55%;height:100%;background:rgba(255,255,255,.2);transform:skewX(-20deg);animation:sheen 2.8s infinite;}
+@keyframes sheen{0%{left:-110%;}100%{left:220%;}}
+.title-tag{font-size:clamp(.78rem,1.7vw,.92rem);color:var(--muted);margin-top:.9rem;letter-spacing:.08em;}
+
+/* ════ NAMES ════ */
+.screen-title{font-family:'Orbitron',monospace;font-weight:700;font-size:clamp(1rem,2.8vw,1.75rem);letter-spacing:.14em;color:var(--white);margin-bottom:1.9rem;text-align:center;}
+.screen-title em{font-style:normal;background:linear-gradient(135deg,var(--gold2),#e07000);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.name-cards{display:flex;gap:1.6rem;flex-wrap:wrap;justify-content:center;}
+.name-card{background:var(--surface);border-radius:16px;padding:1.6rem;width:260px;display:flex;flex-direction:column;gap:.85rem;border:1.5px solid var(--border1);}
+.name-card.p1{border-color:rgba(214,48,39,.3);}
+.name-card.p2{border-color:rgba(21,101,192,.3);}
+.nc-label{font-family:'Orbitron',monospace;font-size:.62rem;letter-spacing:.35em;font-weight:700;}
+.p1 .nc-label{color:var(--p1);}
+.p2 .nc-label{color:var(--p2);}
+.nc-icon{font-size:2.5rem;text-align:center;}
+.name-input{background:var(--surface2);border:1.5px solid rgba(255,255,255,.08);border-radius:10px;padding:.68rem 1rem;color:var(--white);font-family:'Rajdhani',sans-serif;font-size:1.08rem;font-weight:600;width:100%;outline:none;transition:border-color .28s,box-shadow .28s;text-align:center;}
+.name-input:focus{border-color:var(--gold);box-shadow:0 0 0 2px rgba(232,168,0,.12);}
+.p1 .name-input:focus{border-color:var(--p1);box-shadow:0 0 0 2px rgba(214,48,39,.12);}
+.p2 .name-input:focus{border-color:var(--p2);box-shadow:0 0 0 2px rgba(21,101,192,.12);}
+.name-input::placeholder{color:#3a4232;}
+.btn-next{font-family:'Orbitron',monospace;font-weight:700;font-size:.86rem;letter-spacing:.14em;padding:.8rem 2.2rem;background:linear-gradient(135deg,var(--gold2),#d47800);color:#141a0d;border:none;border-radius:60px;cursor:pointer;margin-top:1.2rem;transition:transform .1s,opacity .2s,box-shadow .2s;box-shadow:0 0 14px rgba(232,168,0,.25);}
+.btn-next:hover{transform:scale(1.04);box-shadow:0 0 28px rgba(232,168,0,.5);}
+.btn-next:active{transform:scale(.97);}
+.btn-next:disabled{opacity:.28;cursor:not-allowed;transform:none !important;box-shadow:none;}
+
+/* ════ AVATARS ════ */
+.av-section{display:flex;gap:2rem;flex-wrap:wrap;justify-content:center;width:100%;max-width:830px;}
+.av-block{display:flex;flex-direction:column;align-items:center;gap:.8rem;flex:1;min-width:260px;max-width:350px;}
+.av-pname{font-family:'Orbitron',monospace;font-size:.86rem;font-weight:700;letter-spacing:.18em;}
+.av-pname.p1{color:var(--p1);}
+.av-pname.p2{color:var(--p2);}
+.av-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;background:var(--surface);padding:.95rem;border-radius:16px;width:100%;}
+.av-opt{font-size:1.65rem;width:52px;height:52px;display:flex;align-items:center;justify-content:center;border-radius:12px;cursor:pointer;background:var(--surface2);border:2px solid transparent;transition:all .16s;}
+.av-opt:hover{transform:scale(1.1);background:#323c22;}
+.av-opt.s1{border-color:var(--p1);background:rgba(214,48,39,.1);animation:gP1 1.7s ease-in-out infinite;}
+.av-opt.s2{border-color:var(--p2);background:rgba(21,101,192,.1);animation:gP2 1.7s ease-in-out infinite;}
+@keyframes gP1{0%,100%{box-shadow:0 0 6px rgba(214,48,39,.25);}50%{box-shadow:0 0 18px rgba(214,48,39,.7);}}
+@keyframes gP2{0%,100%{box-shadow:0 0 6px rgba(21,101,192,.25);}50%{box-shadow:0 0 18px rgba(21,101,192,.7);}}
+.av-prev{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2.4rem;background:var(--surface2);}
+.p1 .av-prev{border:3px solid var(--p1);box-shadow:0 0 0 4px rgba(214,48,39,.1),0 0 22px rgba(214,48,39,.35);}
+.p2 .av-prev{border:3px solid var(--p2);box-shadow:0 0 0 4px rgba(21,101,192,.1),0 0 22px rgba(21,101,192,.35);}
+
+/* ════ GAMEPLAY ════ */
+#gameScreen{flex-direction:column;justify-content:flex-start;padding:.7rem;overflow-y:auto;overflow-x:hidden;}
+.g-header{width:100%;display:flex;justify-content:space-between;align-items:center;margin-bottom:.45rem;flex-wrap:wrap;gap:.35rem;}
+.g-logo{font-family:'Orbitron',monospace;font-weight:900;font-size:0.85rem;background:linear-gradient(135deg,var(--gold2),#e07000);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:.08em;}
+.t-badge{font-family:'Orbitron',monospace;font-size:.65rem;font-weight:700;letter-spacing:.1em;padding:.38rem .9rem;border-radius:60px;background:var(--surface2);border:1.5px solid var(--border1);color:var(--white);transition:all .28s;}
+.t-badge.tb1{border-color:var(--p1);color:var(--p1);}
+.t-badge.tb2{border-color:var(--p2);color:var(--p2);}
+.btn-q{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:.76rem;padding:.34rem .78rem;border-radius:60px;background:transparent;border:1.5px solid #3a4430;color:var(--muted);cursor:pointer;transition:all .2s;}
+.btn-q:hover{border-color:#6a7a5a;color:var(--white);}
+
+/* ── 3-column arena layout ── */
+.game-arena{
+  display:grid;
+  grid-template-columns:72px 1fr 72px;
+  gap:.5rem;
+  width:100%;
+  align-items:stretch;
+  flex:1;
+  min-height:0;
+}
+
+/* ── Vertical player sidebar ── */
+.p-sidebar{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:.5rem;
+  padding:.55rem .4rem;
+  background:var(--surface);
+  border-radius:12px;
+  border:2px solid transparent;
+  transition:border-color .28s, background .28s;
+}
+.p-sidebar.ps1{border-color:rgba(214,48,39,.18);}
+.p-sidebar.ps2{border-color:rgba(21,101,192,.18);}
+.p-sidebar.ps1.act{border-color:var(--p1);background:rgba(214,48,39,.04);}
+.p-sidebar.ps2.act{border-color:var(--p2);background:rgba(21,101,192,.04);}
+
+.ps-disc{
+  width:36px;height:36px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.2rem;position:relative;overflow:hidden;
+  box-shadow:0 3px 7px rgba(0,0,0,.5);
+}
+.ps-disc::after{content:'';position:absolute;top:0;left:0;width:100%;height:46%;background:rgba(255,255,255,.16);border-radius:50% 50% 0 0;}
+.ps1 .ps-disc{background:radial-gradient(circle at 35% 28%,#ff6359,#a81e15);border:2px solid rgba(255,255,255,.8);}
+.ps2 .ps-disc{background:radial-gradient(circle at 35% 28%,#4a9eff,#0b4caa);border:2px solid rgba(255,255,255,.8);}
+
+.ps-name{
+  font-family:'Orbitron',monospace;font-weight:700;
+  font-size:.48rem;letter-spacing:.06em;
+  writing-mode:vertical-rl;
+  text-orientation:mixed;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  max-height:80px;
+}
+.ps1 .ps-name{color:var(--p1);}
+.ps2 .ps-name{color:var(--p2);transform:rotate(180deg);}
+
+/* Vertical progress bar track */
+.ps-bar-bg{
+  flex:1;
+  width:10px;
+  background:rgba(255,255,255,.06);
+  border-radius:10px;
+  overflow:hidden;
+  position:relative;
+  min-height:60px;
+}
+/* Fill grows upward from bottom */
+.ps-bar{
+  position:absolute;
+  bottom:0;left:0;right:0;
+  height:0%;
+  border-radius:10px;
+  transition:height .5s ease;
+}
+.ps1 .ps-bar{background:linear-gradient(0deg,#d63027,#ff8c00);}
+.ps2 .ps-bar{background:linear-gradient(0deg,#1565c0,#5e5ce6);}
+
+.ps-pos{
+  font-family:'Orbitron',monospace;
+  font-size:.42rem;color:var(--muted);
+  text-align:center;line-height:1.3;
+  opacity:.75;
+}
+.h-badge{font-size:.48rem;font-weight:700;letter-spacing:.06em;padding:.1rem .3rem;border-radius:20px;display:inline-block;text-align:center;}
+.bf{background:rgba(100,200,255,.08);color:#7bc5ff;border:1px solid rgba(100,200,255,.2);}
+.bc{background:rgba(232,168,0,.08);color:var(--gold2);border:1px solid rgba(232,168,0,.2);}
+.bs{background:rgba(255,100,0,.08);color:#ff9444;border:1px solid rgba(255,100,0,.2);}
+.bb{background:rgba(100,220,100,.08);color:#5dba5d;border:1px solid rgba(100,220,100,.2);}
+.bt{background:rgba(214,48,39,.08);color:#ff6b5b;border:1px solid rgba(214,48,39,.2);}
+
+/* centre column: map + controls stacked */
+.arena-centre{display:flex;flex-direction:column;gap:.45rem;min-width:0;}
+
+/* ════ MAP — Upgrade 7: border depth + proper containment ════ */
+.map-outer{
+  width:100%;flex-shrink:0;
+  position:relative;
+  overflow:visible;
+  border-radius:18px;
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.6),
+    0 4px 12px rgba(0,0,0,.4),
+    inset 0 0 0 2px rgba(255,255,255,.08),
+    inset 0 0 30px rgba(0,0,0,.4);
+  transition:transform .26s cubic-bezier(.2,.9,.4,1.1);
+}
+.map-wrapper{
+  width:100%;aspect-ratio:3/2;
+  border-radius:18px;overflow:hidden;
+  position:relative;
+  border:2px solid rgba(255,255,255,.07);
+  background:radial-gradient(circle at 50% 50%, #3fa34d, #1f5f2c);
+}
+/* Glossy light sweep overlay */
+.map-wrapper::after{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:linear-gradient(
+    120deg,
+    transparent 0%,
+    rgba(255,255,255,0.08) 50%,
+    transparent 100%
+  );
+  mix-blend-mode:overlay;
+  animation:lightSweep 6s linear infinite;
+  pointer-events:none;
+  z-index:6;
+  border-radius:18px;
+}
+/* SVG track is always crisp — no img filter needed */
+
+/* Moving road-texture overlay removed (SVG handles road rendering) */
+@keyframes roadScroll{from{background-position:0 0;}to{background-position:-36px 0;}}
+/* Upgrade 2: Moving light sweep — makes map feel alive/expensive */
+@keyframes lightSweep{
+  0%{transform:translateX(-100%);}
+  100%{transform:translateX(100%);}
+}
+
+/* Upgrade 10: finish glow zone */
+.finish-glow{
+  position:absolute;z-index:3;pointer-events:none;
+  border-radius:50%;
+  width:90px;
+  height:90px;
+  background:
+    radial-gradient(circle,
+      rgba(255,215,0,.9) 0%,
+      rgba(255,215,0,.35) 40%,
+      transparent 70%);
+  filter:blur(1px);
+  transform:translate(-50%,-50%);
+  animation:fgPulse 1s ease-in-out infinite;
+}
+@keyframes fgPulse{0%,100%{opacity:.65;transform:translate(-50%,-50%) scale(1);}50%{opacity:1;transform:translate(-50%,-50%) scale(1.28);}}
+
+#ovCanvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:4;}
+#racersL{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:5;}
+
+/* ════ RACER TOKEN — Upgrades 1, 2, 3, 4, 8 ════ */
+.car-tok{
+  position:absolute;
+  width:clamp(28px, 3vw, 42px);
+  height:clamp(28px, 3vw, 42px);
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:clamp(16px, 2vw, 24px);
+  /* Upgrade 1: sit ON the road, not inside it */
+  transform:translate(-50%,-70%);
+  border:2.5px solid rgba(255,255,255,.88);
+  box-shadow:
+    0 6px 14px rgba(0,0,0,.6),
+    0 2px 4px rgba(0,0,0,.5);
+  pointer-events:none;
+  /* Upgrade 3: transition includes transform for rotation glide */
+  transition:left .14s linear,top .14s linear,transform .14s linear;
+  z-index:10;overflow:hidden;
+}
+.car-tok::after{content:'';position:absolute;top:0;left:0;width:100%;height:46%;background:rgba(255,255,255,.18);border-radius:50% 50% 0 0;pointer-events:none;}
+.ct0{background:radial-gradient(circle at 35% 28%,#ff6359,#a81e15);}
+.ct1{background:radial-gradient(circle at 35% 28%,#4a9eff,#0b4caa);}
+/* Active token floats — combined with rotation in JS */
+.car-tok.active{width:clamp(32px,3.5vw,48px);height:clamp(32px,3.5vw,48px);font-size:clamp(18px,2.2vw,28px);z-index:20;
+  box-shadow:0 5px 12px rgba(0,0,0,.65),inset 0 -2px 3px rgba(0,0,0,.25);
+  animation:enginePulse .6s ease-in-out infinite;}
+@keyframes enginePulse{
+  0%,100%{transform:translate(-50%,-70%) scale(1);}
+  50%{transform:translate(-50%,-70%) scale(1.08);}
+}
+/* Upgrade 4: motion blur while moving */
+.car-tok.moving{filter:blur(.6px) brightness(1.05);}
+/* Upgrade 8: boost flare */
+.car-tok.boosted{box-shadow:0 0 0 3px rgba(255,220,0,.7),0 0 18px rgba(255,220,0,.55),0 5px 12px rgba(0,0,0,.6);}
+.car-tok.frozen{filter:grayscale(.5) brightness(.82) !important;box-shadow:0 0 12px cyan,0 4px 10px rgba(0,0,0,.5) !important;}
+
+/* ════ DICE ════ */
+.ctrl-row{width:100%;display:flex;align-items:center;justify-content:center;gap:.85rem;margin-top:.45rem;flex-wrap:wrap;opacity:0.9;}
+.d-wrap{display:flex;flex-direction:column;align-items:center;gap:.28rem;}
+.dice-face{font-family:'Orbitron',monospace;font-weight:900;font-size:1.8rem;width:60px;height:60px;background:radial-gradient(circle at 32% 26%,#ffe566,#b87700);border-radius:14px;display:flex;align-items:center;justify-content:center;box-shadow:0 5px 0 #7a4c00,0 8px 16px rgba(0,0,0,.5);color:#2a1400;position:relative;overflow:hidden;transition:transform .1s;}
+.dice-face::before{content:'';position:absolute;top:0;left:0;width:100%;height:44%;background:rgba(255,255,255,.14);border-radius:14px 14px 0 0;}
+.dice-face.spin{animation:dWobble .07s linear infinite;}
+@keyframes dWobble{0%,100%{transform:scale(1);}50%{transform:scale(1.08);}}
+.d-lbl{font-family:'Orbitron',monospace;font-size:.56rem;letter-spacing:.13em;color:var(--muted);}
+.d-btn{font-family:'Orbitron',monospace;font-weight:700;font-size:.68rem;letter-spacing:.1em;width:72px;height:44px;border-radius:11px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .07s,opacity .2s;}
+.d-btn:active{transform:translateY(3px) !important;}
+.d-btn:disabled{opacity:.28;cursor:not-allowed;transform:none !important;}
+#startRoll{background:linear-gradient(145deg,#3dd671,#1b9040);color:#fff;box-shadow:0 4px 0 #0e5524;}
+#startRoll:not(:disabled):hover{transform:scale(1.06);}
+#stopRoll{background:linear-gradient(145deg,#ff5c50,#c21f14);color:#fff;box-shadow:0 4px 0 #781108;}
+#stopRoll:not(:disabled):hover{transform:scale(1.06);}
+
+/* ════ IN-MAP NOTIFICATION BANNER — docked below track, above dice ════ */
+.map-notify{
+  position:absolute;
+  top:calc(100% + 6px);    /* sits 6px below the map-outer bottom edge */
+  left:50%;
+  transform:translate(-50%, -10px);
+  z-index:50;
+  width:min(96%, 680px);
+  background:rgba(14,22,10,.94);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  border:1.5px solid rgba(255,255,255,.15);
+  border-radius:12px;
+  padding:.7rem 1.4rem;
+  min-height:38px;
+  line-height:1.4;
+  text-align:center;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity .24s ease, transform .24s cubic-bezier(.2,.9,.4,1.1);
+  box-shadow:0 6px 24px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.06);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.map-notify.visible{
+  opacity:1;
+  transform:translate(-50%, 0);
+}
+.mn-eyebrow{
+  font-family:'Orbitron',monospace;
+  font-size:clamp(.44rem,.9vw,.58rem);
+  letter-spacing:.28em;
+  color:var(--muted);
+  margin-bottom:.28rem;
+  text-transform:uppercase;
+}
+.mn-text{
+  font-family:'Orbitron',monospace;
+  font-weight:700;
+  font-size:clamp(.85rem,2vw,1.18rem);
+  color:var(--gold);
+  letter-spacing:.03em;
+  line-height:1.38;
+  transition:color .2s;
+}
+
+/* FX overlay */
+#fxOv{position:fixed;top:0;left:0;width:100%;height:100%;z-index:998;pointer-events:none;display:flex;align-items:center;justify-content:center;font-size:7.5rem;opacity:0;transition:opacity .12s;}
+
+/* Zone hint toast */
+.z-hint{position:fixed;bottom:4.2rem;left:50%;transform:translateX(-50%);background:var(--surface2);border:1.5px solid rgba(255,255,255,.1);border-radius:9px;padding:.38rem .85rem;font-family:'Orbitron',monospace;font-size:.62rem;letter-spacing:.09em;color:var(--white);pointer-events:none;z-index:996;opacity:0;transition:opacity .2s;white-space:nowrap;}
+.z-hint.on{opacity:1;}
+
+/* Win modal */
+.win-ov{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.9);backdrop-filter:blur(14px);z-index:1000;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1.1rem;opacity:0;pointer-events:none;transition:opacity .4s;}
+.win-ov.on{opacity:1;pointer-events:all;}
+.win-trophy{font-size:4.8rem;animation:tB 1s ease infinite;}
+@keyframes tB{0%,100%{transform:scale(1) rotate(-3deg);}50%{transform:scale(1.1) rotate(3deg);}}
+.win-hl{font-family:'Orbitron',monospace;font-weight:900;font-size:clamp(1.3rem,4vw,2.6rem);text-align:center;background:linear-gradient(135deg,var(--gold2),#e07000);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:.05em;}
+.win-sub{font-size:.96rem;color:var(--muted);letter-spacing:.08em;}
+.win-confetti{font-size:1.7rem;letter-spacing:.9rem;animation:cS .4s linear infinite;}
+@keyframes cS{0%,100%{transform:translateX(0);}25%{transform:translateX(-4px);}75%{transform:translateX(4px);}}
+.win-btns{display:flex;gap:.85rem;flex-wrap:wrap;justify-content:center;}
+.btn-again{font-family:'Orbitron',monospace;font-weight:700;font-size:.85rem;letter-spacing:.12em;padding:.75rem 2rem;border-radius:60px;background:linear-gradient(135deg,var(--gold2),#d47800);color:#141a0d;border:none;cursor:pointer;box-shadow:0 0 14px rgba(232,168,0,.35);transition:transform .1s;}
+.btn-again:hover{transform:scale(1.05);}
+.btn-menu{font-family:'Orbitron',monospace;font-weight:700;font-size:.85rem;letter-spacing:.12em;padding:.75rem 2rem;border-radius:60px;background:transparent;color:var(--white);border:2px solid #3a4430;cursor:pointer;transition:all .2s;}
+.btn-menu:hover{border-color:#6a7a5a;}
+
+/* Float text */
+.flt{position:fixed;font-family:'Orbitron',monospace;font-weight:900;font-size:1.55rem;pointer-events:none;z-index:997;animation:fU 1.5s ease forwards;}
+@keyframes fU{0%{opacity:1;transform:translateY(0) scale(1);}100%{opacity:0;transform:translateY(-62px) scale(1.28);}}
+
+/* Upgrade 9: subtle map-wrapper hover depth */
+.map-wrapper:hover #trackSVG{
+  filter:brightness(1.04) saturate(1.1);
+  transition:filter .3s ease;
+}
+
+@media(max-width:620px){
+  .name-cards,.av-section{flex-direction:column;align-items:center;}
+  .av-grid{grid-template-columns:repeat(5,1fr);}
+  .av-opt{width:44px;height:44px;font-size:1.4rem;}
+}
+
+@media(min-width:1200px){
+  .game-arena{grid-template-columns:84px 1fr 84px;}
+  .map-outer{box-shadow:0 28px 70px rgba(0,0,0,.7),0 4px 14px rgba(0,0,0,.4),inset 0 0 0 2px rgba(255,255,255,.1),inset 0 0 40px rgba(0,0,0,.4);}
+}
+</style>
+</head>
+<body>
+<canvas id="bgCanvas"></canvas>
+<div class="stage">
+<div class="game-shell">
+
+<!-- TITLE -->
+<div id="titleScreen" class="screen hidden">
+  <div class="title-eyebrow">Premium Board Racer</div>
+  <div class="title-logo">TURBO<br>DASH</div>
+  <div class="title-cars"><span>🏎️</span><span>🏁</span><span>🚗</span></div>
+  <button class="btn-start" id="btnStart">TAP TO RACE</button>
+  <div class="title-tag">2 Players · Skill Dice · Landmarks · Powerups</div>
+</div>
+
+<!-- NAMES -->
+<div id="nameScreen" class="screen hidden">
+  <div class="screen-title">ENTER YOUR <em>NAMES</em></div>
+  <div class="name-cards">
+    <div class="name-card p1">
+      <div class="nc-label">Player 1</div>
+      <div class="nc-icon">🔴</div>
+      <input class="name-input" id="nP1" type="text" maxlength="14" placeholder="YOUR NAME" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="name-card p2">
+      <div class="nc-label">Player 2</div>
+      <div class="nc-icon">🔵</div>
+      <input class="name-input" id="nP2" type="text" maxlength="14" placeholder="YOUR NAME" autocomplete="off" spellcheck="false">
+    </div>
+  </div>
+  <button class="btn-next" id="btnAv" disabled>CHOOSE VEHICLES →</button>
+</div>
+
+<!-- AVATARS -->
+<div id="avatarScreen" class="screen hidden">
+  <div class="screen-title">PICK YOUR <em>VEHICLE</em></div>
+  <div class="av-section">
+    <div class="av-block">
+      <div class="av-prev p1" id="avPrev0">🏎️</div>
+      <div class="av-pname p1" id="avName0">PLAYER 1</div>
+      <div class="av-grid" id="avGrid0"></div>
+    </div>
+    <div class="av-block">
+      <div class="av-prev p2" id="avPrev1">🚗</div>
+      <div class="av-pname p2" id="avName1">PLAYER 2</div>
+      <div class="av-grid" id="avGrid1"></div>
+    </div>
+  </div>
+  <button class="btn-next" id="btnGo">START RACE 🏁</button>
+</div>
+
+<!-- GAMEPLAY -->
+<div id="gameScreen" class="screen hidden">
+  <div class="g-header">
+    <div class="g-logo">TURBO DASH</div>
+    <div class="t-badge" id="tBadge">—</div>
+    <button class="btn-q" id="btnQ">✕ QUIT</button>
+  </div>
+
+  <div class="game-arena">
+    <!-- P1 left sidebar -->
+    <div class="p-sidebar ps1" id="hc0">
+      <div class="ps-disc" id="hd0">🏎️</div>
+      <div class="ps-name" id="hn0">P1</div>
+      <div class="ps-bar-bg">
+        <div class="ps-bar" id="hb0"></div>
+      </div>
+      <div class="ps-pos" id="hp0">0<br>/32</div>
+      <div id="hs0"></div>
+    </div>
+
+    <!-- Centre: map + notification + dice -->
+    <div class="arena-centre">
+      <div class="map-outer" id="mapOuter">
+        <div class="map-wrapper" id="mapW">
+          <svg id="trackSVG" viewBox="0 0 900 600" preserveAspectRatio="xMidYMid meet" style="position:absolute;inset:0;width:100%;height:100%;z-index:1;">
+            <defs>
+              <radialGradient id="grassGrad" cx="50%" cy="50%" r="70%">
+                <stop offset="0%" stop-color="#3fa34d"/>
+                <stop offset="100%" stop-color="#1a5526"/>
+              </radialGradient>
+              <linearGradient id="asphaltGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#2c2c2c"/>
+                <stop offset="100%" stop-color="#141414"/>
+              </linearGradient>
+              <filter id="roadShadow">
+                <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="rgba(0,0,0,0.6)"/>
+              </filter>
+            </defs>
+            <!-- GRASS -->
+            <rect width="900" height="600" fill="url(#grassGrad)"/>
+            <rect width="900" height="30" y="0"   fill="rgba(255,255,255,0.025)"/>
+            <rect width="900" height="30" y="60"  fill="rgba(255,255,255,0.025)"/>
+            <rect width="900" height="30" y="120" fill="rgba(255,255,255,0.025)"/>
+            <rect width="900" height="30" y="180" fill="rgba(255,255,255,0.025)"/>
+            <rect width="900" height="30" y="240" fill="rgba(255,255,255,0.025)"/>
+            <rect width="900" height="30" y="300" fill="rgba(255,255,255,0.025)"/>
+            <rect width="900" height="30" y="360" fill="rgba(255,255,255,0.025)"/>
+            <rect width="900" height="30" y="420" fill="rgba(255,255,255,0.025)"/>
+            <rect width="900" height="30" y="480" fill="rgba(255,255,255,0.025)"/>
+            <rect width="900" height="30" y="540" fill="rgba(255,255,255,0.025)"/>
+            <!-- Infield decorations -->
+            <circle cx="390" cy="280" r="16" fill="#2a7030" opacity="0.9"/>
+            <circle cx="386" cy="276" r="8"  fill="#4caf50" opacity="0.85"/>
+            <circle cx="460" cy="310" r="13" fill="#2a7030" opacity="0.9"/>
+            <circle cx="456" cy="306" r="7"  fill="#4caf50" opacity="0.85"/>
+            <circle cx="510" cy="270" r="11" fill="#2a7030" opacity="0.85"/>
+            <circle cx="430" cy="250" r="14" fill="#2a7030" opacity="0.9"/>
+            <circle cx="500" cy="330" r="10" fill="#2a7030" opacity="0.8"/>
+            <circle cx="370" cy="320" r="9"  fill="#236228" opacity="0.8"/>
+            <circle cx="480" cy="290" r="7"  fill="#777" opacity="0.5"/>
+            <circle cx="415" cy="315" r="5"  fill="#777" opacity="0.45"/>
+            <circle cx="455" cy="265" r="4"  fill="#888" opacity="0.4"/>
+            <!-- KERB layer -->
+            <ellipse cx="450" cy="300" rx="312" ry="187" fill="none" stroke="white"   stroke-width="88" stroke-dasharray="22 22" opacity="0.82"/>
+            <ellipse cx="450" cy="300" rx="312" ry="187" fill="none" stroke="#dd2222" stroke-width="88" stroke-dasharray="22 22" stroke-dashoffset="22" opacity="0.82"/>
+            <!-- ROAD shadow -->
+            <ellipse cx="450" cy="300" rx="312" ry="187" fill="none" stroke="rgba(0,0,0,0.5)" stroke-width="96" filter="url(#roadShadow)"/>
+            <!-- ASPHALT -->
+            <ellipse cx="450" cy="300" rx="312" ry="187" fill="none" stroke="url(#asphaltGrad)" stroke-width="78"/>
+            <ellipse cx="450" cy="300" rx="312" ry="187" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="70"/>
+            <ellipse id="trackPath" cx="450" cy="300" rx="312" ry="187" fill="none" stroke="#ffcc00" stroke-width="2.5" stroke-dasharray="13 14" opacity="0.7"/>
+            <ellipse cx="450" cy="300" rx="312" ry="187" fill="none" stroke="rgba(255,255,255,0.065)" stroke-width="32"/>
+          </svg>
+          <canvas id="trkImg" style="display:none;"></canvas>
+          <canvas id="iconC" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:3;"></canvas>
+          <canvas id="ovC"></canvas>
+          <div id="racersL"></div>
+        </div>
+        <!-- Notification banner — below track, above dice -->
+        <div class="map-notify" id="msgEl">
+          <div class="mn-eyebrow" id="msgEyebrow">TURBO DASH</div>
+          <div class="mn-text" id="msgText">—</div>
+        </div>
+      </div>
+
+      <div class="ctrl-row">
+        <div class="d-wrap">
+          <button class="d-btn" id="startRoll">▶ START</button>
+          <div class="d-lbl">HOLD SPIN</div>
+        </div>
+        <div class="d-wrap">
+          <div class="dice-face" id="dFace">🎲</div>
+          <div class="d-lbl" id="dLbl">ROLL DICE</div>
+        </div>
+        <div class="d-wrap">
+          <button class="d-btn" id="stopRoll" disabled>⏹ STOP</button>
+          <div class="d-lbl">LOCK IN</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- P2 right sidebar -->
+    <div class="p-sidebar ps2" id="hc1">
+      <div class="ps-disc" id="hd1">🚗</div>
+      <div class="ps-name" id="hn1">P2</div>
+      <div class="ps-bar-bg">
+        <div class="ps-bar" id="hb1"></div>
+      </div>
+      <div class="ps-pos" id="hp1">0<br>/32</div>
+      <div id="hs1"></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /game-shell -->
+</div><!-- /stage -->
+
+<div id="fxOv"></div>
+<div class="z-hint" id="zHint"></div>
+
+<div class="win-ov" id="winMod">
+  <div class="win-confetti">🎊🏆🎊</div>
+  <div class="win-trophy">🏆</div>
+  <div class="win-hl" id="winHL">WINNER!</div>
+  <div class="win-sub" id="winSub"></div>
+  <div class="win-btns">
+    <button class="btn-again" id="btnAgain">PLAY AGAIN</button>
+    <button class="btn-menu" id="btnMenu">MAIN MENU</button>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════
+//  ANIMATED BG — drifting firefly particles
+// ════════════════════════════════════════════════════
+(()=>{
+  const c=document.getElementById('bgCanvas'),x=c.getContext('2d');
+  let pts=[];
+  function rs(){c.width=innerWidth;c.height=innerHeight;pts=[];for(let i=0;i<200;i++)pts.push({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*1.2+.2,s:Math.random()*.25+.04,o:Math.random(),h:Math.random()<.3});}
+  function dr(){x.clearRect(0,0,c.width,c.height);pts.forEach(p=>{p.o+=.007*p.s;if(p.o>1){p.o=0;p.x=Math.random()*c.width;p.y=Math.random()*c.height;}const col=p.h?`rgba(168,192,96,${p.o*.45})`:`rgba(255,255,255,${p.o*.38})`;x.beginPath();x.arc(p.x,p.y,p.r,0,Math.PI*2);x.fillStyle=col;x.fill();});requestAnimationFrame(dr);}
+  addEventListener('resize',rs);rs();dr();
+})();
+
+// ════════════════════════════════════════════════════
+//  CONSTANTS
+// ════════════════════════════════════════════════════
+const PATH=[];
+const _cx=450,_cy=300,_rx=310,_ry=185,_POINTS=33;
+for(let i=0;i<_POINTS;i++){
+  const t=(i/_POINTS)*Math.PI*2 - Math.PI/2; // start at top
+  PATH.push({x:_cx+Math.cos(t)*_rx, y:_cy+Math.sin(t)*_ry});
+}
+const FINISH=PATH.length-1;
+const NW=900,NH=600;
+const MUSHROOMS={4:'green',8:'red',12:'green',17:'red',22:'green',28:'red'};
+const SPECIALS={}; // kept for zone tile-type HUD lookup compat
+// Upgrade 5: zones anchored to map landmarks
+const ZONES={
+  3:{type:'slow',  label:'SLOW ZONE 🌴', desc:'Tyre slip — −1 step next turn'},
+  7:{type:'boost', label:'OPEN ROAD ➡️',  desc:'Tailwind — bonus +1!'},
+  11:{type:'boost',label:'BRIDGE BOOST 🌉',desc:'Bridge wind — +2 steps!'},
+  18:{type:'trap', label:'POOL HAZARD 💧', desc:'Slippery! Lose 2 steps'},
+  27:{type:'slow', label:'TREE ZONE 🌴',   desc:'Tyre slip — −1 next turn'},
+};
+const AVATARS=['🏎️','🚗','🚕','🚙','🏍️','🚐','🚌','🚑','🚒','🛻','🚓','🛺'];
+
+// ════════════════════════════════════════════════════
+//  TRACK BUILD — SVG handles road, canvas draws icons
+// ════════════════════════════════════════════════════
+let _finishRafId=null;
+function buildTrack(){
+  setTimeout(drawTrackIcons, 80);
+}
+
+// Lightweight loop: redraws ONLY the animated finish ring each frame.
+// Full icon redraw (drawTrackIcons) only on resize/init.
+function startFinishPulse(){
+  if(_finishRafId)cancelAnimationFrame(_finishRafId);
+  function tick(){
+    const cv=document.getElementById('iconC');
+    if(!cv){_finishRafId=null;return;}
+    const r=document.getElementById('mapW').getBoundingClientRect();
+    const c=cv.getContext('2d');
+    const scl=(pt)=>({x:pt.x*(r.width/NW),y:pt.y*(r.height/NH)});
+    const f=scl(PATH[FINISH]);
+    const tileR=14*(r.width/NW);
+    const finR=tileR*1.35;
+    // Erase only the ring band area to avoid full redraw cost
+    c.save();
+    c.clearRect(f.x-finR*2.2,f.y-finR*2.2,finR*4.4,finR*4.4);
+    // Redraw finish tile fill + gold ring (static parts)
+    c.beginPath();c.arc(f.x,f.y,finR,0,Math.PI*2);
+    c.fillStyle='rgba(180,120,0,.65)';c.fill();
+    c.strokeStyle='#ffd700';c.lineWidth=3;
+    c.shadowColor='rgba(255,215,0,0.8)';c.shadowBlur=15;
+    c.stroke();c.shadowBlur=0;
+    c.font=`bold ${13*(r.width/NW)}px Orbitron,monospace`;
+    c.fillStyle='#fff';c.textAlign='center';c.textBaseline='middle';
+    c.fillText(FINISH,f.x,f.y);
+    c.textAlign='left';c.textBaseline='alphabetic';
+    // Animated pulse ring
+    const pulse=Math.sin(Date.now()*0.004)*6;
+    c.beginPath();c.arc(f.x,f.y,finR*1.45+pulse,0,Math.PI*2);
+    c.strokeStyle='rgba(255,215,0,0.45)';c.lineWidth=2;
+    c.shadowColor='rgba(255,215,0,0.5)';c.shadowBlur=10;
+    c.stroke();c.shadowBlur=0;
+    // Checkered flag (redrawn each frame — cheap at this size)
+    const scaleX=r.width/NW, scaleY=r.height/NH;
+    const flagW=44*scaleX, flagH=28*scaleY;
+    c.save();
+    c.translate(f.x+22*scaleX,f.y-14*scaleY);
+    c.rotate(-0.25);
+    const sz=flagW/6;
+    for(let fy2=0;fy2<4;fy2++){
+      for(let fx2=0;fx2<6;fx2++){
+        c.fillStyle=(fx2+fy2)%2===0?'#fff':'#111';
+        c.fillRect(fx2*sz,fy2*sz,sz,sz);
+      }
+    }
+    c.strokeStyle='rgba(255,255,255,0.65)';c.lineWidth=1;
+    c.strokeRect(0,0,flagW,flagH);
+    c.restore();
+    c.shadowColor='rgba(0,0,0,0.7)';c.shadowBlur=7;
+    c.fillStyle='#ffd54f';
+    c.font=`bold ${12*(r.width/NW)}px Orbitron,monospace`;
+    c.textAlign='left';
+    c.fillText('FINISH',f.x+20*(r.width/NW),f.y-34*(r.height/NH));
+    c.shadowBlur=0;
+    c.restore();
+    _finishRafId=requestAnimationFrame(tick);
+  }
+  _finishRafId=requestAnimationFrame(tick);
+}
+
+function drawTrackIcons(){
+  const r=document.getElementById('mapW').getBoundingClientRect();
+  const cv=document.getElementById('iconC');
+  cv.width=r.width;cv.height=r.height;
+  const c=cv.getContext('2d');
+  c.clearRect(0,0,cv.width,cv.height);
+
+  const scl=(pt)=>({x:pt.x*(r.width/NW),y:pt.y*(r.height/NH)});
+
+  // ZONE floor colouring
+  const zC={slow:'rgba(255,140,0,.18)',boost:'rgba(60,220,80,.18)',trap:'rgba(100,180,255,.18)'};
+  const zOL={slow:'rgba(255,140,0,.45)',boost:'rgba(60,220,80,.45)',trap:'rgba(100,180,255,.45)'};
+  for(const [idx,z] of Object.entries(ZONES)){
+    const p=scl(PATH[parseInt(idx)]);
+    c.beginPath();c.arc(p.x,p.y,20*(r.width/NW),0,Math.PI*2);
+    c.fillStyle=zC[z.type];c.fill();
+    c.beginPath();c.arc(p.x,p.y,20*(r.width/NW),0,Math.PI*2);
+    c.strokeStyle=zOL[z.type];c.lineWidth=1.5;c.stroke();
+  }
+
+  // ── Numbered tile circles on every path node ──
+  const tileR = 14*(r.width/NW);
+  c.textAlign='center';c.textBaseline='middle';
+  PATH.forEach((pt,i)=>{
+    const p=scl(pt);
+    // Mushroom tile colour override
+    const mType=MUSHROOMS[i];
+    const tileCol = mType==='green'?'rgba(40,180,60,.55)':mType==='red'?'rgba(200,40,40,.55)':'rgba(0,0,0,.45)';
+    const strokeCol = mType==='green'?'#66ff88':mType==='red'?'#ff6666':'rgba(255,255,255,.55)';
+    c.beginPath();c.arc(p.x,p.y,tileR,0,Math.PI*2);
+    c.fillStyle=tileCol;c.fill();
+    c.strokeStyle=strokeCol;c.lineWidth=mType?2:1.5;c.stroke();
+    // Tile number
+    c.font=`bold ${12*(r.width/NW)}px Orbitron,monospace`;
+    c.fillStyle='#fff';
+    c.fillText(i,p.x,p.y);
+  });
+  c.textAlign='left';c.textBaseline='alphabetic';
+
+  const fs=14*(r.width/NW);
+  c.font=`${fs}px sans-serif`;
+
+  // Mushroom icons (above tile)
+  for(const [i,type] of Object.entries(MUSHROOMS)){
+    const p=scl(PATH[parseInt(i)]);
+    const icon=type==='green'?'🟢🍄':'🔴🍄';
+    c.font=`${fs*0.85}px sans-serif`;
+    c.fillText(type==='green'?'🍄':'🍄',p.x-6*(r.width/NW),p.y-18*(r.height/NH));
+  }
+  c.globalAlpha=1;
+
+  // Zone icons
+  const zIco={slow:'🌴',boost:'🌉',trap:'💧'};
+  c.font=`${fs}px sans-serif`;
+  for(const [i,z] of Object.entries(ZONES)){
+    const p=scl(PATH[parseInt(i)]);
+    c.globalAlpha=.85;c.fillText(zIco[z.type],p.x+8*(r.width/NW),p.y-10*(r.height/NH));
+  }
+  c.globalAlpha=1;
+
+  // Start checker
+  const s=scl(PATH[0]);
+  const cw=5*(r.width/NW),ch=4*(r.height/NH);
+  for(let row=0;row<9;row++){
+    c.fillStyle=row%2===0?'#ddd':'#111';
+    c.fillRect(s.x-18*(r.width/NW),s.y-18*(r.height/NH)+row*ch,cw,ch);
+  }
+  c.fillStyle='#00e676';c.font=`bold ${10*(r.width/NW)}px Orbitron,monospace`;
+  c.fillText('START',s.x-32*(r.width/NW),s.y-22*(r.height/NH));
+
+  // ── PREMIUM FINISH LINE ──
+  const f=scl(PATH[FINISH]);
+  const finR=tileR*1.35; // finish tile is visibly larger than all others
+
+  // Redraw finish tile at larger radius (overpaints the normal tile drawn above)
+  c.beginPath();c.arc(f.x,f.y,finR,0,Math.PI*2);
+  c.fillStyle='rgba(180,120,0,.65)';c.fill();
+  c.strokeStyle='#ffd700';c.lineWidth=3;
+  c.shadowColor='rgba(255,215,0,0.8)';c.shadowBlur=15;
+  c.stroke();c.shadowBlur=0;
+  // Tile number re-drawn at new size
+  c.font=`bold ${13*(r.width/NW)}px Orbitron,monospace`;
+  c.fillStyle='#fff';c.textAlign='center';c.textBaseline='middle';
+  c.fillText(FINISH,f.x,f.y);
+  c.textAlign='left';c.textBaseline='alphabetic';
+
+  // Animated outer pulse ring (uses Date.now for live shimmer)
+  const pulse=Math.sin(Date.now()*0.004)*6;
+  c.beginPath();c.arc(f.x,f.y,finR*1.45+pulse,0,Math.PI*2);
+  c.strokeStyle='rgba(255,215,0,0.45)';c.lineWidth=2;
+  c.shadowColor='rgba(255,215,0,0.5)';c.shadowBlur=10;
+  c.stroke();c.shadowBlur=0;
+
+  // Angled checkered flag — larger and better positioned
+  const scaleX=r.width/NW, scaleY=r.height/NH;
+  const flagW=44*scaleX, flagH=28*scaleY;
+  c.save();
+  c.translate(f.x+22*scaleX, f.y-14*scaleY);
+  c.rotate(-0.25);
+  const sz=flagW/6;
+  for(let fy2=0;fy2<4;fy2++){
+    for(let fx2=0;fx2<6;fx2++){
+      c.fillStyle=(fx2+fy2)%2===0?'#fff':'#111';
+      c.fillRect(fx2*sz,fy2*sz,sz,sz);
+    }
+  }
+  c.strokeStyle='rgba(255,255,255,0.65)';c.lineWidth=1;
+  c.strokeRect(0,0,flagW,flagH);
+  c.restore();
+
+  // FINISH label — larger, shadowed
+  c.shadowColor='rgba(0,0,0,0.7)';c.shadowBlur=7;
+  c.fillStyle='#ffd54f';
+  c.font=`bold ${12*(r.width/NW)}px Orbitron,monospace`;
+  c.textAlign='left';
+  c.fillText('FINISH',f.x+20*(r.width/NW),f.y-34*(r.height/NH));
+  c.shadowBlur=0;
+}
+
+// ════════════════════════════════════════════════════
+//  COORDINATE SCALING  (aspect-ratio locked)
+// ════════════════════════════════════════════════════
+function sc(pt){
+  const r=document.getElementById('mapW').getBoundingClientRect();
+  return{x:pt.x*(r.width/NW),y:pt.y*(r.height/NH)};
+}
+
+// ════════════════════════════════════════════════════
+//  Upgrade 2: Direction angle helper
+// ════════════════════════════════════════════════════
+function roadAngle(posIdx){
+  const next=posIdx+1<PATH.length?posIdx+1:posIdx;
+  const a=PATH[posIdx],b=PATH[next];
+  return Math.atan2(b.y-a.y,b.x-a.x)*(180/Math.PI);
+}
+
+// ════════════════════════════════════════════════════
+//  OVERLAY CANVAS (path preview)
+// ════════════════════════════════════════════════════
+const ovc=document.getElementById('ovC');
+const ox=ovc.getContext('2d');
+function rsOv(){
+  const r=document.getElementById('mapW').getBoundingClientRect();
+  ovc.width=r.width;ovc.height=r.height;
+  const ic=document.getElementById('iconC');
+  ic.width=r.width;ic.height=r.height;
+  drawTrackIcons();
+}
+function clOv(){ox.clearRect(0,0,ovc.width,ovc.height);}
+
+function hlPath(from,to,pidx){
+  clOv();
+  const end=Math.min(to,FINISH);if(end<=from)return;
+  const rgb=pidx===0?'214,48,39':'21,101,192';
+  const zIco={slow:'🌴',boost:'🌉',trap:'💧'};
+  for(let i=from+1;i<=end;i++){
+    const {x,y}=sc(PATH[i]);
+    const t=(i-from)/(end-from);
+    ox.beginPath();ox.arc(x,y,3+t*4.2,0,Math.PI*2);
+    ox.fillStyle=`rgba(${rgb},${.26+t*.52})`;
+    ox.shadowColor=`rgba(${rgb},.3)`;ox.shadowBlur=4;ox.fill();ox.shadowBlur=0;
+    if(i===end){
+      ox.beginPath();ox.arc(x,y,11,0,Math.PI*2);
+      ox.fillStyle=`rgba(${rgb},.8)`;ox.fill();
+      ox.fillStyle='#fff';ox.font='bold 8px Orbitron,monospace';
+      ox.textAlign='center';ox.textBaseline='middle';
+      ox.fillText('+'+String(end-from),x,y);
+      ox.textAlign='left';ox.textBaseline='alphabetic';
+      const mush=MUSHROOMS[end];
+      const zone=ZONES[end]&&ZONES[end].type;
+      const ico=mush==='green'?'🍄🟢':mush==='red'?'🍄🔴':zIco[zone]||'';
+      if(ico)ox.fillText(ico,x+12,y-6);
+    }
+  }
+}
+
+// ════════════════════════════════════════════════════
+//  Upgrade 10: finish glow element
+// ════════════════════════════════════════════════════
+function placeFinishGlow(){
+  let fg=document.getElementById('fg');
+  if(!fg){fg=document.createElement('div');fg.id='fg';fg.className='finish-glow';document.getElementById('mapW').appendChild(fg);}
+  const {x,y}=sc(PATH[FINISH]);
+  fg.style.left=x+'px';fg.style.top=y+'px';
+}
+
+// ════════════════════════════════════════════════════
+//  GAME STATE
+// ════════════════════════════════════════════════════
+let G={
+  players:[
+    {name:'P1',avatar:'🏎️',pos:0,frozen:0,slow:0,boosted:0,skip:0},
+    {name:'P2',avatar:'🚗',pos:0,frozen:0,slow:0,boosted:0,skip:0}
+  ],cur:0,active:false,moving:false,winner:null
+};
+let spinning=false,spinIv=null,lockedRoll=1;
+
+// ════════════════════════════════════════════════════
+//  SCREEN SWITCH
+// ════════════════════════════════════════════════════
+function go(id){
+  ['titleScreen','nameScreen','avatarScreen','gameScreen'].forEach(s=>{
+    const e=document.getElementById(s);
+    e.classList.toggle('visible',s===id);
+    e.classList.toggle('hidden',s!==id);
+  });
+  if(id==='gameScreen')setTimeout(()=>{rsOv();placeFinishGlow();startFinishPulse();renderRacers();renderHUD();},110);
+}
+
+// ════════════════════════════════════════════════════
+//  SCREENS WIRING
+// ════════════════════════════════════════════════════
+document.getElementById('btnStart').onclick=()=>go('nameScreen');
+
+const i1=document.getElementById('nP1'),i2=document.getElementById('nP2'),btnAv=document.getElementById('btnAv');
+i1.oninput=i2.oninput=()=>{btnAv.disabled=!(i1.value.trim()&&i2.value.trim());};
+btnAv.onclick=()=>{
+  G.players[0].name=i1.value.trim()||'P1';
+  G.players[1].name=i2.value.trim()||'P2';
+  buildAvGrids();go('avatarScreen');
+};
+
+function buildAvGrids(){
+  [0,1].forEach(pi=>{
+    document.getElementById('avName'+pi).textContent=G.players[pi].name.toUpperCase();
+    const g=document.getElementById('avGrid'+pi);g.innerHTML='';
+    const cls=pi===0?'s1':'s2';
+    AVATARS.forEach(a=>{
+      const b=document.createElement('button');b.className='av-opt';b.textContent=a;
+      if(a===G.players[pi].avatar)b.classList.add(cls);
+      b.onclick=()=>{
+        G.players[pi].avatar=a;
+        document.getElementById('avPrev'+pi).textContent=a;
+        g.querySelectorAll('.av-opt').forEach(x=>{x.classList.remove('s1','s2');if(x.textContent===a)x.classList.add(cls);});
+      };
+      g.appendChild(b);
+    });
+  });
+}
+document.getElementById('btnGo').onclick=()=>{initGame();go('gameScreen');};
+
+// ════════════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════════════
+function initGame(){
+  G.players.forEach(p=>{p.pos=0;p.frozen=0;p.slow=0;p.boosted=0;p.skip=0;});
+  G.cur=0;G.active=true;G.moving=false;G.winner=null;
+  spinning=false;lockedRoll=1;clearInterval(spinIv);
+  tokenEls=[null,null];
+  const rl=document.getElementById('racersL');rl.innerHTML='';
+  resetDiceUI();
+  buildTrack();
+  setTimeout(()=>{rsOv();placeFinishGlow();startFinishPulse();renderHUD();renderRacers();},120);
+  setMsg(`🎯 ${G.players[0].avatar} ${G.players[0].name}'s turn — Press START to spin!`);
+  updateBadge();
+}
+
+// ════════════════════════════════════════════════════
+//  RENDER RACERS — Upgrades 1, 2, 3, 4
+// ════════════════════════════════════════════════════
+let tokenEls=[null,null];
+
+function ensureTokens(){
+  const ly=document.getElementById('racersL');
+  G.players.forEach((p,i)=>{
+    if(!tokenEls[i]){
+      const d=document.createElement('div');
+      d.className=`car-tok ct${i}`;
+      ly.appendChild(d);tokenEls[i]=d;
+    }
+  });
+}
+
+function renderRacers(anim=false){
+  ensureTokens();
+  G.players.forEach((p,i)=>{
+    if(p.pos<0||p.pos>=PATH.length)return;
+    const off=i===0?-16:16;
+    const {x,y}=sc(PATH[p.pos]);
+    const el=tokenEls[i];
+
+    // Upgrade 2: rotate to face road direction
+    const angle=roadAngle(p.pos);
+
+    // Upgrade 1: translate(-50%, -70%) snaps token ON the road surface
+    // Combined with rotation
+    const isAct=i===G.cur&&!G.winner;
+    // Upgrade 3: transition includes transform for smooth rotation
+    el.style.transition=anim
+      ?'left .14s linear,top .14s linear,transform .14s linear'
+      :'none';
+
+    el.style.left=(x+off)+'px';
+    el.style.top=y+'px';
+    el.style.transform=`translate(-50%,-70%) rotate(${angle}deg)`;
+
+    el.textContent=p.avatar;
+    // Upgrade 4: add .moving class during animation for blur
+    el.className=`car-tok ct${i}${isAct?' active':''}${p.frozen?' frozen':''}${p.boosted?' boosted':''}${anim&&G.moving?' moving':''}`;
+  });
+}
+
+// ════════════════════════════════════════════════════
+//  RENDER HUD
+// ════════════════════════════════════════════════════
+function renderHUD(){
+  const p=G.players,c=G.cur,lead=p[0].pos>=p[1].pos?0:1;
+  [0,1].forEach(i=>{
+    document.getElementById('hd'+i).textContent=p[i].avatar;
+    document.getElementById('hn'+i).textContent=p[i].name.toUpperCase();
+    // Vertical bar: drive height instead of width
+    document.getElementById('hb'+i).style.height=(p[i].pos/FINISH*100).toFixed(1)+'%';
+    document.getElementById('hp'+i).innerHTML=`${p[i].pos}<br><span style="opacity:.5">/${FINISH}</span>`;
+    const stEl=document.getElementById('hs'+i);
+    if(p[i].frozen) stEl.innerHTML='<span class="h-badge bf">❄️</span>';
+    else if(p[i].skip>0) stEl.innerHTML='<span class="h-badge bt">⏭️</span>';
+    else if(p[i].slow) stEl.innerHTML='<span class="h-badge bs">🌴</span>';
+    else if(p[i].boosted) stEl.innerHTML='<span class="h-badge bb">⚡</span>';
+    else if(i===lead&&p[i].pos>0&&!G.winner) stEl.innerHTML='<span class="h-badge bc">👑</span>';
+    else stEl.innerHTML='';
+    const card=document.getElementById('hc'+i);
+    card.classList.remove('act');
+    if(!G.winner&&c===i)card.classList.add('act');
+  });
+}
+
+function updateBadge(){
+  if(G.winner!==null)return;
+  const p=G.players[G.cur],b=document.getElementById('tBadge');
+  b.textContent=p.name.toUpperCase()+"'S TURN";
+  b.className='t-badge '+(G.cur===0?'tb1':'tb2');
+}
+
+function setMsg(t,err=false){
+  const el=document.getElementById('msgEl');
+  const txt=document.getElementById('msgText');
+  txt.textContent=t;
+  txt.style.color=err?'#ff6b6b':'var(--gold)';
+  el.classList.add('visible');
+}
+
+// Fade banner out gently (used after movement completes or turn changes)
+function hideMsg(){
+  document.getElementById('msgEl').classList.remove('visible');
+}
+
+let _textTimeout;
+function updateMoveText(text){
+  const el=document.getElementById('msgEl');
+  const txt=document.getElementById('msgText');
+  // Quick swap: fade text content, not the whole panel
+  txt.style.transition='opacity .12s ease';
+  txt.style.opacity='0';
+  setTimeout(()=>{
+    txt.textContent=text;
+    txt.style.color='var(--gold)';
+    txt.style.opacity='1';
+  },120);
+  el.classList.add('visible');
+  clearTimeout(_textTimeout);
+}
+
+function spawnFloat(t,col){
+  const e=document.createElement('div');e.className='flt';e.textContent=t;
+  e.style.color=col||'var(--gold2)';e.style.left=(26+Math.random()*46)+'%';e.style.top=(36+Math.random()*26)+'%';
+  document.body.appendChild(e);setTimeout(()=>e.remove(),1550);
+}
+
+function showFX(e){
+  const o=document.getElementById('fxOv');o.textContent=e;o.style.opacity='1';
+  setTimeout(()=>o.style.opacity='0',580);
+}
+
+function zoneHint(msg){
+  const h=document.getElementById('zHint');h.textContent=msg;h.classList.add('on');
+  setTimeout(()=>h.classList.remove('on'),2400);
+}
+
+// ════════════════════════════════════════════════════
+//  Upgrade 9: camera micro-zoom
+// ════════════════════════════════════════════════════
+function camZoom(){
+  const mo=document.getElementById('mapOuter');
+  mo.style.transform='scale(1.024)';
+  setTimeout(()=>mo.style.transform='',300);
+}
+
+// ════════════════════════════════════════════════════
+//  Upgrade 9 B: tyre marks
+// ════════════════════════════════════════════════════
+function tyreMark(x,y){
+  const ly=document.getElementById('racersL');
+  const m=document.createElement('div');
+  m.style.cssText=`position:absolute;left:${x-2}px;top:${y-5}px;width:4px;height:4px;background:rgba(0,0,0,.22);border-radius:50%;pointer-events:none;z-index:1;transition:opacity .55s;`;
+  ly.appendChild(m);
+  setTimeout(()=>{m.style.opacity='0';setTimeout(()=>m.remove(),550);},250);
+}
+
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+// ════════════════════════════════════════════════════
+//  Upgrade 4A: Screen shake on STOP
+// ════════════════════════════════════════════════════
+function screenShake(){
+  const g=document.getElementById('gameScreen');
+  g.style.transform='translateX(6px)';
+  setTimeout(()=>g.style.transform='translateX(-6px)',50);
+  setTimeout(()=>g.style.transform='',100);
+}
+
+// ════════════════════════════════════════════════════
+//  Upgrade 4B: Simple Web Audio sound feedback
+// ════════════════════════════════════════════════════
+let audioCtx=null;
+function getAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx;}
+function beep(freq,dur,type='square',vol=0.08){
+  try{
+    const a=getAudio();
+    const o=a.createOscillator(),g=a.createGain();
+    o.connect(g);g.connect(a.destination);
+    o.type=type;o.frequency.setValueAtTime(freq,a.currentTime);
+    g.gain.setValueAtTime(vol,a.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,a.currentTime+dur);
+    o.start();o.stop(a.currentTime+dur);
+  }catch(e){}
+}
+function soundSpin(){beep(220+Math.random()*40,.04,'square',.05);}
+function soundStop(){beep(440,.08,'sine',.12);setTimeout(()=>beep(660,.12,'sine',.1),60);}
+function soundTick(){beep(300+Math.random()*80,.03,'triangle',.06);}
+function soundWin(){
+  [523,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f,.18,'sine',.15),i*100));
+}
+
+// ════════════════════════════════════════════════════
+//  DICE UI
+// ════════════════════════════════════════════════════
+function resetDiceUI(){
+  const d=document.getElementById('dFace');
+  d.textContent='🎲';d.classList.remove('spin');
+  document.getElementById('dLbl').textContent='ROLL DICE';
+  document.getElementById('startRoll').disabled=false;
+  document.getElementById('stopRoll').disabled=true;
+}
+
+// ════════════════════════════════════════════════════
+//  START SPIN
+// ════════════════════════════════════════════════════
+document.getElementById('startRoll').onclick=()=>{
+  if(spinning||G.moving||!G.active||G.winner!==null)return;
+  const p=G.players[G.cur];
+  if(p.frozen){doFrozenSkip();return;}
+  // Skip turn logic
+  if(p.skip>0){
+    p.skip--;
+    setMsg(`⏭️ ${p.name} must skip this turn!`);
+    spawnFloat('SKIPPED ⏭️','#ff9444');
+    renderHUD();
+    setTimeout(()=>{
+      setMsg(`⏭️ Moving to the next player…`);
+      setTimeout(()=>nextTurn(),1000);
+    },1200);
+    return;
+  }
+  spinning=true;lockedRoll=1;
+  document.getElementById('startRoll').disabled=true;
+  document.getElementById('stopRoll').disabled=false;
+  const df=document.getElementById('dFace');
+  df.classList.add('spin');
+  document.getElementById('dLbl').textContent='SPINNING...';
+  setMsg(`🎯 ${p.name}'s turn — STOP the dice when ready!`);
+  spinIv=setInterval(()=>{
+    lockedRoll=Math.floor(Math.random()*6)+1;
+    df.textContent=lockedRoll;
+    // Preview highlight only for movement dice values
+    if(lockedRoll<=3||lockedRoll===6){
+      hlPath(p.pos,Math.min(FINISH,p.pos+lockedRoll),G.cur);
+    } else {
+      clOv();
+    }
+    soundSpin();
+  },72);
+};
+
+// ════════════════════════════════════════════════════
+//  STOP & MOVE
+// ════════════════════════════════════════════════════
+document.getElementById('stopRoll').onclick=async()=>{
+  if(!spinning||G.moving||!G.active)return;
+  clearInterval(spinIv);spinning=false;
+  const df=document.getElementById('dFace');
+  df.classList.remove('spin');
+  document.getElementById('stopRoll').disabled=true;
+  document.getElementById('startRoll').disabled=true;
+  document.getElementById('dLbl').textContent='LOCKED: '+lockedRoll;
+  df.style.transform='scale(1.18)';setTimeout(()=>df.style.transform='',200);
+  screenShake();soundStop();clOv();
+  G.moving=true;
+  const pidx=G.cur,p=G.players[pidx];
+  camZoom();
+
+  const roll=lockedRoll;
+  let extraTurn=false;
+  let target=p.pos;
+
+  // ── BUILD NOTIFICATION: show for 4 seconds, then fade, then act ──
+  // Set eyebrow to player name
+  document.getElementById('msgEyebrow').textContent=p.name.toUpperCase()+"'S ROLL";
+
+  if(roll<=3){
+    target=Math.min(FINISH,p.pos+roll);
+    setMsg(`🎲 Rolled ${roll} — Move forward ${roll} step${roll>1?'s':''}!`);
+    await sleep(4000);
+    hideMsg();
+    await sleep(350);
+
+  } else if(roll===4){
+    setMsg(`🎲 Rolled 4 — ${p.name} skips their next turn! ⏭️`);
+    spawnFloat('SKIP NEXT ⏭️','#ff9444');showFX('⏭️');
+    await sleep(4000);
+    hideMsg();
+    await sleep(350);
+    p.skip=1;
+    renderHUD();
+    setMsg(`Turn lost — passing to the next player…`);
+    await sleep(1200);
+    hideMsg();
+    await sleep(300);
+    nextTurn();G.moving=false;if(G.winner===null)resetDiceUI();return;
+
+  } else if(roll===5){
+    setMsg(`🎲 Rolled 5 — Opponent skips their next turn! ⏭️`);
+    spawnFloat('OPP SKIP ⏭️','#ff9444');showFX('⏭️');
+    await sleep(4000);
+    hideMsg();
+    await sleep(350);
+    G.players[1-pidx].skip=1;
+    renderHUD();
+    setMsg(`Nasty move! Passing to next player…`);
+    await sleep(1200);
+    hideMsg();
+    await sleep(300);
+    nextTurn();G.moving=false;if(G.winner===null)resetDiceUI();return;
+
+  } else if(roll===6){
+    target=Math.min(FINISH,p.pos+6);
+    extraTurn=true;
+    setMsg(`🎲 Rolled 6 — Move 6 steps AND roll again! 🔥`);
+    spawnFloat('ROLL AGAIN 🔥','#ffc93c');
+    await sleep(4000);
+    hideMsg();
+    await sleep(350);
+  }
+
+  // Animate movement — step messages shown inside animMove
+  await animMove(pidx,target);
+
+  // ── ANNOUNCE LANDING ──
+  document.getElementById('msgEyebrow').textContent='LANDED';
+  setMsg(`${p.avatar} ${p.name} lands on square ${p.pos}!`);
+  await sleep(700);
+
+  // ── MUSHROOM TILE EFFECTS ──
+  const mush=MUSHROOMS[p.pos];
+  if(mush==='green'){
+    setMsg(`Landed on GREEN 🍄 → Moving +1 bonus square!`);
+    spawnFloat('+1 🍄','#66ff44');showFX('🍄');
+    await sleep(1200);
+    p.pos=Math.min(FINISH,p.pos+1);
+    camZoom();
+    renderRacers(true);renderHUD();
+    if(tokenEls[pidx]){
+      const el=tokenEls[pidx];
+      el.style.transition='transform .18s cubic-bezier(.2,1.8,.4,1)';
+      el.style.transform=el.style.transform.replace(/scale\([^)]+\)/,'')+' scale(1.35)';
+      setTimeout(()=>renderRacers(false),200);
+    }
+    setMsg(`${p.name} advances to square ${p.pos}! 🟢`);
+    await sleep(800);
+    if(p.pos>=FINISH&&declareWin(pidx)){G.moving=false;return;}
+  } else if(mush==='red'){
+    setMsg(`Landed on RED 🍄 → Going back 2 squares!`);
+    spawnFloat('-2 🍄','#ff6b6b');showFX('🔴');
+    await sleep(1200);
+    p.pos=Math.max(0,p.pos-2);
+    renderRacers(true);renderHUD();
+    setMsg(`${p.name} drops back to square ${p.pos}! 🔴`);
+    await sleep(800);
+  }
+
+  // ── ZONE EFFECTS ──
+  const ended=await checkAll(pidx);
+
+  // Landing bounce animation
+  if(tokenEls[pidx]&&!ended){
+    const el=tokenEls[pidx];
+    el.style.transition='transform .15s cubic-bezier(.2,1.8,.4,1)';
+    el.style.transform=el.style.transform.replace(/scale\([^)]+\)/,'')+' scale(1.22)';
+    setTimeout(()=>renderRacers(false),180);
+  }
+  renderRacers(false);renderHUD();
+
+  if(!ended&&G.winner===null){
+    if(p.pos>=FINISH){declareWin(pidx);}
+    else if(extraTurn){
+      await sleep(600);
+      setMsg(`🎲 ${p.name} rolls again!`);
+      spawnFloat('ROLL AGAIN 🎲','#ffc93c');
+      await sleep(700);
+      G.moving=false;resetDiceUI();return;
+    } else {
+      await sleep(600);
+      nextTurn();
+    }
+  }
+  G.moving=false;
+  if(G.winner===null)resetDiceUI();
+};
+
+// ════════════════════════════════════════════════════
+//  SMOOTH MOVEMENT with time-based organic timing
+// ════════════════════════════════════════════════════
+function stepFeedback(){
+  const el=document.getElementById('mapOuter');
+  el.style.transform='scale(1.012)';
+  setTimeout(()=>el.style.transform='',80);
+}
+
+async function animMove(pidx,target){
+  const p=G.players[pidx];
+  const steps=Math.abs(target-p.pos),dir=target>p.pos?1:-1;
+  p.moving=true;
+  for(let i=0;i<steps;i++){
+    const prevSc=sc(PATH[p.pos]);
+    const off=pidx===0?-16:16;
+    tyreMark(prevSc.x+off,prevSc.y-4);
+    p.pos+=dir;
+    updateMoveText(`${p.avatar} ${p.name} moves to square ${p.pos}…`);
+    renderRacers(true);
+    renderHUD();
+    soundTick();
+    stepFeedback();
+    // Tile bounce: quick scale-up on each step
+    if(tokenEls[pidx]){
+      const el=tokenEls[pidx];
+      el.style.transition='left .14s linear,top .14s linear,transform .09s cubic-bezier(.2,1.8,.4,1)';
+      const cur=el.style.transform.replace(/scale\([^)]+\)/,'').trim();
+      el.style.transform=cur+' scale(1.28)';
+      setTimeout(()=>{
+        if(tokenEls[pidx]){
+          const t2=tokenEls[pidx].style.transform.replace(/scale\([^)]+\)/,'').trim();
+          tokenEls[pidx].style.transform=t2+' scale(1)';
+        }
+      },70);
+    }
+    // Dynamic timing: anticipation → organic middle → landing emphasis
+    let delay;
+    if(i===0) delay=300;
+    else if(i===steps-1) delay=350;
+    else delay=140+Math.random()*40;
+    await sleep(delay);
+  }
+  p.moving=false;
+  // Give player time to read the result
+  await sleep(600);
+}
+
+async function doFrozenSkip(){
+  const p=G.players[G.cur];p.frozen=0;
+  setMsg(`❄️ ${p.name} is FROZEN — turn skipped!`);
+  spawnFloat('FROZEN ❄️','#6bc8ff');
+  renderHUD();renderRacers(false);
+  await sleep(1400);nextTurn();
+}
+
+// ════════════════════════════════════════════════════
+//  SPECIALS + ZONES
+// ════════════════════════════════════════════════════
+async function checkAll(pidx){
+  const p=G.players[pidx];
+  const zone=ZONES[p.pos];
+
+  if(zone){
+    await sleep(200);
+    zoneHint(`${zone.label} — ${zone.desc}`);
+    if(zone.type==='slow'){
+      setMsg(`🌴 SLOW ZONE! ${p.name} loses 1 step next turn!`);
+      spawnFloat('SLOW 🌴','#ffaa44');
+      await sleep(1200);
+      p.slow=1;
+    }
+    if(zone.type==='boost'){
+      const bonus=zone.label.includes('BRIDGE')?2:1;
+      setMsg(`${zone.label} — ${p.name} surges ahead +${bonus}!`);
+      spawnFloat(`+${bonus} ⚡`,'#5dba5d');showFX('⚡');camZoom();
+      await sleep(1000);
+      p.pos=Math.min(FINISH,p.pos+bonus);
+      renderRacers(true);renderHUD();
+      setMsg(`${p.name} advances to square ${p.pos}! ⚡`);
+      await sleep(800);
+      if(p.pos>=FINISH&&declareWin(pidx))return true;
+    }
+    if(zone.type==='trap'){
+      setMsg(`💧 POOL HAZARD! ${p.name} slips back 2!`);
+      spawnFloat('-2 💧','#6bc8ff');showFX('💧');
+      await sleep(1200);
+      p.pos=Math.max(0,p.pos-2);
+      renderRacers(true);renderHUD();
+      setMsg(`${p.name} skids back to square ${p.pos}! 💧`);
+      await sleep(800);
+    }
+  }
+  return false;
+}
+
+// ════════════════════════════════════════════════════
+//  TURN / WIN
+// ════════════════════════════════════════════════════
+function nextTurn(){
+  if(G.winner!==null)return;
+  G.cur=(G.cur+1)%2;updateBadge();renderHUD();renderRacers(false);clOv();
+  setMsg(`🎯 ${G.players[G.cur].avatar} ${G.players[G.cur].name}'s turn — Press START!`);
+}
+
+function finishCinematic(){
+  const mo=document.getElementById('mapOuter');
+  mo.style.transition='transform .4s cubic-bezier(.2,.9,.4,1.1),filter .4s ease';
+  mo.style.transform='scale(1.1)';
+  mo.style.filter='brightness(1.2)';
+  soundWin();
+}
+
+function declareWin(idx){
+  if(G.winner!==null)return false;
+  const p=G.players[idx];
+  if(p.pos>=FINISH){
+    G.winner=idx;G.active=false;
+    finishCinematic();
+    setTimeout(()=>{
+      document.getElementById('winHL').textContent=p.name.toUpperCase()+' WINS!';
+      document.getElementById('winSub').textContent=p.avatar+'  First across the finish!';
+      document.getElementById('winMod').classList.add('on');
+      // Reset map scale after modal shows
+      setTimeout(()=>{
+        const mo=document.getElementById('mapOuter');
+        mo.style.transform='';mo.style.filter='';
+      },1200);
+    },500);
+    return true;
+  }
+  return false;
+}
+
+function resetAll(){
+  tokenEls=[null,null];
+  document.getElementById('racersL').innerHTML='';
+  const fg=document.getElementById('fg');if(fg)fg.remove();
+}
+
+document.getElementById('btnAgain').onclick=()=>{document.getElementById('winMod').classList.remove('on');resetAll();initGame();};
+document.getElementById('btnMenu').onclick=()=>{document.getElementById('winMod').classList.remove('on');resetAll();go('titleScreen');};
+document.getElementById('btnQ').onclick=()=>{if(confirm('Quit to main menu?')){clearInterval(spinIv);resetAll();go('titleScreen');}};
+
+window.addEventListener('resize',()=>{
+  if(document.getElementById('gameScreen').classList.contains('visible')){
+    rsOv();placeFinishGlow();renderRacers(false);
+    if(spinning){const p=G.players[G.cur];hlPath(p.pos,Math.min(FINISH,p.pos+lockedRoll),G.cur);}
+  }
+});
+
+go('titleScreen');
+</script>
+</body>
+</html>

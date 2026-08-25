@@ -1,5 +1,5 @@
 import { Scene } from '../../../engine/core/Scene';
-import { Random } from '../../../engine/utils/Random';
+import { Random } from '../../engine/utils/random';
 import {
   CANVAS_W,
   CANVAS_H,

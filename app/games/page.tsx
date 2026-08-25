@@ -10,6 +10,7 @@ import {
 } from '@/constants/index';
 import GameCard from '@/components/cards/GameCard';
 import ManagePlayersModal from '@/features/players/components/ManagePlayersModal';
+import { preloadGame } from '@/games/catalog.components';
 
 const CATEGORY_OPTIONS = [
   'All Categories',
@@ -86,6 +87,7 @@ export default function GamesPage() {
   useEffect(() => {
     if (!likelyNextGame) return;
     router.prefetch(`/games/${likelyNextGame}`);
+    preloadGame(likelyNextGame);
   }, [likelyNextGame, router]);
 
   const hasActiveFilters = category !== 'All Categories' || difficulty !== 'All Difficulties' || !!search || playedOnly;

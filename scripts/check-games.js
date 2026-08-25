@@ -51,7 +51,7 @@ console.log(`Catalog: ${catalogIds.length} games declared in games/catalog.data.
 // ---- 2. parse GAME_COMPONENTS ids out of catalog.components.tsx ----
 const compSrc = fs.readFileSync(path.join(ROOT, 'games/catalog.components.tsx'), 'utf8');
 const compIds = new Set();
-const compRe = /^\s*(\w+):\s*lazy\(/gm;
+const compRe = /^\s*(\w+):\s*lazy(?:Game)?\(/gm;
 while ((m = compRe.exec(compSrc))) compIds.add(m[1]);
 
 console.log('Checking catalog.data.ts <-> catalog.components.tsx...');
@@ -77,7 +77,7 @@ console.log('\nChecking catalog entries resolve to real files on disk...');
 const importPathById = {};
 // Allow a lazy import to adapt a shared component with `.then(...)` as well
 // as returning the imported module directly.
-const importRe = /^\s*(\w+):\s*lazy\(\(\)\s*=>\s*import\('([^']+)'\)/gm;
+const importRe = /^\s*(\w+):\s*lazy(?:Game)?\('\w+',\s*\(\)\s*=>\s*import\('([^']+)'\)/gm;
 while ((m = importRe.exec(compSrc))) importPathById[m[1]] = m[2];
 
 const referencedFolders = new Set();

@@ -1,6 +1,6 @@
 // The whole "content" of a turn is just this hand of cards.
 // Add/rebalance a card here and every scene picks it up automatically.
-import { Random } from '../../../engine/utils/Random';
+import { Random } from '../../engine/utils/random';
 import { QUICK_DASH_RANGE, BURNOUT_RANGE, SUPER_BOOST_RANGE } from '../config';
 
 export type CardId = 'quick_dash' | 'burnout' | 'ice_cold' | 'super_boost';
