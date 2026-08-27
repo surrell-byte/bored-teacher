@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
-import { useGame, logOut, xpForLevel } from '@/providers/GameProvider';
+import { useGame, logOut } from '@/providers/GameProvider';
 import { THEMES } from '@/constants/index';
 import { usePathname, useRouter } from 'next/navigation';
 import ProfileModal from '@/features/profiles/components/ProfileModal';
@@ -18,7 +18,7 @@ const NAV_ITEMS = [
   { href: '/blog',        label: 'Blog',        icon: '✍️' },
   { href: '/about',       label: 'About',        icon: 'ℹ️' },
   { href: '/trophy',      label: 'Trophy Room', icon: '⭐' },
-  { href: '/payment',     label: 'Shop',        icon: '💳' },
+  { href: '/suggestions', label: 'Suggestions', icon: '💡' },
 ];
 
 export default function Navbar() {
@@ -37,9 +37,6 @@ export default function Navbar() {
   const showPresentationToggle = !isMobile;
 
   const isGuest = typeof window !== 'undefined' && localStorage.getItem('guestUser') === 'true';
-
-  const xpMax = xpForLevel(state.level);
-  const xpPct = Math.min(100, Math.round((state.xp / xpMax) * 100));
 
   function isActive(href: string) {
     return href === '/hub' ? pathname === '/hub' : pathname.startsWith(href);
@@ -112,15 +109,8 @@ export default function Navbar() {
           ))}
         </nav>
 
-        {/* Right side — stats, bell, profile dropdown, hamburger */}
+        {/* Right side — sound, profile dropdown, hamburger */}
         <div className="nav-right">
-          <span className="stat-pill stat-pill-coins" aria-label={`${state.coins} coins`}>
-            <span className="stat-icon">🪙</span>{state.coins}
-          </span>
-          <span className="stat-pill stat-pill-xp" aria-label={`${state.xp} of ${xpMax} experience points`}>
-            <span className="stat-icon">✨</span>{state.xp}/{xpMax} XP
-          </span>
-
           <button
             className="notif-bell"
             aria-label={soundOn ? 'Turn sound off' : 'Turn sound on'}
@@ -165,9 +155,6 @@ export default function Navbar() {
                   <span className="player-chip-level">Level {state.level}</span>
                 </span>
                 <span style={{ fontSize: '0.6rem', opacity: 0.6, marginLeft: 2 }}>▾</span>
-              </span>
-              <span className="player-chip-xpbar">
-                <span className="player-chip-xpfill" style={{ width: `${xpPct}%` }} />
               </span>
             </button>
 
@@ -245,11 +232,6 @@ export default function Navbar() {
       {/* Mobile menu */}
       {mobileOpen && (
         <nav className="mobile-menu" aria-label="Mobile navigation">
-          <div className="mobile-stats-row">
-            <span className="stat-pill stat-pill-coins"><span className="stat-icon">🪙</span>{state.coins}</span>
-            <span className="stat-pill stat-pill-xp"><span className="stat-icon">✨</span>{state.xp}/{xpMax} XP</span>
-          </div>
-
           {NAV_ITEMS.map(item => (
             <Link
               key={item.href}

@@ -1,1251 +1,141 @@
-import { useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
-/**
- * Money Blocks — exact React port.
- * This is the original money-blocks-final.html game (markup, CSS, and
- * gameplay script) wrapped as a React component. Nothing about the design,
- * copy, animations, or game logic has been changed — only the delivery
- * mechanism (JSX + useEffect instead of a static HTML file).
- *
- * Usage: <MoneyBlocks />
- *
- * Notes for wiring into your engine:
- * - Because the original script drives the DOM directly via
- *   document.getElementById(...), this component reproduces that exactly
- *   inside a useEffect that runs once on mount. The ids from the original
- *   file (board, p1Money, welcomeScreen, etc.) are preserved as-is.
- * - Audio elements still point at cash.mp3 / lose.mp3 / jackpot.mp3 —
- *   place those files wherever your bundler serves static assets from,
- *   same as the original file expected them alongside it.
- * - Since ids are global, only mount one <MoneyBlocks /> at a time on a
- *   page (same constraint the original static HTML file had).
- */
+const CATEGORIES = {
+  Fruit: [["mango", "🥭"], ["lemon", "🍋"], ["orange", "🍊"], ["banana", "🍌"], ["apple", "🍎"], ["grapes", "🍇"], ["strawberry", "🍓"], ["watermelon", "🍉"], ["pineapple", "🍍"], ["cherries", "🍒"], ["peach", "🍑"], ["kiwi", "🥝"]],
+  Animals: [["lion", "🦁"], ["elephant", "🐘"], ["dog", "🐶"], ["cat", "🐱"], ["rabbit", "🐰"], ["bear", "🐻"], ["monkey", "🐵"], ["pig", "🐷"], ["cow", "🐮"], ["horse", "🐴"], ["tiger", "🐯"], ["penguin", "🐧"]],
+  Professions: [["doctor", "🧑‍⚕️"], ["teacher", "🧑‍🏫"], ["firefighter", "🧑‍🚒"], ["police officer", "👮"], ["chef", "🧑‍🍳"], ["farmer", "🧑‍🌾"], ["pilot", "🧑‍✈️"], ["scientist", "🧑‍🔬"], ["artist", "🧑‍🎨"], ["mechanic", "🧑‍🔧"], ["astronaut", "🧑‍🚀"], ["judge", "🧑‍⚖️"]],
+  Transport: [["car", "🚗"], ["bus", "🚌"], ["train", "🚆"], ["plane", "✈️"], ["boat", "🚤"], ["tractor", "🚜"], ["bike", "🚲"], ["rocket", "🚀"], ["ambulance", "🚑"], ["truck", "🚚"], ["taxi", "🚕"], ["helicopter", "🚁"]],
+  Weather: [["sunny", "☀️"], ["cloudy", "☁️"], ["rainy", "🌧️"], ["stormy", "⛈️"], ["snowy", "❄️"], ["windy", "🌬️"], ["foggy", "🌫️"], ["rainbow", "🌈"], ["hot", "🥵"], ["cold", "🥶"], ["lightning", "⚡"], ["tornado", "🌪️"]],
+  "Food & Drinks": [["pizza", "🍕"], ["burger", "🍔"], ["fries", "🍟"], ["ice cream", "🍦"], ["cake", "🍰"], ["cookie", "🍪"], ["bread", "🍞"], ["egg", "🥚"], ["cheese", "🧀"], ["juice", "🧃"], ["milk", "🥛"], ["coffee", "☕"]],
+  "Family Members": [["mother", "👩"], ["father", "👨"], ["baby", "👶"], ["grandmother", "👵"], ["grandfather", "👴"], ["sister", "👧"], ["brother", "👦"], ["family", "👪"], ["aunt", "👩‍🦱"], ["uncle", "👨‍🦱"], ["twins", "👯"], ["toddler", "🧒"]],
+  Sports: [["soccer", "⚽"], ["basketball", "🏀"], ["football", "🏈"], ["baseball", "⚾"], ["tennis", "🎾"], ["volleyball", "🏐"], ["rugby", "🏉"], ["swimming", "🏊"], ["cycling", "🚴"], ["golf", "⛳"], ["boxing", "🥊"], ["bowling", "🎳"]],
+};
+
+const DIFFICULTIES = [
+  { name: "Easy", cards: 4, preview: 3000 },
+  { name: "Medium", cards: 6, preview: 2500 },
+  { name: "Hard", cards: 8, preview: 1800 },
+  { name: "Expert", cards: 10, preview: 1200 },
+];
+const PRAISE = ["🌟 Amazing!", "🎉 Fantastic!", "👏 Brilliant!", "⭐ Great Memory!", "🥳 Excellent!", "🚀 Awesome!"];
+const shuffle = values => {
+  const result = [...values];
+  for (let index = result.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+    [result[index], result[randomIndex]] = [result[randomIndex], result[index]];
+  }
+  return result;
+};
+
+function playTone(enabled, type) {
+  if (!enabled || typeof window === "undefined") return;
+  const AudioContext = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContext) return;
+  const context = new AudioContext();
+  const oscillator = context.createOscillator();
+  const gain = context.createGain();
+  oscillator.type = type === "wrong" ? "square" : "triangle";
+  oscillator.frequency.value = type === "wrong" ? 220 : type === "levelup" ? 760 : 620;
+  oscillator.connect(gain);
+  gain.connect(context.destination);
+  gain.gain.setValueAtTime(0.1, context.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.22);
+  oscillator.start();
+  oscillator.stop(context.currentTime + 0.22);
+}
+
+function Confetti({ pieces }) {
+  return pieces.map(piece => <span key={piece.id} className="wm-confetti" style={{ left: `${piece.left}%`, animationDelay: `${piece.delay}s`, color: piece.color }}>{piece.emoji}</span>);
+}
+
 export default function MoneyBlocks() {
-  const initialized = useRef(false);
+  const [category, setCategory] = useState("Fruit");
+  const [difficulty, setDifficulty] = useState(0);
+  const [score, setScore] = useState(0);
+  const [streak, setStreak] = useState(0);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [status, setStatus] = useState("👀 Get ready to remember!");
+  const [round, setRound] = useState({ cards: [], missingIndex: 0, preview: true, answered: false });
+  const [options, setOptions] = useState([]);
+  const [result, setResult] = useState(null);
+  const [confetti, setConfetti] = useState([]);
+  const [achievements, setAchievements] = useState([]);
+  const timer = useRef(null);
+
+  const startRound = useCallback(() => {
+    const settings = DIFFICULTIES[difficulty];
+    const pool = CATEGORIES[category];
+    const cards = shuffle(pool).slice(0, Math.min(settings.cards, pool.length - 3)).map(([name, emoji]) => ({ name, emoji }));
+    const missingIndex = Math.floor(Math.random() * cards.length);
+    setRound({ cards, missingIndex, preview: true, answered: false });
+    setOptions([]);
+    setResult(null);
+    setStatus("👀 Remember the pictures!");
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => {
+      setRound(current => ({ ...current, preview: false }));
+      const correct = cards[missingIndex];
+      const distractors = shuffle(pool.filter(item => item[0] !== correct.name)).slice(0, 3).map(([name, emoji]) => ({ name, emoji }));
+      setOptions(shuffle([correct, ...distractors]));
+      setStatus(`🤔 Which item disappeared?`);
+    }, settings.preview);
+  }, [category, difficulty]);
 
   useEffect(() => {
-    // Guard against React StrictMode's double-invoke in development, which
-    // would otherwise attach every listener/build every DOM piece twice.
-    if (initialized.current) return;
-    initialized.current = true;
+    startRound();
+    return () => clearTimeout(timer.current);
+  }, [startRound]);
 
-      const board = document.getElementById("board");
-      const GOAL = 1000000;
-
-      // ========== WELCOME & SETUP SCREENS ==========
-      const AVATARS = ["🦁","🐯","🐺","🦊","🐻","🐼","🦅","🦋","🐲","🦄","👑","💀","🎩","🤖","👾","🎭","🌟","⚡","🔥","💎"];
-
-      let p1SelectedAvatar = AVATARS[0];
-      let p2SelectedAvatar = AVATARS[1];
-
-      function buildAvatarGrid(gridId, defaultEmoji, onSelect){
-        const grid = document.getElementById(gridId);
-        AVATARS.forEach((emoji, i) => {
-          const btn = document.createElement("button");
-          btn.className = "avatar-btn" + (emoji === defaultEmoji ? " selected" : "");
-          btn.textContent = emoji;
-          btn.onclick = () => {
-            grid.querySelectorAll(".avatar-btn").forEach(b => b.classList.remove("selected"));
-            btn.classList.add("selected");
-            onSelect(emoji);
-          };
-          grid.appendChild(btn);
-        });
+  function answer(choice) {
+    if (round.answered || round.preview) return;
+    const correct = round.cards[round.missingIndex];
+    const isCorrect = choice.name === correct.name;
+    const nextScore = isCorrect ? score + 1 : score;
+    const nextStreak = isCorrect ? streak + 1 : 0;
+    setRound(current => ({ ...current, answered: true }));
+    setResult({ chosen: choice.name, correct: correct.name, isCorrect });
+    setScore(nextScore);
+    setStreak(nextStreak);
+    setStatus(isCorrect ? PRAISE[Math.floor(Math.random() * PRAISE.length)] : `Oops! The answer was ${correct.name}.`);
+    playTone(soundEnabled, isCorrect ? "correct" : "wrong");
+    if (isCorrect) {
+      const unlocked = [];
+      if (nextScore === 1) unlocked.push("🌟 First Success");
+      if (nextStreak === 3) unlocked.push("🔥 Hot Streak");
+      if (nextStreak === 5) unlocked.push("👑 Memory Master");
+      if (nextScore === 25) unlocked.push("🥈 Silver Memory");
+      if (nextScore === 50) unlocked.push("🥇 Gold Memory");
+      if (unlocked.length) setAchievements(current => [...current, ...unlocked]);
+      if (nextScore > 0 && nextScore % 5 === 0 && difficulty < DIFFICULTIES.length - 1) {
+        setDifficulty(current => current + 1);
+        playTone(soundEnabled, "levelup");
       }
-
-      buildAvatarGrid("avatarGrid1", p1SelectedAvatar, e => { p1SelectedAvatar = e; });
-      buildAvatarGrid("avatarGrid2", p2SelectedAvatar, e => { p2SelectedAvatar = e; });
-
-      document.getElementById("welcomeStartBtn").addEventListener("click", () => {
-        const ws = document.getElementById("welcomeScreen");
-        ws.classList.add("fade-out");
-        setTimeout(() => {
-          ws.style.display = "none";
-          const ss = document.getElementById("setupScreen");
-          ss.style.display = "flex";
-          requestAnimationFrame(() => ss.style.opacity = "1");
-        }, 400);
-      });
-
-      document.getElementById("setupDoneBtn").addEventListener("click", () => {
-        const n1 = document.getElementById("setupP1Name").value.trim() || "Player One";
-        const n2 = document.getElementById("setupP2Name").value.trim() || "Player Two";
-        // Apply names + avatars to game cards
-        document.getElementById("p1Name").textContent = n1;
-        document.getElementById("p2Name").textContent = n2;
-        document.getElementById("p1Avatar").textContent = p1SelectedAvatar;
-        document.getElementById("p2Avatar").textContent = p2SelectedAvatar;
-        player1.displayName = n1;
-        player2.displayName = n2;
-
-        const ss = document.getElementById("setupScreen");
-        ss.classList.add("fade-out");
-        setTimeout(() => {
-          ss.style.display = "none";
-          const gr = document.getElementById("gameRoot");
-          gr.style.visibility = "visible";
-          gr.style.opacity = "0";
-          gr.style.transition = "opacity .4s";
-          requestAnimationFrame(() => gr.style.opacity = "1");
-          updateUI(); updateTurnDisplay();
-        }, 400);
-      });
-
-      // ========== GAME STATE ==========
-      let player1 = { money: 100000, shields: 0, displayName: "Player One" };
-      let player2 = { money: 100000, shields: 0, displayName: "Player Two" };
-      let currentPlayer = 1;
-
-      // ========== BLOCK LAYOUT ==========
-      const blockLayout = [
-        {type:"green",  c:"1/4",  r:"1/3"},
-        {type:"red",    c:"4/6",  r:"1/3"},
-        {type:"blue",   c:"6/9",  r:"1/3"},
-        {type:"yellow", c:"9/13", r:"1/3"},
-        {type:"purple", c:"1/3",  r:"3/5"},
-        {type:"black",  c:"3/7",  r:"3/5"},
-        {type:"green",  c:"7/9",  r:"3/5"},
-        {type:"red",    c:"9/13", r:"3/5"},
-        {type:"blue",   c:"1/4",  r:"5/7"},
-        {type:"yellow", c:"4/5",  r:"5/7"},
-        {type:"purple", c:"5/8",  r:"5/7"},
-        {type:"black",  c:"8/11", r:"5/7"},
-        {type:"green",  c:"11/13",r:"5/7"},
-        {type:"red",    c:"1/5",  r:"7/9"},
-        {type:"blue",   c:"5/7",  r:"7/9"},
-        {type:"yellow", c:"7/10", r:"7/9"},
-        {type:"purple", c:"10/13",r:"7/9"},
-        {type:"black",  c:"1/4",  r:"9/11"},
-        {type:"green",  c:"4/7",  r:"9/11"},
-        {type:"red",    c:"7/8",  r:"9/11"},
-        {type:"blue",   c:"8/10", r:"9/11"},
-        {type:"yellow", c:"10/13",r:"9/11"},
-        {type:"purple", c:"1/4",  r:"11/13"},
-        {type:"black",  c:"4/7",  r:"11/13"},
-        {type:"green",  c:"7/11", r:"11/13"},
-        {type:"red",    c:"11/13",r:"11/13"}
-      ];
-
-      const symbols = { green:"💵", red:"💸", blue:"🥷", yellow:"💎", purple:"🛡️", black:"🎲" };
-
-      // Back-face colours for the reveal flip — what the tile shows when flipped over
-      const typeBackClass = {
-        green:"reveal-back-green", red:"reveal-back-red", blue:"reveal-back-blue",
-        yellow:"reveal-back-yellow", purple:"reveal-back-purple", black:"reveal-back-black"
-      };
-
-      const colorMap = {
-        A:"#000000", B:"#FFFFFF", C:"#FF0000", D:"#FFFF00", E:"#0000FF",
-        F:"#008000", G:"#FFA500", H:"#800080", I:"#964B00", J:"#FFC0CB",
-        K:"#00FFFF", L:"#808080", M:"#00FF00", N:"#000080", O:"#008080",
-        P:"#FF00FF", Q:"#800000", R:"rainbow",  S:"#808000", T:"#FFD700",
-        U:"#C0C0C0", V:"#4B0082", W:"#40E0D0", X:"#FF7F50", Y:"#E6E6FA",
-        Z:"#F5F5DC"
-      };
-
-      function shade(hex, p){
-        const n = parseInt(hex.slice(1), 16);
-        let r=(n>>16)&0xff, g=(n>>8)&0xff, b=n&0xff;
-        return `rgb(${Math.max(0,Math.min(255,Math.round(r*(1+p))))},${Math.max(0,Math.min(255,Math.round(g*(1+p))))},${Math.max(0,Math.min(255,Math.round(b*(1+p))))})`;
-      }
-      function luminance(hex){
-        const n=parseInt(hex.slice(1),16);
-        return (0.299*((n>>16)&0xff)+0.587*((n>>8)&0xff)+0.114*(n&0xff))/255;
-      }
-
-      let isRevealing = false;
-
-      function revealBlock(block, data, letter, hex, bgGradient, textColor){
-        isRevealing = true;
-        block.classList.add("hidden-during-reveal");
-        const rect = block.getBoundingClientRect();
-
-        // Preview what will happen (same logic as playTurn) so we can show it on the back face
-        const player = current(), enemy = opponent();
-        const multiplier = previewMultiplier; // set before calling this
-        const multiplierNote = multiplier > 1 ? ` ×${multiplier}` : "";
-        let previewText = "";
-        switch(data.type){
-          case "green": {
-            const gain = previewAmount;
-            previewText = `+${moneyText(gain)}${multiplierNote}`;
-            break;
-          }
-          case "red": {
-            const loss = previewAmount;
-            previewText = `-${moneyText(loss)}${multiplierNote}`;
-            break;
-          }
-          case "blue": {
-            if (enemy.shields > 0){ previewText = "Raid blocked!"; }
-            else { previewText = `+${moneyText(previewAmount)}${multiplierNote} stolen`; }
-            break;
-          }
-          case "yellow": {
-            if (previewYellowReward === "double") previewText = "Holdings doubled!";
-            else previewText = `+${moneyText(previewYellowReward)}`;
-            break;
-          }
-          case "purple": {
-            previewText = "Guard raised 🛡️";
-            break;
-          }
-          case "black": {
-            const ev = previewBlackEvent;
-            if (ev==="swap") previewText = "Fortunes swapped!";
-            else if (ev==="extra") previewText = "Encore — go again!";
-            else if (ev==="jackpot") previewText = "+$300,000 Jackpot!";
-            else if (ev==="tax") previewText = "-$200,000 Audit";
-            else if (ev==="robbery") previewText = "-$150,000 Robbed";
-            else if (ev==="inheritance") previewText = "+$500,000 Inheritance";
-            else if (ev==="bankrupt") previewText = "Bankrupt — halved!";
-            break;
-          }
-        }
-
-        const backdrop = document.createElement("div");
-        backdrop.className = "reveal-backdrop";
-        document.body.appendChild(backdrop);
-
-        const overlay = document.createElement("div");
-        overlay.className = "reveal-overlay";
-        Object.assign(overlay.style, {
-          left: rect.left+"px", top: rect.top+"px",
-          width: rect.width+"px", height: rect.height+"px"
-        });
-
-        const card = document.createElement("div");
-        card.className = "reveal-card";
-
-        // Front face: the tile's letter colour (A-Z colour map)
-        const front = document.createElement("div");
-        front.className = "reveal-face front";
-        if (hex === "rainbow") front.classList.add("rainbow-tile");
-        else { front.style.background = bgGradient; front.style.color = textColor; }
-        front.innerHTML = `<span class="tile-letter">${letter}</span>`;
-
-        // Back face: the GAME TYPE colour (green=gain, red=loss etc.) + emoji + result text
-        const back = document.createElement("div");
-        back.className = `reveal-face back ${typeBackClass[data.type]}`;
-        back.style.color = "#fff";
-        back.style.display = "flex";
-        back.style.flexDirection = "column";
-        back.style.alignItems = "center";
-        back.style.justifyContent = "center";
-        back.style.gap = "0.18em";
-        back.innerHTML = `<span style="font-size:2em;line-height:1">${symbols[data.type]}</span><span style="font-size:0.38em;font-family:'IBM Plex Mono',monospace;font-weight:700;letter-spacing:.03em;text-align:center;padding:0 0.4em;line-height:1.3;text-shadow:0 1px 4px rgba(0,0,0,.5)">${previewText}</span>`;
-
-        card.appendChild(front);
-        card.appendChild(back);
-        overlay.appendChild(card);
-        document.body.appendChild(overlay);
-
-        requestAnimationFrame(() => requestAnimationFrame(() => {
-          backdrop.classList.add("show");
-          const size = Math.min(window.innerWidth, window.innerHeight) * 0.36;
-          overlay.style.transition = "left .6s cubic-bezier(.4,0,.2,1),top .6s cubic-bezier(.4,0,.2,1),width .6s cubic-bezier(.4,0,.2,1),height .6s cubic-bezier(.4,0,.2,1)";
-          overlay.style.left = `calc(50% - ${size/2}px)`;
-          overlay.style.top = `calc(50% - ${size/2}px)`;
-          overlay.style.width = size+"px"; overlay.style.height = size+"px";
-          overlay.style.fontSize = (size*.4)+"px";
-          card.classList.add("flipped");
-        }));
-
-        setTimeout(() => {
-          Object.assign(overlay.style, { left:rect.left+"px", top:rect.top+"px", width:rect.width+"px", height:rect.height+"px", fontSize:"" });
-          backdrop.classList.remove("show");
-          setTimeout(() => {
-            overlay.remove(); backdrop.remove();
-            block.classList.remove("hidden-during-reveal");
-            block.textContent = symbols[data.type];
-            block.classList.add("used");
-            isRevealing = false;
-            const result = playTurn(data.type, block);
-            if (!result.ended) checkBoardEmpty();
-          }, 600);
-        }, 600 + 2000);
-      }
-
-      let previewMultiplier = 1, previewAmount = 0, previewYellowReward = null, previewBlackEvent = null;
-
-      // Build blocks
-      blockLayout.forEach((data, index) => {
-        const block = document.createElement("button");
-        block.classList.add("block", data.type);
-        block.style.gridColumn = data.c;
-        block.style.gridRow = data.r;
-        block.dataset.effect = data.type;
-        block.dataset.used = "false";
-
-        const letter = String.fromCharCode(65 + index);
-        const hex = colorMap[letter];
-        const bgGradient = hex === "rainbow" ? null : `linear-gradient(150deg, ${hex}, ${shade(hex, -0.38)})`;
-        const textColor = hex === "rainbow" ? "#ffffff" : (luminance(hex) > 0.58 ? "#14161E" : "#F3EFE6");
-
-        if (hex === "rainbow"){
-          block.classList.add("rainbow-tile");
-          block.style.setProperty("--glow-color", "rgba(255,200,100,.7)");
-        } else {
-          block.style.background = bgGradient;
-          block.style.setProperty("--glow-color", hex + "88");
-          block.style.color = textColor;
-        }
-        block.innerHTML = `<span class="tile-letter">${letter}</span>`;
-
-        block.onclick = () => {
-          if (block.dataset.used === "true" || isRevealing) return;
-          block.dataset.used = "true";
-          // Pre-roll random values so preview matches actual outcome
-          previewMultiplier = random([1,1,1,1,2,2,3]);
-          previewAmount = 0;
-          previewYellowReward = null;
-          previewBlackEvent = null;
-          const eType = data.type;
-          if (eType==="green") previewAmount = random([25000,50000,75000,100000,150000]) * previewMultiplier;
-          else if (eType==="red") previewAmount = random([25000,50000,75000,100000]) * previewMultiplier;
-          else if (eType==="blue") previewAmount = random([25000,50000,75000,100000]) * previewMultiplier;
-          else if (eType==="yellow") previewYellowReward = random(["double",250000,500000]);
-          else if (eType==="black") previewBlackEvent = random(["swap","extra","jackpot","tax","robbery","inheritance","bankrupt"]);
-          revealBlock(block, data, letter, hex, bgGradient, textColor);
-        };
-        board.appendChild(block);
-      });
-
-      // ========== GAME LOGIC ==========
-      function moneyText(n){ return "$" + Math.max(0, Math.round(n)).toLocaleString(); }
-      function current(){ return currentPlayer === 1 ? player1 : player2; }
-      function opponent(){ return currentPlayer === 1 ? player2 : player1; }
-      function playerName(){ return current().displayName; }
-
-      function animateBalance(el, from, to){
-        const start = performance.now(), dur = 550;
-        function step(now){
-          const t = Math.min(1, (now - start) / dur);
-          const e = 1 - Math.pow(1-t, 3);
-          el.textContent = moneyText(from + (to - from) * e);
-          if (t < 1) requestAnimationFrame(step);
-        }
-        requestAnimationFrame(step);
-      }
-
-      let lastP1 = player1.money, lastP2 = player2.money;
-
-      function updateUI(){
-        animateBalance(document.getElementById("p1Money"), lastP1, player1.money);
-        animateBalance(document.getElementById("p2Money"), lastP2, player2.money);
-        lastP1 = player1.money; lastP2 = player2.money;
-        document.getElementById("p1Bar").style.width = Math.min(100, player1.money/GOAL*100)+"%";
-        document.getElementById("p2Bar").style.width = Math.min(100, player2.money/GOAL*100)+"%";
-        const p1ShieldEl = document.getElementById("p1Shield");
-        const p2ShieldEl = document.getElementById("p2Shield");
-        p1ShieldEl.classList.toggle("show", player1.shields > 0);
-        p2ShieldEl.classList.toggle("show", player2.shields > 0);
-        p1ShieldEl.textContent = player1.shields > 1 ? `🛡️ ×${player1.shields}` : "Guarded";
-        p2ShieldEl.textContent = player2.shields > 1 ? `🛡️ ×${player2.shields}` : "Guarded";
-        document.getElementById("p1Card").classList.toggle("active", currentPlayer===1);
-        document.getElementById("p2Card").classList.toggle("active", currentPlayer===2);
-      }
-
-      function updateTurnDisplay(){
-        document.getElementById("turnDisplay").innerHTML = `<span class="dot"></span> ${playerName()} to move`;
-      }
-      function setLedger(text){ document.getElementById("message").textContent = text.replace("{n}","\n"); }
-      function setHeadline(eyebrow, amountChange, name){
-        document.getElementById("ledgerEyebrow").textContent = eyebrow;
-        const amountEl = document.getElementById("ledgerAmount");
-        const nameEl = document.getElementById("ledgerName");
-        if (amountChange === null){ amountEl.style.display="none"; nameEl.style.display="none"; }
-        else {
-          const sign = amountChange > 0 ? "+" : (amountChange < 0 ? "-" : "");
-          amountEl.textContent = sign + moneyText(Math.abs(amountChange));
-          amountEl.style.display="block"; nameEl.textContent=name; nameEl.style.display="block";
-        }
-      }
-
-      function flashJackpot(el){ el.classList.add("jackpot-flash"); setTimeout(() => el.classList.remove("jackpot-flash"), 2800); }
-      function playSound(id){
-        try{ const a=document.getElementById(id); const p=a.play(); if(p&&p.catch)p.catch(()=>{}); }catch(e){}
-      }
-      function random(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
-
-      function playTurn(color, blockEl){
-        const player = current(), enemy = opponent();
-        const moneyBefore = player.money;
-        let ledgerMessage = "", again = false, isJackpot = false;
-        const multiplier = previewMultiplier;
-        const multiplierNote = multiplier > 1 ? ` (×${multiplier})` : "";
-
-        switch(color){
-          case "green": {
-            let gain = previewAmount;
-            player.money += gain;
-            ledgerMessage = `${playerName()} books a gain of ${moneyText(gain)}${multiplierNote}.`;
-            playSound("cashSound"); break;
-          }
-          case "red": {
-            let loss = previewAmount;
-            player.money = Math.max(0, player.money - loss);
-            ledgerMessage = `${playerName()} takes a loss of ${moneyText(loss)}${multiplierNote}.`;
-            playSound("loseSound"); break;
-          }
-          case "blue": {
-            let steal = previewAmount;
-            if (enemy.shields > 0){ enemy.shields--; ledgerMessage=`${playerName()} attempts a raid — blocked by the guard.`; }
-            else { steal=Math.min(steal,enemy.money); enemy.money-=steal; player.money+=steal; ledgerMessage=`${playerName()} raids the vault for ${moneyText(steal)}${multiplierNote}.`; playSound("cashSound"); }
-            break;
-          }
-          case "yellow": {
-            const reward = previewYellowReward;
-            if (reward==="double"){ player.money*=2; ledgerMessage=`${playerName()} doubles their holdings.`; }
-            else { player.money+=reward; ledgerMessage=`${playerName()} draws a wild gain of ${moneyText(reward)}.`; }
-            playSound("cashSound"); break;
-          }
-          case "purple": {
-            player.shields++; ledgerMessage=`${playerName()} is granted a guard.${player.shields > 1 ? ` (Now holding ${player.shields} shields)` : ""}`; break;
-          }
-          case "black": {
-            const event = previewBlackEvent;
-            if (event==="swap"){ const t=player.money; player.money=enemy.money; enemy.money=t; ledgerMessage=`${playerName()} swaps fortunes with the table.`; }
-            else if (event==="extra"){ ledgerMessage=`${playerName()} is granted an encore move.`; again=true; }
-            else if (event==="jackpot"){ player.money+=300000; ledgerMessage=`${playerName()} hits the jackpot — ${moneyText(300000)}.`; playSound("jackpotSound"); isJackpot=true; }
-            else if (event==="tax"){ player.money=Math.max(0,player.money-200000); ledgerMessage=`${playerName()} is audited for ${moneyText(200000)}.`; playSound("loseSound"); }
-            else if (event==="robbery"){ player.money=Math.max(0,player.money-150000); ledgerMessage=`${playerName()} is robbed of ${moneyText(150000)}.`; playSound("loseSound"); }
-            else if (event==="inheritance"){ player.money+=500000; ledgerMessage=`${playerName()} receives an inheritance of ${moneyText(500000)}.`; playSound("cashSound"); }
-            else if (event==="bankrupt"){ player.money=Math.floor(player.money*0.5); ledgerMessage=`${playerName()} is declared bankrupt — holdings halved.`; playSound("loseSound"); }
-            break;
-          }
-        }
-
-        updateUI();
-        const netChange = player.money - moneyBefore;
-        const eyebrow = netChange>0 ? "GAIN SECURED" : netChange<0 ? "LOSS TAKEN" : color==="purple" ? "GUARD RAISED" : "NO CHANGE";
-        setHeadline(eyebrow, netChange===0 ? null : netChange, playerName());
-        if (isJackpot && blockEl) flashJackpot(blockEl);
-        if (checkWinner()) return { ended:true };
-
-        if (again){
-          setLedger(ledgerMessage + "{n}" + playerName() + " moves again.");
-          updateTurnDisplay();
-        } else {
-          currentPlayer = currentPlayer===1 ? 2 : 1;
-          updateTurnDisplay();
-          setLedger(ledgerMessage + "{n}" + playerName() + " to move.");
-          updateUI();
-        }
-        return { ended:false };
-      }
-
-      function spawnConfetti(container, count){
-        const colors=["#E8C97A","#C9A961","#F3EFE6","#8C6B33"];
-        for(let i=0;i<count;i++){
-          const p=document.createElement("div");
-          p.className="confetti";
-          p.style.left=Math.random()*100+"%";
-          p.style.background=colors[Math.floor(Math.random()*colors.length)];
-          p.style.animationDuration=(2.5+Math.random()*2)+"s";
-          p.style.animationDelay=(Math.random()*1.2)+"s";
-          container.appendChild(p);
-        }
-      }
-
-      function showEndScreen(opts){
-        document.body.innerHTML=`
-          <div class="winner-overlay" id="winnerOverlay">
-            <div class="winner-eyebrow">${opts.eyebrow}</div>
-            <div class="winner-title">${opts.title}</div>
-            <div class="winner-rule"></div>
-            <div class="winner-name">${opts.nameLine}</div>
-            ${opts.moneyLine?`<div class="winner-amount">${opts.moneyLine}</div>`:""}
-            <button class="play-again" id="playAgainBtn">Reset Table</button>
-          </div>`;
-        spawnConfetti(document.getElementById("winnerOverlay"), 60);
-        document.getElementById("playAgainBtn").addEventListener("click", ()=>location.reload());
-      }
-
-      function checkWinner(){
-        if(player1.money>=GOAL){ showEndScreen({eyebrow:"Table Closed",title:"Victory",nameLine:`${player1.displayName} holds the table`,moneyLine:moneyText(player1.money)}); return true; }
-        if(player2.money>=GOAL){ showEndScreen({eyebrow:"Table Closed",title:"Victory",nameLine:`${player2.displayName} holds the table`,moneyLine:moneyText(player2.money)}); return true; }
-        return false;
-      }
-      function checkBoardEmpty(){
-        if(document.querySelectorAll('.block:not(.used)').length!==0) return;
-        if(player1.money>player2.money) showEndScreen({eyebrow:"Board Empty",title:"Victory",nameLine:`${player1.displayName} holds the table`,moneyLine:moneyText(player1.money)});
-        else if(player2.money>player1.money) showEndScreen({eyebrow:"Board Empty",title:"Victory",nameLine:`${player2.displayName} holds the table`,moneyLine:moneyText(player2.money)});
-        else showEndScreen({eyebrow:"Board Empty",title:"Stalemate",nameLine:"The table closes even — no winner",moneyLine:null});
-      }
-
-      document.getElementById("resetBtn").addEventListener("click", ()=>location.reload());
-
-      // ========== HOW TO PLAY MODAL ==========
-      function openHtp(){
-        const bd = document.getElementById("htpBackdrop");
-        bd.style.display = "flex";
-      }
-      function closeHtp(){
-        const bd = document.getElementById("htpBackdrop");
-        bd.style.opacity = "0";
-        bd.style.transition = "opacity .2s";
-        setTimeout(()=>{ bd.style.display="none"; bd.style.opacity=""; bd.style.transition=""; }, 200);
-      }
-      document.getElementById("howToPlayBtn").addEventListener("click", openHtp);
-      document.getElementById("htpClose").addEventListener("click", closeHtp);
-      document.getElementById("htpDone").addEventListener("click", closeHtp);
-      document.getElementById("htpBackdrop").addEventListener("click", e => {
-        if (e.target === document.getElementById("htpBackdrop")) closeHtp();
-      });
-
-      // updateUI and updateTurnDisplay are called after setup screen completes
-
-  }, []);
-
-  return (
-    <>
-      <style>{`
-        :root{
-          --bg:#0A0B0E; --bg-soft:#13151C;
-          --panel:#15171F; --panel-border:rgba(201,169,97,.16);
-          --gold:#C9A961; --gold-bright:#E8C97A; --gold-deep:#8C6B33;
-          --ivory:#F3EFE6; --ivory-dim:#9C9690;
-          --graphite:#242630; --graphite-light:#2F323D;
-          --amethyst:#7C5FA8;
-          --bg-top:rgba(201,169,97,.09); --bg-deep:#111827; --bg-deep-end:#07090f;
-          --vignette:rgba(212,175,55,.08);
-          --board-bg:rgba(255,255,255,.02); --board-border:rgba(201,169,97,.14);
-        }
-
-        body[data-theme="black"]{
-          --bg:#080809; --panel:#111215; --panel-border:rgba(220,210,190,.14);
-          --gold:#C9A961; --gold-bright:#E8C97A; --gold-deep:#7A5E28;
-          --ivory:#F0ECE2; --ivory-dim:#8A8680;
-          --bg-top:rgba(220,210,190,.06); --bg-deep:#0e0f12; --bg-deep-end:#050507;
-          --vignette:rgba(180,160,100,.07);
-          --board-bg:rgba(255,255,255,.025); --board-border:rgba(220,210,190,.12);
-        }
-        body[data-theme="white"]{
-          --bg:#F5F3EE; --panel:#ECEAE4; --panel-border:rgba(80,75,65,.18);
-          --gold:#5A5248; --gold-bright:#2E2A24; --gold-deep:#8C8478;
-          --ivory:#1C1A17; --ivory-dim:#6B6560;
-          --graphite:#D4D0C8; --graphite-light:#C8C4BC;
-          --bg-top:rgba(80,75,65,.07); --bg-deep:#eeece6; --bg-deep-end:#e4e0d8;
-          --vignette:rgba(80,75,65,.10);
-          --board-bg:rgba(0,0,0,.04); --board-border:rgba(80,75,65,.16);
-        }
-        body[data-theme="red"]{
-          --bg:#0e0405; --panel:#1a0608; --panel-border:rgba(239,68,68,.22);
-          --gold:#EF4444; --gold-bright:#FF7A7A; --gold-deep:#9B1C1C;
-          --ivory:#F5E8E8; --ivory-dim:#A08080;
-          --bg-top:rgba(239,68,68,.12); --bg-deep:#1a0507; --bg-deep-end:#080203;
-          --vignette:rgba(239,68,68,.14);
-          --board-bg:rgba(239,68,68,.05); --board-border:rgba(239,68,68,.24);
-        }
-        body[data-theme="blue"]{
-          --bg:#03060f; --panel:#090f1e; --panel-border:rgba(59,130,246,.22);
-          --gold:#3B82F6; --gold-bright:#7AAEFF; --gold-deep:#1D4ED8;
-          --ivory:#E8EFFF; --ivory-dim:#7888AA;
-          --bg-top:rgba(59,130,246,.12); --bg-deep:#080e1c; --bg-deep-end:#02040c;
-          --vignette:rgba(59,130,246,.14);
-          --board-bg:rgba(59,130,246,.05); --board-border:rgba(59,130,246,.24);
-        }
-        body[data-theme="green"]{
-          --bg:#030d06; --panel:#071509; --panel-border:rgba(34,197,94,.22);
-          --gold:#22C55E; --gold-bright:#4ADE80; --gold-deep:#15803D;
-          --ivory:#E6F5EC; --ivory-dim:#6A9878;
-          --bg-top:rgba(34,197,94,.12); --bg-deep:#071408; --bg-deep-end:#020704;
-          --vignette:rgba(34,197,94,.14);
-          --board-bg:rgba(34,197,94,.05); --board-border:rgba(34,197,94,.24);
-        }
-        body[data-theme="yellow"]{
-          --bg:#0e0b01; --panel:#1a1502; --panel-border:rgba(250,204,21,.24);
-          --gold:#FACC15; --gold-bright:#FDE047; --gold-deep:#A16207;
-          --ivory:#FFF8DC; --ivory-dim:#A89850;
-          --bg-top:rgba(250,204,21,.14); --bg-deep:#181200; --bg-deep-end:#090600;
-          --vignette:rgba(250,204,21,.16);
-          --board-bg:rgba(250,204,21,.06); --board-border:rgba(250,204,21,.26);
-        }
-
-        .reveal-back-green  { background:linear-gradient(150deg,#1a7a40,#0d4d28) !important; color:#fff !important; }
-        .reveal-back-red    { background:linear-gradient(150deg,#8b1a1a,#5a0d0d) !important; color:#fff !important; }
-        .reveal-back-blue   { background:linear-gradient(150deg,#1a3a8b,#0d2060) !important; color:#fff !important; }
-        .reveal-back-yellow { background:linear-gradient(150deg,#8b7500,#5a4c00) !important; color:#fff !important; }
-        .reveal-back-purple { background:linear-gradient(150deg,#4a1a8b,#2d0d5a) !important; color:#fff !important; }
-        .reveal-back-black  { background:linear-gradient(150deg,#1a1a1a,#050505) !important; color:#fff !important; }
-
-        *{ margin:0; padding:0; box-sizing:border-box; }
-
-        body{
-          background:
-            radial-gradient(ellipse at 50% -8%, var(--bg-top), transparent 52%),
-            radial-gradient(ellipse at center, var(--bg-deep) 0%, var(--bg-deep-end) 100%);
-          color:var(--ivory);
-          min-height:100vh;
-          display:flex; justify-content:center; align-items:center;
-          font-family:'Inter', sans-serif;
-          overflow:hidden; position:relative;
-          transition:background 1.2s ease;
-        }
-        body::before{
-          content:''; position:fixed; inset:0;
-          background:radial-gradient(circle at center, transparent 40%, var(--vignette) 100%);
-          pointer-events:none; transition:background 1.2s ease;
-        }
-
-        .game{
-          width:96%; max-width:1440px;
-          height:99vh;
-          display:flex; flex-direction:column; gap:10px;
-        }
-
-        .topbar{
-          display:flex; justify-content:flex-start; align-items:center;
-          padding:4px 4px 0; flex-shrink:0;
-        }
-        .brand .eyebrow{
-          font:600 14px/1 'Inter'; letter-spacing:.22em;
-          color:var(--gold); text-transform:uppercase; transition:color .6s;
-        }
-        .brand h1{
-          font-family:'Fraunces', serif; font-weight:600; font-size:48px;
-          letter-spacing:.01em; margin-top:6px; color:var(--ivory);
-        }
-        .turn-pill{
-          display:flex; align-items:center; justify-content:center; gap:12px;
-          background:var(--panel); border:1px solid var(--panel-border);
-          border-radius:14px; padding:18px 14px;
-          font:500 18px 'Inter'; color:var(--ivory);
-          transition:border-color .6s; width:100%; text-align:center;
-        }
-        .turn-pill .dot{
-          width:11px; height:11px; border-radius:50%;
-          background:var(--gold-bright); box-shadow:0 0 10px var(--gold-bright);
-          animation:pulse 1.6s ease-in-out infinite; flex-shrink:0;
-          transition:background .6s, box-shadow .6s;
-        }
-        @keyframes pulse{
-          0%,100%{ opacity:1; transform:scale(1); }
-          50%{ opacity:.35; transform:scale(.7); }
-        }
-
-        .layout{
-          flex:1; display:grid;
-          grid-template-columns:2.4fr 1fr;
-          gap:20px; min-height:0;
-        }
-
-        .board{
-          display:grid;
-          grid-template-columns:repeat(12,1fr);
-          grid-template-rows:repeat(12,1fr);
-          gap:9px; height:100%; min-height:580px; padding:22px;
-          border-radius:28px;
-          background:var(--board-bg);
-          box-shadow:inset 0 1px 0 rgba(255,255,255,.07);
-          border:1px solid var(--board-border);
-          transition:background .8s, border-color .8s;
-        }
-
-        .block{
-          border:1px solid rgba(255,255,255,.07);
-          border-radius:14px; cursor:pointer;
-          transition:transform .22s, box-shadow .22s, opacity .22s, filter .22s;
-          width:100%; height:100%;
-          display:flex; align-items:center; justify-content:center;
-          font-size:clamp(16px,2.2vw,28px);
-          user-select:none; position:relative; overflow:hidden;
-          background-image:
-            repeating-linear-gradient(135deg, rgba(255,255,255,.032) 0px, rgba(255,255,255,.032) 1px, transparent 1px, transparent 6px);
-        }
-        .block::before{
-          content:''; position:absolute; inset:0;
-          background:linear-gradient(135deg, rgba(255,255,255,.16), rgba(255,255,255,0));
-          pointer-events:none;
-        }
-        .block:focus-visible{ outline:2px solid var(--gold-bright); outline-offset:2px; }
-        .block.used{ opacity:.22; cursor:not-allowed; filter:grayscale(100%); }
-        .block.hidden-during-reveal{ visibility:hidden; }
-        .block:hover:not(.used){
-          transform:translateY(-4px) scale(1.02);
-          box-shadow:0 18px 36px rgba(0,0,0,.4), 0 0 28px var(--glow-color, rgba(255,255,255,.35));
-          z-index:2;
-        }
-
-        .tile-letter{
-          font-family:'Montserrat', sans-serif; font-weight:700;
-          letter-spacing:2px; font-size:clamp(13px,1.8vw,22px);
-        }
-
-        .rainbow-tile{
-          background:linear-gradient(90deg, #ff0000, #ff9900, #ffee00, #33ff00, #00ffee, #3300ff, #cc00ff, #ff0000) !important;
-          background-size:300% 300% !important;
-          animation:rainbowShift 4s linear infinite;
-          color:#ffffff !important; text-shadow:0 0 6px rgba(0,0,0,.65);
-        }
-        @keyframes rainbowShift{
-          0%{ background-position:0% 50%; }
-          100%{ background-position:300% 50%; }
-        }
-
-        .block.jackpot-flash{ animation:pulseGold 1.4s ease-out 2; }
-        @keyframes pulseGold{
-          0%{ box-shadow:0 0 0 rgba(255,215,0,0); }
-          50%{ box-shadow:0 0 40px rgba(255,215,0,.9); }
-          100%{ box-shadow:0 0 0 rgba(255,215,0,0); }
-        }
-
-        .reveal-backdrop{
-          position:fixed; inset:0; z-index:998;
-          background:rgba(5,6,9,0); backdrop-filter:blur(0px);
-          transition:background .5s ease, backdrop-filter .5s ease; pointer-events:none;
-        }
-        .reveal-backdrop.show{ background:rgba(5,6,9,.75); backdrop-filter:blur(5px); }
-        .reveal-overlay{ position:fixed; z-index:999; perspective:1400px; border-radius:20px; }
-        .reveal-card{
-          position:relative; width:100%; height:100%;
-          transform-style:preserve-3d;
-          transition:transform .6s cubic-bezier(.4,0,.2,1);
-        }
-        .reveal-card.flipped{ transform:rotateY(180deg); }
-        .reveal-face{
-          position:absolute; inset:0;
-          backface-visibility:hidden; border-radius:20px;
-          display:flex; align-items:center; justify-content:center;
-          font-weight:700; border:1px solid rgba(255,255,255,.13);
-          box-shadow:0 30px 70px rgba(0,0,0,.6);
-          background-image:
-            repeating-linear-gradient(135deg, rgba(255,255,255,.035) 0px, rgba(255,255,255,.035) 1px, transparent 1px, transparent 6px);
-        }
-        .reveal-face.back{ transform:rotateY(180deg); }
-
-        .side{ display:flex; flex-direction:column; gap:12px; min-height:0; overflow:hidden; }
-        .side-panels{ flex:1; display:flex; flex-direction:column; gap:12px; min-height:0; }
-        .side-panels .account-card,
-        .side-panels .ledger{ flex:1; min-height:0; }
-
-        .side-controls{ display:flex; flex-direction:column; gap:10px; flex-shrink:0; }
-
-        .side-buttons{
-          display:flex; gap:12px;
-        }
-        .side-btn{
-          flex:1; background:none; border:1px solid var(--panel-border); color:var(--ivory-dim);
-          font:600 14px 'Inter'; letter-spacing:.1em; text-transform:uppercase;
-          padding:18px 14px; border-radius:14px; cursor:pointer; transition:.2s;
-        }
-        .side-btn:hover{ color:var(--gold-bright); border-color:var(--gold-deep); background:rgba(255,255,255,.03); }
-
-        .theme-picker{
-          display:flex; align-items:center; gap:8px;
-          background:var(--panel); border:1px solid var(--panel-border);
-          border-radius:12px; padding:10px 14px;
-          transition:border-color .6s;
-        }
-        .account-card{
-          background:var(--panel); border:1px solid var(--panel-border);
-          border-radius:16px; padding:16px 18px;
-          display:flex; flex-direction:column; gap:10px;
-          transition:border-color .3s, box-shadow .3s;
-        }
-        .account-card.active{
-          border-color:var(--gold);
-          box-shadow:0 0 0 1px var(--gold), 0 0 28px rgba(201,169,97,.15);
-        }
-        .account-top{ display:flex; align-items:center; gap:12px; }
-        .avatar{
-          width:44px; height:44px; border-radius:50%;
-          background:linear-gradient(150deg, var(--graphite-light), var(--graphite));
-          border:1px solid var(--gold-deep);
-          display:flex; align-items:center; justify-content:center;
-          font-size:22px; line-height:1;
-          flex-shrink:0; transition:border-color .6s;
-        }
-        .account-name{ font:600 14px 'Inter'; color:var(--ivory); }
-        .account-tag{ font:500 10px 'Inter'; letter-spacing:.12em; color:var(--ivory-dim); text-transform:uppercase; }
-        .shield-badge{
-          margin-left:auto; font:600 10px 'Inter'; letter-spacing:.08em;
-          color:var(--amethyst); border:1px solid var(--amethyst);
-          border-radius:999px; padding:4px 10px;
-          opacity:0; transform:scale(.85); transition:.25s; white-space:nowrap;
-        }
-        .shield-badge.show{ opacity:1; transform:scale(1); }
-        .account-balance{
-          font-family:'IBM Plex Mono', monospace; font-weight:600; font-size:28px;
-          color:var(--ivory); font-variant-numeric:tabular-nums; letter-spacing:.01em;
-        }
-        .progress-wrap{ position:relative; height:6px; border-radius:999px; background:var(--graphite); overflow:hidden; }
-        .progress-fill{
-          position:absolute; inset:0; width:10%;
-          background:linear-gradient(90deg, var(--gold-deep), var(--gold-bright), var(--gold-deep));
-          border-radius:999px; box-shadow:0 0 14px rgba(255,215,120,.45);
-          transition:width .8s cubic-bezier(.4,.2,.2,1), background .6s;
-        }
-        .progress-ticks{ display:flex; justify-content:space-between; font:500 9px 'Inter'; color:var(--ivory-dim); letter-spacing:.03em; }
-
-        .ledger{
-          background:var(--panel); border:1px solid var(--panel-border);
-          border-radius:16px; padding:18px 20px;
-          display:flex; flex-direction:column; align-items:center; justify-content:center;
-          gap:7px; text-align:center; min-height:90px; transition:border-color .6s;
-        }
-        .ledger-rule{ width:28px; height:1px; background:var(--gold-deep); transition:background .6s; }
-        .ledger-eyebrow{ font:700 10px 'Inter'; letter-spacing:.22em; color:var(--gold); text-transform:uppercase; transition:color .6s; }
-        .ledger-amount{
-          font-family:'IBM Plex Mono', monospace; font-weight:700;
-          font-size:clamp(22px,2.8vw,36px); color:var(--ivory);
-          text-shadow:0 0 18px rgba(232,201,122,.3);
-        }
-        .ledger-name{ font:500 12px 'Inter'; letter-spacing:.06em; color:var(--ivory-dim); }
-        .ledger-text{
-          font-family:'Fraunces', serif; font-style:italic; font-weight:400;
-          font-size:15px; line-height:1.5; color:var(--ivory); white-space:pre-line;
-        }
-
-        .winner-overlay{
-          position:fixed; inset:0; background:var(--bg);
-          display:flex; flex-direction:column; align-items:center; justify-content:center;
-          gap:14px; overflow:hidden;
-        }
-        .winner-eyebrow{ font:600 13px 'Inter'; letter-spacing:.3em; color:var(--gold); text-transform:uppercase; }
-        .winner-title{
-          font-family:'Fraunces', serif; font-weight:700; font-size:clamp(52px,8vw,90px);
-          background:linear-gradient(135deg, var(--gold-bright), var(--gold-deep));
-          -webkit-background-clip:text; background-clip:text; color:transparent;
-        }
-        .winner-rule{ width:60px; height:1px; background:var(--gold-deep); margin:6px 0; }
-        .winner-amount{ font-family:'IBM Plex Mono', monospace; font-weight:600; font-size:32px; color:var(--ivory); }
-        .winner-name{ font:500 18px 'Inter'; color:var(--ivory-dim); letter-spacing:.04em; }
-        .play-again{
-          margin-top:24px; background:none; border:1px solid var(--gold-deep); color:var(--gold-bright);
-          font:600 14px 'Inter'; letter-spacing:.14em; text-transform:uppercase;
-          padding:16px 36px; border-radius:999px; cursor:pointer; transition:.2s;
-        }
-        .play-again:hover{ background:var(--gold-bright); color:var(--bg); border-color:var(--gold-bright); }
-        .confetti{ position:absolute; top:-20px; width:7px; height:14px; opacity:.9; border-radius:2px; animation:fall linear forwards; }
-        @keyframes fall{ to{ transform:translateY(110vh) rotate(380deg); opacity:0; } }
-
-        .htp-backdrop{
-          position:fixed; inset:0; z-index:1000;
-          background:rgba(4,5,8,.85); backdrop-filter:blur(7px);
-          display:flex; align-items:center; justify-content:center;
-          padding:20px; animation:htpFadeIn .22s ease;
-        }
-        @keyframes htpFadeIn{ from{opacity:0} to{opacity:1} }
-
-        .htp-modal{
-          background:var(--panel); border:1px solid var(--panel-border);
-          border-radius:24px; width:100%; max-width:640px;
-          max-height:90vh; overflow-y:auto;
-          padding:32px 32px 28px;
-          box-shadow:0 40px 90px rgba(0,0,0,.65);
-          position:relative;
-          animation:htpSlideUp .28s cubic-bezier(.4,0,.2,1);
-        }
-        @keyframes htpSlideUp{ from{transform:translateY(22px);opacity:0} to{transform:translateY(0);opacity:1} }
-
-        .htp-header{ display:flex; align-items:flex-start; gap:10px; margin-bottom:4px; }
-        .htp-eyebrow{ font:600 10px 'Inter'; letter-spacing:.24em; text-transform:uppercase; color:var(--gold); margin-bottom:6px; }
-        .htp-title{ font-family:'Fraunces', serif; font-weight:600; font-size:28px; color:var(--ivory); flex:1; line-height:1.1; }
-        .htp-close{
-          background:none; border:1px solid var(--panel-border); color:var(--ivory-dim);
-          font:500 13px 'Inter'; width:32px; height:32px; border-radius:50%;
-          cursor:pointer; flex-shrink:0; transition:.18s;
-          display:flex; align-items:center; justify-content:center; margin-top:2px;
-        }
-        .htp-close:hover{ color:var(--gold-bright); border-color:var(--gold-deep); }
-
-        .htp-rule{ width:100%; height:1px; background:var(--panel-border); margin:18px 0; }
-        .htp-rule-sm{ margin:14px 0; }
-
-        .htp-intro{ font:400 14px/1.65 'Inter'; color:var(--ivory-dim); }
-        .htp-intro strong{ color:var(--gold-bright); font-weight:600; }
-
-        .htp-grid{ display:flex; flex-direction:column; gap:13px; }
-        .htp-row{ display:flex; align-items:flex-start; gap:14px; }
-
-        .htp-icon{
-          width:48px; height:48px; border-radius:13px; flex-shrink:0;
-          display:flex; align-items:center; justify-content:center;
-          font-size:22px; border:1px solid rgba(255,255,255,.12);
-          background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.05) 0px,rgba(255,255,255,.05) 1px,transparent 1px,transparent 6px);
-          position:relative; overflow:hidden;
-        }
-        .htp-icon::before{
-          content:''; position:absolute; inset:0;
-          background:linear-gradient(135deg, rgba(255,255,255,.18), rgba(255,255,255,0));
-          pointer-events:none;
-        }
-        .htp-icon.type-green  { background:linear-gradient(150deg,#1a7a40,#0d4d28) !important; color:#fff !important; }
-        .htp-icon.type-red    { background:linear-gradient(150deg,#8b1a1a,#5a0d0d) !important; color:#fff !important; }
-        .htp-icon.type-blue   { background:linear-gradient(150deg,#1a3a8b,#0d2060) !important; color:#fff !important; }
-        .htp-icon.type-yellow { background:linear-gradient(150deg,#8b7500,#5a4c00) !important; color:#fff !important; }
-        .htp-icon.type-purple { background:linear-gradient(150deg,#4a1a8b,#2d0d5a) !important; color:#fff !important; }
-        .htp-icon.type-black  { background:linear-gradient(150deg,#1a1a1a,#050505) !important; color:#fff !important; }
-
-        .htp-block-name{ font:600 13px 'Inter'; color:var(--ivory); margin-bottom:3px; letter-spacing:.02em; }
-        .htp-block-desc{ font:400 12px/1.55 'Inter'; color:var(--ivory-dim); }
-
-        .htp-tips{ display:flex; flex-direction:column; gap:8px; }
-        .htp-tip{
-          font:400 12px/1.5 'Inter'; color:var(--ivory-dim);
-          background:rgba(255,255,255,.04); border:1px solid var(--panel-border);
-          border-radius:10px; padding:10px 14px;
-        }
-
-        .htp-start{
-          width:100%; margin-top:22px;
-          background:var(--gold); border:none; color:var(--bg);
-          font:700 12px 'Inter'; letter-spacing:.14em; text-transform:uppercase;
-          padding:14px; border-radius:12px; cursor:pointer;
-          transition:.2s; display:block;
-        }
-        .htp-start:hover{ background:var(--gold-bright); transform:translateY(-1px); box-shadow:0 8px 24px rgba(0,0,0,.3); }
-
-        .screen-overlay{
-          position:fixed; inset:0; z-index:2000;
-          background:
-            radial-gradient(ellipse at 50% -8%, var(--bg-top), transparent 52%),
-            radial-gradient(ellipse at center, var(--bg-deep) 0%, var(--bg-deep-end) 100%);
-          display:flex; align-items:center; justify-content:center;
-          padding:24px; transition:opacity .4s ease;
-          overflow-y:auto;
-        }
-        .screen-overlay.fade-out{ opacity:0; pointer-events:none; }
-
-        .welcome-box{
-          display:flex; flex-direction:column; align-items:center; gap:28px;
-          text-align:center; max-width:560px; width:100%;
-        }
-        .welcome-eyebrow{
-          font:600 13px 'Inter'; letter-spacing:.28em; text-transform:uppercase;
-          color:var(--gold); transition:color .6s;
-        }
-        .welcome-title{
-          font-family:'Fraunces', serif; font-weight:700;
-          font-size:clamp(72px,12vw,130px); line-height:.9;
-          background:linear-gradient(135deg, var(--gold-bright) 20%, var(--gold-deep) 100%);
-          -webkit-background-clip:text; background-clip:text; color:transparent;
-          transition:background .6s;
-        }
-        .welcome-sub{
-          font:400 17px/1.7 'Inter'; color:var(--ivory-dim); max-width:380px;
-        }
-        .welcome-rule{ width:40px; height:1px; background:var(--gold-deep); }
-        .welcome-btn{
-          background:var(--gold); border:none; color:var(--bg);
-          font:700 14px 'Inter'; letter-spacing:.18em; text-transform:uppercase;
-          padding:20px 56px; border-radius:14px; cursor:pointer;
-          transition:.2s; margin-top:8px;
-        }
-        .welcome-btn:hover{ background:var(--gold-bright); transform:translateY(-2px); box-shadow:0 12px 30px rgba(0,0,0,.35); }
-
-        .setup-box{
-          display:flex; flex-direction:column; gap:32px;
-          max-width:680px; width:100%;
-        }
-        .setup-header{ text-align:center; }
-        .setup-eyebrow{
-          font:600 13px 'Inter'; letter-spacing:.24em; text-transform:uppercase;
-          color:var(--gold); margin-bottom:10px;
-        }
-        .setup-title{
-          font-family:'Fraunces', serif; font-weight:600; font-size:42px; color:var(--ivory);
-        }
-        .setup-players{ display:grid; grid-template-columns:1fr 1fr; gap:22px; }
-        .setup-player{
-          background:var(--panel); border:1px solid var(--panel-border);
-          border-radius:18px; padding:26px 22px;
-          display:flex; flex-direction:column; gap:16px;
-          transition:border-color .3s;
-        }
-        .setup-player:focus-within{ border-color:var(--gold); }
-        .setup-player-label{
-          font:600 13px 'Inter'; letter-spacing:.18em; text-transform:uppercase;
-          color:var(--gold);
-        }
-        .setup-name-input{
-          background:rgba(255,255,255,.06); border:1px solid var(--panel-border);
-          border-radius:10px; padding:14px 16px;
-          font:500 18px 'Inter'; color:var(--ivory);
-          width:100%; outline:none; transition:border-color .2s;
-        }
-        .setup-name-input:focus{ border-color:var(--gold); }
-        .setup-name-input::placeholder{ color:var(--ivory-dim); }
-
-        .setup-avatar-label{
-          font:500 12px 'Inter'; letter-spacing:.12em; text-transform:uppercase;
-          color:var(--ivory-dim); margin-bottom:6px;
-        }
-        .avatar-grid{
-          display:grid; grid-template-columns:repeat(5,1fr); gap:8px;
-        }
-        .avatar-btn{
-          aspect-ratio:1; border-radius:10px; cursor:pointer;
-          background:rgba(255,255,255,.05); border:1px solid var(--panel-border);
-          font-size:24px; display:flex; align-items:center; justify-content:center;
-          transition:.18s; line-height:1;
-        }
-        .avatar-btn:hover{ background:rgba(255,255,255,.12); transform:scale(1.08); }
-        .avatar-btn.selected{
-          border-color:var(--gold); background:rgba(201,169,97,.18);
-          box-shadow:0 0 0 1px var(--gold);
-        }
-
-        .setup-start{
-          width:100%; background:var(--gold); border:none; color:var(--bg);
-          font:700 15px 'Inter'; letter-spacing:.16em; text-transform:uppercase;
-          padding:22px; border-radius:14px; cursor:pointer;
-          transition:.2s; display:block;
-        }
-        .setup-start:hover{ background:var(--gold-bright); transform:translateY(-1px); box-shadow:0 10px 28px rgba(0,0,0,.3); }
-
-        @media (max-width:1100px){
-          .layout{ grid-template-columns:1.8fr 1fr; gap:14px; }
-          .brand h1{ font-size:36px; }
-          .side-btn{ font-size:12px; padding:14px 10px; }
-          .turn-pill{ font-size:16px; padding:14px 10px; }
-          .account-balance{ font-size:22px; }
-          .ledger-amount{ font-size:clamp(18px,2.2vw,28px); }
-        }
-
-        @media (max-width:900px){
-          body{ overflow-y:auto; align-items:flex-start; }
-          .game{ height:auto; min-height:100vh; padding:10px; gap:10px; width:100%; }
-          .layout{
-            grid-template-columns:1fr;
-            grid-template-rows:auto auto;
-            gap:14px;
-          }
-          .board{
-            min-height:60vw; height:auto; aspect-ratio:1/1;
-            border-radius:20px; gap:6px; padding:14px;
-          }
-          .side{ flex-direction:column; gap:10px; }
-          .side-panels{
-            display:grid;
-            grid-template-columns:1fr 1fr 1fr;
-            gap:10px;
-            flex:unset;
-          }
-          .side-panels .account-card,
-          .side-panels .ledger{ flex:unset; }
-          .side-controls{ flex-direction:row; align-items:stretch; gap:10px; }
-          .side-buttons{ flex:1; }
-          .turn-pill{ font-size:14px; padding:12px 10px; }
-          .brand h1{ font-size:30px; }
-          .brand .eyebrow{ font-size:11px; }
-          .account-balance{ font-size:20px; }
-          .ledger-amount{ font-size:22px; }
-          .progress-ticks{ font-size:8px; }
-          .block{ border-radius:10px; }
-          .tile-letter{ font-size:clamp(10px,1.5vw,16px); letter-spacing:1px; }
-        }
-
-        @media (max-width:600px){
-          body{ overflow-y:auto; align-items:flex-start; }
-          .game{ padding:8px; gap:8px; }
-          .topbar{ padding:2px 2px 0; }
-          .brand h1{ font-size:26px; }
-          .brand .eyebrow{ font-size:10px; letter-spacing:.16em; }
-          .layout{ gap:10px; }
-          .board{
-            min-height:0; aspect-ratio:1/1; width:100%;
-            gap:4px; padding:10px; border-radius:16px;
-          }
-          .block{ border-radius:8px; }
-          .tile-letter{ font-size:clamp(8px,2.4vw,13px); letter-spacing:.5px; }
-          .side-controls{ flex-direction:column; gap:8px; }
-          .side-buttons{ gap:8px; }
-          .side-btn{ font-size:11px; padding:12px 8px; border-radius:12px; }
-          .turn-pill{ font-size:13px; padding:12px 8px; border-radius:12px; }
-          .side-panels{
-            display:flex; flex-direction:column; gap:8px;
-          }
-          .account-card{ padding:12px 14px; gap:8px; border-radius:14px; }
-          .avatar{ width:36px; height:36px; font-size:18px; }
-          .account-name{ font-size:13px; }
-          .account-balance{ font-size:20px; }
-          .progress-ticks{ font-size:8px; }
-          .ledger{ padding:14px 16px; gap:6px; border-radius:14px; }
-          .ledger-amount{ font-size:22px; }
-          .ledger-text{ font-size:13px; }
-          .welcome-title{ font-size:clamp(52px,16vw,80px); }
-          .welcome-sub{ font-size:14px; }
-          .welcome-btn{ padding:16px 36px; }
-          .setup-players{ grid-template-columns:1fr; gap:12px; }
-          .setup-box{ gap:18px; }
-          .setup-title{ font-size:26px; }
-          .avatar-grid{ grid-template-columns:repeat(5,1fr); gap:5px; }
-          .avatar-btn{ font-size:18px; }
-          .htp-modal{ padding:22px 18px 20px; }
-          .htp-title{ font-size:22px; }
-          .htp-icon{ width:38px; height:38px; font-size:18px; border-radius:10px; }
-          .winner-title{ font-size:clamp(32px,10vw,52px); }
-          .winner-amount{ font-size:18px; }
-        }
-
-        @media (max-width:400px){
-          .board{ gap:3px; padding:8px; }
-          .block{ border-radius:6px; }
-          .tile-letter{ font-size:8px; letter-spacing:0; }
-          .brand h1{ font-size:22px; }
-          .welcome-title{ font-size:clamp(44px,14vw,64px); }
-          .setup-players{ grid-template-columns:1fr; }
-          .account-balance{ font-size:18px; }
-        }
-      `}</style>
-      <div dangerouslySetInnerHTML={{ __html: `
-        <audio id="cashSound" src="cash.mp3"></audio>
-        <audio id="loseSound" src="lose.mp3"></audio>
-        <audio id="jackpotSound" src="jackpot.mp3"></audio>
-
-        <div class="screen-overlay" id="welcomeScreen">
-          <div class="welcome-box">
-            <div class="welcome-eyebrow">Private Table</div>
-            <div class="welcome-title">Money<br>Blocks</div>
-            <div class="welcome-rule"></div>
-            <p class="welcome-sub">Two players. Hidden tiles. Every flip changes the table. First to a million takes it all.</p>
-            <button class="welcome-btn" id="welcomeStartBtn">Take a Seat</button>
-          </div>
-        </div>
-
-        <div class="screen-overlay" id="setupScreen" style="display:none;opacity:0;transition:opacity .4s;">
-          <div class="setup-box">
-            <div class="setup-header">
-              <div class="setup-eyebrow">Before We Begin</div>
-              <div class="setup-title">Set Your Players</div>
-            </div>
-            <div class="setup-players">
-              <div class="setup-player">
-                <div class="setup-player-label">Player One</div>
-                <input class="setup-name-input" id="setupP1Name" maxlength="18" placeholder="Enter name…" autocomplete="off">
-                <div>
-                  <div class="setup-avatar-label">Choose Avatar</div>
-                  <div class="avatar-grid" id="avatarGrid1"></div>
-                </div>
-              </div>
-              <div class="setup-player">
-                <div class="setup-player-label">Player Two</div>
-                <input class="setup-name-input" id="setupP2Name" maxlength="18" placeholder="Enter name…" autocomplete="off">
-                <div>
-                  <div class="setup-avatar-label">Choose Avatar</div>
-                  <div class="avatar-grid" id="avatarGrid2"></div>
-                </div>
-              </div>
-            </div>
-            <button class="setup-start" id="setupDoneBtn">Open the Table →</button>
-          </div>
-        </div>
-
-        <div class="game" id="gameRoot" style="visibility:hidden;">
-          <div class="topbar">
-            <div class="brand">
-              <div class="eyebrow">Private Table</div>
-              <h1>Money Blocks</h1>
-            </div>
-          </div>
-
-          <div class="layout">
-            <div class="board" id="board"></div>
-
-            <div class="side">
-              <div class="side-controls">
-                <div class="side-buttons">
-                  <button class="side-btn" id="howToPlayBtn">How to Play</button>
-                  <button class="side-btn" id="resetBtn">Reset Table</button>
-                </div>
-                <div class="turn-pill" id="turnDisplay"><span class="dot"></span> Player One to move</div>
-              </div>
-
-              <div class="side-panels">
-                <div class="account-card active" id="p1Card">
-                  <div class="account-top">
-                    <div class="avatar" id="p1Avatar">I</div>
-                    <div>
-                      <div class="account-name" id="p1Name">Player One</div>
-                      <div class="account-tag">Private Account</div>
-                    </div>
-                    <div class="shield-badge" id="p1Shield">Guarded</div>
-                  </div>
-                  <div class="account-balance" id="p1Money">$100,000</div>
-                  <div class="progress-wrap"><div class="progress-fill" id="p1Bar"></div></div>
-                  <div class="progress-ticks"><span>$0</span><span>$250K</span><span>$500K</span><span>$750K</span><span>$1M</span></div>
-                </div>
-
-                <div class="ledger" id="ledgerCard">
-                  <div class="ledger-rule"></div>
-                  <div class="ledger-eyebrow" id="ledgerEyebrow">Table Set</div>
-                  <div class="ledger-amount" id="ledgerAmount" style="display:none;"></div>
-                  <div class="ledger-text" id="message">The table is set.
-Player One opens play.</div>
-                  <div class="ledger-name" id="ledgerName" style="display:none;"></div>
-                </div>
-
-                <div class="account-card" id="p2Card">
-                  <div class="account-top">
-                    <div class="avatar" id="p2Avatar">II</div>
-                    <div>
-                      <div class="account-name" id="p2Name">Player Two</div>
-                      <div class="account-tag">Private Account</div>
-                    </div>
-                    <div class="shield-badge" id="p2Shield">Guarded</div>
-                  </div>
-                  <div class="account-balance" id="p2Money">$100,000</div>
-                  <div class="progress-wrap"><div class="progress-fill" id="p2Bar"></div></div>
-                  <div class="progress-ticks"><span>$0</span><span>$250K</span><span>$500K</span><span>$750K</span><span>$1M</span></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div id="htpBackdrop" class="htp-backdrop" style="display:none;">
-          <div class="htp-modal">
-            <div class="htp-header">
-              <div>
-                <div class="htp-eyebrow">Private Table</div>
-                <h2 class="htp-title">How to Play</h2>
-              </div>
-              <button class="htp-close" id="htpClose">✕</button>
-            </div>
-            <div class="htp-rule"></div>
-            <div class="htp-body">
-              <p class="htp-intro">Two players take turns picking hidden tiles from the board. Each tile conceals a coloured block — and every colour triggers a different event. First to reach <strong>$1,000,000</strong> wins. If the board empties first, the richer player takes the table.</p>
-              <div class="htp-rule htp-rule-sm"></div>
-              <div class="htp-grid">
-                <div class="htp-row">
-                  <span class="htp-icon type-green">💵</span>
-                  <div><div class="htp-block-name">Green — Gain</div><div class="htp-block-desc">Bank a cash windfall of $25K–$150K. A hidden multiplier may double or triple the amount.</div></div>
-                </div>
-                <div class="htp-row">
-                  <span class="htp-icon type-red">💸</span>
-                  <div><div class="htp-block-name">Red — Loss</div><div class="htp-block-desc">Suffer a setback of $25K–$100K, with a chance the multiplier magnifies the hit.</div></div>
-                </div>
-                <div class="htp-row">
-                  <span class="htp-icon type-blue">🥷</span>
-                  <div><div class="htp-block-name">Blue — Raid</div><div class="htp-block-desc">Steal $25K–$100K directly from your opponent's account. Blocked if they hold a Guard.</div></div>
-                </div>
-                <div class="htp-row">
-                  <span class="htp-icon type-yellow">💎</span>
-                  <div><div class="htp-block-name">Yellow — Wild</div><div class="htp-block-desc">Draw a wild reward — $250K, $500K, or double your entire holdings instantly.</div></div>
-                </div>
-                <div class="htp-row">
-                  <span class="htp-icon type-purple">🛡️</span>
-                  <div><div class="htp-block-name">Purple — Guard</div><div class="htp-block-desc">Raise a shield. Your next Raid from the opponent is automatically deflected.</div></div>
-                </div>
-                <div class="htp-row">
-                  <span class="htp-icon type-black">🎲</span>
-                  <div><div class="htp-block-name">Black — Wild Card</div><div class="htp-block-desc">Spin the wheel: Jackpot (+$300K), Inheritance (+$500K), Swap (exchange balances), Encore (extra turn), Audit (-$200K), Robbery (-$150K), or Bankrupt (halved).</div></div>
-                </div>
-              </div>
-              <div class="htp-rule htp-rule-sm"></div>
-              <div class="htp-tips">
-                <div class="htp-tip">🔠 Each tile shows a letter A–Z. The letter is a mystery — it gives no clue about the colour hidden beneath.</div>
-                <div class="htp-tip">⚡ A hidden multiplier (×2 or ×3) lurks behind some tiles — revealed only after you click.</div>
-                <div class="htp-tip">🌈 One tile is Rainbow — a special Black wild card with animated colour.</div>
-              </div>
-            </div>
-            <button class="htp-start" id="htpDone">Got It — Let's Play</button>
-          </div>
-        </div>
-      ` }} />
-    </>
-  );
+      setConfetti(Array.from({ length: 20 }, (_, index) => ({ id: `${Date.now()}-${index}`, left: Math.random() * 100, delay: Math.random() * 0.4, emoji: ["🎉", "⭐", "✨", "🎊"][index % 4], color: ["#ff7a3d", "#ffd166", "#3cb878", "#fff"][index % 4] })));
+      setTimeout(() => setConfetti([]), 2400);
+    }
+  }
+
+  function changeCategory(nextCategory) {
+    if (nextCategory === category) return;
+    setCategory(nextCategory);
+    setDifficulty(0);
+    setScore(0);
+    setStreak(0);
+  }
+
+  const progress = Math.min(score * 2, 100);
+  return <div className="wm-root">
+    <style>{`.wm-root{--green:#8fd14f;--lime:#a7e063;--orange:#ff7a3d;--gold:#ffc94d;box-sizing:border-box;min-height:100vh;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:20px;overflow:hidden;background:radial-gradient(circle at 20% 20%,var(--lime),var(--green));font-family:'Trebuchet MS',sans-serif}.wm-root *{box-sizing:border-box}.wm-title{margin:0;padding:10px 34px;border-radius:18px;background:linear-gradient(#ffd166,#ffa733);box-shadow:0 6px 0 #d88925;color:#fff;font-size:clamp(2rem,6vw,4rem);text-align:center;text-shadow:0 2px #c9791c}.wm-categories{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;max-width:1000px}.wm-category{padding:10px 15px;border:4px solid #f5a623;border-radius:14px;background:#fff;color:#555;font-weight:800;cursor:pointer}.wm-category.active{background:var(--orange);border-color:#e85d20;color:#fff}.wm-score{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;color:#3a8a3a;font-weight:800}.wm-score span,.wm-difficulty{padding:9px 15px;border-radius:14px;background:rgba(255,255,255,.88);box-shadow:0 4px 0 rgba(0,0,0,.08)}.wm-board{display:flex;flex-wrap:wrap;justify-content:center;gap:clamp(8px,2vw,18px);max-width:1000px;min-height:150px}.wm-card{display:flex;align-items:center;justify-content:center;width:clamp(80px,18vw,145px);height:clamp(105px,24vw,190px);border:6px solid #f5a623;border-radius:18px;background:#fff;box-shadow:0 8px 18px rgba(0,0,0,.18);font-size:clamp(2rem,7vw,4rem);transition:.3s}.wm-card.missing{background:#ffc94d;color:var(--orange);font-size:clamp(3rem,9vw,5rem)}.wm-options{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;min-height:110px}.wm-option{display:flex;flex-direction:column;align-items:center;justify-content:center;width:clamp(78px,18vw,112px);height:clamp(78px,18vw,112px);border:4px solid #f5a623;border-radius:16px;background:#fff;cursor:pointer;transition:transform .12s}.wm-option:hover{transform:scale(1.08)}.wm-option.right{border-color:#3cb878;background:#e7fbe9}.wm-option.wrong{border-color:#e8453c;background:#fdeceb}.wm-option-emoji{font-size:clamp(1.8rem,6vw,2.8rem)}.wm-option-name{color:#555;font-size:clamp(.65rem,2vw,.85rem);font-weight:800;text-transform:capitalize;text-align:center}.wm-status{min-height:30px;color:#fff;font-size:clamp(1rem,3vw,1.4rem);font-weight:800;text-align:center;text-shadow:0 2px rgba(0,0,0,.15)}.wm-actions{display:flex;gap:12px}.wm-button{padding:10px 20px;border:0;border-radius:14px;background:#3cb878;box-shadow:0 5px 0 #2a9760;color:#fff;font-weight:800;cursor:pointer}.wm-button:active{transform:translateY(3px);box-shadow:0 2px 0 #2a9760}.wm-progress{width:min(520px,90vw);height:18px;border:4px solid #f5a623;border-radius:999px;background:#fff;overflow:hidden}.wm-progress-bar{height:100%;background:linear-gradient(90deg,#3cb878,#8fd14f);transition:.4s}.wm-achievement{color:#fff;font-weight:800}.wm-confetti{position:fixed;top:-30px;z-index:5;font-size:clamp(1rem,3vw,2rem);pointer-events:none;animation:wm-fall 2.4s linear forwards}@keyframes wm-fall{to{top:105vh;transform:rotate(720deg)}}@media(max-width:600px){.wm-root{justify-content:flex-start;padding-top:28px}.wm-categories{gap:7px}.wm-category{padding:8px 10px;font-size:.75rem}}`}</style>
+    <Confetti pieces={confetti} />
+    <h1 className="wm-title">What's missing?</h1>
+    <div className="wm-categories">{Object.keys(CATEGORIES).map(item => <button key={item} className={`wm-category${item === category ? " active" : ""}`} onClick={() => changeCategory(item)}>{item}</button>)}</div>
+    <div className="wm-score"><span>⭐ Score: {score}</span><span>🔥 Streak: {streak}</span><span className="wm-difficulty">Level: {DIFFICULTIES[difficulty].name}</span></div>
+    <button className="wm-button" onClick={() => setSoundEnabled(current => !current)}>{soundEnabled ? "🔊 Sound On" : "🔇 Sound Off"}</button>
+    <div className="wm-progress"><div className="wm-progress-bar" style={{ width: `${progress}%` }} /></div>
+    <div className="wm-board">{round.cards.map((card, index) => <div key={`${card.name}-${index}`} className={`wm-card${!round.preview && index === round.missingIndex ? " missing" : ""}`}>{round.preview || index !== round.missingIndex || result ? card.emoji : "?"}</div>)}</div>
+    <div className="wm-options">{options.map(option => <button key={option.name} className={`wm-option${result?.correct === option.name ? " right" : ""}${result?.chosen === option.name && !result.isCorrect ? " wrong" : ""}`} onClick={() => answer(option)}><span className="wm-option-emoji">{option.emoji}</span><span className="wm-option-name">{option.name}</span></button>)}</div>
+    <div className="wm-status">{status}</div>
+    {achievements.length > 0 && <div className="wm-achievement">🏆 {achievements[achievements.length - 1]}</div>}
+    <div className="wm-actions"><button className="wm-button" disabled={!round.answered} onClick={startRound}>Next Round ▶</button></div>
+  </div>;
 }

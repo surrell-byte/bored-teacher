@@ -22,6 +22,7 @@ import {
   getDoc,
   getDocs,
   collection,
+  addDoc,
   query,
   where,
   updateDoc,
@@ -181,4 +182,24 @@ export async function loadAllStudentScores(classId: string) {
     const snap = await getDocs(q);
     return snap.docs.map(d => ({ uid: d.id, ...d.data() }));
   } catch (_) { return []; }
+}
+
+export async function submitFeedback(data: {
+  message: string;
+  type: 'suggestion' | 'grievance';
+  page: string;
+  userId?: string | null;
+  userName?: string;
+}) {
+  const message = data.message.trim();
+  if (!message) throw new Error('Feedback message is required');
+
+  await addDoc(collection(db, 'feedback'), {
+    message,
+    type: data.type,
+    page: data.page,
+    userId: data.userId ?? null,
+    userName: data.userName ?? 'Guest',
+    createdAt: serverTimestamp(),
+  });
 }
