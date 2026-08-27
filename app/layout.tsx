@@ -6,6 +6,7 @@ import { GameProvider } from '@/providers/GameProvider';
 import PageTransition from '@/components/PageTransition';
 import AppShell from '@/components/AppShell';
 import AppBackground from '@/components/AppBackground';
+import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration';
 
 export const metadata: Metadata = {
   title: 'ESL Game Hub',
@@ -17,6 +18,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body>
+        <ServiceWorkerRegistration />
         <GameProvider>
           <AppBackground />
           <AppShell>
