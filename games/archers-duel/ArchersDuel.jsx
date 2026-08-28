@@ -590,10 +590,12 @@ export default function ArchersDuel({ onComplete }) {
         .setup-player-panel .sprite-card svg{width:132px;height:180px;max-width:100%}
         .setup-player-panel .sprite-card-label{font-size:1rem}
         .shot-turn-label{text-align:center;color:var(--gold-light);font:700 1rem Georgia,serif;letter-spacing:.12em;margin:8px 0 14px}
+        .tiles-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;width:100%;align-items:stretch}
+        .tiles-row .tile{width:100%;min-width:0}
         .tile-special .tile-face{background:linear-gradient(145deg,#bd4b0c,#ff9f1c);border-color:#ffc15c;box-shadow:0 0 22px #ff8a184d}
         .tile-special .tile-back{background:linear-gradient(145deg,#a43f0a,#f17d10);border-color:#ffc15c}
         .tile-special .tile-num,.tile-special .tile-q{color:#fff4d0}
-        @media(max-width:700px){.setup-panels{grid-template-columns:1fr;gap:16px}.setup-player-panel{padding:18px}.setup-player-panel .sprite-card{min-height:210px}.setup-player-panel .sprite-card svg{height:150px}.shot-turn-label{font-size:.85rem}}
+        @media(max-width:700px){.setup-panels{grid-template-columns:1fr;gap:16px}.setup-player-panel{padding:18px}.setup-player-panel .sprite-card{min-height:210px}.setup-player-panel .sprite-card svg{height:150px}.shot-turn-label{font-size:.85rem}.tiles-row{gap:8px}.tiles-row .tile-q{font-size:.55rem}}
       `}</style>
       {screen === "setup" && (
         <div id="setupScreen">

@@ -25,6 +25,7 @@ import {
   addDoc,
   query,
   where,
+  orderBy,
   updateDoc,
   serverTimestamp,
 } from 'firebase/firestore';
@@ -202,4 +203,10 @@ export async function submitFeedback(data: {
     userName: data.userName ?? 'Guest',
     createdAt: serverTimestamp(),
   });
+}
+
+export async function loadFeedback() {
+  const feedbackQuery = query(collection(db, 'feedback'), orderBy('createdAt', 'desc'));
+  const snapshot = await getDocs(feedbackQuery);
+  return snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
 }
