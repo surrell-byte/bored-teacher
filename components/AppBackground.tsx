@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation';
 // visible when `background-size: cover` crops the image to fit the
 // viewport. Tune these once per image, not per viewport.
 const BACKGROUNDS: Record<string, { src: string; position: string }> = {
+  plain:        { src: '/assets/images/plain-bg.png',              position: 'center' },
   welcome:      { src: '/assets/images/welcome-page.webp',        position: 'center' },
   startPlaying: { src: '/assets/images/start-playing-page.webp',  position: 'center' },
   auth:         { src: '/assets/images/auth-screen-bg.webp',     position: 'center' },
@@ -41,7 +42,7 @@ export default function AppBackground() {
     }
   }, [pathname]);
 
-  let entry = BACKGROUNDS.startPlaying;
+  let entry = BACKGROUNDS.plain;
 
   if (pathname === '/') {
     entry = splashStage === 'start-playing' ? BACKGROUNDS.startPlaying : BACKGROUNDS.welcome;
@@ -60,12 +61,16 @@ export default function AppBackground() {
   } else if (pathname.startsWith('/resources')) {
     entry = BACKGROUNDS.resources;
   } else if (pathname.startsWith('/blog')) {
-    entry = BACKGROUNDS.blog;
+    entry = BACKGROUNDS.plain;
   } else if (pathname.startsWith('/subscription')) {
     entry = BACKGROUNDS.subscription;
   }
 
   useEffect(() => {
+    const plainImage = new Image();
+    plainImage.decoding = 'async';
+    plainImage.fetchPriority = 'high';
+    plainImage.src = BACKGROUNDS.plain.src;
     const img = new Image();
     img.decoding = 'async';
     img.src = entry.src;

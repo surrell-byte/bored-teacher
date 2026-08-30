@@ -108,6 +108,7 @@ export default function SubscriptionPage() {
                 onClick={() => {
                   if (plan.name === 'Teacher Pro') router.push('/payment?plan=resource-library');
                   if (plan.name === 'School') window.location.href = 'mailto:boredteacherapp@gmail.com?subject=School%20plan%20enquiry';
+                                  if (plan.name === 'School') window.location.href = 'mailto:boredteacherapp@gmail.com?subject=School%20plan%20enquiry&body=Hello%20Russell%2C%20I%20would%20like%20to%20ask%20about%20a%20School%20plan.';
                 }}
               >
                 {plan.action}

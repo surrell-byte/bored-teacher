@@ -97,7 +97,7 @@ export default function Navbar() {
             <Link
               key={item.href}
               href={item.href}
-              className={`pill-btn${isActive(item.href) ? ' active' : ''}`}
+              className={`nav-link${isActive(item.href) ? ' active' : ''}`}
               style={{ textDecoration: 'none' }}
               aria-current={isActive(item.href) ? 'page' : undefined}
             >

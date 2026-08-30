@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { auth, loadFeedback, onAuthStateChanged } from '@/lib/firebase';
+import { auth, loadFeedback, onAuthStateChanged, resolveFeedback } from '@/lib/firebase';
 
 type FeedbackItem = {
   id: string;
@@ -11,6 +11,7 @@ type FeedbackItem = {
   page?: string;
   userName?: string;
   createdAt?: { toDate?: () => Date };
+  resolved?: boolean;
 };
 
 const CREATOR_EMAIL = 'boredteacherapp@gmail.com';
@@ -19,7 +20,7 @@ export default function FeedbackAdminPage() {
   const router = useRouter();
   const [items, setItems] = useState<FeedbackItem[]>([]);
   const [status, setStatus] = useState<'loading' | 'ready' | 'denied' | 'error'>('loading');
-  const [filter, setFilter] = useState<'all' | 'suggestion' | 'grievance'>('all');
+  const [filter, setFilter] = useState<'open' | 'resolved' | 'all'>('open');
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(async user => {
@@ -41,7 +42,7 @@ export default function FeedbackAdminPage() {
     return unsubscribe;
   }, [router]);
 
-  const visibleItems = filter === 'all' ? items : items.filter(item => item.type === filter);
+  const visibleItems = items.filter(item => filter === 'all' || filter === 'open' ? !item.resolved || filter === 'all' : item.resolved);
   const formatDate = (value: FeedbackItem['createdAt']) => {
     try {
       return value?.toDate?.().toLocaleString() ?? 'Date unavailable';
@@ -55,7 +56,7 @@ export default function FeedbackAdminPage() {
     return <div className="admin-feedback-page"><section className="shell-card admin-feedback-empty"><h1>Creator access required</h1><p>This page is reserved for the app creator.</p></section></div>;
   }
   if (status === 'error') {
-    return <div className="admin-feedback-page"><section className="shell-card admin-feedback-empty"><h1>Could not load feedback</h1><p>Check that your Firestore rules allow the creator account to read the feedback collection.</p></section></div>;
+    return <div className="admin-feedback-page"><section className="shell-card admin-feedback-empty"><h1>Could not load feedback</h1><p>Check that your Firestore rules allow {CREATOR_EMAIL} to read the feedback collection.</p></section></div>;
   }
 
   return (
@@ -69,13 +70,13 @@ export default function FeedbackAdminPage() {
         <div className="admin-feedback-count"><strong>{items.length}</strong><span>messages saved</span></div>
       </header>
       <div className="admin-feedback-filters" role="group" aria-label="Filter feedback">
-        {(['all', 'suggestion', 'grievance'] as const).map(option => <button key={option} className={`pill-btn${filter === option ? ' active' : ''}`} onClick={() => setFilter(option)}>{option === 'all' ? 'All messages' : option === 'suggestion' ? 'Suggestions' : 'Problems and bugs'}</button>)}
+        {(['open', 'resolved', 'all'] as const).map(option => <button key={option} className={`pill-btn${filter === option ? ' active' : ''}`} onClick={() => setFilter(option)}>{option === 'open' ? 'Needs review' : option === 'resolved' ? 'Resolved' : 'All messages'}</button>)}
       </div>
       <section className="admin-feedback-list">
-        {visibleItems.length ? visibleItems.map(item => <article className="shell-card admin-feedback-item" key={item.id}>
-          <div className="admin-feedback-item-top"><span className={`admin-feedback-type ${item.type === 'grievance' ? 'problem' : ''}`}>{item.type === 'grievance' ? '🐛 Problem or bug' : '💡 Suggestion'}</span><time>{formatDate(item.createdAt)}</time></div>
+        {visibleItems.length ? visibleItems.map(item => <article className={`shell-card admin-feedback-item${item.resolved ? ' resolved' : ''}`} key={item.id}>
+          <div className="admin-feedback-item-top"><span className={`admin-feedback-type ${item.type === 'grievance' ? 'problem' : ''}`}>{item.resolved ? '✓ Resolved' : item.type === 'grievance' ? '🐛 Problem or bug' : '💡 Suggestion'}</span><time>{formatDate(item.createdAt)}</time></div>
           <p>{item.message}</p>
-          <small>From {item.userName || 'Guest'} · sent from {item.page || 'the app'}</small>
+          <div className="admin-feedback-item-bottom"><small>From {item.userName || 'Guest'} · sent from {item.page || 'the app'}</small>{!item.resolved && <button className="pill-btn" onClick={async () => { await resolveFeedback(item.id); setItems(current => current.map(message => message.id === item.id ? { ...message, resolved: true } : message)); }}>Mark resolved</button>}</div>
         </article>) : <section className="shell-card admin-feedback-empty"><h2>No messages in this view</h2><p>New feedback will appear here as users send it.</p></section>}
       </section>
     </div>

@@ -1,3 +1,4 @@
+.game-shell-completion .game-shell-overlay-card h2 { color: inherit; }
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 /* ── ESL Game Hub — globals.css ──────────────────────────────── */
@@ -539,6 +540,26 @@ a { color: inherit; }
   justify-content: center;
 }
 
+.nav-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 6px 10px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background .18s, border-color .18s, color .18s;
+}
+.nav-link:hover { border-color: var(--border-bright); background: rgba(255,255,255,.08); }
+.nav-link.active { border-color: var(--gold); background: rgba(245,200,66,.14); color: var(--gold); }
+
 .nav-right {
   display: flex;
   align-items: center;
@@ -617,9 +638,28 @@ a { color: inherit; }
 .admin-feedback-type { color: var(--teal); font-size: .78rem; font-weight: 800; }
 .admin-feedback-type.problem { color: var(--coral); }
 .admin-feedback-item p { margin: 0 0 15px; color: var(--text); line-height: 1.65; white-space: pre-wrap; }
+.admin-feedback-item.resolved { opacity: .72; }
+.admin-feedback-item.resolved .admin-feedback-type { color: var(--muted); }
+.admin-feedback-item-bottom { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+.admin-feedback-item-bottom .pill-btn { padding: 7px 11px; font-size: .72rem; white-space: nowrap; }
 .admin-feedback-empty { padding: 38px; text-align: center; }
 .admin-feedback-empty h1, .admin-feedback-empty h2 { margin-bottom: 8px; color: var(--text); }
 .admin-feedback-empty p { color: var(--muted); }
+.teacher-tools-panel { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 20px 24px; margin-bottom: 18px; }
+.teacher-tools-panel h2, .weekly-awards-section h2 { margin: 0 0 6px; color: var(--text); font: 800 1.25rem var(--font-display); }
+.teacher-tools-panel p { margin: 0; color: var(--muted); }
+.teacher-tools-actions { display: flex; align-items: center; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.teacher-class-code { padding: 9px 14px; border: 1px solid var(--gold); border-radius: 8px; color: var(--gold); letter-spacing: .15em; }
+.weekly-awards-section { margin: 24px 0; }
+.lb-section-heading { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin-bottom: 12px; }
+.lb-section-heading > span { color: var(--muted); font-size: .78rem; }
+.weekly-awards-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.weekly-award-card { padding: 20px; }
+.weekly-award-card > span { font-size: 1.6rem; }
+.weekly-award-card h3 { margin: 10px 0 8px; color: var(--text); }
+.weekly-award-card p { min-height: 66px; margin: 0 0 14px; color: var(--muted); font-size: .82rem; line-height: 1.5; }
+.weekly-award-card strong { color: var(--gold); font-size: .82rem; }
+@media (max-width: 700px) { .teacher-tools-panel, .lb-section-heading { align-items: flex-start; flex-direction: column; } .teacher-tools-actions { justify-content: flex-start; } .weekly-awards-grid { grid-template-columns: 1fr; } .weekly-award-card p { min-height: 0; } .admin-feedback-item-bottom { align-items: flex-start; flex-direction: column; } }
 .payment-page { max-width: 1000px; margin: 0 auto; padding: clamp(18px, 4vw, 42px) clamp(14px, 3vw, 24px) 80px; }
 .payment-header { padding: clamp(24px, 5vw, 42px); margin-bottom: 18px; }
 .payment-header .hub-welcome-title { margin-bottom: 12px; }
@@ -3911,6 +3951,13 @@ a { color: inherit; }
   width: min(100%, 430px); padding: 28px; border: 1px solid var(--border); border-radius: 20px;
   background: var(--surface-strong); color: var(--text); text-align: center; box-shadow: 0 20px 60px rgb(0 0 0 / 0.28);
 }
+.game-shell-completion .game-shell-overlay-card { border-color: var(--completion-border, var(--border-bright)); background: var(--completion-surface, var(--surface-strong)); color: var(--completion-text, var(--text)); box-shadow: 0 24px 70px var(--completion-shadow, rgba(0,0,0,.42)); }
+.game-shell-completion .game-shell-overlay-icon { color: var(--completion-accent, var(--gold)); }
+.game-shell-completion .game-shell-primary-action { background: var(--completion-action, var(--teal)); color: var(--completion-action-text, #07130d); }
+.game-shell--finnthefox { --completion-border: #ff7e3d; --completion-surface: linear-gradient(160deg, #fffdf7, #ffe8d7); --completion-text: #2e2013; --completion-accent: #d4531c; --completion-action: #ff7e3d; --completion-action-text: #fff; }
+.game-shell--turbodash { --completion-border: #e8a800; --completion-surface: linear-gradient(160deg, #252e1c, #172016); --completion-text: #f0f2ec; --completion-accent: #ffc93c; --completion-action: #ffc93c; --completion-action-text: #141a0d; }
+.game-shell--archersduel { --completion-border: #d8ad45; --completion-surface: linear-gradient(160deg, #192f20, #101d16); --completion-text: #fff7df; --completion-accent: #ffe49a; --completion-action: #d8ad45; --completion-action-text: #07130d; }
+.game-shell--findmyfood { --completion-border: #f5c842; --completion-surface: linear-gradient(160deg, #293747, #202b3a); --completion-text: #f4f7fb; --completion-accent: #ffd166; --completion-action: #63d7ba; --completion-action-text: #10221e; }
 .game-shell[data-game-id="zoogame"] .game-shell-completion .game-shell-overlay-card { border: 5px solid #c7b28b; border-radius: 32px; background: #fff8e7; color: #4a3728; box-shadow: 0 20px 60px rgb(0 0 0 / .3); }
 .game-shell[data-game-id="zoogame"] .game-shell-completion .game-shell-overlay-card h2 { color: #4a3728; }
 .game-shell[data-game-id="zoogame"] .game-shell-completion .game-shell-primary-action { background: #fcdb8a; color: #4a3728; }

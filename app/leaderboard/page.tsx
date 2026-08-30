@@ -4,13 +4,14 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { onAuthStateChanged } from '@/lib/firebase';
+import { auth, createClassCode, onAuthStateChanged } from '@/lib/firebase';
 import { useGame } from '@/providers/GameProvider';
 import {
   getSortedClassLeaderboard,
   type LBPlayerWithScore,
 } from '@/features/leaderboard/api';
 import { GAME_KEYS, GAME_NAMES, GAME_ICONS } from '@/constants/index';
+import ManagePlayersModal from '@/features/players/components/ManagePlayersModal';
 
 const MEDALS = ['🥇', '🥈', '🥉'];
 
@@ -41,12 +42,15 @@ function Podium({ players }: { players: LBPlayerWithScore[] }) {
 
 export default function LeaderboardPage() {
   const router = useRouter();
-  const { state } = useGame();
+  const { state, setState } = useGame();
 
   const [ready,    setReady]    = useState(false);
   const [players,  setPlayers]  = useState<LBPlayerWithScore[]>([]);
   const [selected, setSelected] = useState<LBPlayerWithScore | null>(null);
   const [activeGame, setActiveGame] = useState<string>('all');
+  const [showManage, setShowManage] = useState(false);
+  const [classCode, setClassCode] = useState('');
+  const [creatingClass, setCreatingClass] = useState(false);
 
   useEffect(() => {
     const isGuest = localStorage.getItem('guestUser') === 'true';
@@ -73,6 +77,18 @@ export default function LeaderboardPage() {
   const totalPlayers = players.length;
   const totalGames   = players.reduce((a, p) => a + p.score.gamesPlayed, 0);
   const highestScore = players[0]?.score.total ?? 0;
+
+  async function handleCreateClass() {
+    if (!auth.currentUser || state.role !== 'teacher') return;
+    setCreatingClass(true);
+    try {
+      const code = await createClassCode(auth.currentUser.uid);
+      setClassCode(code);
+      setState({ classId: code });
+    } finally {
+      setCreatingClass(false);
+    }
+  }
 
   if (!ready) return null;
 
@@ -110,6 +126,20 @@ export default function LeaderboardPage() {
         </div>
         <Podium players={players} />
       </div>
+
+      {state.role === 'teacher' && <section className="shell-card teacher-tools-panel">
+        <div><p className="suggestions-kicker">Teacher workspace</p><h2>Manage your classes</h2><p>Create a class code, then use Manage Students to maintain the roster.</p></div>
+        <div className="teacher-tools-actions"><button className="pill-btn" onClick={handleCreateClass} disabled={creatingClass}>{creatingClass ? 'Creating...' : 'Create new class'}</button><button className="pill-btn active" onClick={() => setShowManage(true)}>Manage Students</button>{classCode && <strong className="teacher-class-code">{classCode}</strong>}</div>
+      </section>}
+
+      <section className="weekly-awards-section">
+        <div className="lb-section-heading"><div><p className="suggestions-kicker">Celebrate progress</p><h2>Weekly awards</h2></div><span>Teacher-assigned recognition</span></div>
+        <div className="weekly-awards-grid">
+          <article className="shell-card weekly-award-card"><span>⭐</span><h3>Player of the Week</h3><p>The student with the most stars earned this week, reflecting their contribution during games.</p><strong>{players[0]?.name ?? 'Awaiting this week’s results'}</strong></article>
+          <article className="shell-card weekly-award-card"><span>📈</span><h3>Most Improved Player</h3><p>The biggest jump in stars over the past two weeks of consistent participation.</p><strong>{players[1]?.name ?? 'Awaiting this week’s results'}</strong></article>
+          <article className="shell-card weekly-award-card"><span>📣</span><h3>Most Hyped Player</h3><p>A student who motivates and supports their team, even when they are not answering the questions themselves.</p><strong>Teacher selects this award</strong></article>
+        </div>
+      </section>
 
       {/* ── Game filter tabs ───────────────────────────────── */}
       <div className="shell-card" style={{ padding: '16px 20px', marginBottom: 16, overflowX: 'auto', display: 'flex', gap: 8, flexWrap: 'nowrap' }}>
@@ -208,6 +238,7 @@ export default function LeaderboardPage() {
           </div>
         </div>
       )}
+      {showManage && <ManagePlayersModal onClose={() => setShowManage(false)} />}
     </div>
   );
 }

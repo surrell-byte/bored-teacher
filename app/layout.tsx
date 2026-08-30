@@ -17,6 +17,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="preload" as="image" href="/assets/images/plain-bg.png" fetchPriority="high" />
+      </head>
       <body>
         <ServiceWorkerRegistration />
         <GameProvider>

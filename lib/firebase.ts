@@ -25,7 +25,6 @@ import {
   addDoc,
   query,
   where,
-  orderBy,
   updateDoc,
   serverTimestamp,
 } from 'firebase/firestore';
@@ -206,7 +205,20 @@ export async function submitFeedback(data: {
 }
 
 export async function loadFeedback() {
-  const feedbackQuery = query(collection(db, 'feedback'), orderBy('createdAt', 'desc'));
-  const snapshot = await getDocs(feedbackQuery);
-  return snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
+  const snapshot = await getDocs(collection(db, 'feedback'));
+  return snapshot.docs
+    .map(item => ({ id: item.id, ...item.data() }))
+    .sort((left: any, right: any) => {
+      const leftTime = left.createdAt?.toMillis?.() ?? 0;
+      const rightTime = right.createdAt?.toMillis?.() ?? 0;
+      return rightTime - leftTime;
+    });
+}
+
+export async function resolveFeedback(feedbackId: string) {
+  if (!feedbackId) throw new Error('Feedback id is required');
+  await updateDoc(doc(db, 'feedback', feedbackId), {
+    resolved: true,
+    resolvedAt: serverTimestamp(),
+  });
 }

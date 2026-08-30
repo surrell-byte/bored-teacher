@@ -1,0 +1,41 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users may send suggestions and bug reports. Feedback is intentionally
+    // readable only by the app creator.
+    match /feedback/{feedbackId} {
+      allow create: if request.auth != null
+        && request.resource.data.message is string
+        && request.resource.data.message.size() > 0
+        && request.resource.data.message.size() <= 2000
+        && request.resource.data.type in ['suggestion', 'grievance'];
+      allow read: if request.auth != null
+        && request.auth.token.email == 'boredteacherapp@gmail.com';
+      allow update, delete: if request.auth != null
+        && request.auth.token.email == 'boredteacherapp@gmail.com';
+    }
+
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    match /classCodes/{classCode} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+        && request.resource.data.teacherUid == request.auth.uid;
+      allow update, delete: if request.auth != null
+        && resource.data.teacherUid == request.auth.uid;
+    }
+
+    match /leaderboards/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    match /studentScores/{studentId} {
+      allow create, update: if request.auth != null && request.auth.uid == studentId;
+      allow read: if request.auth != null;
+      allow delete: if request.auth != null && request.auth.uid == studentId;
+    }
+  }
+}

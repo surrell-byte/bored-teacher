@@ -90,6 +90,13 @@ export default function GamePage() {
     setGameSession(session => session + 1);
   }
 
+  function handleMainMenu() {
+    setResult(null);
+    setC4Hud(null);
+    setShowRouteWelcome(true);
+    setGameSession(session => session + 1);
+  }
+
   if (!GameComp) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', gap: 16, color: 'var(--text)' }}>
@@ -111,6 +118,7 @@ export default function GamePage() {
         completion={result}
         onContinue={handleContinue}
         onRestart={handleContinue}
+        onMainMenu={handleMainMenu}
         hidePauseControl={isFlagmaster}
         hideExitControl={isFlagmaster}
         controls={null}

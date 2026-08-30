@@ -13,7 +13,7 @@ export default function SuggestionsPage() {
   const [ready, setReady] = useState(false);
   const [feedbackType, setFeedbackType] = useState<FeedbackType>('suggestion');
   const [message, setMessage] = useState('');
-  const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error' | 'permission'>('idle');
 
   useEffect(() => {
     if (localStorage.getItem('guestUser') === 'true') {
@@ -44,8 +44,8 @@ export default function SuggestionsPage() {
       });
       setMessage('');
       setStatus('sent');
-    } catch (_) {
-      setStatus('error');
+    } catch (error: any) {
+      setStatus(error?.code === 'permission-denied' ? 'permission' : 'error');
     }
   }
 
@@ -87,6 +87,7 @@ export default function SuggestionsPage() {
           </div>
           {status === 'sent' && <p className="feedback-status success" role="status">Thank you. Your feedback has been received and saved.</p>}
           {status === 'error' && <p className="feedback-status error" role="alert">That did not send. Please try again.</p>}
+          {status === 'permission' && <p className="feedback-status error" role="alert">Feedback storage is not enabled yet. Please ask the app creator to update the Firebase rules.</p>}
         </form>
       </section>
     </div>
