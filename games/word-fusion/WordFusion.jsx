@@ -626,15 +626,23 @@ export default function WordFusion() {
     const percentage = (score / total) * 100;
     if (levelId === 'easy' && percentage >= 70 && !unlocked.medium) {
       unlocked.medium = true;
-      resultMsg.innerHTML = "🎉✨ Medium mode unlocked! ✨🎉";
-      setTimeout(() => { if (resultMsg.innerHTML.includes("unlocked")) resultMsg.innerHTML = "✨ Choose a difficulty card ✨"; }, 2000);
+      setResultText('🎉✨ Medium mode unlocked! ✨🎉', '#d4ecd8');
+      setTimeout(() => {
+        if (resultMsg && resultMsg.textContent.includes('unlocked')) {
+          setResultText('✨ Choose a difficulty card ✨');
+        }
+      }, 2000);
       updateLockUI();
       playBeep('correct');
     }
     if (levelId === 'medium' && percentage >= 70 && !unlocked.hard) {
       unlocked.hard = true;
-      resultMsg.innerHTML = "🔥🌟 Hard mode unlocked! 🌟🔥";
-      setTimeout(() => { if (resultMsg.innerHTML.includes("unlocked")) resultMsg.innerHTML = "✨ Choose a difficulty card ✨"; }, 2000);
+      setResultText('🔥🌟 Hard mode unlocked! 🌟🔥', '#d4ecd8');
+      setTimeout(() => {
+        if (resultMsg && resultMsg.textContent.includes('unlocked')) {
+          setResultText('✨ Choose a difficulty card ✨');
+        }
+      }, 2000);
       updateLockUI();
       playBeep('correct');
     }
@@ -653,15 +661,14 @@ export default function WordFusion() {
         return;
       }
       timeLeft--;
-      resultMsg.innerHTML = \`⏳ TIME LEFT: \${timeLeft}s ⏳\`;
+      setResultText('⏳ TIME LEFT: ' + timeLeft + 's ⏳', '#eef2f7');
       if (timeLeft <= 0) {
         clearTimer();
         if (!isQuestionCorrect && gameActive) {
           isQuestionCorrect = true;
           gameActive = false;
           disableChoiceButtons();
-          resultMsg.innerHTML = "⏰ TIME'S UP! No points for this one. Click NEXT.";
-          resultMsg.style.background = "#ffe0e0";
+          setResultText("⏰ TIME'S UP! No points for this one. Click NEXT.", '#ffe0e0');
           nextBtn.disabled = false;
           playBeep('wrong');
         }
@@ -679,7 +686,7 @@ export default function WordFusion() {
   function enableChoiceButtons() { document.querySelectorAll('.choice-btn').forEach(btn => btn.disabled = false); }
 
   function renderOptions(optionsList, correctAnswer) {
-    choicesDiv.innerHTML = '';
+    choicesDiv.replaceChildren();
     optionsList.forEach((opt, idx) => {
       const btn = document.createElement('button');
       btn.textContent = \`\${idx+1}. \${opt.toUpperCase()}\`;
@@ -699,8 +706,7 @@ export default function WordFusion() {
       playerScore++;
       updateScoreUI();
       isQuestionCorrect = true;
-      resultMsg.innerHTML = "🎉 CORRECT! 🎉<br> Glowing emojis! Click NEXT.";
-      resultMsg.style.background = "#d4ecd8";
+      setResultText('🎉 CORRECT! 🎉 Glowing emojis! Click NEXT.', '#d4ecd8');
       disableChoiceButtons();
       nextBtn.disabled = false;
       addCorrectGlow();
@@ -710,15 +716,14 @@ export default function WordFusion() {
       setTimeout(() => document.getElementById('gameContainer').classList.remove('pop-effect'), 300);
     } else {
       playBeep('wrong');
-      resultMsg.innerHTML = "❌ Wrong! Try another answer. ❌";
-      resultMsg.style.background = "#ffe0e0";
-      btnElement.style.borderColor = "#ef4444";
-      btnElement.style.background = "#fee2e2";
+      setResultText('❌ Wrong! Try another answer. ❌', '#ffe0e0');
+      btnElement.style.borderColor = '#ef4444';
+      btnElement.style.background = '#fee2e2';
       setTimeout(() => {
-        if (!isQuestionCorrect && resultMsg.style.background !== "#d4ecd8") {
-          resultMsg.style.background = "#eef2f7";
-          btnElement.style.borderColor = "#cfe2ec";
-          btnElement.style.background = "white";
+        if (!isQuestionCorrect && resultMsg.style.background !== '#d4ecd8') {
+          resultMsg.style.background = '#eef2f7';
+          btnElement.style.borderColor = '#cfe2ec';
+          btnElement.style.background = 'white';
         }
       }, 700);
       nextBtn.disabled = true;
@@ -746,8 +751,8 @@ export default function WordFusion() {
     gameActive = true;
     nextBtn.disabled = true;
     removeGlow();
-    resultMsg.style.background = "#eef2f7";
-    resultMsg.innerHTML = "🔍 Which compound word do these emojis make?";
+    resultMsg.style.background = '#eef2f7';
+    setResultText('🔍 Which compound word do these emojis make?');
     renderOptions(q.options, q.answer);
     enableChoiceButtons();
     if (currentLevel === 'hard') startHardModeTimer();
@@ -762,21 +767,36 @@ export default function WordFusion() {
     levelScores[currentLevel] = Math.max(levelScores[currentLevel], playerScore);
     checkUnlocks(currentLevel, playerScore, totalQ);
     const performance =
-      playerScore === totalQ ? "🏆 LEGEND! 🏆" :
-      playerScore > totalQ * 0.7 ? "🔥 Strong! 🔥" :
-      "👍 Keep going! 👍";
-    resultMsg.innerHTML = \`
-      <div style="font-size:1.3rem; font-weight:800;">\${performance}</div>
-      <div style="margin:10px 0;">Score: \${playerScore}/\${totalQ}</div>
-      <button onclick="resetAndLoadLevel('\${currentLevel}')" style="margin-top:8px; padding:6px 18px; border-radius:40px; cursor:pointer; border:none; background:#2b5c6f; color:white; font-weight:bold;">🔄 Replay Level</button>
-    \`;
-    resultMsg.style.background = "#cae3e8";
+      playerScore === totalQ ? '🏆 LEGEND! 🏆' :
+      playerScore > totalQ * 0.7 ? '🔥 Strong! 🔥' :
+      '👍 Keep going! 👍';
+    const summary = document.createElement('div');
+    summary.textContent = performance;
+    summary.style.fontSize = '1.3rem';
+    summary.style.fontWeight = '800';
+    const scoreLine = document.createElement('div');
+    scoreLine.textContent = 'Score: ' + playerScore + '/' + totalQ;
+    scoreLine.style.margin = '10px 0';
+    const replayBtn = document.createElement('button');
+    replayBtn.type = 'button';
+    replayBtn.textContent = '🔄 Replay Level';
+    replayBtn.style.marginTop = '8px';
+    replayBtn.style.padding = '6px 18px';
+    replayBtn.style.borderRadius = '40px';
+    replayBtn.style.cursor = 'pointer';
+    replayBtn.style.border = 'none';
+    replayBtn.style.background = '#2b5c6f';
+    replayBtn.style.color = 'white';
+    replayBtn.style.fontWeight = 'bold';
+    replayBtn.addEventListener('click', () => resetAndLoadLevel(currentLevel));
+    setResultContent([summary, scoreLine, replayBtn]);
+    resultMsg.style.background = '#cae3e8';
     playBeep('correct');
   }
 
   window.resetAndLoadLevel = function(levelId) {
     if (!unlocked[levelId]) {
-      resultMsg.innerHTML = \`🔒 \${levelId.toUpperCase()} is locked! Complete previous level with ≥70% score.\`;
+      setResultText('🔒 ' + levelId.toUpperCase() + ' is locked! Complete previous level with ≥70% score.', '#ffe0e0');
       playBeep('wrong');
       return;
     }
@@ -784,7 +804,6 @@ export default function WordFusion() {
     playBeep('click');
     currentLevel = levelId;
     const levelData = levels[currentLevel];
-    // shuffle questions
     currentQuestions = shuffleArray([...levelData.questions]);
     totalQ = currentQuestions.length;
     playerScore = 0;
@@ -795,8 +814,8 @@ export default function WordFusion() {
     levelNameSpan.textContent = levelData.name;
     removeGlow();
     nextBtn.disabled = true;
-    resultMsg.style.background = "#eef2f7";
-    resultMsg.innerHTML = \`✨ \${levelData.name} mode · guess the compound word ✨\`;
+    resultMsg.style.background = '#eef2f7';
+    setResultText('✨ ' + levelData.name + ' mode · guess the compound word ✨');
     loadQuestion();
     document.querySelectorAll('.level-card').forEach(card => {
       if (card.dataset.level === levelId) card.classList.add('active');
@@ -806,8 +825,7 @@ export default function WordFusion() {
 
   function onNext() {
     if (!isQuestionCorrect && gameActive) {
-      resultMsg.innerHTML = "⚠️ Answer the current question first! ⚠️";
-      resultMsg.style.background = "#fff0c0";
+      setResultText('⚠️ Answer the current question first! ⚠️', '#fff0c0');
       return;
     }
     if (!gameActive) return;
@@ -827,16 +845,15 @@ export default function WordFusion() {
     isQuestionCorrect = false;
     gameActive = true;
     updateScoreUI();
-    emoji1El.textContent = "❓";
-    emoji2El.textContent = "❓";
-    choicesDiv.innerHTML = '';
-    resultMsg.innerHTML = "✨ Choose a difficulty card ✨";
-    resultMsg.style.background = "#eef2f7";
+    emoji1El.textContent = '❓';
+    emoji2El.textContent = '❓';
+    choicesDiv.replaceChildren();
+    setResultText('✨ Choose a difficulty card ✨');
     nextBtn.disabled = true;
     removeGlow();
-    levelNameSpan.textContent = "???";
-    totalSpan.textContent = "0";
-    scoreSpan.textContent = "0";
+    levelNameSpan.textContent = '???';
+    totalSpan.textContent = '0';
+    scoreSpan.textContent = '0';
     document.querySelectorAll('.level-card').forEach(card => card.classList.remove('active'));
   }
 
@@ -846,8 +863,7 @@ export default function WordFusion() {
       const level = card.dataset.level;
       if (!unlocked[level]) {
         playBeep('wrong');
-        resultMsg.innerHTML = \`🔒 \${level.toUpperCase()} is locked! Complete previous level with ≥70% score.\`;
-        resultMsg.style.background = "#ffe0e0";
+        setResultText('🔒 ' + level.toUpperCase() + ' is locked! Complete previous level with ≥70% score.', '#ffe0e0');
         return;
       }
       playBeep('click');
@@ -855,8 +871,7 @@ export default function WordFusion() {
       setTimeout(() => card.classList.remove('card-pulse'), 400);
       document.querySelectorAll('.level-card').forEach(c => c.classList.remove('active'));
       card.classList.add('active');
-      resultMsg.innerHTML = \`✨ \${levels[level].name} selected! Get ready...\`;
-      resultMsg.style.background = "#fff0c0";
+      setResultText('✨ ' + levels[level].name + ' selected! Get ready...', '#fff0c0');
       setTimeout(() => {
         resetAndLoadLevel(level);
       }, 400);

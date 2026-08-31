@@ -792,7 +792,7 @@ const updateScore=()=>scoreNum.textContent=S.score;
 
 /* ── STARS ────────────────────────────────────── */
 const showStars=(n)=>{
-  starsRow.innerHTML="";
+  starsRow.replaceChildren();
   for(let i=0;i<3;i++){
     const s=document.createElement("span"); s.className="star-item"; s.textContent="⭐";
     starsRow.appendChild(s);
@@ -800,11 +800,11 @@ const showStars=(n)=>{
     else s.classList.add("dim");
   }
 };
-const hideStars=()=>starsRow.innerHTML="";
+const hideStars=()=>starsRow.replaceChildren();
 
 /* ── PROGRESS DOTS ────────────────────────────── */
 const updateProg=()=>{
-  progRow.innerHTML="";
+  progRow.replaceChildren();
   FAMILY.forEach(m=>{
     const d=document.createElement("div"); d.className="prog-dot";
     if(S.completed.includes(m.word)) d.classList.add("done");
@@ -868,7 +868,7 @@ const loadMember=(mem)=>{
 
 /* ── RENDER DYNAMIC ───────────────────────────── */
 const renderDA=()=>{
-  DA.innerHTML="";
+  DA.replaceChildren();
   const mode=getMode();
   if(mode==="tree"){
     emojiStage.style.display="none"; starsRow.style.display="none";
@@ -988,7 +988,7 @@ const NS="http://www.w3.org/2000/svg";
 const mkEl=(tag,attrs={})=>{ const e=document.createElementNS(NS,tag); for(const[k,v] of Object.entries(attrs)) e.setAttribute(k,v); return e; };
 
 const renderTree=()=>{
-  DA.innerHTML="";
+  DA.replaceChildren();
   modeLbl.textContent="Family Tree"; qText.textContent="Tap REVEAL to meet each member!";
   mainEmoji.textContent="🌳";
   emojiStage.classList.remove("bounce");
@@ -1154,7 +1154,12 @@ const renderTree=()=>{
     }
     if(isActive){
       const pulse=mkEl("rect",{x:"-4",y:"-4",width:String(NW+8),height:String(NH+8),rx:"18",ry:"18",fill:"none",stroke:"#e9b85d","stroke-width":"2.5",opacity:"0.7"});
-      pulse.innerHTML=\`<animate attributeName="opacity" values="0.7;0.2;0.7" dur="1.5s" repeatCount="indefinite"/>\`;
+      const pulseAnim=document.createElementNS("http://www.w3.org/2000/svg","animate");
+      pulseAnim.setAttribute("attributeName","opacity");
+      pulseAnim.setAttribute("values","0.7;0.2;0.7");
+      pulseAnim.setAttribute("dur","1.5s");
+      pulseAnim.setAttribute("repeatCount","indefinite");
+      pulse.appendChild(pulseAnim);
       grp.appendChild(pulse);
       // "NEXT" label
       const nxtLbl=mkEl("text",{x:String(NW/2),y:String(NH+16),"text-anchor":"middle","font-family":"Fraunces, serif","font-size":"9","font-weight":"700",fill:"#c8913a"});

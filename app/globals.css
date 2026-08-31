@@ -1,7 +1,8 @@
-.game-shell-completion .game-shell-overlay-card h2 { color: inherit; }
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 /* ── ESL Game Hub — globals.css ──────────────────────────────── */
+
+.game-shell-completion .game-shell-overlay-card h2 { color: inherit; }
 
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -3663,8 +3664,8 @@ a { color: inherit; }
 
 .shop-payment {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  align-items: center;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
   gap: 28px;
   padding: clamp(22px, 4vw, 36px);
   margin-top: 28px;
@@ -3698,6 +3699,32 @@ a { color: inherit; }
   transition: transform .2s ease, box-shadow .2s ease;
 }
 .payment-paynow-button:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgb(0 0 0 / .28); }
+.payment-ecocash-wrap { align-items: center; gap: 10px; text-align: center; }
+.payment-ecocash-wrap h2 { margin: 6px 0 8px; font-family: var(--font-display, Syne); color: var(--text); }
+.payment-ecocash-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 12px 18px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #fcd34d, #f59e0b);
+  color: #1f2937;
+  font-weight: 900;
+  text-decoration: none;
+  box-shadow: 0 10px 28px rgb(245 158 11 / .28);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.payment-ecocash-button:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgb(245 158 11 / .28); }
+.payment-ecocash-logo { display: block; width: 94px; height: auto; object-fit: contain; border-radius: 10px; background: rgba(255,255,255,0.8); padding: 6px; }
+.payment-ecocash-instructions {
+  margin: 0;
+  color: #fef3c7;
+  line-height: 1.6;
+  font-weight: 700;
+  max-width: 28ch;
+}
 .payment-qr-wrap { align-items: center; gap: 8px; color: var(--muted); font-size: .78rem; font-weight: 700; text-align: center; }
 .payment-qr-wrap h2 { margin: 6px 0 8px; font-family: var(--font-display, Syne); color: var(--text); }
 .payment-qr { display: block; width: min(100%, 260px); height: auto; aspect-ratio: auto; object-fit: contain; border: 8px solid #fff; border-radius: 12px; background: #fff; }
@@ -3708,6 +3735,10 @@ a { color: inherit; }
 .payment-proof-note { max-width: 32ch; color: var(--gold); font-size: .76rem; line-height: 1.5; }
 .thai-prices { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 4px; color: var(--gold); font-size: .92rem; }
 .thai-prices span { color: var(--muted); font-size: .72rem; }
+
+@media (max-width: 980px) {
+  .shop-payment { grid-template-columns: 1fr; }
+}
 
 @media (max-width: 680px) {
   .subscription-header,
@@ -3958,6 +3989,10 @@ a { color: inherit; }
 .game-shell--turbodash { --completion-border: #e8a800; --completion-surface: linear-gradient(160deg, #252e1c, #172016); --completion-text: #f0f2ec; --completion-accent: #ffc93c; --completion-action: #ffc93c; --completion-action-text: #141a0d; }
 .game-shell--archersduel { --completion-border: #d8ad45; --completion-surface: linear-gradient(160deg, #192f20, #101d16); --completion-text: #fff7df; --completion-accent: #ffe49a; --completion-action: #d8ad45; --completion-action-text: #07130d; }
 .game-shell--findmyfood { --completion-border: #f5c842; --completion-surface: linear-gradient(160deg, #293747, #202b3a); --completion-text: #f4f7fb; --completion-accent: #ffd166; --completion-action: #63d7ba; --completion-action-text: #10221e; }
+.game-shell--finnthefox .game-shell-play-area { background: #fffdf7; }
+.finn-fox { min-height: 100%; background: #fffdf7; }
+.finn-fox main { min-height: calc(100vh - 110px); width: 100%; }
+.ff-quiz-image { display: block; width: min(100%, 460px); height: clamp(150px, 25vh, 230px); margin: 0 auto 22px; object-fit: cover; border-radius: 18px; box-shadow: 0 10px 24px #0002; }
 .game-shell[data-game-id="zoogame"] .game-shell-completion .game-shell-overlay-card { border: 5px solid #c7b28b; border-radius: 32px; background: #fff8e7; color: #4a3728; box-shadow: 0 20px 60px rgb(0 0 0 / .3); }
 .game-shell[data-game-id="zoogame"] .game-shell-completion .game-shell-overlay-card h2 { color: #4a3728; }
 .game-shell[data-game-id="zoogame"] .game-shell-completion .game-shell-primary-action { background: #fcdb8a; color: #4a3728; }

@@ -327,8 +327,8 @@ export default function NeonBridgeOfDestiny() {
     
     // ---------- UPDATE LIVES UI (squad icons) ----------
     function updateLivesUI() {
-        p1IconsDiv.innerHTML = '';
-        p2IconsDiv.innerHTML = '';
+        p1IconsDiv.replaceChildren();
+        p2IconsDiv.replaceChildren();
         for (let i = 0; i < MAX_LIVES; i++) {
             const icon1 = document.createElement('div');
             icon1.className = 'life-icon';
@@ -348,7 +348,7 @@ export default function NeonBridgeOfDestiny() {
     function updateStatusMessage() {
         if (!gameActive) return;
         const rowDisplay = currentStep + 1;
-        statusDiv.innerHTML = \`⚡ PLAYER \${currentPlayer}'S TURN ⚡  <span style="font-size:0.85rem;">(row \${rowDisplay}/\${rowsCount})  |  ❤️ \${lives[currentPlayer]} lives left</span>\`;
+        statusDiv.textContent = \`⚡ PLAYER \${currentPlayer}'S TURN ⚡ (row \${rowDisplay}/\${rowsCount}) | ❤️ \${lives[currentPlayer]} lives left\`;
         updatePlayerTurnClass();
     }
     
@@ -417,7 +417,7 @@ export default function NeonBridgeOfDestiny() {
     function declareWinner(winnerId) {
         gameActive = false;
         if (deathTimeout) clearTimeout(deathTimeout);
-        statusDiv.innerHTML = \`🏆✨ PLAYER \${winnerId} REACHES THE TOP! ✨🏆<br><span style="font-size:0.8rem;">★ PRESS 'NEW BRIDGE' TO PLAY ★</span>\`;
+        statusDiv.textContent = \`🏆✨ PLAYER \${winnerId} REACHES THE TOP! ✨🏆 ★ PRESS 'NEW BRIDGE' TO PLAY ★\`;
         const rows = document.querySelectorAll('.row');
         rows.forEach(row => row.classList.remove('current-row'));
         document.querySelectorAll('.tile').forEach(t => t.classList.remove('active-player'));
@@ -429,7 +429,7 @@ export default function NeonBridgeOfDestiny() {
         gameActive = false;
         if (deathTimeout) clearTimeout(deathTimeout);
         const winner = (currentPlayer === 1) ? 2 : 1;
-        statusDiv.innerHTML = \`💀 GAME OVER 💀<br>PLAYER \${currentPlayer} HAS NO SQUAD LEFT!<br>🏆 PLAYER \${winner} WINS BY DEFAULT 🏆\`;
+        statusDiv.textContent = \`💀 GAME OVER 💀 PLAYER \${currentPlayer} HAS NO SQUAD LEFT! 🏆 PLAYER \${winner} WINS BY DEFAULT 🏆\`;
         const rows = document.querySelectorAll('.row');
         rows.forEach(row => row.classList.remove('current-row'));
         document.querySelectorAll('.tile').forEach(t => t.classList.remove('active-player'));
@@ -466,7 +466,9 @@ export default function NeonBridgeOfDestiny() {
         updateLivesUI();
         
         // dramatic message
-        statusDiv.innerHTML = \`<span style="color: #ff0055; text-shadow: 0 0 8px red;">💀 PLAYER \${currentPlayer} FELL! SQUAD MEMBER LOST! 💀</span>\`;
+        statusDiv.textContent = \`💀 PLAYER \${currentPlayer} FELL! SQUAD MEMBER LOST! 💀\`;
+        statusDiv.style.color = '#ff0055';
+        statusDiv.style.textShadow = '0 0 8px red';
         
         // check if player has lives left
         if (lives[currentPlayer] <= 0) {
@@ -529,7 +531,7 @@ export default function NeonBridgeOfDestiny() {
     
     // ---------- BUILD BRIDGE WITH NUMBERS ----------
     function buildBridge() {
-        bridgeContainer.innerHTML = '';
+        bridgeContainer.replaceChildren();
         tileElements = [];
         for (let i = 0; i < rowsCount; i++) {
             const rowDiv = document.createElement('div');

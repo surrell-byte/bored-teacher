@@ -1074,12 +1074,14 @@ export default function ZooGame() {
             let options = [...selected, { emoji: getAnimal(getCurrentIndex()).emoji, name: correctName }];
             shuffleArray(options);
 
-            guessOptions.innerHTML = '';
+            guessOptions.replaceChildren();
             options.forEach(opt => {
                 const btn = document.createElement('button');
                 btn.className = 'option-btn';
-                btn.innerHTML =
-                    \`<span class="opt-label">\${cap(opt.name)}</span>\`;
+                const label = document.createElement('span');
+                label.className = 'opt-label';
+                label.textContent = cap(opt.name);
+                btn.appendChild(label);
                 btn.dataset.name = opt.name;
                 btn.addEventListener('click', () => handleGuess(btn, correctName));
                 guessOptions.appendChild(btn);
@@ -1199,12 +1201,14 @@ export default function ZooGame() {
             let options = [...selected, { emoji: getAnimal(getCurrentIndex()).emoji, name: correctName }];
             shuffleArray(options);
 
-            lookOptions.innerHTML = '';
+            lookOptions.replaceChildren();
             options.forEach(opt => {
                 const btn = document.createElement('button');
                 btn.className = 'option-btn';
-                btn.innerHTML =
-                    \`<span class="opt-label">\${cap(opt.name)}</span>\`;
+                const label = document.createElement('span');
+                label.className = 'opt-label';
+                label.textContent = cap(opt.name);
+                btn.appendChild(label);
                 btn.dataset.name = opt.name;
                 btn.addEventListener('click', () => handleLook(btn, correctName));
                 lookOptions.appendChild(btn);

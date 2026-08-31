@@ -792,14 +792,27 @@ export default function TankWars() {
   function endGame(winner){
     if(winner === 'player'){ sfxWin(); } else { sfxLose(); }
     overlay.classList.remove('hidden');
-    overlay.innerHTML = \`
-      <h1>\${winner === 'player' ? '🏆 VICTORY!' : '💀 DEFEAT'}</h1>
-      <p>\${winner === 'player' ? 'You destroyed the enemy tank!' : 'Your tank was destroyed. Better luck next time!'}</p>
-      <button class="btn" id="playAgainBtn">Play Again</button>
-    \`;
-    document.getElementById('playAgainBtn').addEventListener('click', ()=>{
+    overlay.replaceChildren();
+
+    const title = document.createElement('h1');
+    title.textContent = winner === 'player' ? '🏆 VICTORY!' : '💀 DEFEAT';
+
+    const message = document.createElement('p');
+    message.textContent = winner === 'player'
+      ? 'You destroyed the enemy tank!'
+      : 'Your tank was destroyed. Better luck next time!';
+
+    const btn = document.createElement('button');
+    btn.className = 'btn';
+    btn.id = 'playAgainBtn';
+    btn.textContent = 'Play Again';
+    btn.addEventListener('click', () => {
       location.reload();
     });
+
+    overlay.appendChild(title);
+    overlay.appendChild(message);
+    overlay.appendChild(btn);
   }
 
 })();

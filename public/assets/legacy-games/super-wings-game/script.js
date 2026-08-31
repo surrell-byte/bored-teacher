@@ -238,24 +238,34 @@ function openModal(type) {
   modal.classList.add("is-open");
   modal.setAttribute("aria-hidden", "false");
 
+  modalBody.replaceChildren();
+
   if (type === "help") {
     modalTitle.textContent = "How to Play";
-    modalBody.innerHTML = `
-      <p>Pick a plane for each player, then press Ready.</p>
-      <p>Click ROLL to start spinning, then click STOP to lock in your number. Your plane flies along the clouds by that amount.</p>
-      <p>Reach the finish cloud first to win the race.</p>
-    `;
+    const p1 = document.createElement("p");
+    p1.textContent = "Pick a plane for each player, then press Ready.";
+    const p2 = document.createElement("p");
+    p2.textContent = "Click ROLL to start spinning, then click STOP to lock in your number. Your plane flies along the clouds by that amount.";
+    const p3 = document.createElement("p");
+    p3.textContent = "Reach the finish cloud first to win the race.";
+    modalBody.appendChild(p1);
+    modalBody.appendChild(p2);
+    modalBody.appendChild(p3);
     return;
   }
 
   modalTitle.textContent = "Settings";
-  modalBody.innerHTML = `
-    <p>Adjust the race before takeoff.</p>
-    <label>
-      <input id="soundToggle" type="checkbox" ${state.sound ? "checked" : ""}>
-      Sound effects
-    </label>
-  `;
+  const p = document.createElement("p");
+  p.textContent = "Adjust the race before takeoff.";
+  const label = document.createElement("label");
+  const input = document.createElement("input");
+  input.id = "soundToggle";
+  input.type = "checkbox";
+  input.checked = !!state.sound;
+  label.appendChild(input);
+  label.appendChild(document.createTextNode(" Sound effects"));
+  modalBody.appendChild(p);
+  modalBody.appendChild(label);
 
   document.querySelector("#soundToggle").addEventListener("change", (event) => {
     state.sound = event.target.checked;

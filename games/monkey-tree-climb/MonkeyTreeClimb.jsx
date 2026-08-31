@@ -465,8 +465,8 @@ function checkBananaCatch() {
 
     if (Math.abs(monkeyBottom - bananaBottom) < 6) {
         bananas++;
-        banana.innerHTML = "✨";
-        setTimeout(() => { banana.innerHTML = "🍌"; }, 300);
+        banana.textContent = "✨";
+        setTimeout(() => { banana.textContent = "🍌"; }, 300);
         moveBanana();
 
         // Extra life every 3 bananas (max lives 5)
@@ -565,7 +565,7 @@ function restartGame() {
     updateAllVisuals();
     updateLives();
     moveBanana();
-    banana.innerHTML = "🍌";
+    banana.textContent = "🍌";
     isCooldown = false;
     climbButton.disabled = false;
     cooldownText.textContent = '';

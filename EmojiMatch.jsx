@@ -422,7 +422,7 @@ export default function EmojiMatch() {
     updateMoveUI();
     
     // 3. Clear board container
-    board.innerHTML = '';
+    board.replaceChildren();
     
     // 4. Create card elements dynamically with numbers (1..16) - BIG NUMBERS
     gameItems.forEach((emoji, idx) => {

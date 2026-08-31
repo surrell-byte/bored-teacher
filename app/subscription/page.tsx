@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { auth, onAuthStateChanged } from '@/lib/firebase';
+import { auth, loadUserState, onAuthStateChanged, setTeacherProAccess } from '@/lib/firebase';
 
 const PLANS = [
   {
@@ -41,19 +41,35 @@ export default function SubscriptionPage() {
   const router = useRouter();
   const [ready, setReady] = useState(false);
   const [joinedAt, setJoinedAt] = useState<string | undefined>();
+  const [hasTeacherPro, setHasTeacherPro] = useState(false);
 
   useEffect(() => {
     const isGuest = localStorage.getItem('guestUser') === 'true';
+    const syncSubscription = async (user?: { uid: string } | null) => {
+      const localAccess = localStorage.getItem('teacherProAccess') === 'true';
+      if (user) {
+        const profile = await loadUserState(user.uid);
+        const subscriptionEnabled = Boolean(localAccess || profile?.teacherPro);
+        setHasTeacherPro(subscriptionEnabled);
+        if (subscriptionEnabled) localStorage.setItem('teacherProAccess', 'true');
+      } else {
+        setHasTeacherPro(localAccess);
+      }
+    };
+
     if (isGuest) {
+      setHasTeacherPro(localStorage.getItem('teacherProAccess') === 'true');
       setJoinedAt(new Date().toISOString());
       setReady(true);
       return;
     }
-    const unsubscribe = onAuthStateChanged(user => {
+
+    const unsubscribe = onAuthStateChanged(async user => {
       if (!user) {
         router.replace('/auth');
         return;
       }
+      await syncSubscription(user);
       setJoinedAt(user.metadata.creationTime);
       setReady(true);
     });
@@ -76,12 +92,12 @@ export default function SubscriptionPage() {
       <section className="shell-card subscription-current">
         <div>
           <span className="subscription-label">Current plan</span>
-          <h2>Free</h2>
-          <p>Active while your account is open.</p>
+          <h2>{hasTeacherPro ? 'Teacher Pro' : 'Free'}</h2>
+          <p>{hasTeacherPro ? 'Premium resource access is unlocked for this account.' : 'Active while your account is open.'}</p>
         </div>
         <div className="subscription-details">
           <div><span>Joined</span><strong>{formatDate(joinedAt)}</strong></div>
-          <div><span>Active until</span><strong>Forever</strong></div>
+          <div><span>Active until</span><strong>{hasTeacherPro ? 'Unlimited' : 'Forever'}</strong></div>
         </div>
       </section>
 
@@ -104,14 +120,27 @@ export default function SubscriptionPage() {
               </ul>
               <button
                 className="pill-btn"
-                disabled={plan.name === 'Free'}
-                onClick={() => {
-                  if (plan.name === 'Teacher Pro') router.push('/payment?plan=resource-library');
-                  if (plan.name === 'School') window.location.href = 'mailto:boredteacherapp@gmail.com?subject=School%20plan%20enquiry';
-                                  if (plan.name === 'School') window.location.href = 'mailto:boredteacherapp@gmail.com?subject=School%20plan%20enquiry&body=Hello%20Russell%2C%20I%20would%20like%20to%20ask%20about%20a%20School%20plan.';
+                disabled={plan.name === 'Free' && !hasTeacherPro}
+                onClick={async () => {
+                  if (plan.name === 'Teacher Pro') {
+                    const user = auth.currentUser;
+                    if (user) {
+                      await setTeacherProAccess(user.uid, true);
+                      setHasTeacherPro(true);
+                    } else {
+                      localStorage.setItem('teacherProAccess', 'true');
+                    }
+                    router.push('/payment?plan=resource-library');
+                    return;
+                  }
+                  if (plan.name === 'School') {
+                    const subject = encodeURIComponent('School plan enquiry');
+                    const body = encodeURIComponent('Hello Russell, I would like to ask about a School plan.');
+                    window.location.href = `mailto:boredteacherapp@gmail.com?subject=${subject}&body=${body}`;
+                  }
                 }}
               >
-                {plan.action}
+                {hasTeacherPro && plan.name === 'Teacher Pro' ? 'Teacher Pro Active' : plan.action}
               </button>
             </article>
           ))}

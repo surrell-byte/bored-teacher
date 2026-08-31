@@ -303,6 +303,19 @@ export default function FruitWordHunt() {
   const correctPopupDiv = document.getElementById('correctPopup');
   const victoryPopupDiv = document.getElementById('victoryPopup');
 
+  function setStatusText(node, value) {
+    if (!node) return;
+    node.textContent = String(value ?? '');
+  }
+
+  function setPopupText(node, value, isError = false) {
+    if (!node) return;
+    node.textContent = String(value ?? '');
+    node.style.background = isError ? '#c0392b' : '#2e7d32';
+    node.classList.add('show');
+    setTimeout(() => node.classList.remove('show'), 2000);
+  }
+
   // Helper: random letter a-z
   function getRandomLetter() {
     const letters = "abcdefghijklmnopqrstuvwxyz";
@@ -335,7 +348,7 @@ export default function FruitWordHunt() {
     const hardDone = score[2] >= levels[2].required;
     if (easyDone && mediumDone && hardDone) {
       gameComplete = true;
-      victoryPopupDiv.innerHTML = \`🏆🎉 GRAND VICTORY! 🎉🏆<br>🍎🍌🍓 You completed ALL 3 levels! 🍒🥝🍍<br>⭐ Fruit Word Master! ⭐<br><span style="font-size:0.9rem;">Press "RESET GAME" to play again!</span>\`;
+      setStatusText(victoryPopupDiv, '🏆🎉 GRAND VICTORY! 🎉🏆 🍎🍌🍓 You completed ALL 3 levels! 🍒🥝🍍 ⭐ Fruit Word Master! ⭐ Press "RESET GAME" to play again!');
       victoryPopupDiv.classList.add('show');
       setTimeout(() => {
         victoryPopupDiv.classList.remove('show');
@@ -369,18 +382,18 @@ export default function FruitWordHunt() {
     const currentReq = levels[currentLevelIdx].required;
     const currentScore = score[currentLevelIdx];
     if (currentLevelIdx < 2 && !unlocked[currentLevelIdx + 1]) {
-      progressInfo.innerHTML = \`⭐ Level \${levels[currentLevelIdx].name}: \${currentScore}/\${currentReq} correct → Unlock \${levels[currentLevelIdx+1].name}! ⭐\`;
+      setStatusText(progressInfo, `⭐ Level ${levels[currentLevelIdx].name}: ${currentScore}/${currentReq} correct → Unlock ${levels[currentLevelIdx + 1].name}! ⭐`);
     } else {
-      progressInfo.innerHTML = \`🌟 Level \${levels[currentLevelIdx].name} Mastered! (\${currentScore} fruits spelled) 🌟\`;
+      setStatusText(progressInfo, `🌟 Level ${levels[currentLevelIdx].name} Mastered! (${currentScore} fruits spelled) 🌟`);
     }
-    if (gameComplete) progressInfo.innerHTML = "🏆 ALL LEVELS COMPLETE! VICTORY! 🏆";
+    if (gameComplete) setStatusText(progressInfo, '🏆 ALL LEVELS COMPLETE! VICTORY! 🏆');
   }
 
   // Load a new random fruit from current level
   function loadNewFruit() {
     if (gameComplete) {
       wordDisplaySpan.textContent = "🏆 VICTORY! Press RESET";
-      tilesGrid.innerHTML = "";
+      tilesGrid.replaceChildren();
       return;
     }
     isLocked = false;
@@ -418,7 +431,7 @@ export default function FruitWordHunt() {
   }
 
   function renderTiles() {
-    tilesGrid.innerHTML = "";
+    tilesGrid.replaceChildren();
     if (!currentTiles.length && !isLocked) {
       const msg = document.createElement('div');
       msg.textContent = "✨ No tiles left? Press CLEAR or NEXT FRUIT ✨";
@@ -517,8 +530,9 @@ export default function FruitWordHunt() {
 
   function showPopupMessage(msg, isError) {
     const popup = correctPopupDiv;
-    popup.style.background = isError ? "#c0392b" : "#2e7d32";
-    popup.innerHTML = msg;
+    if (!popup) return;
+    popup.textContent = String(msg ?? '');
+    popup.style.background = isError ? '#c0392b' : '#2e7d32';
     popup.classList.add('show');
     setTimeout(() => {
       popup.classList.remove('show');
@@ -574,7 +588,7 @@ export default function FruitWordHunt() {
       return;
     }
     if (!unlocked[levelIndex]) {
-      showPopupMessage(\`🔒 \${levels[levelIndex].name} level is locked! Complete previous level first.\`, true);
+      showPopupMessage(`🔒 ${levels[levelIndex].name} level is locked! Complete previous level first.`, true);
       return;
     }
     currentLevelIdx = levelIndex;

@@ -3,7 +3,7 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { onAuthStateChanged } from '@/lib/firebase';
+import { auth, loadUserState, onAuthStateChanged } from '@/lib/firebase';
 
 interface Resource {
   id: string; icon: string; title: string; desc: string;
@@ -69,12 +69,31 @@ export default function ResourcesPage() {
   const [subject, setSubject] = useState<'All' | Resource['subject']>('All');
   const [format,  setFormat]  = useState<'All' | Resource['type']>('All');
   const [sort,    setSort]    = useState('newest');
+  const [hasTeacherPro, setHasTeacherPro] = useState(false);
 
   useEffect(() => {
     const isGuest = localStorage.getItem('guestUser') === 'true';
-    if (isGuest) { setReady(true); return; }
+    const syncState = async (user?: { uid: string } | null) => {
+      const localAccess = localStorage.getItem('teacherProAccess') === 'true';
+      if (user) {
+        const profile = await loadUserState(user.uid);
+        const isPremium = Boolean(profile?.teacherPro ?? localAccess);
+        setHasTeacherPro(isPremium);
+        if (isPremium) localStorage.setItem('teacherProAccess', 'true');
+      } else {
+        setHasTeacherPro(localAccess);
+      }
+    };
+
+    if (isGuest) {
+      setHasTeacherPro(localStorage.getItem('teacherProAccess') === 'true');
+      setReady(true);
+      return;
+    }
+
     const unsub = onAuthStateChanged(user => {
       if (!user) { router.replace('/auth'); return; }
+      void syncState(user);
       setReady(true);
     });
     return unsub;
@@ -107,6 +126,7 @@ export default function ResourcesPage() {
   );
   const newestForSidebar = recentlyAdded.slice(0, 3);
   const featured = FEATURED_IDS.map(id => RESOURCES.find(r => r.id === id)!).filter(Boolean);
+  const premiumResourceIds = new Set(['r6', 'r7', 'w1', 'w2', 'w3', 'w4']);
 
   function formatDate(iso: string) {
     return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -119,6 +139,15 @@ export default function ResourcesPage() {
 
       {/* ── Hero ──────────────────────────────────────────── */}
       <div className="shell-card resources-hero" style={{ padding: 'clamp(20px, 4vw, 40px)', marginBottom: 24, borderRadius: 32 }}>
+        {!hasTeacherPro && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', flexWrap: 'wrap', marginBottom: 18, padding: '12px 14px', borderRadius: 16, background: 'rgba(216, 173, 69, 0.08)', border: '1px solid rgba(216, 173, 69, 0.25)' }}>
+            <div>
+              <strong style={{ display: 'block', marginBottom: 4 }}>Unlock Teacher Pro</strong>
+              <span style={{ color: 'var(--muted)', fontSize: '0.82rem' }}>Premium worksheets, planning tools, and classroom resources are available with an upgraded plan.</span>
+            </div>
+            <button className="pill-btn" onClick={() => router.push('/subscription')}>Upgrade</button>
+          </div>
+        )}
         <div>
           <div style={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.2em', color: 'var(--gold)', marginBottom: 8 }}>
             📚 Teaching Resources
@@ -194,10 +223,24 @@ export default function ResourcesPage() {
                     <button 
                       className="pill-btn" 
                       style={{ fontSize: '0.78rem', width: '100%', justifyContent: 'center' }} 
-                      disabled={r.type === 'tool' || !r.link}
-                      onClick={() => r.link && router.push(r.link)}
+                      disabled={(!hasTeacherPro && premiumResourceIds.has(r.id)) || r.type === 'tool' || !r.link}
+                      onClick={async () => {
+                        const currentUser = auth.currentUser;
+                        if (!hasTeacherPro && premiumResourceIds.has(r.id)) {
+                          if (currentUser) {
+                            const profile = await loadUserState(currentUser.uid);
+                            if (!profile?.teacherPro) {
+                              router.push('/subscription');
+                              return;
+                            }
+                          }
+                          router.push('/subscription');
+                          return;
+                        }
+                        if (r.link) router.push(r.link);
+                      }}
                     >
-                      {TYPE_META[r.type].action}
+                      {(!hasTeacherPro && premiumResourceIds.has(r.id)) ? 'Unlock Teacher Pro' : TYPE_META[r.type].action}
                     </button>
                   </div>
                 ))}
@@ -263,10 +306,16 @@ export default function ResourcesPage() {
                       <button 
                         className="pill-btn" 
                         style={{ fontSize: '0.78rem', width: '100%', justifyContent: 'center' }} 
-                        disabled={r.type === 'tool' || !r.link}
-                        onClick={() => r.link && router.push(r.link)}
+                        disabled={(!hasTeacherPro && premiumResourceIds.has(r.id)) || r.type === 'tool' || !r.link}
+                        onClick={() => {
+                          if (!hasTeacherPro && premiumResourceIds.has(r.id)) {
+                            router.push('/subscription');
+                            return;
+                          }
+                          if (r.link) router.push(r.link);
+                        }}
                       >
-                        {TYPE_META[r.type].action}
+                        {(!hasTeacherPro && premiumResourceIds.has(r.id)) ? 'Unlock Teacher Pro' : TYPE_META[r.type].action}
                       </button>
                     </div>
                   ))}

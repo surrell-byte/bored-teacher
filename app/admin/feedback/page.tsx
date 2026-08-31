@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { auth, loadFeedback, onAuthStateChanged, resolveFeedback } from '@/lib/firebase';
+import { auth, isCreatorUser, loadFeedback, onAuthStateChanged, resolveFeedback } from '@/lib/firebase';
 
 type FeedbackItem = {
   id: string;
@@ -13,8 +14,6 @@ type FeedbackItem = {
   createdAt?: { toDate?: () => Date };
   resolved?: boolean;
 };
-
-const CREATOR_EMAIL = 'boredteacherapp@gmail.com';
 
 export default function FeedbackAdminPage() {
   const router = useRouter();
@@ -28,7 +27,7 @@ export default function FeedbackAdminPage() {
         router.replace('/auth');
         return;
       }
-      if (user.email?.toLowerCase() !== CREATOR_EMAIL) {
+      if (!isCreatorUser(user)) {
         setStatus('denied');
         return;
       }
@@ -56,7 +55,7 @@ export default function FeedbackAdminPage() {
     return <div className="admin-feedback-page"><section className="shell-card admin-feedback-empty"><h1>Creator access required</h1><p>This page is reserved for the app creator.</p></section></div>;
   }
   if (status === 'error') {
-    return <div className="admin-feedback-page"><section className="shell-card admin-feedback-empty"><h1>Could not load feedback</h1><p>Check that your Firestore rules allow {CREATOR_EMAIL} to read the feedback collection.</p></section></div>;
+    return <div className="admin-feedback-page"><section className="shell-card admin-feedback-empty"><h1>Could not load feedback</h1><p>Check that your Firestore rules allow the signed-in creator account to read the feedback collection.</p></section></div>;
   }
 
   return (
@@ -67,7 +66,10 @@ export default function FeedbackAdminPage() {
           <h1 className="hub-welcome-title">Suggestions inbox</h1>
           <p className="hub-welcome-sub">Review the ideas and bug reports users have trusted you with.</p>
         </div>
-        <div className="admin-feedback-count"><strong>{items.length}</strong><span>messages saved</span></div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <Link href="/admin/users" className="pill-btn" style={{ textDecoration: 'none' }}>View users</Link>
+          <div className="admin-feedback-count"><strong>{items.length}</strong><span>messages saved</span></div>
+        </div>
       </header>
       <div className="admin-feedback-filters" role="group" aria-label="Filter feedback">
         {(['open', 'resolved', 'all'] as const).map(option => <button key={option} className={`pill-btn${filter === option ? ' active' : ''}`} onClick={() => setFilter(option)}>{option === 'open' ? 'Needs review' : option === 'resolved' ? 'Resolved' : 'All messages'}</button>)}

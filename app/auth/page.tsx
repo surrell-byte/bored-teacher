@@ -4,7 +4,7 @@
 import { useState, useEffect, FormEvent, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
-  signIn, signUp, resetPassword, onAuthStateChanged,
+  signIn, signUp, resetPasswordByUsername, onAuthStateChanged,
 } from '@/lib/firebase';
 
 type Tab = 'login' | 'register';
@@ -64,10 +64,10 @@ function AuthPageInner() {
   }
 
   async function handleReset() {
-    if (!email) { setError('Enter your email address first.'); return; }
+    if (!email) { setError('Enter your email address or username first.'); return; }
     setError(''); setInfo(''); setResetLoading(true);
     try {
-      await resetPassword(email.trim());
+      await resetPasswordByUsername(email);
       setInfo('✅ Reset email sent — check your inbox.');
     } catch (err: unknown) {
       setError(friendlyError(err));
@@ -143,10 +143,10 @@ function AuthPageInner() {
             )}
 
             <div className="field">
-              <label htmlFor="email">Email</label>
-              <input id="email" type="email" value={email}
+              <label htmlFor="email">Email or username</label>
+              <input id="email" type="text" value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="you@school.com" autoComplete="email" required />
+                placeholder="you@school.com or tanyachiraya" autoComplete="username" required />
             </div>
             <div className="field">
               <label htmlFor="password">Password</label>

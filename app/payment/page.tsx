@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { onAuthStateChanged } from '@/lib/firebase';
+import { auth, onAuthStateChanged, setTeacherProAccess } from '@/lib/firebase';
 
 export default function PaymentPage() {
   const router = useRouter();
@@ -24,6 +24,15 @@ export default function PaymentPage() {
     return unsubscribe;
   }, [router]);
 
+  const handlePayNow = async () => {
+    const user = auth.currentUser;
+    if (user) {
+      await setTeacherProAccess(user.uid, true);
+    } else {
+      localStorage.setItem('teacherProAccess', 'true');
+    }
+  };
+
   if (!ready) return null;
 
   return (
@@ -39,8 +48,25 @@ export default function PaymentPage() {
           <h2>Pay with Paynow</h2>
           <div className="subscription-prices"><strong>$10 <span>/ month</span></strong><strong>$110 <span>/ year</span></strong><small>Save $10 per year, or 8.3% compared with monthly billing.</small></div>
           <p>Choose your subscription term, then complete payment securely with Paynow.</p>
-          <a className="payment-paynow-button" href="https://www.paynow.co.zw/Payment/Link/?q=c2VhcmNoPXJ1c3NlbGxta2FoYW5hbmElNDBnbWFpbC5jb20mYW1vdW50PTcuMDAmcmVmZXJlbmNlPSZsPTE%3d" target="_blank" rel="noreferrer">Pay now with Paynow</a>
+          <a className="payment-paynow-button" href="https://www.paynow.co.zw/Payment/Link/?q=c2VhcmNoPXJ1c3NlbGxta2FoYW5hbmElNDBnbWFpbC5jb20mYW1vdW50PTcuMDAmcmVmZXJlbmNlPSZsPTE%3d" target="_blank" rel="noreferrer" onClick={handlePayNow}>Pay now with Paynow</a>
         </div>
+
+        <div className="payment-option payment-ecocash-wrap">
+          <div className="hero-kicker">💸 EcoCash</div>
+          <h2>Pay with EcoCash</h2>
+          <a
+            className="payment-ecocash-button"
+            href="https://ecocash.co.zw/"
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Open the EcoCash payment page"
+          >
+            <img src="/assets/images/ecocash-logo.png" alt="EcoCash logo" className="payment-ecocash-logo" />
+            <span>EcoCash payment page</span>
+          </a>
+          <p className="payment-ecocash-instructions">Send amount to +263780074825 and send your slip to boredteacherapp@gmail.com</p>
+        </div>
+
         <div className="payment-option payment-qr-wrap">
           <div className="hero-kicker">📱 Thai QR payment</div>
           <h2>Scan the QR code</h2>

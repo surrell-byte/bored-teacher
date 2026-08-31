@@ -803,7 +803,7 @@ export default function SentenceBuilder() {
             }
 
             function createSlots() {
-                sentenceArea.innerHTML = '';
+                sentenceArea.replaceChildren();
                 for (let i = 0; i < currentSentence.length; i++) {
                     const slot = document.createElement('div');
                     slot.className = 'slot';
@@ -848,7 +848,7 @@ export default function SentenceBuilder() {
             }
 
             function createWords() {
-                wordBank.innerHTML = '';
+                wordBank.replaceChildren();
                 const shuffled = [...currentSentence].sort(() => Math.random() - 0.5);
                 shuffled.forEach((word, idx) => {
                     const div = document.createElement('div');
@@ -1045,10 +1045,21 @@ export default function SentenceBuilder() {
                     }
 
                     // Message
-                    let msgHTML = '✅ Perfect!';
-                    if (streak >= 5) msgHTML += ' <span class="streak-badge">🔥 ' + streak + ' STREAK!</span>';
-                    if (streakBonus > 0) msgHTML += ' +' + pointsEarned + ' pts';
-                    messageEl.innerHTML = msgHTML;
+                    messageEl.replaceChildren();
+                    const successText = document.createElement('span');
+                    successText.textContent = '✅ Perfect!';
+                    messageEl.appendChild(successText);
+                    if (streak >= 5) {
+                        const badge = document.createElement('span');
+                        badge.className = 'streak-badge';
+                        badge.textContent = ' 🔥 ' + streak + ' STREAK!';
+                        messageEl.appendChild(badge);
+                    }
+                    if (streakBonus > 0) {
+                        const pointsText = document.createElement('span');
+                        pointsText.textContent = ' +' + pointsEarned + ' pts';
+                        messageEl.appendChild(pointsText);
+                    }
                     messageEl.className = 'msg-success';
 
                     // Confetti
@@ -1097,7 +1108,12 @@ export default function SentenceBuilder() {
             function showHint() {
                 hintUsed = true;
                 const firstWord = currentSentence[0];
-                messageEl.innerHTML = '💡 First word: <strong>' + firstWord + '</strong>';
+                messageEl.replaceChildren();
+                const label = document.createTextNode('💡 First word: ');
+                const strong = document.createElement('strong');
+                strong.textContent = firstWord;
+                messageEl.appendChild(label);
+                messageEl.appendChild(strong);
                 messageEl.className = 'msg-hint';
                 // Highlight the matching word in bank
                 const bankWords = wordBank.querySelectorAll('.word');

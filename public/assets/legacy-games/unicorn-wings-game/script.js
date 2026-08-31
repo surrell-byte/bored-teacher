@@ -249,24 +249,34 @@ function openModal(type) {
   modal.classList.add("is-open");
   modal.setAttribute("aria-hidden", "false");
 
+  modalBody.replaceChildren();
+
   if (type === "help") {
     modalTitle.textContent = "How to Play";
-    modalBody.innerHTML = `
-      <p>Pick a unicorn for each player, then start the race.</p>
-      <p>Take turns rolling. Your unicorn moves along the clouds by the number shown.</p>
-      <p>Reach the finish cloud first to win the race.</p>
-    `;
+    const p1 = document.createElement("p");
+    p1.textContent = "Pick a unicorn for each player, then start the race.";
+    const p2 = document.createElement("p");
+    p2.textContent = "Take turns rolling. Your unicorn moves along the clouds by the number shown.";
+    const p3 = document.createElement("p");
+    p3.textContent = "Reach the finish cloud first to win the race.";
+    modalBody.appendChild(p1);
+    modalBody.appendChild(p2);
+    modalBody.appendChild(p3);
     return;
   }
 
   modalTitle.textContent = "Settings";
-  modalBody.innerHTML = `
-    <p>Adjust the race before the sparkle dash.</p>
-    <label>
-      <input id="soundToggle" type="checkbox" ${state.sound ? "checked" : ""}>
-      Sound effects
-    </label>
-  `;
+  const p = document.createElement("p");
+  p.textContent = "Adjust the race before the sparkle dash.";
+  const label = document.createElement("label");
+  const input = document.createElement("input");
+  input.id = "soundToggle";
+  input.type = "checkbox";
+  input.checked = !!state.sound;
+  label.appendChild(input);
+  label.appendChild(document.createTextNode(" Sound effects"));
+  modalBody.appendChild(p);
+  modalBody.appendChild(label);
 
   document.querySelector("#soundToggle").addEventListener("change", (event) => {
     state.sound = event.target.checked;

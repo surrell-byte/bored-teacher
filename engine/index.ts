@@ -12,11 +12,14 @@
 
 // Core — game registration, loading, and the plain-object game contract.
 export {
+  GameRegistry,
+  gameRegistry,
+  getGameRegistry,
   registerGame,
   getGame,
   getGames,
 } from './core/GameRegistry';
-export { loadGame } from './core/GameLoader';
+export { GameLoader, gameLoader, loadGame } from './core/GameLoader';
 export { createGame } from './core/createGame';
 export { BaseGame } from './core/BaseGame';
 export { createReactGame } from './core/adapters/ReactGameAdapter';

@@ -6,14 +6,14 @@ let level=1;
 let score=0;
 let target=0;
 function newRound(){
-grid.innerHTML="";
+grid.replaceChildren();
 target=Math.floor(Math.random()*8)+2;
-speech.innerHTML=`Feed me ${target} apples!`;
+speech.textContent = 'Feed me ' + target + ' apples!';
 let total=target+Math.floor(Math.random()*6)+3;
 for(let i=0;i<total;i++){
 let div=document.createElement("div");
 div.className="apple";
-div.innerHTML="🍎";
+div.textContent = '🍎';
 div.onclick=()=>{
 div.classList.toggle("selected");
 }
@@ -26,7 +26,7 @@ let selected=document.querySelectorAll(".selected").length;
 if(selected===target){
 score++;
 level++;
-scoreText.innerHTML=score;
+scoreText.textContent = String(score);
 alert("Yum! 😋");
 newRound();
 }else{

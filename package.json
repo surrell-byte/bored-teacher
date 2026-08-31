@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "npm run check-games && next build",
+    "cleanup": "sh scripts/cleanup-generated.sh",
     "start": "next start",
     "lint": "next lint",
     "check-css": "node scripts/check-orphaned-classes.js",

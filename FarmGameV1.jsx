@@ -464,7 +464,7 @@ export default function FarmGameV1() {
   function showScreen(id) { document.querySelectorAll(".screen").forEach(s => s.classList.remove("active")); document.getElementById(id).classList.add("active"); }
 
   function renderLevels() {
-    levelsContainer.innerHTML = "";
+    levelsContainer.replaceChildren();
     levels.forEach((level, idx) => {
       const btn = document.createElement("button");
       btn.textContent = \`🌾 \${level.name} (Level \${idx+1})\`;
@@ -522,14 +522,14 @@ export default function FarmGameV1() {
     setTimeout(() => {
       emojiEl.textContent = q.emoji;
       emojiEl.style.opacity = "1";
-      messageArea.innerHTML = "🐣 Which animal is this?";
+      messageArea.textContent = "🐣 Which animal is this?";
       messageArea.style.background = "#fff0cf";
       const others = animalPool.filter(a => a.name !== q.name);
       const shuffledOthers = shuffleArray([...others]);
       const wrongNames = shuffledOthers.slice(0, 3).map(a => a.name);
       let options = [q.name, ...wrongNames];
       options = shuffleArray(options);
-      optionsContainer.innerHTML = "";
+      optionsContainer.replaceChildren();
       options.forEach(opt => {
         const btn = document.createElement("button");
         btn.textContent = opt;
@@ -542,14 +542,14 @@ export default function FarmGameV1() {
   }
 
   function playSoundForCurrent() {
-    if (!gameActive || currentQuestionIndex >= currentQuestions.length) { messageArea.innerHTML = "🎮 Select a level first!"; return; }
+    if (!gameActive || currentQuestionIndex >= currentQuestions.length) { messageArea.textContent = "🎮 Select a level first!"; return; }
     const q = currentQuestions[currentQuestionIndex];
     stopCurrentAudio();
     const fullURL = baseURL + q.sound;
     currentAudio = new Audio();
     currentAudio.src = fullURL;
     currentAudio.load();
-    currentAudio.play().catch(() => { messageArea.innerHTML = "🔊 Tap again to load sound"; setTimeout(() => { if (gameActive && !answered && currentQuestionIndex < currentQuestions.length) messageArea.innerHTML = "🐣 Which animal is this?"; }, 1500); });
+    currentAudio.play().catch(() => { messageArea.textContent = "🔊 Tap again to load sound"; setTimeout(() => { if (gameActive && !answered && currentQuestionIndex < currentQuestions.length) messageArea.textContent = "🐣 Which animal is this?"; }, 1500); });
   }
 
   function checkAnswer(button, selected) {
@@ -564,7 +564,7 @@ export default function FarmGameV1() {
       updateGameStatsUI();
       button.classList.add("correct");
       emojiEl.classList.add("reveal");
-      messageArea.innerHTML = "✅ PERFECT! +1 POINT 🎉";
+      messageArea.textContent = "✅ PERFECT! +1 POINT 🎉";
       messageArea.style.background = "#c8f0d1";
       document.querySelectorAll(".option").forEach(btn => { btn.style.pointerEvents = "none"; btn.disabled = true; });
       clearLevelTimeout();
@@ -579,7 +579,7 @@ export default function FarmGameV1() {
       const card = document.querySelector("#gameScreen .farm-card");
       card.classList.add("shake-bad");
       setTimeout(() => card.classList.remove("shake-bad"), 300);
-      messageArea.innerHTML = "❌ OOPS! Try again! 🐾";
+      messageArea.textContent = "❌ OOPS! Try again! 🐾";
       messageArea.style.background = "#ffe0db";
       setTimeout(() => {
         if (button && button.classList) { button.classList.remove("wrong"); button.style.pointerEvents = "auto"; button.disabled = false; }
@@ -607,7 +607,7 @@ export default function FarmGameV1() {
 
     if (hasNextLevel) {
       // Auto-advance to next level without victory popup
-      messageArea.innerHTML = "🎉 Level Complete! Loading next level... 🚜";
+      messageArea.textContent = "🎉 Level Complete! Loading next level... 🚜";
       messageArea.style.background = "#ffe5b4";
       // Disable buttons during transition
       document.querySelectorAll(".option").forEach(btn => { btn.style.pointerEvents = "none"; btn.disabled = true; });
@@ -618,8 +618,8 @@ export default function FarmGameV1() {
       }, 1800);
     } else {
       // All 3 levels completed → show victory screen
-      const msg = \`🏆 You scored \${currentScore}/\${currentQuestions.length} in the final level!\`;
-      document.getElementById("victoryMessage").innerHTML = msg;
+      const msg = '🏆 You scored ' + currentScore + '/' + currentQuestions.length + ' in the final level!';
+      document.getElementById("victoryMessage").textContent = msg;
       showScreen("victoryScreen");
     }
   }

@@ -172,7 +172,7 @@
 
     function createDustParticles() {
         const container = document.getElementById('particlesContainer');
-        container.innerHTML = '';
+        container.replaceChildren();
         for (let i = 0; i < 25; i++) {
             const particle = document.createElement('div');
             particle.classList.add('dust-particle');
@@ -337,11 +337,25 @@
     function addLogEntry(outcome, message, playerNum) {
         const entry = document.createElement('div');
         entry.className = 'log-entry';
-        let amountHtml = '';
-        if (outcome.type === 'treasure') amountHtml = `<span class="highlight-gold">+$${outcome.amount.toLocaleString()}</span>`;
-        else if (outcome.type === 'lose') amountHtml = `<span class="highlight-danger">-$${outcome.amount.toLocaleString()}</span>`;
-        else amountHtml = '<span class="highlight-neutral">$0</span>';
-        entry.innerHTML = `<strong>P${playerNum}</strong> ${message} ${amountHtml}`;
+
+        const playerLabel = document.createElement('strong');
+        playerLabel.textContent = 'P' + playerNum;
+        entry.appendChild(playerLabel);
+        entry.appendChild(document.createTextNode(' ' + message + ' '));
+
+        const amountText = document.createElement('span');
+        if (outcome.type === 'treasure') {
+            amountText.textContent = '+$' + outcome.amount.toLocaleString();
+            amountText.className = 'highlight-gold';
+        } else if (outcome.type === 'lose') {
+            amountText.textContent = '-$' + outcome.amount.toLocaleString();
+            amountText.className = 'highlight-danger';
+        } else {
+            amountText.textContent = '$0';
+            amountText.className = 'highlight-neutral';
+        }
+        entry.appendChild(amountText);
+
         gameLog.appendChild(entry);
         gameLog.scrollTop = gameLog.scrollHeight;
         while (gameLog.children.length > 30) gameLog.removeChild(gameLog.firstChild);
@@ -359,7 +373,10 @@
         playSound('turn');
         const turnLog = document.createElement('div');
         turnLog.className = 'log-entry';
-        turnLog.innerHTML = `<span style="color:#f7d774;">⚔️ <strong>Player ${gameState.currentPlayer}</strong> — it's your turn! Choose a treasure chest.</span>`;
+        const turnLabel = document.createElement('span');
+        turnLabel.style.color = '#f7d774';
+        turnLabel.textContent = '⚔️ Player ' + gameState.currentPlayer + ' — it\'s your turn! Choose a treasure chest.';
+        turnLog.appendChild(turnLabel);
         gameLog.appendChild(turnLog);
         gameLog.scrollTop = gameLog.scrollHeight;
     }
@@ -432,7 +449,11 @@
         spawnConfetti();
         const winLog = document.createElement('div');
         winLog.className = 'log-entry';
-        winLog.innerHTML = `<span style="color:#ffd700;font-size:1.1em;">🏆🎉 <strong>PLAYER ${playerNum} WINS!</strong> Reached $25,000! Incredible fortune! 🎉🏆</span>`;
+        const winLine = document.createElement('span');
+        winLine.style.color = '#ffd700';
+        winLine.style.fontSize = '1.1em';
+        winLine.textContent = '🏆🎉 PLAYER ' + playerNum + ' WINS! Reached $25,000! Incredible fortune! 🎉🏆';
+        winLog.appendChild(winLine);
         gameLog.appendChild(winLog);
         gameLog.scrollTop = gameLog.scrollHeight;
         setTimeout(() => winnerPanel.classList.remove('winner-panel'), 8000);
@@ -492,16 +513,16 @@
             if (cont) cont.classList.remove('revealing', 'shaking');
         }
 
-        gameLog.innerHTML = '';
+        gameLog.replaceChildren();
         const initLog = document.createElement('div');
         initLog.className = 'log-entry';
         initLog.style.color = '#8a7a60';
-        initLog.innerHTML = '📜 The adventure begins... Both players start with <span class="highlight-gold">$10,000</span>. First to <span class="highlight-gold">$25,000</span> wins!';
+        initLog.textContent = '📜 The adventure begins... Both players start with $10,000. First to $25,000 wins!';
         gameLog.appendChild(initLog);
         const turnLog = document.createElement('div');
         turnLog.className = 'log-entry';
         turnLog.style.color = '#f7d774';
-        turnLog.innerHTML = '⚔️ <strong>Player 1</strong> — it\'s your turn! Choose a treasure chest.';
+        turnLog.textContent = '⚔️ Player 1 — it\'s your turn! Choose a treasure chest.';
         gameLog.appendChild(turnLog);
 
         updateAllDisplays();

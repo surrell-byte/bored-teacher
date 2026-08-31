@@ -64,6 +64,20 @@ const PhonicsWorld_HTML = `<!-- LANDING PAGE -->
     </div>
 </div>`;
 
+function setSafeText(node, value) {
+    if (!node) return;
+    node.textContent = String(value ?? '');
+}
+
+function setMultilineText(node, lines) {
+    if (!node) return;
+    node.replaceChildren();
+    lines.forEach((line, index) => {
+        if (index > 0) node.appendChild(document.createElement('br'));
+        node.appendChild(document.createTextNode(String(line ?? '')));
+    });
+}
+
 const PhonicsWorld_CSS = `* {
             box-sizing: border-box;
             margin: 0;
@@ -736,7 +750,7 @@ export default function PhonicsWorld() {
         let newLevel = Math.floor(totalXP / 100) + 1;
         if (newLevel > playerLevel) {
             playerLevel = newLevel;
-            feedbackMsg.innerHTML = \`🎉 LEVEL UP! You are now Level \${playerLevel}! 🎉\`;
+            setSafeText(feedbackMsg, \`🎉 LEVEL UP! You are now Level \${playerLevel}! 🎉\`);
         }
         updateUI();
     }
@@ -802,7 +816,7 @@ export default function PhonicsWorld() {
             const xpGain = 10 * multiplier;
             addXP(xpGain);
             correctInLevel++;
-            feedbackMsg.innerHTML = \`\${praiseList[Math.floor(Math.random()*praiseList.length)]} +\${xpGain} XP! (x\${multiplier})\`;
+            setSafeText(feedbackMsg, \`\${praiseList[Math.floor(Math.random()*praiseList.length)]} +\${xpGain} XP! (x\${multiplier})\`);
             feedbackMsg.style.borderLeftColor = "#00b894";
             playSuccess();
             speakWord(q.chWord);
@@ -810,7 +824,7 @@ export default function PhonicsWorld() {
         } else {
             streak = 0;
             multiplier = 1;
-            feedbackMsg.innerHTML = \`❌ Not quite! Correct word: "\${q.chWord}". Listen: 🔊\`;
+            setSafeText(feedbackMsg, \`❌ Not quite! Correct word: "\${q.chWord}". Listen: 🔊\`);
             feedbackMsg.style.borderLeftColor = "#d63031";
             playWrong();
             speakWord(q.chWord);
@@ -839,8 +853,19 @@ export default function PhonicsWorld() {
     function loadQuestion() {
         const q = levelQuestions[currentIndex];
         const emoji = q.q.match(/[\p{Emoji}]/u)?.[0] || '🔊';
-        questionDiv.innerHTML = \`<div style="display:flex; flex-direction:column; gap:8px"><span style="font-size:3rem;">\${emoji}</span>\${q.q}</div>\`;
-        optionsGrid.innerHTML = '';
+        const wrapper = document.createElement('div');
+        wrapper.style.display = 'flex';
+        wrapper.style.flexDirection = 'column';
+        wrapper.style.gap = '8px';
+        const emojiEl = document.createElement('span');
+        emojiEl.style.fontSize = '3rem';
+        emojiEl.textContent = emoji;
+        const prompt = document.createElement('span');
+        prompt.textContent = q.q;
+        wrapper.appendChild(emojiEl);
+        wrapper.appendChild(prompt);
+        questionDiv.replaceChildren(wrapper);
+        optionsGrid.replaceChildren();
         currentButtons = [];
         q.options.forEach((opt, idx) => {
             const btn = document.createElement('button');
@@ -852,7 +877,7 @@ export default function PhonicsWorld() {
         });
         questionLocked = false;
         nextBtn.disabled = true;
-        feedbackMsg.innerHTML = "🔊 Choose the correct blend word!";
+        setSafeText(feedbackMsg, "🔊 Choose the correct blend word!");
         updateUI();
     }
 
@@ -869,18 +894,21 @@ export default function PhonicsWorld() {
         celebrateConfetti();
         if (canUnlock) {
             resultTitle.innerText = \`🎉 \${ISLANDS[currentIsland].name} COMPLETE! 🎉\`;
-            rewardMsg.innerHTML = \`Score: \${correctInLevel}/\${levelQuestions.length} (\${Math.floor(percent)}%)<br>🚀 Next island UNLOCKED!\`;
+            setMultilineText(rewardMsg, [
+                \`Score: \${correctInLevel}/\${levelQuestions.length} (\${Math.floor(percent)}%)\`,
+                '🚀 Next island UNLOCKED!'
+            ]);
             nextLevelBtn.style.display = 'block';
         } else if (currentIsland === ISLANDS.length-1) {
             resultTitle.innerText = "🏆 ALL ISLANDS MASTERED! 🏆";
-            rewardMsg.innerHTML = \`You conquered every blend! Total XP: \${totalXP} ✨\`;
+            setSafeText(rewardMsg, \`You conquered every blend! Total XP: \${totalXP} ✨\`);
             nextLevelBtn.style.display = 'none';
             // extra final confetti
             celebrateConfetti();
             setTimeout(() => celebrateConfetti(), 300);
         } else {
             resultTitle.innerText = \`⚠️ Try Again! ⚠️\`;
-            rewardMsg.innerHTML = \`You got \${correctInLevel}/\${levelQuestions.length} correct. Need 80% to unlock next island.\`;
+            setSafeText(rewardMsg, \`You got \${correctInLevel}/\${levelQuestions.length} correct. Need 80% to unlock next island.\`);
             nextLevelBtn.style.display = 'none';
         }
     }
@@ -917,7 +945,7 @@ export default function PhonicsWorld() {
     }
 
     function renderWorldMap() {
-        worldMapDiv.innerHTML = '';
+        worldMapDiv.replaceChildren();
         ISLANDS.forEach((island, idx) => {
             const btn = document.createElement('button');
             btn.className = \`world-btn \${idx === currentIsland ? 'active' : ''}\`;

@@ -516,7 +516,13 @@ CATEGORIES.forEach(c=>{
   const btn = document.createElement('div');
   btn.className = 'tile' + (c.id==='random' ? ' selected' : '');
   btn.dataset.cat = c.id;
-  btn.innerHTML = \`<span class="ic">\${c.icon}</span>\${c.label}\`;
+  const icon = document.createElement('span');
+  icon.className = 'ic';
+  icon.textContent = c.icon;
+  const label = document.createElement('span');
+  label.textContent = c.label;
+  btn.appendChild(icon);
+  btn.appendChild(label);
   btn.addEventListener('click', ()=>{
     document.querySelectorAll('.tile').forEach(t=>t.classList.remove('selected'));
     btn.classList.add('selected');
@@ -591,7 +597,7 @@ function startGame(){
 function buildKeyboard(){
   const rows = ['QWERTYUIOP','ASDFGHJKL','ZXCVBNM'];
   const kb = document.getElementById('keyboard');
-  kb.innerHTML = '';
+  kb.replaceChildren();
   rows.forEach(row=>{
     const rowEl = document.createElement('div');
     rowEl.className = 'kb-row';
@@ -641,7 +647,7 @@ function loadQuestion(){
   document.getElementById('progFill').style.width = pct+'%';
 
   const clueWrap = document.getElementById('clueLines');
-  clueWrap.innerHTML = '';
+  clueWrap.replaceChildren();
   q.clues.forEach(c=>{
     const line = document.createElement('div');
     line.className = 'clue-line';

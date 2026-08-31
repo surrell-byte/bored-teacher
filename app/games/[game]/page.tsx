@@ -137,9 +137,9 @@ export default function GamePage() {
               </>
             )}
             {isFlagmaster && <button className="game-shell-header-action" type="button" onClick={() => setFlagDarkMode(value => !value)} aria-label="Toggle Flagmaster theme">{flagDarkMode ? '☀️ Light' : '🌙 Dark'}</button>}
-            <Link className="game-shell-header-action" href="/games">
-              Back to Menu
-            </Link>
+            <button className="game-shell-header-action" type="button" onClick={handleMainMenu}>
+              Main menu
+            </button>
           </>
         }
         stats={[
