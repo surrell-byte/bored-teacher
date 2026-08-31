@@ -123,7 +123,7 @@ export default function SubscriptionPage() {
                 disabled={plan.name === 'Free' && !hasTeacherPro}
                 onClick={async () => {
                   if (plan.name === 'Teacher Pro') {
-                    const user = auth.currentUser;
+                    const user = auth?.currentUser;
                     if (user) {
                       await setTeacherProAccess(user.uid, true);
                       setHasTeacherPro(true);

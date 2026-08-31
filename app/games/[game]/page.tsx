@@ -78,8 +78,9 @@ export default function GamePage() {
     setState({ lastGame: gameId, coins: state.coins + Math.round(acc / 10) });
     syncCurrentPlayerToLeaderboard();
 
-    if (auth.currentUser && state.classId) {
-      saveStudentScore(auth.currentUser.uid, state.classId, state.name, updatedGames).catch(() => {});
+    const currentUser = auth?.currentUser;
+    if (currentUser && state.classId) {
+      saveStudentScore(currentUser.uid, state.classId, state.name, updatedGames).catch(() => {});
     }
     setResult({ score: scr, accuracy: acc, gameId });
   }

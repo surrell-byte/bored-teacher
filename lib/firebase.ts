@@ -59,16 +59,25 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID ?? '',
 };
 
-if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
+const hasFirebaseConfig = Boolean(firebaseConfig.apiKey && firebaseConfig.projectId);
+
+if (!hasFirebaseConfig) {
   console.warn('Firebase environment variables are missing. Set NEXT_PUBLIC_FIREBASE_* values in your environment before running the app.');
 }
 
-const app  = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db   = getFirestore(app);
+const app = hasFirebaseConfig ? (getApps().length ? getApps()[0] : initializeApp(firebaseConfig)) : null;
+export const auth = app ? getAuth(app) : null;
+export const db = app ? getFirestore(app) : null;
 
-if (typeof window !== 'undefined') {
+if (typeof window !== 'undefined' && auth) {
   setPersistence(auth, browserLocalPersistence).catch(() => {});
+}
+
+function requireFirebase() {
+  if (!auth || !db) {
+    throw new Error('Firebase is not configured. Set NEXT_PUBLIC_FIREBASE_* values in your environment before using Firebase features.');
+  }
+  return { auth, db };
 }
 
 export function normalizeUsername(value: string): string {
@@ -108,6 +117,8 @@ export function isUserActive(user: Partial<Record<string, unknown>>): boolean {
 }
 
 export async function findUserByUsername(username: string) {
+  if (!db) return null;
+
   const normalized = normalizeUsername(username);
   if (!normalized) return null;
 
@@ -144,7 +155,7 @@ async function resolveUsernameToEmail(username: string): Promise<string | null> 
 }
 
 async function markUserLoggedIn(uid: string) {
-  if (!uid) return;
+  if (!uid || !db) return;
   await setDoc(doc(db, 'users', uid), {
     lastLogin: serverTimestamp(),
     isActive: true,
@@ -155,10 +166,18 @@ async function markUserLoggedIn(uid: string) {
 // ── Auth helpers ─────────────────────────────────────────────
 
 export function onAuthStateChanged(cb: (user: User | null) => void) {
+  if (!auth) {
+    cb(null);
+    return () => {};
+  }
   return _onAuthStateChanged(auth, cb);
 }
 
 export async function signUp(email: string, password: string, displayName: string, role: AccountRole) {
+  if (!auth || !db) {
+    throw new Error('Firebase is not configured. Set NEXT_PUBLIC_FIREBASE_* values in your environment before signing up.');
+  }
+
   const cleanEmail = email.trim().toLowerCase();
   const cleanUsername = normalizeUsername(displayName);
 
@@ -178,6 +197,10 @@ export async function signUp(email: string, password: string, displayName: strin
 }
 
 export async function signIn(identifier: string, password: string) {
+  if (!auth || !db) {
+    throw new Error('Firebase is not configured. Set NEXT_PUBLIC_FIREBASE_* values in your environment before signing in.');
+  }
+
   const rawIdentifier = identifier.trim();
   if (!rawIdentifier) {
     throw new Error('Email or username is required.');
@@ -207,14 +230,22 @@ export async function signIn(identifier: string, password: string) {
 }
 
 export async function signOut() {
+  if (!auth) return;
   await firebaseSignOut(auth);
 }
 
 export async function resetPassword(email: string) {
+  if (!auth) {
+    throw new Error('Firebase is not configured. Set NEXT_PUBLIC_FIREBASE_* values in your environment before resetting passwords.');
+  }
   await sendPasswordResetEmail(auth, email.trim());
 }
 
 export async function resetPasswordByUsername(usernameOrEmail: string) {
+  if (!auth || !db) {
+    throw new Error('Firebase is not configured. Set NEXT_PUBLIC_FIREBASE_* values in your environment before resetting passwords.');
+  }
+
   const raw = usernameOrEmail.trim();
   if (!raw) {
     throw new Error('Enter your email or username first.');
@@ -234,6 +265,10 @@ export async function resetPasswordByUsername(usernameOrEmail: string) {
 }
 
 export async function setDisplayName(user: User, name: string) {
+  if (!db) {
+    throw new Error('Firebase is not configured. Set NEXT_PUBLIC_FIREBASE_* values in your environment before updating profile data.');
+  }
+
   const cleanName = normalizeUsername(name);
   await updateProfile(user, { displayName: cleanName });
   try {
@@ -256,6 +291,8 @@ interface UserState {
 }
 
 async function createUserProfile(uid: string, name: string, email: string, role: AccountRole) {
+  if (!db) return;
+
   const username = normalizeUsername(name);
   try {
     await setDoc(doc(db, 'users', uid), {
@@ -283,14 +320,14 @@ async function createUserProfile(uid: string, name: string, email: string, role:
 }
 
 export async function saveUserState(uid: string, state: Partial<UserState>) {
-  if (!uid) return;
+  if (!uid || !db) return;
   try {
     await setDoc(doc(db, 'users', uid), { ...state, updatedAt: serverTimestamp() }, { merge: true });
   } catch (_) {}
 }
 
 export async function loadUserState(uid: string): Promise<UserState | null> {
-  if (!uid) return null;
+  if (!uid || !db) return null;
   try {
     const snap = await getDoc(doc(db, 'users', uid));
     return snap.exists() ? (snap.data() as UserState) : null;
@@ -314,6 +351,7 @@ export async function setTeacherProAccess(uid: string | null | undefined, enable
 }
 
 export async function loadUsersForCreator(): Promise<UserSummary[]> {
+  if (!db) return [];
   try {
     const snap = await getDocs(collection(db, 'users'));
     return snap.docs
@@ -354,6 +392,10 @@ function generateClassCode(): string {
 }
 
 export async function createClassCode(teacherUid: string): Promise<string> {
+  if (!db) {
+    throw new Error('Firebase is not configured. Set NEXT_PUBLIC_FIREBASE_* values in your environment before creating class codes.');
+  }
+
   let code = generateClassCode();
   for (let attempt = 0; attempt < 5; attempt++) {
     const existing = await getDoc(doc(db, 'classCodes', code));
@@ -365,6 +407,7 @@ export async function createClassCode(teacherUid: string): Promise<string> {
 }
 
 export async function resolveClassCode(code: string): Promise<string | null> {
+  if (!db) return null;
   try {
     const snap = await getDoc(doc(db, 'classCodes', code.toUpperCase().trim()));
     return snap.exists() ? (snap.data().teacherUid as string) : null;
@@ -372,20 +415,21 @@ export async function resolveClassCode(code: string): Promise<string | null> {
 }
 
 export async function setUserClass(uid: string, classId: string, role: 'teacher' | 'student') {
+  if (!db) return;
   await setDoc(doc(db, 'users', uid), { classId, role, updatedAt: serverTimestamp() }, { merge: true });
 }
 
 // ── Leaderboard helpers ──────────────────────────────────────
 
 export async function saveLeaderboardState(uid: string, data: { players: unknown[] }) {
-  if (!uid) return;
+  if (!uid || !db) return;
   try {
     await setDoc(doc(db, 'leaderboards', uid), { players: data.players || [], updatedAt: serverTimestamp() }, { merge: false });
   } catch (_) {}
 }
 
 export async function loadLeaderboardState(uid: string) {
-  if (!uid) return null;
+  if (!uid || !db) return null;
   try {
     const snap = await getDoc(doc(db, 'leaderboards', uid));
     return snap.exists() ? snap.data() : null;
@@ -393,7 +437,7 @@ export async function loadLeaderboardState(uid: string) {
 }
 
 export async function saveStudentScore(uid: string, classId: string, name: string, games: GameState) {
-  if (!uid || !name || name === 'Explorer' || !classId) return;
+  if (!uid || !name || name === 'Explorer' || !classId || !db) return;
   try {
     const converted: Record<string, { best: number; played: number }> = {};
     for (const [k, v] of Object.entries(games)) {
@@ -404,7 +448,7 @@ export async function saveStudentScore(uid: string, classId: string, name: strin
 }
 
 export async function loadAllStudentScores(classId: string) {
-  if (!classId) return [];
+  if (!classId || !db) return [];
   try {
     const q = query(collection(db, 'studentScores'), where('classId', '==', classId));
     const snap = await getDocs(q);
@@ -419,6 +463,10 @@ export async function submitFeedback(data: {
   userId?: string | null;
   userName?: string;
 }) {
+  if (!db) {
+    throw new Error('Firebase is not configured. Set NEXT_PUBLIC_FIREBASE_* values in your environment before submitting feedback.');
+  }
+
   const message = data.message.trim();
   if (!message) throw new Error('Feedback message is required');
 
@@ -433,6 +481,7 @@ export async function submitFeedback(data: {
 }
 
 export async function loadFeedback() {
+  if (!db) return [];
   const snapshot = await getDocs(collection(db, 'feedback'));
   return snapshot.docs
     .map(item => ({ id: item.id, ...item.data() }))
@@ -445,6 +494,7 @@ export async function loadFeedback() {
 
 export async function resolveFeedback(feedbackId: string) {
   if (!feedbackId) throw new Error('Feedback id is required');
+  if (!db) return;
   await updateDoc(doc(db, 'feedback', feedbackId), {
     resolved: true,
     resolvedAt: serverTimestamp(),

@@ -45,7 +45,7 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
     setSaving(true);
     setState({ name: name.trim(), username: username.replace(/^@/, ''), avatar });
     try {
-      const user = auth.currentUser;
+      const user = auth?.currentUser;
       if (user) await setDisplayName(user, name.trim());
     } catch (_) {}
     setFeedback({ ok: true, msg: '✅ Profile saved!' });

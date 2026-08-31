@@ -25,7 +25,7 @@ export default function PaymentPage() {
   }, [router]);
 
   const handlePayNow = async () => {
-    const user = auth.currentUser;
+    const user = auth?.currentUser;
     if (user) {
       await setTeacherProAccess(user.uid, true);
     } else {

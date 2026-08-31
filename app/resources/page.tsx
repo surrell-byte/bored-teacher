@@ -225,7 +225,7 @@ export default function ResourcesPage() {
                       style={{ fontSize: '0.78rem', width: '100%', justifyContent: 'center' }} 
                       disabled={(!hasTeacherPro && premiumResourceIds.has(r.id)) || r.type === 'tool' || !r.link}
                       onClick={async () => {
-                        const currentUser = auth.currentUser;
+                        const currentUser = auth?.currentUser;
                         if (!hasTeacherPro && premiumResourceIds.has(r.id)) {
                           if (currentUser) {
                             const profile = await loadUserState(currentUser.uid);

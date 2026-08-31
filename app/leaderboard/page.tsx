@@ -79,10 +79,11 @@ export default function LeaderboardPage() {
   const highestScore = players[0]?.score.total ?? 0;
 
   async function handleCreateClass() {
-    if (!auth.currentUser || state.role !== 'teacher') return;
+    const currentUser = auth?.currentUser;
+    if (!currentUser || state.role !== 'teacher') return;
     setCreatingClass(true);
     try {
-      const code = await createClassCode(auth.currentUser.uid);
+      const code = await createClassCode(currentUser.uid);
       setClassCode(code);
       setState({ classId: code });
     } finally {

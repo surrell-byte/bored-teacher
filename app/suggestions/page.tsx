@@ -39,7 +39,7 @@ export default function SuggestionsPage() {
         message,
         type: feedbackType,
         page: '/suggestions',
-        userId: auth.currentUser?.uid,
+        userId: auth?.currentUser?.uid,
         userName: state.name,
       });
       setMessage('');

@@ -89,7 +89,7 @@ export default function ManagePlayersModal({ onClose }: Props) {
   }
 
   async function maybeSyncFirestore() {
-    const uid = auth.currentUser?.uid;
+    const uid = auth?.currentUser?.uid;
     if (uid) await syncToFirestore(uid);
   }
 
