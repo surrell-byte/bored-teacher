@@ -19,6 +19,17 @@ export interface GameCatalogEntry {
 }
 
 export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
+  alphabethunt: {
+    name: "Alphabet Hunt",
+    icon: "🔤",
+    desc: "A two-player memory game where you flip tiles to find your avatar among 26 alphabet tiles.",
+    cover: "/assets/covers/alphabet-hunt-cover.webp",
+    tag: { label: "Memory", color: "tag-vocab" },
+    badge: "PvP",
+    difficulty: "Easy",
+    barColor: "var(--teal)",
+    hasComponent: true,
+  },
   tilebattle: {
     name: "Tile Battle",
     icon: "⚔️",

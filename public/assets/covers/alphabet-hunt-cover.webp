@@ -1,0 +1,63 @@
+<svg width="256" height="200" viewBox="0 0 256 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="256" height="200" fill="#f5f1e8"/>
+  
+  <!-- Border -->
+  <rect x="8" y="8" width="240" height="184" fill="none" stroke="#1b1b1f" stroke-width="3"/>
+  
+  <!-- Title area -->
+  <text x="128" y="35" font-family="Trebuchet MS, sans-serif" font-size="24" font-weight="bold" text-anchor="middle" fill="#1b1b1f">
+    Alphabet Hunt
+  </text>
+  
+  <!-- Tiles representation -->
+  <g id="tiles">
+    <!-- First row of tiles -->
+    <rect x="16" y="50" width="32" height="32" fill="#1b1b1f" stroke="#1b1b1f" stroke-width="1" rx="2"/>
+    <text x="32" y="72" font-size="16" fill="#eee8da" text-anchor="middle" font-family="Georgia, serif" font-weight="bold">A</text>
+    
+    <rect x="52" y="50" width="32" height="32" fill="#2f6f4f" stroke="#1b1b1f" stroke-width="1" rx="2"/>
+    <text x="68" y="72" font-size="18" text-anchor="middle" fill="#fff">🚗</text>
+    
+    <rect x="88" y="50" width="32" height="32" fill="#5b3ea8" stroke="#1b1b1f" stroke-width="1" rx="2"/>
+    <text x="104" y="72" font-size="18" text-anchor="middle" fill="#fff">🎁</text>
+    
+    <rect x="124" y="50" width="32" height="32" fill="#1b1b1f" stroke="#1b1b1f" stroke-width="1" rx="2"/>
+    <text x="140" y="72" font-size="16" fill="#eee8da" text-anchor="middle" font-family="Georgia, serif" font-weight="bold">D</text>
+    
+    <rect x="160" y="50" width="32" height="32" fill="#c98a2c" stroke="#1b1b1f" stroke-width="1" rx="2"/>
+    <text x="176" y="72" font-size="18" text-anchor="middle" fill="#fff">✨</text>
+    
+    <rect x="196" y="50" width="32" height="32" fill="#1b1b1f" stroke="#1b1b1f" stroke-width="1" rx="2"/>
+    <text x="212" y="72" font-size="16" fill="#eee8da" text-anchor="middle" font-family="Georgia, serif" font-weight="bold">F</text>
+  </g>
+  
+  <!-- Second row of tiles -->
+  <g id="tiles2" transform="translate(0, 40)">
+    <rect x="16" y="50" width="32" height="32" fill="#2f6f4f" stroke="#1b1b1f" stroke-width="1" rx="2"/>
+    <text x="32" y="72" font-size="18" text-anchor="middle" fill="#fff">🦁</text>
+    
+    <rect x="52" y="50" width="32" height="32" fill="#1b1b1f" stroke="#1b1b1f" stroke-width="1" rx="2"/>
+    <text x="68" y="72" font-size="16" fill="#eee8da" text-anchor="middle" font-family="Georgia, serif" font-weight="bold">H</text>
+    
+    <rect x="88" y="50" width="32" height="32" fill="#c98a2c" stroke="#1b1b1f" stroke-width="1" rx="2"/>
+    <text x="104" y="72" font-size="18" text-anchor="middle" fill="#fff">🌟</text>
+    
+    <rect x="124" y="50" width="32" height="32" fill="#5b3ea8" stroke="#1b1b1f" stroke-width="1" rx="2"/>
+    <text x="140" y="72" font-size="18" text-anchor="middle" fill="#fff">🎨</text>
+    
+    <rect x="160" y="50" width="32" height="32" fill="#1b1b1f" stroke="#1b1b1f" stroke-width="1" rx="2"/>
+    <text x="176" y="72" font-size="16" fill="#eee8da" text-anchor="middle" font-family="Georgia, serif" font-weight="bold">K</text>
+    
+    <rect x="196" y="50" width="32" height="32" fill="#2f6f4f" stroke="#1b1b1f" stroke-width="1" rx="2"/>
+    <text x="212" y="72" font-size="18" text-anchor="middle" fill="#fff">🎭</text>
+  </g>
+  
+  <!-- PvP badge -->
+  <g transform="translate(200, 160)">
+    <rect x="0" y="0" width="50" height="28" fill="#c98a2c" stroke="#1b1b1f" stroke-width="2" rx="3"/>
+    <text x="25" y="19" font-family="Trebuchet MS, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#1b1b1f">
+      PvP
+    </text>
+  </g>
+</svg>
