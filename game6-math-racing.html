@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Math Racing</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;900&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Nunito', sans-serif; background: #1a1a2e; min-height: 100vh; display: flex; flex-direction: column; align-items: center; overflow: hidden; color: white; }
+  h1 { font-family: 'Fredoka One', cursive; color: #ffe66d; font-size: 2.4rem; text-shadow: 2px 2px 0 #e84393; margin: 0.8rem 0; }
+  #track-area { width: 100%; max-width: 700px; position: relative; }
+  .track { background: linear-gradient(135deg, #2d2d2d, #1a1a1a); border-radius: 16px; margin: 8px 0; padding: 12px 16px; display: flex; align-items: center; gap: 12px; position: relative; overflow: hidden; border: 2px solid #333; }
+  .track::before { content:''; position:absolute; top:50%; left:0; right:0; height:4px; background:repeating-linear-gradient(90deg,#555 0,#555 10px,transparent 10px,transparent 20px); transform:translateY(-50%); opacity:0.4; }
+  .car { font-size: 2.2rem; transition: transform 0.4s ease; position: relative; z-index: 2; flex-shrink: 0; }
+  .progress-bar { flex: 1; height: 20px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 10px; transition: width 0.4s ease; width: 0%; }
+  .track-label { font-family:'Fredoka One',cursive; font-size:0.95rem; width:70px; flex-shrink:0; }
+  .finish-flag { font-size: 1.5rem; flex-shrink: 0; }
+  #road { background: #2a2a2a; height: 30px; width: 100%; margin-bottom: 1rem; border-top: 4px solid #555; border-bottom: 4px solid #555; background: repeating-linear-gradient(90deg, #2a2a2a 0, #2a2a2a 40px, #3a3a3a 40px, #3a3a3a 80px); }
+  #problem-box { background: linear-gradient(135deg, #0f3460, #16213e); border-radius: 20px; padding: 1.2rem 2rem; text-align: center; margin: 0.5rem 0 1rem; border: 2px solid #e84393; box-shadow: 0 0 20px rgba(232,67,147,0.3); }
+  #problem { font-family: 'Fredoka One', cursive; font-size: 3rem; color: #ffe66d; }
+  #choices { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+  .ans-btn { font-family: 'Fredoka One', cursive; font-size: 2rem; border: none; border-radius: 16px; padding: 10px 28px; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 4px 14px rgba(0,0,0,0.3); }
+  .ans-btn:hover { transform: scale(1.1); }
+  .ans-btn.correct { background: #6be585; color: #1b5e20; }
+  .ans-btn.wrong { background: #ff6b6b; color: #7f0000; animation: shake 0.3s; }
+  @keyframes shake{0%,100%{transform:translateX(0)}33%{transform:translateX(-8px)}66%{transform:translateX(8px)}}
+  #feedback { font-size: 1.4rem; font-weight: 900; min-height: 2rem; margin: 0.5rem 0; }
+  .ok{color:#6be585} .bad{color:#ff6b6b}
+  #score-bar { display: flex; gap: 2rem; margin: 0.3rem 0; }
+  .score-item { font-family:'Fredoka One',cursive; font-size:1.2rem; }
+  #winner-banner { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:50; flex-direction:column; align-items:center; justify-content:center; gap:1rem; }
+  #winner-banner h2 { font-family:'Fredoka One',cursive; font-size:3rem; color:#ffe66d; text-shadow:0 0 30px gold; }
+  #winner-banner button { font-family:'Fredoka One',cursive; background:linear-gradient(135deg,#e84393,#f8333c); color:white; border:none; border-radius:40px; padding:0.8rem 2rem; font-size:1.5rem; cursor:pointer; }
+  #winner-banner .trophy { font-size:5rem; animation:bounce 0.5s ease infinite alternate; }
+  @keyframes bounce{from{transform:scale(1)}to{transform:scale(1.1)}}
+</style>
+</head>
+<body>
+<h1>🏁 Math Racing!</h1>
+<div id="score-bar">
+  <div class="score-item">⭐ <span id="score">0</span></div>
+  <div class="score-item">❓ Q: <span id="qnum">0</span>/10</div>
+</div>
+<div id="track-area">
+  <div class="track" id="track-player">
+    <div class="track-label">🧒 You</div>
+    <div class="car" id="car-player">🏎️</div>
+    <div class="progress-bar"><div class="progress-fill" id="fill-player" style="background:linear-gradient(90deg,#e84393,#f8333c);"></div></div>
+    <div class="finish-flag">🏁</div>
+  </div>
+  <div class="track" id="track-cpu">
+    <div class="track-label">🤖 CPU</div>
+    <div class="car" id="car-cpu">🚗</div>
+    <div class="progress-bar"><div class="progress-fill" id="fill-cpu" style="background:linear-gradient(90deg,#4361ee,#4cc9f0);"></div></div>
+    <div class="finish-flag">🏁</div>
+  </div>
+</div>
+<div id="problem-box">
+  <div id="problem">...</div>
+</div>
+<div id="choices"></div>
+<div id="feedback"></div>
+<div id="winner-banner">
+  <div class="trophy">🏆</div>
+  <h2 id="winner-text">You Win!</h2>
+  <p id="winner-sub" style="font-size:1.2rem;color:#c8b6ff;"></p>
+  <button onclick="startGame()">Race Again! 🏎️</button>
+</div>
+
+<script>
+  let playerProgress=0, cpuProgress=0, qNum=0, score=0, answered=false;
+  const TOTAL=10, CPU_CHANCE=0.45;
+
+  function getQuestion(){
+    const diff = Math.min(Math.floor(qNum/3),2);
+    const ops=['+','-','×'];
+    const op=ops[Math.floor(Math.random()*(diff+1))];
+    let a,b,ans;
+    if(op==='+'){a=Math.floor(Math.random()*10*(diff+1))+1;b=Math.floor(Math.random()*10)+1;ans=a+b;}
+    else if(op==='-'){b=Math.floor(Math.random()*10)+1;a=b+Math.floor(Math.random()*10)+1;ans=a-b;}
+    else{a=Math.floor(Math.random()*6)+2;b=Math.floor(Math.random()*5)+2;ans=a*b;}
+    return {text:`${a} ${op} ${b} = ?`, answer:ans};
+  }
+
+  function nextQuestion(){
+    if(qNum>=TOTAL){endRace();return;}
+    qNum++;
+    answered=false;
+    document.getElementById('qnum').textContent=qNum;
+    const q=getQuestion();
+    document.getElementById('problem').textContent=q.text;
+    document.getElementById('feedback').textContent='';
+
+    // CPU advances randomly
+    if(Math.random()<CPU_CHANCE) moveCPU(10+Math.floor(Math.random()*5));
+
+    const choices=document.getElementById('choices');
+    choices.innerHTML='';
+    let wrong1=q.answer+(Math.random()<0.5?1:-1);
+    let wrong2=q.answer+(Math.random()<0.5?2:-2);
+    let opts=[q.answer,wrong1,wrong2].filter(x=>x>0);
+    opts=[...new Set(opts)].sort(()=>Math.random()-0.5);
+    const colors=['#ffd93d','#6bcb77','#4d96ff','#ff9f1c'];
+    opts.forEach((o,i)=>{
+      const b=document.createElement('button');
+      b.className='ans-btn'; b.textContent=o;
+      b.style.background=colors[i%colors.length];
+      b.onclick=()=>checkAns(o,q.answer,b);
+      choices.appendChild(b);
+    });
+  }
+
+  function checkAns(val,correct,btn){
+    if(answered)return;
+    if(val===correct){
+      answered=true; score+=10;
+      document.getElementById('score').textContent=score;
+      btn.classList.add('correct');
+      document.getElementById('feedback').innerHTML='<span class="ok">✅ Correct! Vroom!</span>';
+      movePlayer(15);
+      setTimeout(nextQuestion,900);
+    } else {
+      btn.classList.add('wrong');
+      document.getElementById('feedback').innerHTML='<span class="bad">❌ Try again!</span>';
+      moveCPU(5);
+      setTimeout(()=>btn.classList.remove('wrong'),350);
+    }
+  }
+
+  function movePlayer(amount){
+    playerProgress=Math.min(playerProgress+amount,100);
+    document.getElementById('fill-player').style.width=playerProgress+'%';
+    if(playerProgress>=100) endRace(true);
+  }
+
+  function moveCPU(amount){
+    cpuProgress=Math.min(cpuProgress+amount,100);
+    document.getElementById('fill-cpu').style.width=cpuProgress+'%';
+    if(cpuProgress>=100 && playerProgress<100) endRace(false);
+  }
+
+  function endRace(playerWon){
+    const banner=document.getElementById('winner-banner');
+    banner.style.display='flex';
+    if(playerWon||playerProgress>=cpuProgress){
+      document.getElementById('winner-text').textContent='🏆 You Win!';
+      document.getElementById('winner-sub').textContent=`Amazing! Score: ${score}`;
+    } else {
+      document.getElementById('winner-text').textContent='🤖 CPU Wins!';
+      document.getElementById('winner-sub').textContent=`Better luck next time! Score: ${score}`;
+    }
+  }
+
+  function startGame(){
+    playerProgress=0; cpuProgress=0; qNum=0; score=0;
+    document.getElementById('fill-player').style.width='0%';
+    document.getElementById('fill-cpu').style.width='0%';
+    document.getElementById('winner-banner').style.display='none';
+    document.getElementById('score').textContent='0';
+    nextQuestion();
+  }
+
+  startGame();
+</script>
+</body>
+</html>

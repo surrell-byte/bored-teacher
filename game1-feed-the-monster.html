@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feed the Monster!</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@600;800&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Nunito', sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
+  h1 { font-family: 'Fredoka One', cursive; color: #ffe66d; font-size: 2.8rem; text-shadow: 3px 3px 0 #e84393; margin-bottom: 0.3rem; }
+  #request { font-size: 1.5rem; color: #a8edea; background: rgba(255,255,255,0.1); border-radius: 20px; padding: 0.5rem 1.5rem; margin-bottom: 1rem; }
+  #monster-area { position: relative; display: flex; align-items: flex-end; justify-content: center; margin-bottom: 1rem; }
+  #monster { font-size: 8rem; cursor: default; transition: transform 0.2s; filter: drop-shadow(0 0 20px rgba(232,67,147,0.5)); }
+  #monster.happy { animation: bounce 0.5s ease; }
+  #monster.sad { animation: shake 0.5s ease; }
+  @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-20px)} }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-10px)} 75%{transform:translateX(10px)} }
+  #tray { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; max-width: 420px; background: rgba(255,255,255,0.07); border-radius: 20px; padding: 1rem; margin-bottom: 1rem; min-height: 80px; }
+  .cookie { font-size: 2.5rem; cursor: grab; transition: transform 0.15s; user-select: none; }
+  .cookie:hover { transform: scale(1.3) rotate(10deg); }
+  .cookie:active { cursor: grabbing; }
+  #monster-mouth { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); width: 80px; height: 30px; background: rgba(255,0,100,0.3); border-radius: 0 0 40px 40px; border: 2px dashed rgba(255,0,100,0.5); }
+  #score-area { display: flex; gap: 1.5rem; align-items: center; }
+  #count-display { font-size: 1.3rem; color: #ffe66d; font-weight: 800; }
+  #feedback { font-size: 1.6rem; font-weight: 800; min-height: 2rem; text-align: center; }
+  .feedback-good { color: #6be585; }
+  .feedback-bad { color: #ff6b6b; }
+  #new-btn { font-family: 'Fredoka One', cursive; background: linear-gradient(135deg, #e84393, #f8333c); color: white; border: none; border-radius: 40px; padding: 0.6rem 1.8rem; font-size: 1.3rem; cursor: pointer; box-shadow: 0 4px 15px rgba(232,67,147,0.5); transition: transform 0.1s; }
+  #new-btn:hover { transform: scale(1.05); }
+  #progress { display: flex; gap: 6px; margin-top: 0.5rem; }
+  .pip { width: 14px; height: 14px; border-radius: 50%; background: rgba(255,255,255,0.2); transition: background 0.3s; }
+  .pip.filled { background: #6be585; }
+</style>
+</head>
+<body>
+<h1>🍪 Feed the Monster!</h1>
+<div id="request">Loading...</div>
+<div id="monster-area">
+  <div id="monster">👾</div>
+</div>
+<div id="tray"></div>
+<div id="score-area">
+  <div id="count-display">Fed: 0</div>
+  <div id="progress"></div>
+</div>
+<div id="feedback"></div>
+<br>
+<button id="new-btn" onclick="newRound()">New Round 🎲</button>
+
+<script>
+  const monsters = ['👾','🦖','🐲','👹','🐊','🦕'];
+  let target = 0, fed = 0;
+
+  function newRound() {
+    target = Math.floor(Math.random()*8)+2;
+    fed = 0;
+    document.getElementById('request').textContent = `Feed me ${target} cookies! 🍪`;
+    document.getElementById('feedback').textContent = '';
+    document.getElementById('monster').textContent = monsters[Math.floor(Math.random()*monsters.length)];
+    document.getElementById('monster').className = '';
+    buildTray();
+    updateProgress();
+    updateCount();
+  }
+
+  function buildTray() {
+    const tray = document.getElementById('tray');
+    tray.innerHTML = '';
+    const count = target + Math.floor(Math.random()*4);
+    for(let i=0;i<count;i++){
+      const c = document.createElement('div');
+      c.className='cookie'; c.textContent='🍪';
+      c.setAttribute('draggable','true');
+      c.addEventListener('dragstart', e=>e.dataTransfer.setData('text','cookie'));
+      c.addEventListener('click', feedOne);
+      tray.appendChild(c);
+    }
+  }
+
+  function feedOne(e) {
+    if(fed>=target) return;
+    e.target.remove();
+    fed++;
+    updateCount();
+    updateProgress();
+    if(fed===target) celebrate();
+    else if(fed>target) tooMany();
+  }
+
+  function updateCount() {
+    document.getElementById('count-display').textContent = `Fed: ${fed} / ${target}`;
+  }
+
+  function updateProgress() {
+    const p = document.getElementById('progress');
+    p.innerHTML='';
+    for(let i=0;i<target;i++){
+      const pip=document.createElement('div');
+      pip.className='pip'+(i<fed?' filled':'');
+      p.appendChild(pip);
+    }
+  }
+
+  function celebrate() {
+    const m = document.getElementById('monster');
+    m.className='happy';
+    document.getElementById('feedback').innerHTML='<span class="feedback-good">Yummy! Perfect! 🎉</span>';
+    setTimeout(()=>m.className='', 600);
+  }
+
+  function tooMany() {
+    const m = document.getElementById('monster');
+    m.className='sad';
+    document.getElementById('feedback').innerHTML='<span class="feedback-bad">Too many! 😫</span>';
+    setTimeout(()=>m.className='', 600);
+  }
+
+  newRound();
+</script>
+</body>
+</html>

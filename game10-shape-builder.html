@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shape Builder</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;900&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Nunito', sans-serif; background: linear-gradient(135deg, #0d0221 0%, #1a0545 50%, #2d0a6e 100%); min-height: 100vh; display: flex; flex-direction: column; align-items: center; color: white; padding: 0.5rem 0.5rem 1.5rem; }
+  h1 { font-family: 'Fredoka One', cursive; color: #ffe66d; font-size: 2.3rem; text-shadow: 2px 2px 0 #7209b7, 0 0 20px rgba(255,230,109,0.4); margin-bottom: 0.3rem; }
+  #top { display: flex; gap: 1.5rem; margin-bottom: 0.5rem; flex-wrap: wrap; justify-content: center; }
+  .stat { font-family: 'Fredoka One', cursive; font-size: 1.1rem; background: rgba(255,255,255,0.1); border-radius: 12px; padding: 4px 14px; color: #ffe66d; }
+  #layout { display: flex; gap: 1rem; align-items: flex-start; flex-wrap: wrap; justify-content: center; width: 100%; }
+  #toolbar { display: flex; flex-direction: column; gap: 8px; min-width: 110px; }
+  .shape-btn { font-family: 'Fredoka One', cursive; border: 3px solid transparent; border-radius: 14px; padding: 8px 10px; cursor: pointer; transition: all 0.15s; font-size: 1rem; display: flex; align-items: center; gap: 6px; color: white; background: rgba(255,255,255,0.12); }
+  .shape-btn:hover { transform: scale(1.07); border-color: rgba(255,255,255,0.4); }
+  .shape-btn.active { background: rgba(255,255,255,0.25); border-color: white; transform: scale(1.05); }
+  #color-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .color-swatch { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: transform 0.15s; }
+  .color-swatch:hover { transform: scale(1.2); }
+  .color-swatch.active { border-color: white; transform: scale(1.2); }
+  #canvas-wrap { position: relative; }
+  #canvas { border-radius: 16px; background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.2); cursor: crosshair; touch-action: none; }
+  #question-panel { background: linear-gradient(135deg, rgba(114,9,183,0.5), rgba(58,12,163,0.5)); border: 2px solid #7209b7; border-radius: 20px; padding: 0.8rem 1.2rem; text-align: center; min-width: 200px; }
+  #question-text { font-family: 'Fredoka One', cursive; font-size: 1.4rem; color: #ffe66d; margin-bottom: 0.5rem; }
+  #count-choices { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .c-btn { font-family: 'Fredoka One', cursive; font-size: 1.4rem; border: none; border-radius: 14px; padding: 8px 18px; cursor: pointer; transition: transform 0.15s; }
+  .c-btn:hover { transform: scale(1.1); }
+  .c-btn.correct { background: #6be585; }
+  .c-btn.wrong { background: #ff6b6b; animation: shake 0.3s; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 33%{transform:translateX(-7px)} 66%{transform:translateX(7px)} }
+  #feedback { font-size:1.2rem; font-weight:900; min-height:1.8rem; margin-top:0.5rem; text-align:center; }
+  .ok{color:#6be585}.bad{color:#ff6b6b}
+  #ctrl-row { display: flex; gap: 8px; margin-top: 0.5rem; flex-wrap: wrap; justify-content: center; }
+  button.ctrl { font-family: 'Fredoka One', cursive; font-size: 1rem; border: none; border-radius: 20px; padding: 6px 16px; cursor: pointer; transition: transform 0.15s; }
+  button.ctrl:hover { transform: scale(1.05); }
+  #shape-counter { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 0.4rem; justify-content: center; }
+  .shape-count { font-family: 'Fredoka One', cursive; font-size: 0.95rem; background: rgba(255,255,255,0.1); border-radius: 10px; padding: 3px 10px; }
+</style>
+</head>
+<body>
+<h1>🔷 Shape Builder!</h1>
+<div id="top">
+  <div class="stat">⭐ Score: <span id="score">0</span></div>
+  <div class="stat">🎨 Shapes placed: <span id="total-shapes">0</span></div>
+</div>
+<div id="layout">
+  <div id="toolbar">
+    <div style="font-family:'Fredoka One',cursive;font-size:0.9rem;color:#c8b6ff;margin-bottom:2px;">Shape:</div>
+    <button class="shape-btn active" id="btn-triangle" onclick="selectShape('triangle')">🔺 Triangle</button>
+    <button class="shape-btn" id="btn-rectangle" onclick="selectShape('rectangle')">🟦 Rectangle</button>
+    <button class="shape-btn" id="btn-circle" onclick="selectShape('circle')">⭕ Circle</button>
+    <button class="shape-btn" id="btn-square" onclick="selectShape('square')">🟥 Square</button>
+    <div style="font-family:'Fredoka One',cursive;font-size:0.9rem;color:#c8b6ff;margin-top:6px;">Color:</div>
+    <div id="color-row"></div>
+    <div style="font-family:'Fredoka One',cursive;font-size:0.9rem;color:#c8b6ff;margin-top:6px;">Size:</div>
+    <input type="range" id="size-slider" min="20" max="70" value="40" style="width:100%;accent-color:#7209b7;">
+  </div>
+  <div id="canvas-wrap">
+    <canvas id="canvas" width="360" height="320"></canvas>
+  </div>
+  <div>
+    <div id="question-panel">
+      <div id="question-text">How many 🔺 triangles?</div>
+      <div id="count-choices"></div>
+      <div id="feedback"></div>
+    </div>
+    <div id="shape-counter"></div>
+    <div id="ctrl-row">
+      <button class="ctrl" style="background:#ff6b6b;color:white;" onclick="undoLast()">↩ Undo</button>
+      <button class="ctrl" style="background:rgba(255,255,255,0.15);color:white;" onclick="clearAll()">🗑️ Clear</button>
+      <button class="ctrl" style="background:linear-gradient(135deg,#7209b7,#3a0ca3);color:white;" onclick="newQuestion()">❓ New Q</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const canvas=document.getElementById('canvas');
+  const ctx=canvas.getContext('2d');
+  const colors=['#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#c77dff','#ff9f1c','#00cec9','#fd79a8'];
+  let selectedShape='triangle', selectedColor=colors[0], selectedSize=40;
+  let shapes=[], score=0, questionShape='triangle', questionAnswered=false;
+
+  // Build color swatches
+  const cr=document.getElementById('color-row');
+  colors.forEach((c,i)=>{
+    const s=document.createElement('div');
+    s.className='color-swatch'+(i===0?' active':'');
+    s.style.background=c;
+    s.onclick=()=>{ selectedColor=c; document.querySelectorAll('.color-swatch').forEach(x=>x.classList.remove('active')); s.classList.add('active'); };
+    cr.appendChild(s);
+  });
+
+  document.getElementById('size-slider').oninput=e=>selectedSize=parseInt(e.target.value);
+
+  function selectShape(s){
+    selectedShape=s;
+    document.querySelectorAll('.shape-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById('btn-'+s).classList.add('active');
+  }
+
+  canvas.addEventListener('click', e=>{
+    const rect=canvas.getBoundingClientRect();
+    const x=(e.clientX-rect.left)*(canvas.width/rect.width);
+    const y=(e.clientY-rect.top)*(canvas.height/rect.height);
+    addShape(x,y);
+  });
+
+  function addShape(x,y){
+    shapes.push({type:selectedShape, x, y, size:selectedSize, color:selectedColor});
+    redraw();
+    updateCounter();
+  }
+
+  function redraw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    shapes.forEach(drawShape);
+    document.getElementById('total-shapes').textContent=shapes.length;
+  }
+
+  function drawShape(s){
+    ctx.fillStyle=s.color;
+    ctx.strokeStyle='rgba(255,255,255,0.5)';
+    ctx.lineWidth=2;
+    ctx.beginPath();
+    if(s.type==='circle'){
+      ctx.arc(s.x,s.y,s.size/2,0,Math.PI*2);
+    } else if(s.type==='triangle'){
+      ctx.moveTo(s.x,s.y-s.size*0.6);
+      ctx.lineTo(s.x-s.size*0.5,s.y+s.size*0.4);
+      ctx.lineTo(s.x+s.size*0.5,s.y+s.size*0.4);
+      ctx.closePath();
+    } else if(s.type==='rectangle'){
+      ctx.rect(s.x-s.size*0.7,s.y-s.size*0.4,s.size*1.4,s.size*0.8);
+    } else { // square
+      ctx.rect(s.x-s.size/2,s.y-s.size/2,s.size,s.size);
+    }
+    ctx.fill();
+    ctx.stroke();
+  }
+
+  function undoLast(){ if(shapes.length>0){shapes.pop();redraw();updateCounter();} }
+  function clearAll(){ shapes=[]; redraw(); updateCounter(); document.getElementById('feedback').textContent=''; }
+
+  function updateCounter(){
+    const counts={triangle:0,rectangle:0,circle:0,square:0};
+    shapes.forEach(s=>counts[s.type]++);
+    const icons={triangle:'🔺',rectangle:'🟦',circle:'⭕',square:'🟥'};
+    const counter=document.getElementById('shape-counter');
+    counter.innerHTML=Object.entries(counts).filter(([_,v])=>v>0).map(([k,v])=>`<div class="shape-count">${icons[k]} ${v}</div>`).join('');
+  }
+
+  const shapeEmojis={triangle:'🔺',rectangle:'🟦',circle:'⭕',square:'🟥'};
+  const shapeNames={triangle:'triangles',rectangle:'rectangles',circle:'circles',square:'squares'};
+
+  function newQuestion(){
+    const types=['triangle','rectangle','circle','square'];
+    questionShape=types[Math.floor(Math.random()*types.length)];
+    questionAnswered=false;
+    document.getElementById('question-text').textContent=`How many ${shapeEmojis[questionShape]} ${shapeNames[questionShape]}?`;
+    document.getElementById('feedback').textContent='';
+    buildChoices();
+  }
+
+  function buildChoices(){
+    const correct=shapes.filter(s=>s.type===questionShape).length;
+    const choices=document.getElementById('count-choices');
+    choices.innerHTML='';
+    let opts=[correct];
+    while(opts.length<4){
+      const o=Math.max(0,correct+Math.floor(Math.random()*5)-2);
+      if(!opts.includes(o)) opts.push(o);
+    }
+    opts.sort(()=>Math.random()-0.5);
+    const c=['#ffd93d','#6bcb77','#4d96ff','#ff9f1c','#c77dff'];
+    opts.forEach((o,i)=>{
+      const b=document.createElement('button');
+      b.className='c-btn'; b.textContent=o; b.style.background=c[i%c.length];
+      b.onclick=()=>checkCount(o,correct,b);
+      choices.appendChild(b);
+    });
+  }
+
+  function checkCount(val,correct,btn){
+    if(questionAnswered)return;
+    if(val===correct){
+      questionAnswered=true;
+      btn.classList.add('correct');
+      score+=10;
+      document.getElementById('score').textContent=score;
+      document.getElementById('feedback').innerHTML='<span class="ok">🎉 Correct! Great counting!</span>';
+    } else {
+      btn.classList.add('wrong');
+      document.getElementById('feedback').innerHTML='<span class="bad">🤔 Count again!</span>';
+      setTimeout(()=>btn.classList.remove('wrong'),350);
+    }
+  }
+
+  // Start with a question
+  newQuestion();
+</script>
+</body>
+</html>

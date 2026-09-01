@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Build the Tower</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;900&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Nunito', sans-serif; background: linear-gradient(180deg, #2c1654 0%, #4a0e8f 40%, #7b2ff7 100%); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding-bottom: 2rem; }
+  h1 { font-family: 'Fredoka One', cursive; color: #ffe66d; font-size: 2.5rem; text-shadow: 3px 3px 0 #f72585; margin: 1rem 0 0.3rem; }
+  #instruction { color: #c8b6ff; font-size: 1.2rem; font-weight: 700; margin-bottom: 1rem; text-align: center; max-width: 420px; }
+  #game { display: flex; gap: 2rem; align-items: flex-end; flex-wrap: wrap; justify-content: center; }
+  #pool { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; align-items: flex-end; max-width: 400px; padding: 1.5rem; background: rgba(255,255,255,0.08); border-radius: 20px; border: 2px dashed rgba(255,255,255,0.3); min-height: 120px; }
+  #tower-area { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 160px; }
+  #tower-label { font-family:'Fredoka One',cursive; color:#ffe66d; font-size:1.1rem; margin-bottom:4px; }
+  #tower { display: flex; flex-direction: column-reverse; align-items: center; gap: 4px; min-height: 200px; }
+  .block { border-radius: 10px; display: flex; align-items: center; justify-content: center; font-family: 'Fredoka One', cursive; font-size: 1.4rem; color: white; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 4px 12px rgba(0,0,0,0.3); user-select: none; }
+  .block:hover { transform: scale(1.08); box-shadow: 0 6px 20px rgba(0,0,0,0.4); }
+  .block.in-tower { cursor: pointer; }
+  .block.in-tower:hover::after { content: ' ↩'; font-size: 0.9rem; }
+  #tower-base { width: 160px; height: 16px; background: linear-gradient(135deg, #8b5e3c, #5d3a1a); border-radius: 8px; box-shadow: 0 6px 15px rgba(0,0,0,0.4); margin-top: 4px; }
+  #feedback { font-size: 1.5rem; font-weight: 900; min-height: 2rem; margin-top: 1rem; text-align: center; }
+  .ok { color: #6be585; } .bad { color: #ff6b6b; }
+  #btn-row { display: flex; gap: 1rem; margin-top: 1rem; flex-wrap: wrap; justify-content: center; }
+  button { font-family: 'Fredoka One', cursive; border: none; border-radius: 30px; padding: 0.6rem 1.6rem; font-size: 1.2rem; cursor: pointer; transition: transform 0.15s; }
+  button:hover { transform: scale(1.05); }
+  #check-btn { background: linear-gradient(135deg, #6be585, #2ecc71); color: #1a5c2a; box-shadow: 0 4px 14px rgba(46,204,113,0.4); }
+  #new-btn { background: linear-gradient(135deg, #f72585, #b5179e); color: white; box-shadow: 0 4px 14px rgba(247,37,133,0.4); }
+  #score { font-family:'Fredoka One',cursive; color:#ffe66d; font-size:1.2rem; margin-top: 0.5rem; }
+  #pool-label { color: rgba(255,255,255,0.6); font-size:0.9rem; font-weight:700; width:100%; text-align:center; }
+</style>
+</head>
+<body>
+<h1>🏗️ Build the Tower</h1>
+<div id="instruction">Click blocks to stack them from <strong style="color:#ffe66d">smallest → biggest</strong>!</div>
+<div id="score">⭐ Score: 0</div>
+<div id="game">
+  <div>
+    <div style="color:rgba(255,255,255,0.7);font-size:0.9rem;font-weight:700;text-align:center;margin-bottom:8px;">🧱 Pick a block:</div>
+    <div id="pool"></div>
+  </div>
+  <div id="tower-area">
+    <div id="tower-label">🏰 Your Tower</div>
+    <div id="tower"></div>
+    <div id="tower-base"></div>
+  </div>
+</div>
+<div id="feedback"></div>
+<div id="btn-row">
+  <button id="check-btn" onclick="checkTower()">Check Tower ✅</button>
+  <button id="new-btn" onclick="newGame()">New Blocks 🎲</button>
+</div>
+
+<script>
+  const blockColors = [
+    ['#f72585','#b5179e'],['#4361ee','#3a0ca3'],['#4cc9f0','#0096c7'],
+    ['#f8961e','#f3722c'],['#43aa8b','#277da1'],['#e63946','#c1121f']
+  ];
+  let numbers=[], towerOrder=[], score=0;
+
+  function newGame(){
+    const start=Math.floor(Math.random()*6)+1;
+    const count=Math.floor(Math.random()*3)+4; // 4-6 blocks
+    numbers=Array.from({length:count},(_,i)=>start+i).sort(()=>Math.random()-0.5);
+    towerOrder=[];
+    renderPool();
+    renderTower();
+    document.getElementById('feedback').textContent='';
+  }
+
+  function renderPool(){
+    const pool=document.getElementById('pool');
+    pool.innerHTML='';
+    numbers.forEach(n=>{
+      const b=makeBlock(n,false);
+      b.onclick=()=>moveToTower(n);
+      pool.appendChild(b);
+    });
+  }
+
+  function renderTower(){
+    const t=document.getElementById('tower');
+    t.innerHTML='';
+    towerOrder.forEach((n,i)=>{
+      const b=makeBlock(n,true);
+      b.onclick=()=>removeFromTower(n,i);
+      t.appendChild(b);
+    });
+  }
+
+  function makeBlock(n, inTower){
+    const b=document.createElement('div');
+    b.className='block'+(inTower?' in-tower':'');
+    const ci=n%blockColors.length;
+    const w=60+n*12; const h=44+n*4;
+    b.style.cssText=`width:${w}px;height:${h}px;background:linear-gradient(135deg,${blockColors[ci][0]},${blockColors[ci][1]});`;
+    b.textContent=n;
+    return b;
+  }
+
+  function moveToTower(n){
+    if(towerOrder.includes(n)) return;
+    numbers=numbers.filter(x=>x!==n);
+    towerOrder.push(n);
+    renderPool(); renderTower();
+    document.getElementById('feedback').textContent='';
+  }
+
+  function removeFromTower(n,i){
+    towerOrder.splice(i,1);
+    numbers.push(n);
+    renderPool(); renderTower();
+    document.getElementById('feedback').textContent='';
+  }
+
+  function checkTower(){
+    if(towerOrder.length<2){ document.getElementById('feedback').innerHTML='<span class="bad">Add more blocks first!</span>'; return; }
+    const sorted=[...towerOrder].sort((a,b)=>a-b);
+    const correct=JSON.stringify(towerOrder)===JSON.stringify(sorted);
+    if(correct){
+      score+=10;
+      document.getElementById('score').textContent=`⭐ Score: ${score}`;
+      document.getElementById('feedback').innerHTML='<span class="ok">🎉 Perfect tower! Smallest to biggest!</span>';
+    } else {
+      document.getElementById('feedback').innerHTML='<span class="bad">🤔 Not quite! Try smallest first!</span>';
+    }
+  }
+
+  newGame();
+</script>
+</body>
+</html>

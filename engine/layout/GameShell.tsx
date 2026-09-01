@@ -42,6 +42,7 @@ export interface GameShellProps {
   onSessionEvent?: (event: GameSessionEvent) => void;
   hidePauseControl?: boolean;
   hideExitControl?: boolean;
+  hideMainMenuButton?: boolean;
   themeVars?: {
     nav: string;
     navRaised: string;
@@ -58,7 +59,7 @@ export interface GameShellProps {
  */
 export default function GameShell({
   gameId, title, icon, stats, controls, headerExtra, children, sessionKey = 0,
-  completion, onContinue, onRestart, onMainMenu, onSessionEvent, themeVars, hidePauseControl = false, hideExitControl = false,
+  completion, onContinue, onRestart, onMainMenu, onSessionEvent, themeVars, hidePauseControl = false, hideExitControl = false, hideMainMenuButton = false,
   themeOptions, themeValue, onThemeChange,
 }: GameShellProps) {
   const [paused, setPaused] = useState(false);
@@ -200,8 +201,11 @@ export default function GameShell({
                   <button type="button" className="game-shell-header-action" onClick={toggleFullscreen}>
                     {isFullscreen ? 'Exit full screen' : 'Full screen'}
                   </button>
-                  {!hideExitControl && <Link className="game-shell-header-action" href="/games">Exit</Link>}
-                                  {onMainMenu ? <button type="button" className="game-shell-header-action" onClick={onMainMenu}>Main menu</button> : !hideExitControl && <Link className="game-shell-header-action" href="/games">Exit</Link>}
+                  {!hideMainMenuButton && onMainMenu ? (
+                    <button type="button" className="game-shell-header-action" onClick={onMainMenu}>Main menu</button>
+                  ) : !hideExitControl ? (
+                    <Link className="game-shell-header-action" href="/games">Exit</Link>
+                  ) : null}
                 </>
               }
             />

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bubble Pop Numbers</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;900&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Nunito', sans-serif; background: linear-gradient(180deg, #0d1b4b 0%, #1a237e 60%, #283593 100%); min-height: 100vh; overflow: hidden; display: flex; flex-direction: column; align-items: center; }
+  #top-bar { display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 600px; padding: 1rem; z-index: 10; }
+  h1 { font-family: 'Fredoka One', cursive; color: #ffe66d; font-size: 2.2rem; text-shadow: 2px 2px 0 #e91e8c; }
+  #stats { display: flex; gap: 16px; }
+  .stat { font-family: 'Fredoka One', cursive; color: white; font-size: 1.1rem; background: rgba(255,255,255,0.15); border-radius: 12px; padding: 4px 12px; }
+  #instruction-box { background: linear-gradient(135deg, rgba(233,30,140,0.8), rgba(156,39,176,0.8)); border-radius: 20px; padding: 0.7rem 1.5rem; text-align: center; z-index:10; margin-bottom: 0.5rem; }
+  #instruction-box .voice { font-size: 1.4rem; color: white; font-weight: 900; }
+  #instruction-box .target-num { font-family: 'Fredoka One', cursive; font-size: 2rem; color: #ffe66d; }
+  #game-area { position: relative; width: 100vw; flex: 1; overflow: hidden; }
+  .bubble { position: absolute; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Fredoka One', cursive; cursor: pointer; transition: transform 0.1s; user-select: none; box-shadow: inset -4px -4px 12px rgba(0,0,0,0.2), inset 4px 4px 12px rgba(255,255,255,0.4), 0 0 20px rgba(255,255,255,0.1); }
+  .bubble:hover { transform: scale(1.1); }
+  .bubble.pop { animation: pop-anim 0.3s forwards; pointer-events: none; }
+  @keyframes pop-anim { 0%{transform:scale(1);opacity:1} 50%{transform:scale(1.4);opacity:0.7} 100%{transform:scale(0);opacity:0} }
+  .bubble.wrong-pop { animation: wrong-anim 0.4s forwards; pointer-events: none; }
+  @keyframes wrong-anim { 0%{transform:scale(1)} 25%{transform:scale(1.1) rotate(5deg)} 75%{transform:scale(0.9) rotate(-5deg)} 100%{transform:scale(1)} }
+  #feedback-overlay { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); font-family: 'Fredoka One', cursive; font-size: 2.5rem; color: white; text-shadow: 0 0 20px gold; pointer-events: none; opacity: 0; transition: opacity 0.3s; z-index:20; }
+  #feedback-overlay.show { opacity: 1; }
+  #round-complete { display: none; position: fixed; inset:0; background: rgba(0,0,0,0.7); z-index:30; flex-direction:column; align-items:center; justify-content:center; gap:1rem; }
+  #round-complete h2 { font-family:'Fredoka One',cursive; font-size:3rem; color:#ffe66d; text-shadow:0 0 30px gold; }
+  #round-complete p { font-size:1.3rem; color:white; }
+  #round-complete button { font-family:'Fredoka One',cursive; background:linear-gradient(135deg,#e91e8c,#f44336); color:white; border:none; border-radius:40px; padding:0.8rem 2rem; font-size:1.5rem; cursor:pointer; }
+</style>
+</head>
+<body>
+<div id="top-bar">
+  <h1>🫧 Bubble Pop!</h1>
+  <div id="stats">
+    <div class="stat">⭐ <span id="score">0</span></div>
+    <div class="stat">💥 Left: <span id="remaining">0</span></div>
+  </div>
+</div>
+<div id="instruction-box">
+  <div class="voice">🎤 Pop all the</div>
+  <div class="target-num" id="target-display">?</div>
+  <div class="voice">bubbles!</div>
+</div>
+<div id="game-area"></div>
+<div id="feedback-overlay">✨ POP!</div>
+<div id="round-complete">
+  <h2>🎉 Round Clear!</h2>
+  <p id="round-msg"></p>
+  <button onclick="startRound()">Play Again! 🫧</button>
+</div>
+
+<script>
+  let target=0, score=0, remaining=0;
+  const colors = [
+    ['#ff6b6b','#ff8e53'],['#a29bfe','#6c5ce7'],['#74b9ff','#0984e3'],
+    ['#55efc4','#00b894'],['#fd79a8','#e84393'],['#ffeaa7','#fdcb6e'],
+    ['#fab1a0','#e17055'],['#81ecec','#00cec9']
+  ];
+
+  function startRound() {
+    document.getElementById('round-complete').style.display='none';
+    target = Math.floor(Math.random()*8)+2;
+    document.getElementById('target-display').textContent=target;
+    document.getElementById('game-area').innerHTML='';
+
+    const area = document.getElementById('game-area');
+    const areaW = window.innerWidth, areaH = window.innerHeight-200;
+    const totalBubbles = target + Math.floor(Math.random()*5)+4;
+    remaining = target;
+    updateStats();
+
+    // Place bubbles
+    const positions=[];
+    for(let i=0;i<totalBubbles;i++){
+      const isTarget = i<target;
+      const size = 70+Math.floor(Math.random()*30);
+      let x,y,tries=0;
+      do {
+        x=Math.random()*(areaW-size); y=Math.random()*(areaH-size)+10; tries++;
+      } while(tries<30 && positions.some(p=>Math.hypot(p.x-x,p.y-y)<size+10));
+      positions.push({x,y});
+      spawnBubble(isTarget?target:randomWrong(target), isTarget, x, y, size);
+    }
+  }
+
+  function randomWrong(t) {
+    let v; do { v=Math.floor(Math.random()*10)+1; } while(v===t); return v;
+  }
+
+  function spawnBubble(value, isTarget, x, y, size) {
+    const b = document.createElement('div');
+    b.className='bubble';
+    const ci = Math.floor(Math.random()*colors.length);
+    b.style.cssText=`left:${x}px;top:${y}px;width:${size}px;height:${size}px;background:radial-gradient(circle at 35% 35%, ${colors[ci][0]}, ${colors[ci][1]});font-size:${size*0.4}px;color:white;`;
+    b.textContent=value;
+    b.dataset.target=isTarget?'1':'0';
+    // Float animation
+    const dur=3+Math.random()*4;
+    b.style.animation=`float-up ${dur}s ease-in forwards`;
+    b.style.animationDelay=Math.random()*2+'s';
+    b.onclick=()=>popBubble(b, isTarget);
+    document.getElementById('game-area').appendChild(b);
+
+    // Add float keyframe dynamically
+    if(!document.getElementById('float-style')){
+      const s=document.createElement('style');s.id='float-style';
+      s.textContent=`@keyframes float-up{from{transform:translateY(0)}to{transform:translateY(-${window.innerHeight+100}px)}}`;
+      document.head.appendChild(s);
+    }
+  }
+
+  function popBubble(el, isTarget) {
+    if(isTarget){
+      el.classList.add('pop');
+      remaining--;
+      score+=10;
+      updateStats();
+      showFeedback('💥 POP!','#ffe66d');
+      setTimeout(()=>el.remove(),300);
+      if(remaining===0) setTimeout(roundComplete,400);
+    } else {
+      el.classList.add('wrong-pop');
+      score=Math.max(0,score-5);
+      updateStats();
+      showFeedback('❌ Wrong!','#ff6b6b');
+      setTimeout(()=>el.classList.remove('wrong-pop'),400);
+    }
+  }
+
+  function showFeedback(text,color){
+    const f=document.getElementById('feedback-overlay');
+    f.textContent=text; f.style.color=color; f.classList.add('show');
+    setTimeout(()=>f.classList.remove('show'),500);
+  }
+
+  function updateStats(){
+    document.getElementById('score').textContent=score;
+    document.getElementById('remaining').textContent=remaining;
+  }
+
+  function roundComplete(){
+    document.getElementById('round-msg').textContent=`You popped all the ${target} bubbles! Score: ${score}`;
+    document.getElementById('round-complete').style.display='flex';
+  }
+
+  startRound();
+</script>
+</body>
+</html>

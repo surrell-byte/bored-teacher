@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Number Clouds</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;900&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Nunito', sans-serif; background: linear-gradient(180deg, #87ceeb 0%, #b0e0ff 40%, #e8f4fd 100%); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
+  .sun { position: fixed; top: -30px; right: 40px; font-size: 6rem; animation: rotate 20s linear infinite; }
+  @keyframes rotate { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+  h1 { font-family: 'Fredoka One', cursive; color: #1a5276; font-size: 2.8rem; text-shadow: 2px 2px 0 rgba(255,255,255,0.7); margin-bottom: 0.3rem; z-index:1; }
+  #instruction { font-size: 1.3rem; color: #2c5f8a; font-weight: 700; margin-bottom: 1.5rem; background: rgba(255,255,255,0.6); padding: 0.4rem 1.2rem; border-radius: 20px; z-index:1; }
+  #clouds-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; max-width: 700px; z-index:1; }
+  .cloud-wrap { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .cloud { position: relative; background: white; border-radius: 50px; padding: 18px 28px; font-family: 'Fredoka One', cursive; font-size: 2.2rem; color: #1a5276; box-shadow: 0 4px 20px rgba(0,0,0,0.15); cursor: default; transition: transform 0.2s; min-width: 80px; text-align: center; }
+  .cloud::before { content:''; position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%); border: 20px solid transparent; border-top-color: white; }
+  .cloud.missing { background: #ffe66d; border: 3px dashed #e59400; color: #e59400; cursor: pointer; animation: pulse 1s ease infinite; }
+  .cloud.missing::before { border-top-color: #ffe66d; }
+  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.07)} }
+  .cloud.correct { background: #6be585; }
+  .cloud.correct::before { border-top-color: #6be585; }
+  .arrow { font-size: 1.8rem; color: #5b9bd5; font-weight: 900; }
+  #choices { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; margin-top: 1.8rem; z-index:1; }
+  .choice-btn { font-family: 'Fredoka One', cursive; font-size: 1.8rem; background: linear-gradient(135deg, #4fc3f7, #0288d1); color: white; border: none; border-radius: 20px; padding: 12px 30px; cursor: pointer; box-shadow: 0 4px 14px rgba(2,136,209,0.4); transition: transform 0.15s; }
+  .choice-btn:hover { transform: scale(1.1); }
+  .choice-btn.wrong { background: linear-gradient(135deg, #ef5350, #b71c1c); animation: shake 0.4s ease; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+  #feedback { font-size: 1.6rem; font-weight: 900; min-height: 2.2rem; margin-top: 0.8rem; text-align: center; z-index:1; }
+  .ok { color: #1b5e20; } .bad { color: #b71c1c; }
+  #next-btn { display: none; font-family: 'Fredoka One', cursive; background: linear-gradient(135deg, #66bb6a, #2e7d32); color: white; border: none; border-radius: 40px; padding: 0.7rem 2rem; font-size: 1.4rem; cursor: pointer; margin-top: 0.8rem; box-shadow: 0 4px 14px rgba(46,125,50,0.5); z-index:1; }
+  #score { font-family: 'Fredoka One', cursive; font-size: 1.2rem; color: #1a5276; margin-top: 0.5rem; z-index:1; }
+  .bird { position: fixed; font-size: 1.5rem; animation: fly 12s linear infinite; }
+  @keyframes fly { from{left:-60px;top:20%} to{left:110vw;top:15%} }
+  .bird2 { animation-duration: 17s; animation-delay: -5s; top: 30% !important; }
+</style>
+</head>
+<body>
+<div class="sun">☀️</div>
+<div class="bird">🐦</div>
+<div class="bird bird2">🦅</div>
+<h1>☁️ Number Clouds</h1>
+<div id="instruction">Hop across the clouds!</div>
+<div id="clouds-row"></div>
+<div id="choices"></div>
+<div id="feedback"></div>
+<button id="next-btn" onclick="nextRound()">Next Cloud ➡️</button>
+<div id="score">⭐ Score: 0</div>
+
+<script>
+  let score = 0;
+  let missingIdx = 0;
+  let missingValue = 0;
+  let sequence = [];
+
+  function nextRound() {
+    document.getElementById('next-btn').style.display='none';
+    document.getElementById('feedback').textContent='';
+    buildSequence();
+  }
+
+  function buildSequence() {
+    const start = Math.floor(Math.random()*10)+1;
+    const len = Math.random()<0.5 ? 5 : 6;
+    sequence = Array.from({length:len}, (_,i)=>start+i);
+    missingIdx = Math.floor(Math.random()*(len-2))+1;
+    missingValue = sequence[missingIdx];
+
+    const row = document.getElementById('clouds-row');
+    row.innerHTML='';
+    sequence.forEach((n,i)=>{
+      if(i>0) { const a=document.createElement('div'); a.className='arrow'; a.textContent='→'; row.appendChild(a); }
+      const wrap = document.createElement('div'); wrap.className='cloud-wrap';
+      const c = document.createElement('div');
+      if(i===missingIdx) {
+        c.className='cloud missing'; c.textContent='?';
+      } else {
+        c.className='cloud'; c.textContent=n;
+      }
+      wrap.appendChild(c); row.appendChild(wrap);
+    });
+
+    // Build choices
+    const wrong1 = missingValue + (Math.random()<0.5?1:-1);
+    const wrong2 = missingValue + (Math.random()<0.5?2:-2);
+    let opts = [missingValue, wrong1, wrong2].filter(x=>x>0);
+    opts = [...new Set(opts)].sort(()=>Math.random()-0.5);
+    const choices = document.getElementById('choices');
+    choices.innerHTML='';
+    opts.forEach(o=>{
+      const b=document.createElement('button'); b.className='choice-btn'; b.textContent=o;
+      b.onclick=()=>checkAnswer(o,b);
+      choices.appendChild(b);
+    });
+  }
+
+  function checkAnswer(val, btn) {
+    if(val===missingValue) {
+      document.getElementById('feedback').innerHTML='<span class="ok">🎉 That\'s right!</span>';
+      score++;
+      document.getElementById('score').textContent=`⭐ Score: ${score}`;
+      // Fill in missing cloud
+      const clouds = document.querySelectorAll('.cloud.missing');
+      clouds.forEach(c=>{c.textContent=missingValue; c.className='cloud correct';});
+      document.getElementById('choices').innerHTML='';
+      document.getElementById('next-btn').style.display='block';
+    } else {
+      document.getElementById('feedback').innerHTML='<span class="bad">Try again! 🤔</span>';
+      btn.className='choice-btn wrong';
+      setTimeout(()=>btn.className='choice-btn',400);
+    }
+  }
+
+  nextRound();
+</script>
+</body>
+</html>

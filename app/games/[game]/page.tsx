@@ -120,6 +120,7 @@ export default function GamePage() {
         onContinue={handleContinue}
         onRestart={handleContinue}
         onMainMenu={handleMainMenu}
+        hideMainMenuButton={gameId === 'dragonslingshot'}
         hidePauseControl={isFlagmaster}
         hideExitControl={isFlagmaster}
         controls={null}
@@ -138,9 +139,6 @@ export default function GamePage() {
               </>
             )}
             {isFlagmaster && <button className="game-shell-header-action" type="button" onClick={() => setFlagDarkMode(value => !value)} aria-label="Toggle Flagmaster theme">{flagDarkMode ? '☀️ Light' : '🌙 Dark'}</button>}
-            <button className="game-shell-header-action" type="button" onClick={handleMainMenu}>
-              Main menu
-            </button>
           </>
         }
         stats={[

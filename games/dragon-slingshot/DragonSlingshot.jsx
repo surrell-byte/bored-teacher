@@ -11,12 +11,27 @@ const GRAVITY = 0.44;
 const STIFFNESS = 0.155;
 const MAX_PULL = 78;
 
+function readStoredObject(key) {
+  if (typeof window === 'undefined') return {};
+  try {
+    const raw = localStorage.getItem(key);
+    const parsed = raw ? JSON.parse(raw) : {};
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
 export default function DragonSlingshot({ onComplete }) {
   const canvasRef = useRef(null);
   const gameRef = useRef(null);
   const frameRef = useRef(null);
   const [screen, setScreen] = useState('landing');
-  const [hud, setHud] = useState({ score: 0, level: 1, dragons: 0 });
+  const [hud, setHud] = useState({ score: 0, level: 1, dragons: 0, stars: 0 });
+  const [bestScores, setBestScores] = useState(() => readStoredObject('ds_best_scores'));
+  const [levelStars, setLevelStars] = useState(() => readStoredObject('ds_level_stars'));
+  const currentLevelStars = Number(levelStars?.[hud.level] ?? 0);
+  const starsForLevel = Number(hud.stars ?? currentLevelStars ?? 0);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -24,12 +39,6 @@ export default function DragonSlingshot({ onComplete }) {
     const ctx = canvas.getContext('2d');
     let dragging = false;
     let lastTap = 0;
-    let bestScores = {};
-    let levelStars = {};
-    try {
-      bestScores = JSON.parse(localStorage.getItem('ds_best_scores') || '{}');
-      levelStars = JSON.parse(localStorage.getItem('ds_level_stars') || '{}');
-    } catch {}
 
     const saveProgress = () => {
       localStorage.setItem('ds_best_scores', JSON.stringify(bestScores));
@@ -118,17 +127,20 @@ export default function DragonSlingshot({ onComplete }) {
           const source = LEVELS[game.level - 1];
           const efficiency = game.dragonIndex / Math.max(game.dragons, 1);
           const stars = Math.min(3, 1 + (efficiency <= .5 ? 1 : 0) + (game.destroyedBlocks >= (source?.blocks.length || 1) * .9 ? 1 : 0));
-          bestScores[game.level] = Math.max(bestScores[game.level] || 0, game.score);
-          levelStars[game.level] = Math.max(levelStars[game.level] || 0, stars);
-          saveProgress();
-          setHud({ score: game.score, level: game.level, dragons: game.dragons, combo: game.maxCombo, stars });
+          const nextBestScores = { ...(bestScores || {}), [game.level]: Math.max(Number(bestScores?.[game.level] ?? 0), game.score) };
+          const nextLevelStars = { ...(levelStars || {}), [game.level]: Math.max(Number(levelStars?.[game.level] ?? 0), stars) };
+          setBestScores(nextBestScores);
+          setLevelStars(nextLevelStars);
+          localStorage.setItem('ds_best_scores', JSON.stringify(nextBestScores));
+          localStorage.setItem('ds_level_stars', JSON.stringify(nextLevelStars));
+          setHud({ score: game.score, level: game.level, dragons: game.dragons, combo: game.maxCombo, stars: Math.max(Number(levelStars?.[game.level] ?? 0), stars) });
           if (game.level >= Math.min(10, LEVELS.length)) { onComplete?.(game.score, 100); setScreen('victory'); }
           else setScreen('level');
         } else if (dragon.y > HEIGHT + 50 || dragon.x > WIDTH + 50 || dragon.x < -80) {
           game.dragonIndex += 1; game.dragon = null; game.abilityUsed = false;
           if (game.dragonIndex >= game.dragons) { game.phase = 'over'; setScreen('gameover'); } else game.phase = 'aim';
         }
-        setHud({ score: game.score, level: game.level, dragons: Math.max(0, game.dragons - game.dragonIndex), combo: game.combo });
+        setHud({ score: game.score, level: game.level, dragons: Math.max(0, game.dragons - game.dragonIndex), combo: game.combo, stars: Number(levelStars?.[game.level] ?? 0) });
       }
       frameRef.current = requestAnimationFrame(update);
     };
@@ -163,14 +175,16 @@ export default function DragonSlingshot({ onComplete }) {
     const source = LEVELS[level - 1];
     const game = { phase: 'aim', level, dragonId: gameRef.current?.dragonId || DRAGONS[0].id, score, dragonIndex: 0, dragons: source?.dragons || 3, pull: { x: 0, y: 0 }, dragon: null, abilityUsed: false, combo: 0, maxCombo: 0, destroyedBlocks: 0, destroyedEnemies: 0, parts: [], blocks: (source?.blocks || []).map((block, index) => ({ ...block, hp: block.hp || 1, type: block.type || (index % 13 === 0 ? 'explosive' : index % 7 === 0 ? 'crystal' : index % 5 === 0 ? 'stone' : 'wood'), alive: true })), enemies: (source?.enemies || []).map(enemy => ({ ...enemy, alive: true })) };
     gameRef.current = game;
-    setHud({ score, level, dragons: game.dragons, combo: 0 });
+    setHud({ score, level, dragons: game.dragons, combo: 0, stars: Number(levelStars?.[level] ?? 0) });
     setScreen(source?.biome === 'boss' ? 'boss' : 'game');
   }
 
   function begin(dragonId) { gameRef.current = { dragonId, score: 0 }; loadLevel(1, 0); }
   function nextLevel() { loadLevel(Math.min((gameRef.current?.level || 1) + 1, Math.min(10, LEVELS.length))); }
 
-  return <main className="dragon-replacement"><style>{STYLES}</style><canvas ref={canvasRef} width={WIDTH} height={HEIGHT} className="dragon-canvas" aria-label="Dragon slingshot game board" />{screen === 'landing' && <section className="dragon-landing"><h1>Dragon<br />Slingshot</h1><p>⚔ FIRE · FURY · FLIGHT ⚔</p><button onClick={() => setScreen('select')}>⚔ Enter, Dragon Warrior ⚔</button></section>}{screen === 'select' && <section className="dragon-modal"><span>🐉</span><h2>Choose Your Dragon</h2><p>Double-click while flying to unleash your ability!</p><div className="dragon-grid">{DRAGONS.map(dragon => <button key={dragon.id} onClick={() => begin(dragon.id)}><b style={{ color: dragon.color }}>{dragon.emoji}</b><strong>{dragon.name}</strong><small>{dragon.ability}</small></button>)}</div></section>}{screen !== 'landing' && screen !== 'select' && <div className="dragon-hud"><span>SCORE <b>{hud.score}</b></span><span>LEVEL <b>{hud.level}</b></span><span>DRAGONS <b>{hud.dragons}</b></span><span>COMBO <b>x{hud.combo || 0}</b></span><span>STARS <b>{'★'.repeat(hud.stars || levelStars[hud.level] || 0)}</b></span></div>}{screen === 'game' && <p className="dragon-hint">Pull back a dragon, then release to launch. Double-click while flying to unleash its ability.</p>}{screen === 'boss' && <section className="dragon-modal boss-intro"><strong>⚠ BOSS BATTLE ⚠</strong><h2>{LEVELS[hud.level - 1]?.name}</h2><span>☠</span><p>Prepare your dragons. This enemy will not fall easily.</p><button onClick={() => setScreen('game')}>ENTER THE BATTLE</button></section>}{screen === 'level' && <section className="dragon-modal"><h2>Level {hud.level} Complete!</h2><div className="stars">{'★'.repeat(hud.stars || 1)}{'☆'.repeat(3 - (hud.stars || 1))}</div><p>Best score: {bestScores[hud.level]}</p><button onClick={nextLevel}>Next Realm ▶</button></section>}{screen === 'victory' && <section className="dragon-modal"><h2>🏆 Dragon World Saved!</h2><button onClick={() => setScreen('select')}>Play Again</button></section>}{screen === 'gameover' && <section className="dragon-modal"><h2>Out of Dragons</h2><button onClick={() => setScreen('select')}>Try Again</button></section>}</main>;
+  const visibleStars = Math.max(0, Number(hud.stars ?? levelStars?.[hud.level] ?? currentLevelStars ?? 0));
+
+  return <main className="dragon-replacement"><style>{STYLES}</style><canvas ref={canvasRef} width={WIDTH} height={HEIGHT} className="dragon-canvas" aria-label="Dragon slingshot game board" />{screen === 'landing' && <section className="dragon-landing"><h1>Dragon<br />Slingshot</h1><p>⚔ FIRE · FURY · FLIGHT ⚔</p><button onClick={() => setScreen('select')}>⚔ Enter, Dragon Warrior ⚔</button></section>}{screen === 'select' && <section className="dragon-modal"><span>🐉</span><h2>Choose Your Dragon</h2><p>Double-click while flying to unleash your ability!</p><div className="dragon-grid">{DRAGONS.map(dragon => <button key={dragon.id} onClick={() => begin(dragon.id)}><b style={{ color: dragon.color }}>{dragon.emoji}</b><strong>{dragon.name}</strong><small>{dragon.ability}</small></button>)}</div></section>}{screen !== 'landing' && screen !== 'select' && <div className="dragon-hud"><span>SCORE <b>{hud.score}</b></span><span>LEVEL <b>{hud.level}</b></span><span>DRAGONS <b>{hud.dragons}</b></span><span>COMBO <b>x{hud.combo || 0}</b></span><span>STARS <b>{'★'.repeat(visibleStars || 0)}</b></span></div>}{screen === 'game' && <p className="dragon-hint">Pull back a dragon, then release to launch. Double-click while flying to unleash its ability.</p>}{screen === 'boss' && <section className="dragon-modal boss-intro"><strong>⚠ BOSS BATTLE ⚠</strong><h2>{LEVELS[hud.level - 1]?.name}</h2><span>☠</span><p>Prepare your dragons. This enemy will not fall easily.</p><button onClick={() => setScreen('game')}>ENTER THE BATTLE</button></section>}{screen === 'level' && <section className="dragon-modal"><h2>Level {hud.level} Complete!</h2><div className="stars">{'★'.repeat(visibleStars || 1)}{'☆'.repeat(3 - (visibleStars || 1))}</div><p>Best score: {bestScores[hud.level]}</p><button onClick={nextLevel}>Next Realm ▶</button></section>}{screen === 'victory' && <section className="dragon-modal"><h2>🏆 Dragon World Saved!</h2><button onClick={() => setScreen('select')}>Play Again</button></section>}{screen === 'gameover' && <section className="dragon-modal"><h2>Out of Dragons</h2><button onClick={() => setScreen('select')}>Try Again</button></section>}</main>;
 }
 
 const STYLES = `

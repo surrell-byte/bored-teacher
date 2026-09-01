@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fishing Numbers</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;900&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Nunito', sans-serif; background: linear-gradient(180deg, #87ceeb 0%, #87ceeb 30%, #006994 30%, #005580 100%); min-height: 100vh; display: flex; flex-direction: column; align-items: center; overflow: hidden; }
+  #top-bar { width: 100%; max-width: 600px; padding: 0.8rem 1rem; display: flex; align-items: center; justify-content: space-between; z-index: 10; }
+  h1 { font-family: 'Fredoka One', cursive; color: #1a3c6e; font-size: 2rem; text-shadow: 1px 1px 0 rgba(255,255,255,0.7); }
+  #stats { display: flex; gap: 12px; }
+  .stat { font-family: 'Fredoka One', cursive; font-size: 1.1rem; background: rgba(255,255,255,0.7); color: #1a3c6e; border-radius: 12px; padding: 4px 12px; }
+  #target-box { background: linear-gradient(135deg, rgba(255,255,255,0.85), rgba(200,240,255,0.85)); border-radius: 20px; padding: 0.6rem 1.5rem; text-align: center; z-index: 10; margin-bottom: 0.3rem; box-shadow: 0 4px 14px rgba(0,0,0,0.15); }
+  #target-box .q { font-family:'Fredoka One',cursive; font-size:1.5rem; color:#1a3c6e; }
+  #target-box .hint { font-size:0.95rem; color:#2c6e8a; font-weight:700; }
+  #water { position: relative; width: 100%; flex: 1; overflow: hidden; }
+  #rod-area { position: absolute; top: -80px; left: 50%; transform: translateX(-50%); z-index: 15; }
+  .fisher { font-size: 3.5rem; }
+  #line { width: 2px; height: 0; background: rgba(255,255,255,0.6); margin: 0 auto; transition: height 0.3s; }
+  #hook { font-size: 1.2rem; text-align: center; }
+  .fish { position: absolute; cursor: pointer; transition: transform 0.2s; user-select: none; display: flex; align-items: center; gap: 4px; background: rgba(255,255,255,0.15); border-radius: 30px; padding: 6px 12px; border: 2px solid rgba(255,255,255,0.3); backdrop-filter: blur(4px); }
+  .fish:hover { transform: scale(1.12); }
+  .fish .fish-emoji { font-size: 2.2rem; }
+  .fish .fish-label { font-family:'Fredoka One',cursive; font-size:1.1rem; color:white; text-shadow: 1px 1px 3px rgba(0,0,0,0.5); }
+  .fish.caught { animation: catch-anim 0.5s forwards; pointer-events: none; }
+  @keyframes catch-anim { to{transform:translateY(-200px) scale(0.5);opacity:0;} }
+  .fish.wrong-catch { animation: wrong-anim 0.4s; }
+  @keyframes wrong-anim { 0%,100%{transform:scale(1)} 50%{transform:scale(1.2) rotate(-10deg)} }
+  #score-fish { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; max-width: 400px; }
+  .caught-fish { font-size: 1.6rem; animation: land 0.4s ease; }
+  @keyframes land { from{transform:translateY(-30px);opacity:0} to{transform:translateY(0);opacity:1} }
+  #feedback { position: absolute; top: 30%; left: 50%; transform: translate(-50%,-50%); font-family:'Fredoka One',cursive; font-size:2rem; pointer-events:none; opacity:0; transition:opacity 0.3s; z-index:20; text-shadow:0 0 20px currentColor; }
+  #feedback.show { opacity:1; }
+  #round-end { display:none; position:fixed; inset:0; background:rgba(0,0,50,0.85); z-index:50; flex-direction:column; align-items:center; justify-content:center; gap:1rem; }
+  #round-end h2 { font-family:'Fredoka One',cursive; font-size:2.5rem; color:#ffd700; text-shadow:0 0 20px gold; }
+  #round-end button { font-family:'Fredoka One',cursive; background:linear-gradient(135deg,#4cc9f0,#0096c7); color:white; border:none; border-radius:40px; padding:0.8rem 2rem; font-size:1.4rem; cursor:pointer; }
+  .bubble { position:absolute; border-radius:50%; background:rgba(255,255,255,0.15); animation:rise 4s ease-in infinite; }
+  @keyframes rise { from{transform:translateY(0);opacity:0.6} to{transform:translateY(-400px);opacity:0} }
+</style>
+</head>
+<body>
+<div id="top-bar">
+  <h1>🎣 Fishing!</h1>
+  <div id="stats">
+    <div class="stat">🐟 <span id="caught">0</span>/<span id="need">0</span></div>
+    <div class="stat">⭐ <span id="score">0</span></div>
+  </div>
+</div>
+<div id="target-box">
+  <div class="q">🎯 Catch fish that equal <strong id="target-num">10</strong>!</div>
+  <div class="hint">Click the fish with the right answer!</div>
+</div>
+<div id="water">
+  <div id="rod-area">
+    <div class="fisher">🧑‍🎣</div>
+    <div id="line"></div>
+    <div id="hook">🪝</div>
+  </div>
+  <div id="score-fish"></div>
+  <div id="feedback"></div>
+</div>
+<div id="round-end">
+  <div style="font-size:4rem">🐟🎣🐟</div>
+  <h2>Great Catch!</h2>
+  <p id="round-msg" style="font-size:1.2rem;color:#c8e8ff;"></p>
+  <button onclick="startRound()">Fish Again! 🎣</button>
+</div>
+
+<script>
+  let target=10, caughtCount=0, needCount=0, score=0, fishEls=[];
+  const fishEmojis=['🐟','🐠','🐡','🦈','🐙','🦑','🦐','🦞'];
+
+  function startRound(){
+    document.getElementById('round-end').style.display='none';
+    target=Math.floor(Math.random()*8)+5; // 5–12
+    document.getElementById('target-num').textContent=target;
+    caughtCount=0; needCount=0;
+    document.getElementById('caught').textContent=0;
+    document.getElementById('need').textContent='?';
+    document.getElementById('score-fish').innerHTML='';
+    document.getElementById('water').querySelectorAll('.fish,.bubble').forEach(e=>e.remove());
+    spawnFish();
+    spawnBubbles();
+  }
+
+  function spawnFish(){
+    const water=document.getElementById('water');
+    const W=water.offsetWidth, H=water.offsetHeight;
+    // Correct fish
+    const correctPairs=generateCorrectPairs(target, 4+Math.floor(Math.random()*3));
+    needCount=correctPairs.length;
+    document.getElementById('need').textContent=needCount;
+    correctPairs.forEach(pair=>{
+      spawnOneFish(pair,true,W,H);
+    });
+    // Wrong fish
+    const wrongCount=4+Math.floor(Math.random()*4);
+    for(let i=0;i<wrongCount;i++){
+      let a=Math.floor(Math.random()*9)+1;
+      let b=Math.floor(Math.random()*9)+1;
+      while(a+b===target){ b=Math.floor(Math.random()*9)+1; }
+      spawnOneFish(`${a}+${b}`,false,W,H);
+    }
+  }
+
+  function generateCorrectPairs(t,count){
+    const pairs=[];
+    for(let a=1;a<t&&pairs.length<count;a++){
+      const b=t-a;
+      if(b>0&&b<10) pairs.push(`${a}+${b}`);
+    }
+    return pairs.sort(()=>Math.random()-0.5).slice(0,count);
+  }
+
+  function spawnOneFish(expr, isCorrect, W, H){
+    const fish=document.createElement('div');
+    fish.className='fish';
+    const emoji=fishEmojis[Math.floor(Math.random()*fishEmojis.length)];
+    fish.innerHTML=`<span class="fish-emoji">${emoji}</span><span class="fish-label">${expr}</span>`;
+    const x=40+Math.random()*(W-160);
+    const y=60+Math.random()*(H-180);
+    fish.style.cssText=`left:${x}px;top:${y}px;`;
+    // Swimming animation
+    const dur=4+Math.random()*4;
+    const dir=Math.random()<0.5?1:-1;
+    fish.style.animation=`swim ${dur}s ease-in-out infinite`;
+    fish.dataset.correct=isCorrect?'1':'0';
+    fish.dataset.expr=expr;
+    fish.onclick=()=>clickFish(fish,isCorrect,expr);
+    document.getElementById('water').appendChild(fish);
+
+    if(!document.getElementById('swim-style')){
+      const s=document.createElement('style');s.id='swim-style';
+      s.textContent=`@keyframes swim{0%,100%{transform:translateX(0) rotate(-3deg)}50%{transform:translateX(30px) rotate(3deg)}}`;
+      document.head.appendChild(s);
+    }
+  }
+
+  function clickFish(el, isCorrect, expr){
+    if(isCorrect){
+      el.classList.add('caught');
+      caughtCount++;
+      score+=10;
+      document.getElementById('caught').textContent=caughtCount;
+      document.getElementById('score').textContent=score;
+      showFeedback('🎣 Caught!','#ffd700');
+      const cf=document.createElement('div');
+      cf.className='caught-fish';
+      cf.textContent='🐟';
+      document.getElementById('score-fish').appendChild(cf);
+      setTimeout(()=>el.remove(),500);
+      if(caughtCount>=needCount) setTimeout(()=>endRound(),700);
+    } else {
+      el.classList.add('wrong-catch');
+      score=Math.max(0,score-3);
+      document.getElementById('score').textContent=score;
+      showFeedback('❌ Wrong fish!','#ff6b6b');
+      setTimeout(()=>el.classList.remove('wrong-catch'),450);
+    }
+  }
+
+  function showFeedback(text,color){
+    const f=document.getElementById('feedback');
+    f.textContent=text; f.style.color=color; f.classList.add('show');
+    setTimeout(()=>f.classList.remove('show'),600);
+  }
+
+  function endRound(){
+    document.getElementById('round-msg').textContent=`You caught all ${needCount} fish that equal ${target}! Score: ${score}`;
+    document.getElementById('round-end').style.display='flex';
+  }
+
+  function spawnBubbles(){
+    const water=document.getElementById('water');
+    for(let i=0;i<8;i++){
+      const b=document.createElement('div');
+      b.className='bubble';
+      const size=6+Math.random()*14;
+      b.style.cssText=`width:${size}px;height:${size}px;left:${Math.random()*100}%;bottom:${Math.random()*30}px;animation-delay:${Math.random()*4}s;animation-duration:${3+Math.random()*3}s;`;
+      water.appendChild(b);
+    }
+  }
+
+  startRound();
+</script>
+</body>
+</html>

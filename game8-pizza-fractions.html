@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pizza Fractions</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;900&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Nunito', sans-serif; background: linear-gradient(135deg, #1a0000 0%, #4a0000 50%, #8b0000 100%); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 1rem; color: white; }
+  h1 { font-family: 'Fredoka One', cursive; color: #ffd700; font-size: 2.5rem; text-shadow: 2px 2px 0 #8b0000; margin-bottom: 0.3rem; }
+  #order-box { background: rgba(255,255,255,0.1); border: 2px solid #ffd700; border-radius: 20px; padding: 0.8rem 1.5rem; margin-bottom: 1rem; text-align: center; }
+  #order-text { font-family:'Fredoka One',cursive; font-size:1.6rem; color:#ffd700; }
+  #order-sub { font-size:1rem; color:#ffc; margin-top:4px; }
+  #main { display: flex; gap: 1.5rem; align-items: flex-start; flex-wrap: wrap; justify-content: center; }
+  #pizza-container { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+  #pizza-svg { cursor: pointer; filter: drop-shadow(0 8px 24px rgba(0,0,0,0.5)); }
+  .slice { transition: opacity 0.2s; }
+  .slice:hover { opacity: 0.85; }
+  #toppings-panel { display: flex; flex-direction: column; gap: 10px; min-width: 130px; }
+  .topping-btn { font-family:'Fredoka One',cursive; font-size:1.1rem; border: none; border-radius: 14px; padding: 10px 16px; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 4px 12px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 8px; }
+  .topping-btn:hover { transform: scale(1.06); }
+  .topping-btn.active { outline: 3px solid white; transform: scale(1.08); }
+  #info-panel { background: rgba(0,0,0,0.4); border-radius: 16px; padding: 0.8rem 1.2rem; margin-top: 0.5rem; text-align: center; font-size: 1rem; color: #ffc; min-width: 200px; }
+  #info-panel strong { color: #ffd700; font-size: 1.2rem; }
+  #check-btn { font-family:'Fredoka One',cursive; background: linear-gradient(135deg,#ffd700,#ff8c00); color: #3d1c00; border: none; border-radius: 30px; padding: 0.7rem 2rem; font-size: 1.4rem; cursor: pointer; margin-top: 0.8rem; box-shadow: 0 4px 14px rgba(255,140,0,0.5); transition: transform 0.15s; }
+  #check-btn:hover { transform: scale(1.05); }
+  #feedback { font-size: 1.4rem; font-weight: 900; min-height: 2rem; margin-top: 0.5rem; text-align: center; }
+  .ok{color:#6be585}.bad{color:#ff6b6b}
+  #score-row { font-family:'Fredoka One',cursive; font-size:1.2rem; color:#ffd700; margin-top:0.4rem; }
+  #next-btn { display:none; font-family:'Fredoka One',cursive; background:linear-gradient(135deg,#6be585,#2ecc71); color:#1b5e20; border:none; border-radius:30px; padding:0.6rem 1.6rem; font-size:1.3rem; cursor:pointer; margin-top:0.4rem; }
+</style>
+</head>
+<body>
+<h1>🍕 Pizza Fractions!</h1>
+<div id="order-box">
+  <div id="order-text">Loading order...</div>
+  <div id="order-sub">Click the correct slices, then press Check!</div>
+</div>
+<div id="main">
+  <div id="pizza-container">
+    <svg id="pizza-svg" width="240" height="240" viewBox="0 0 240 240"></svg>
+    <div id="info-panel">Selected: <strong id="selected-count">0</strong> / <span id="total-slices">8</span> slices</div>
+  </div>
+  <div>
+    <div style="font-family:'Fredoka One',cursive;font-size:1rem;color:#ffc;margin-bottom:8px;">🎨 Choose topping:</div>
+    <div id="toppings-panel"></div>
+  </div>
+</div>
+<button id="check-btn" onclick="checkAnswer()">Check Pizza ✅</button>
+<div id="feedback"></div>
+<div id="score-row">⭐ Score: <span id="score">0</span></div>
+<button id="next-btn" onclick="nextOrder()">Next Order! 🍕</button>
+
+<script>
+  const toppingDefs = [
+    {name:'Cheese',   emoji:'🧀', color:'#ffd93d'},
+    {name:'Pepperoni',emoji:'🔴', color:'#c0392b'},
+    {name:'Mushrooms',emoji:'🍄', color:'#8b5e3c'},
+    {name:'Peppers',  emoji:'🌶️', color:'#27ae60'},
+  ];
+  const fractions = [{n:1,d:2},{n:1,d:4},{n:3,d:4},{n:1,d:3},{n:2,d:3},{n:3,d:8},{n:5,d:8}];
+
+  let slices=8, selectedSlices=new Set(), sliceAssignments=[], score=0;
+  let orders=[], activeToppingIdx=0;
+
+  function genOrders(){
+    const numToppings=Math.random()<0.4?2:1;
+    orders=[];
+    const shuffled=[...toppingDefs].sort(()=>Math.random()-0.5).slice(0,numToppings);
+    if(numToppings===1){
+      const f=fractions[Math.floor(Math.random()*fractions.length)];
+      slices=f.d; orders.push({topping:shuffled[0], n:f.n, d:f.d});
+    } else {
+      // Two toppings that add up to whole
+      slices=4;
+      orders.push({topping:shuffled[0],n:1,d:4});
+      orders.push({topping:shuffled[1],n:3,d:4});
+    }
+  }
+
+  function buildOrderText(){
+    const parts=orders.map(o=>`${o.n}/${o.d} ${o.topping.emoji} ${o.topping.name}`);
+    document.getElementById('order-text').textContent=`Customer wants: ${parts.join(' + ')}`;
+    document.getElementById('total-slices').textContent=slices;
+  }
+
+  function buildToppingBtns(){
+    const panel=document.getElementById('toppings-panel');
+    panel.innerHTML='';
+    orders.forEach((o,i)=>{
+      const b=document.createElement('button');
+      b.className='topping-btn'+(i===0?' active':'');
+      b.style.background=o.topping.color+'cc';
+      b.innerHTML=`${o.topping.emoji} ${o.topping.name}`;
+      b.onclick=()=>selectTopping(i);
+      panel.appendChild(b);
+    });
+    activeToppingIdx=0;
+  }
+
+  function selectTopping(i){
+    activeToppingIdx=i;
+    document.querySelectorAll('.topping-btn').forEach((b,j)=>b.classList.toggle('active',j===i));
+  }
+
+  function buildPizza(){
+    const svg=document.getElementById('pizza-svg');
+    svg.innerHTML='';
+    sliceAssignments=Array(slices).fill(null);
+    selectedSlices=new Set();
+    const cx=120,cy=120,r=110;
+    // Base
+    const base=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    base.setAttribute('cx',cx);base.setAttribute('cy',cy);base.setAttribute('r',r);
+    base.setAttribute('fill','#c8860a');svg.appendChild(base);
+    const crust=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    crust.setAttribute('cx',cx);crust.setAttribute('cy',cy);crust.setAttribute('r',r-8);
+    crust.setAttribute('fill','#f0c040');svg.appendChild(crust);
+    const sauce=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    sauce.setAttribute('cx',cx);sauce.setAttribute('cy',cy);sauce.setAttribute('r',r-18);
+    sauce.setAttribute('fill','#c0392b');svg.appendChild(sauce);
+
+    for(let i=0;i<slices;i++){
+      const startAngle=(i/slices)*2*Math.PI - Math.PI/2;
+      const endAngle=((i+1)/slices)*2*Math.PI - Math.PI/2;
+      const x1=cx+r*Math.cos(startAngle), y1=cy+r*Math.sin(startAngle);
+      const x2=cx+r*Math.cos(endAngle), y2=cy+r*Math.sin(endAngle);
+      const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+      path.setAttribute('d',`M${cx},${cy} L${x1},${y1} A${r},${r} 0 0,1 ${x2},${y2} Z`);
+      path.setAttribute('fill','transparent');
+      path.setAttribute('stroke','#8b6914');
+      path.setAttribute('stroke-width','2');
+      path.setAttribute('class','slice');
+      path.dataset.idx=i;
+      path.addEventListener('click',()=>toggleSlice(i,path));
+      svg.appendChild(path);
+
+      // Slice number
+      const midAngle=(startAngle+endAngle)/2;
+      const tx=cx+(r*0.6)*Math.cos(midAngle), ty=cy+(r*0.6)*Math.sin(midAngle);
+      const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+      t.setAttribute('x',tx);t.setAttribute('y',ty);
+      t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','middle');
+      t.setAttribute('font-size','14');t.setAttribute('fill','rgba(255,255,255,0.6)');
+      t.setAttribute('font-family','Fredoka One, cursive');
+      t.setAttribute('pointer-events','none');
+      t.textContent=i+1;
+      svg.appendChild(t);
+    }
+    updateCount();
+  }
+
+  function toggleSlice(idx, path){
+    const topping=orders[activeToppingIdx];
+    if(sliceAssignments[idx]===null){
+      sliceAssignments[idx]=activeToppingIdx;
+      path.setAttribute('fill',topping.topping.color+'bb');
+      // Add emoji label
+      addSliceEmoji(idx, topping.topping.emoji);
+    } else if(sliceAssignments[idx]===activeToppingIdx){
+      sliceAssignments[idx]=null;
+      path.setAttribute('fill','transparent');
+      removeSliceEmoji(idx);
+    } else {
+      // Reassign
+      sliceAssignments[idx]=activeToppingIdx;
+      path.setAttribute('fill',topping.topping.color+'bb');
+      removeSliceEmoji(idx);
+      addSliceEmoji(idx, topping.topping.emoji);
+    }
+    updateCount();
+  }
+
+  function addSliceEmoji(idx, emoji){
+    const svg=document.getElementById('pizza-svg');
+    const cx=120,cy=120,r=110;
+    const startAngle=(idx/slices)*2*Math.PI-Math.PI/2;
+    const endAngle=((idx+1)/slices)*2*Math.PI-Math.PI/2;
+    const midAngle=(startAngle+endAngle)/2;
+    const tx=cx+(r*0.55)*Math.cos(midAngle), ty=cy+(r*0.55)*Math.sin(midAngle);
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',tx);t.setAttribute('y',ty);
+    t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','middle');
+    t.setAttribute('font-size','18');t.setAttribute('pointer-events','none');
+    t.setAttribute('class','emoji-label');t.dataset.slice=idx;
+    t.textContent=emoji;
+    svg.appendChild(t);
+  }
+
+  function removeSliceEmoji(idx){
+    document.querySelectorAll('.emoji-label').forEach(e=>{ if(parseInt(e.dataset.slice)===idx) e.remove(); });
+  }
+
+  function updateCount(){
+    const counts=orders.map((_,i)=>sliceAssignments.filter(a=>a===i).length);
+    document.getElementById('selected-count').textContent=counts.join(' + ');
+  }
+
+  function checkAnswer(){
+    let correct=true;
+    orders.forEach((o,i)=>{
+      const got=sliceAssignments.filter(a=>a===i).length;
+      const expected=Math.round(o.n/o.d*slices);
+      if(got!==expected) correct=false;
+    });
+    if(correct){
+      score+=15;
+      document.getElementById('score').textContent=score;
+      document.getElementById('feedback').innerHTML='<span class="ok">🎉 Perfect pizza! The customer is happy!</span>';
+      document.getElementById('next-btn').style.display='inline-block';
+    } else {
+      document.getElementById('feedback').innerHTML='<span class="bad">🤔 Not quite right! Check the fractions!</span>';
+    }
+  }
+
+  function nextOrder(){
+    document.getElementById('next-btn').style.display='none';
+    document.getElementById('feedback').textContent='';
+    genOrders();
+    buildOrderText();
+    buildToppingBtns();
+    buildPizza();
+  }
+
+  nextOrder();
+</script>
+</body>
+</html>
