@@ -146,7 +146,7 @@ function AuthPageInner() {
               <label htmlFor="email">Email or username</label>
               <input id="email" type="text" value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="you@school.com or tanyachiraya" autoComplete="username" required />
+                placeholder="you@school.com or myusername" autoComplete="username" required />
             </div>
             <div className="field">
               <label htmlFor="password">Password</label>

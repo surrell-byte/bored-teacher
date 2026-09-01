@@ -51,6 +51,8 @@ export default function LeaderboardPage() {
   const [showManage, setShowManage] = useState(false);
   const [classCode, setClassCode] = useState('');
   const [creatingClass, setCreatingClass] = useState(false);
+  const [teacherClasses, setTeacherClasses] = useState<string[]>([]);
+  const [teacherLeagueCode, setTeacherLeagueCode] = useState('');
 
   useEffect(() => {
     const isGuest = localStorage.getItem('guestUser') === 'true';
@@ -64,12 +66,41 @@ export default function LeaderboardPage() {
   }, []);
 
   useEffect(() => {
-    if (!ready || !state.classId) return;
+    if (!ready) return;
+
+    if (state.role === 'teacher') {
+      const loadTeacherClasses = async () => {
+        const currentUser = auth?.currentUser;
+        if (!currentUser) return;
+        try {
+          const { collection, getDocs } = await import('firebase/firestore');
+          const { db } = await import('@/lib/firebase');
+          if (!db) return;
+          const snapshot = await getDocs(collection(db, 'classCodes'));
+          const codes = snapshot.docs
+            .map(doc => ({ ...(doc.data() as any), id: doc.id }))
+            .filter((entry: any) => entry.teacherUid === currentUser.uid)
+            .map((entry: any) => entry.code || entry.id)
+            .filter(Boolean);
+          setTeacherClasses(codes);
+          if (codes.length > 0 && !state.classId) setClassCode(codes[0]);
+        } catch {
+          setTeacherClasses([]);
+        }
+      };
+      loadTeacherClasses();
+    }
+
+    if (!state.classId) {
+      setPlayers([]);
+      return;
+    }
     loadPlayers();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready, state.classId]);
+  }, [ready, state.classId, state.role]);
 
   async function loadPlayers() {
+    if (!state.classId) return;
     const data = await getSortedClassLeaderboard(state.classId);
     setPlayers(data);
   }
@@ -92,6 +123,50 @@ export default function LeaderboardPage() {
   }
 
   if (!ready) return null;
+
+  if (state.role === 'student') {
+    return (
+      <div className="lb-page" style={{ maxWidth: 980, margin: '24px auto', padding: '0 16px 40px' }}>
+        <section className="shell-card" style={{ padding: '24px 20px' }}>
+          <p className="suggestions-kicker">Class leaderboard</p>
+          <h1 style={{ margin: '8px 0 12px', fontFamily: 'var(--font-display, Syne)', fontSize: 'clamp(2rem, 3vw, 2.8rem)' }}>Your class ranking</h1>
+          {!state.classId ? (
+            <div style={{ color: 'var(--muted)' }}>You are not assigned to a class yet. Ask your teacher for a class code and join from your profile.</div>
+          ) : (
+            <>
+              <div style={{ marginBottom: 18, fontWeight: 800, color: 'var(--gold)' }}>Class code: {state.classId}</div>
+              {players.length === 0 ? (
+                <div style={{ color: 'var(--muted)' }}>No scores have been posted for this class yet.</div>
+              ) : (
+                <div className="lb-table-wrap">
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr>
+                        <th style={{ textAlign: 'left', padding: '10px 12px', color: 'var(--muted)' }}>#</th>
+                        <th style={{ textAlign: 'left', padding: '10px 12px', color: 'var(--muted)' }}>Player</th>
+                        <th style={{ textAlign: 'left', padding: '10px 12px', color: 'var(--muted)' }}>Total</th>
+                        <th style={{ textAlign: 'left', padding: '10px 12px', color: 'var(--muted)' }}>Avg %</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {players.map((player, index) => (
+                        <tr key={player.id} style={{ borderTop: '1px solid var(--border)' }}>
+                          <td style={{ padding: '12px', fontWeight: 700 }}>{index + 1}</td>
+                          <td style={{ padding: '12px', fontWeight: 700 }}>{player.name}</td>
+                          <td style={{ padding: '12px', color: 'var(--gold)', fontWeight: 800 }}>{player.score.total}</td>
+                          <td style={{ padding: '12px', color: 'var(--muted)' }}>{player.score.avg}%</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </>
+          )}
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="lb-page">
@@ -130,7 +205,17 @@ export default function LeaderboardPage() {
 
       {state.role === 'teacher' && <section className="shell-card teacher-tools-panel">
         <div><p className="suggestions-kicker">Teacher workspace</p><h2>Manage your classes</h2><p>Create a class code, then use Manage Students to maintain the roster.</p></div>
-        <div className="teacher-tools-actions"><button className="pill-btn" onClick={handleCreateClass} disabled={creatingClass}>{creatingClass ? 'Creating...' : 'Create new class'}</button><button className="pill-btn active" onClick={() => setShowManage(true)}>Manage Students</button>{classCode && <strong className="teacher-class-code">{classCode}</strong>}</div>
+        <div className="teacher-tools-actions">
+          <button className="pill-btn" onClick={handleCreateClass} disabled={creatingClass}>{creatingClass ? 'Creating...' : 'Create new class'}</button>
+          <button className="pill-btn active" onClick={() => setShowManage(true)}>Manage Students</button>
+          <Link href="/teacher/classes" className="pill-btn" style={{ textDecoration: 'none' }}>Manage classes</Link>
+          {teacherClasses.length > 0 && <strong className="teacher-class-code">{teacherClasses[0]}</strong>}
+          {classCode && <strong className="teacher-class-code">{classCode}</strong>}
+          {state.role === 'teacher' && (
+            <Link href="/leagues" className="pill-btn" style={{ textDecoration: 'none' }}>Teacher leagues</Link>
+          )}
+          {teacherLeagueCode && <strong className="teacher-class-code">{teacherLeagueCode}</strong>}
+        </div>
       </section>}
 
       <section className="weekly-awards-section">

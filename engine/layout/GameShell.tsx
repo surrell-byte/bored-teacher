@@ -201,11 +201,12 @@ export default function GameShell({
                   <button type="button" className="game-shell-header-action" onClick={toggleFullscreen}>
                     {isFullscreen ? 'Exit full screen' : 'Full screen'}
                   </button>
-                  {!hideMainMenuButton && onMainMenu ? (
+                  {!hideMainMenuButton && onMainMenu && (
                     <button type="button" className="game-shell-header-action" onClick={onMainMenu}>Main menu</button>
-                  ) : !hideExitControl ? (
-                    <Link className="game-shell-header-action" href="/games">Exit</Link>
-                  ) : null}
+                  )}
+                  {!hideExitControl && (
+                    <Link className="game-shell-header-action" href={`/games/${gameId}`}>Exit</Link>
+                  )}
                 </>
               }
             />

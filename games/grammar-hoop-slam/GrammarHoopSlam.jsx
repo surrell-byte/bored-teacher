@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { useStorage } from "@/hooks/useStorage";
+import { getGameSettings } from "@/lib/game-settings";
 
 const QUESTIONS_DB = {
   1: [
@@ -54,6 +55,11 @@ export default function GrammarHoopSlam({ onComplete }) {
   const [streak, setStreak] = useState(0);
   const [selected, setSelected] = useState(null);
   const [answered, setAnswered] = useState(false);
+  const [settings, setSettings] = useState({ volume: 70, brightness: 100 });
+
+  useEffect(() => {
+    setSettings(getGameSettings());
+  }, []);
 
   const startLevel = useCallback((lvl) => {
     setLevel(lvl);
@@ -99,13 +105,22 @@ export default function GrammarHoopSlam({ onComplete }) {
 
   const LEVEL_COLORS = { 1: "#f59e0b", 2: "#3b82f6", 3: "#8b5cf6" };
   const LEVEL_NAMES = { 1: "Rookie", 2: "All-Star", 3: "MVP" };
+  const brightnessFactor = Math.max(0.4, settings.brightness / 100);
+
+  const backgroundStyle = (imagePath) => ({
+    backgroundImage: `linear-gradient(rgba(7, 16, 22, 0.2), rgba(7, 16, 22, 0.32)), url('${imagePath}')`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    filter: `brightness(${brightnessFactor})`,
+  });
 
   if (screen === "start") return (
     <div style={{
+      ...backgroundStyle('/assets/grammar-gym/gg-welcome-bg.png'),
       minHeight: "100vh", display: "flex", flexDirection: "column",
       alignItems: "center", justifyContent: "center",
-      background: "linear-gradient(135deg,#1a1a2e,#16213e,#0f3460)",
       fontFamily: "'Segoe UI', sans-serif", color: "#f1f5f9", padding: 24, textAlign: "center",
+      backgroundRepeat: 'no-repeat',
     }}>
       <div style={{ fontSize: "3.5rem", marginBottom: 8 }}>🏀</div>
       <h1 style={{ fontSize: "2rem", margin: "0 0 4px", color: "#fbbf24" }}>WARRIORS GRAMMAR SLAM</h1>
@@ -139,10 +154,11 @@ export default function GrammarHoopSlam({ onComplete }) {
 
   if (screen === "complete") return (
     <div style={{
+      ...backgroundStyle('/assets/grammar-gym/gg-settings-bg.png'),
       minHeight: "100vh", display: "flex", flexDirection: "column",
       alignItems: "center", justifyContent: "center",
-      background: "linear-gradient(135deg,#1a1a2e,#16213e)",
       fontFamily: "'Segoe UI', sans-serif", color: "#f1f5f9", padding: 24, textAlign: "center",
+      backgroundRepeat: 'no-repeat',
     }}>
       <div style={{ fontSize: "4rem", marginBottom: 12 }}>🏆</div>
       <h2 style={{ fontSize: "2rem", color: "#fbbf24", marginBottom: 8 }}>Level {level} Complete!</h2>
@@ -172,10 +188,11 @@ export default function GrammarHoopSlam({ onComplete }) {
 
   return (
     <div style={{
+      ...backgroundStyle('/assets/grammar-gym/gg-level-' + level + '-bg.png'),
       minHeight: "100vh", display: "flex", flexDirection: "column",
       alignItems: "center", justifyContent: "center",
-      background: "linear-gradient(135deg,#1a1a2e,#16213e,#0f3460)",
       fontFamily: "'Segoe UI', sans-serif", color: "#f1f5f9", padding: 24,
+      backgroundRepeat: 'no-repeat',
     }}>
       <div style={{ width: "100%", maxWidth: "min(760px, calc(100vw - 56px))" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>

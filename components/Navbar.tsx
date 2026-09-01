@@ -14,6 +14,8 @@ const NAV_ITEMS = [
   { href: '/hub',         label: 'Dashboard',   icon: '🏠' },
   { href: '/games',       label: 'Games',       icon: '🎮' },
   { href: '/leaderboard', label: 'Leaderboard', icon: '🏆' },
+  { href: '/leagues',     label: 'Leagues',     icon: '🏅' },
+  { href: '/multiplayer', label: 'Multiplayer', icon: '🕹️' },
   { href: '/resources',   label: 'Resources',   icon: '📚' },
   { href: '/blog',        label: 'Blog',        icon: '✍️' },
   { href: '/about',       label: 'About',        icon: 'ℹ️' },
@@ -120,6 +122,10 @@ export default function Navbar() {
           >
             {soundOn ? '🔊' : '🔇'}
           </button>
+
+          <Link href="/settings" className="nav-link nav-link--compact" style={{ textDecoration: 'none' }} aria-label="Open settings">
+            ⚙️ Settings
+          </Link>
 
           {showPresentationToggle && (
             <button
