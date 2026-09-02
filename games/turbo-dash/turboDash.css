@@ -30,8 +30,8 @@
   background-image: linear-gradient(rgba(4, 13, 20, .18), rgba(4, 13, 20, .18)), var(--td-screen-bg);
   background-position: center;
   background-size: cover;
-  background-position: 12px 18px, 74px 90px;
-  background-size: 130px 130px, 180px 180px;
+  background-position: center;
+  background-size: cover;
 }
 
 .td-title p, .td-screen h2, .td-game header, .td-sidebar strong, .td-winner h1, .td-message, .td-die, .td-game header strong { font-family: 'Orbitron', monospace; }
@@ -58,6 +58,11 @@
 .td-name-card.td-player-2 b, .td-vehicle-block:nth-child(2)>strong { color: #4a9eff; }
 .td-name-card span { font-size: 2.5rem; }
 .td-name-card input { width: 100%; padding: .68rem 1rem; border: 1.5px solid rgba(255,255,255,.08); border-radius: 10px; outline: none; color: var(--text); background: var(--surface-2); font: 600 1.08rem 'Rajdhani', sans-serif; text-align: center; }
+.td-user-input-screen { gap: 2.8rem; padding: clamp(40px, 8vh, 96px) 24px; }
+.td-user-input-screen .td-name-cards { gap: clamp(2.5rem, 7vw, 7rem); }
+.td-user-input-screen .td-name-card { width: min(320px, 42vw); padding: 2.2rem; gap: 1.4rem; }
+.td-user-input-screen .td-name-card span { font-size: 3.8rem; }
+.td-user-input-screen .td-name-card input { padding: 1rem 1.2rem; font-size: 1.25rem; }
 .td-name-card input:focus { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(232,168,0,.12); }
 
 .td-vehicle-block { width: min(350px, 90vw); display: flex; flex-direction: column; align-items: center; gap: .8rem; }
@@ -119,7 +124,10 @@
 .td-move-card span { font-size: 1rem; }
 .td-move-card strong { color: var(--gold-bright); font: 700 .9rem 'Orbitron', monospace; }
 .td-move-card small { color: var(--muted); font-size: .55rem; margin-top: .2rem; }
-.td-background-picker { display: none; }
+.td-background-picker { display: grid; grid-template-columns: repeat(4, minmax(120px, 1fr)); gap: .65rem; width: min(760px, 94vw); margin: .5rem auto 1rem; }
+.td-background-picker button { min-height: 72px; border: 2px solid transparent; border-radius: 12px; overflow: hidden; color: #fff; background: rgba(20, 29, 17, .85); cursor: pointer; font-weight: 700; }
+.td-background-picker button.selected { border-color: var(--gold-bright); box-shadow: 0 0 16px rgba(255,201,60,.35); }
+.td-background-picker img { display: block; width: 100%; height: 48px; object-fit: cover; }
 
 .td-winner span { font-size: 1.7rem; letter-spacing: .9rem; }
 .td-winner h1 { font-size: clamp(1.3rem, 4vw, 2.6rem); background: linear-gradient(135deg, var(--gold-bright), #e07000); -webkit-background-clip: text; color: transparent; }

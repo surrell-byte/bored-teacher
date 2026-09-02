@@ -146,13 +146,14 @@ const WordFusion_CSS = `* {
       transform: scale(1.02);
     }
 
+    .wordfusion-root { width: 100%; min-height: 100%; }
     /* game container */
     .game-container {
-      max-width: 850px;
+      max-width: none;
       width: 100%;
       background: rgba(255, 255, 255, 0.96);
       backdrop-filter: blur(2px);
-      border-radius: 64px;
+      border-radius: 24px;
       box-shadow: 0 30px 50px -15px rgba(0, 0, 0, 0.3);
       padding: 25px 20px 35px;
       text-align: center;
@@ -608,6 +609,17 @@ export default function WordFusion() {
   const totalSpan = document.getElementById('totalQuestions');
   const levelNameSpan = document.getElementById('levelName');
   const playerNameDisplay = document.getElementById('playerNameDisplay');
+
+  function setResultText(message, background) {
+    if (!resultMsg) return;
+    resultMsg.textContent = message;
+    if (background) resultMsg.style.background = background;
+  }
+
+  function setResultContent(nodes) {
+    if (!resultMsg) return;
+    resultMsg.replaceChildren(...nodes);
+  }
 
   function updateLockUI() {
     const mediumCard = document.querySelector('.level-card.medium');

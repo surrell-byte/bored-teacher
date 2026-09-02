@@ -9,6 +9,10 @@ export default function PaymentPage() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    if (!new URLSearchParams(window.location.search).get('plan')) {
+      router.replace('/shop');
+      return;
+    }
     const isGuest = localStorage.getItem('guestUser') === 'true';
     if (isGuest) {
       setReady(true);

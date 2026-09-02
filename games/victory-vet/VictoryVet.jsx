@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 
+const AVATARS = ["🐶", "🐱", "🐰", "🦊", "🐼", "🦁", "🐢", "🦉", "🐬", "🦄"];
+
 const QUESTIONS = [
   {
     question: "A dog is panting heavily after running. What should you do first?",
@@ -93,7 +95,10 @@ const QUESTIONS = [
   },
 ];
 
-export default function VictoryVet() {
+export default function VictoryVet({ onComplete }) {
+  const [screen, setScreen] = useState("welcome");
+  const [playerName, setPlayerName] = useState("");
+  const [avatar, setAvatar] = useState("🐶");
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selected, setSelected] = useState(null);
   const [score, setScore] = useState(0);
@@ -114,6 +119,13 @@ export default function VictoryVet() {
   }
 
   function nextQuestion() {
+    if (currentQuestion >= QUESTIONS.length - 1 && selected !== question.correct) {
+      setSelected(null);
+      return;
+    }
+    if (currentQuestion >= QUESTIONS.length - 1) {
+      onComplete?.(score + 10, Math.round(((score + 10) / (QUESTIONS.length * 10)) * 100));
+    }
     setSelected(null);
 
     if (currentQuestion >= QUESTIONS.length - 1) {
@@ -126,7 +138,10 @@ export default function VictoryVet() {
     setCurrentQuestion((value) => value + 1);
   }
 
-  const complete = currentQuestion >= QUESTIONS.length - 1 && selected !== null;
+  const complete = currentQuestion >= QUESTIONS.length - 1 && selected === question.correct;
+
+  if (screen === "welcome") return <main className="victory-vet vv-welcome"><section className="vv-welcome-card"><div className="vv-welcome-icon">🩺🐾</div><p className="vv-kicker">ANIMAL CARE ACADEMY</p><h1>Victory Vet</h1><p>Learn how to help animals stay safe, healthy, and happy.</p><button className="vv-reset" onClick={() => setScreen("setup")}>Start mission</button></section></main>;
+  if (screen === "setup") return <main className="victory-vet vv-welcome"><section className="vv-welcome-card vv-setup"><p className="vv-kicker">READY, {playerName || "VET"}?</p><h1>Choose your vet</h1><input className="vv-name-input" value={playerName} onChange={(event) => setPlayerName(event.target.value)} placeholder="Your name" maxLength={18} /><div className="vv-avatar-grid">{AVATARS.map((item) => <button type="button" className={avatar === item ? "selected" : ""} onClick={() => setAvatar(item)} key={item}>{item}</button>)}</div><button className="vv-reset" disabled={!playerName.trim()} onClick={() => { setCurrentQuestion(0); setSelected(null); setScore(0); setLives(3); setScreen("game"); }}>Enter clinic</button></section></main>;
 
   return (
     <main className="victory-vet">
@@ -139,7 +154,7 @@ export default function VictoryVet() {
           background: linear-gradient(180deg, rgba(15,26,24,0.98), rgba(18,27,25,0.98));
         }
         .vv-shell {
-          max-width: 980px; margin: 0 auto; display: grid; gap: 18px;
+          max-width: 1120px; margin: 0 auto; display: grid; gap: 24px;
         }
         .vv-topbar {
           display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: center;
@@ -164,10 +179,22 @@ export default function VictoryVet() {
         .vv-fill { height: 100%; border-radius: inherit; background: linear-gradient(135deg, #73d799, #7dd8d8); }
         .vv-meta { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; color: var(--muted); }
         .vv-badge { padding: 6px 10px; border-radius: 999px; border: 1px solid var(--border); background: rgba(255,255,255,0.04); }
-        .vv-question { margin-top: 22px; }
-        .vv-question h2 { margin: 0 0 16px; font-size: clamp(1.35rem, 2vw, 2.2rem); }
+        .vv-question { margin-top: 28px; }
+        .vv-question h2 { margin: 0 0 22px; font-size: clamp(1.6rem, 3vw, 2.7rem); line-height: 1.2; }
         .vv-answers { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-        .vv-answer { cursor: pointer; padding: 14px 16px; border-radius: 16px; border: 1px solid var(--border); background: rgba(255,255,255,0.02); color: var(--text); text-align: left; }
+        .vv-answer { cursor: pointer; min-height: 76px; padding: 18px 20px; border-radius: 16px; border: 1px solid var(--border); background: rgba(255,255,255,0.02); color: var(--text); text-align: left; font-size: 1.08rem; }
+        .vv-context-image { display: grid; place-items: center; min-height: 190px; margin-top: 24px; border-radius: 18px; overflow: hidden; background: linear-gradient(135deg, rgba(76,180,145,.16), rgba(66,125,180,.16)); }
+        .vv-context-image img { width: 100%; height: 220px; object-fit: cover; }
+        .vv-welcome { display: grid; place-items: center; min-height: 100%; text-align: center; }
+        .vv-welcome-card { width: min(680px, 100%); padding: 56px 28px; border: 1px solid var(--border); border-radius: 28px; background: rgba(255,255,255,.04); box-shadow: 0 24px 70px rgba(0,0,0,.28); }
+        .vv-welcome-icon { font-size: 5rem; }
+        .vv-kicker { color: #7ed9b0; font-size: .75rem; font-weight: 800; letter-spacing: .16em; }
+        .vv-welcome-card h1 { font-size: clamp(2.5rem, 7vw, 4.5rem); margin: 10px 0; }
+        .vv-welcome-card > p:not(.vv-kicker) { color: var(--muted); font-size: 1.1rem; line-height: 1.7; margin-bottom: 24px; }
+        .vv-name-input { width: min(400px, 100%); padding: 16px; border: 1px solid var(--border-bright); border-radius: 14px; background: rgba(255,255,255,.06); color: var(--text); font-size: 1.1rem; text-align: center; }
+        .vv-avatar-grid { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 24px 0; }
+        .vv-avatar-grid button { width: 58px; height: 58px; border: 2px solid var(--border); border-radius: 14px; background: rgba(255,255,255,.05); font-size: 1.8rem; cursor: pointer; }
+        .vv-avatar-grid button.selected { border-color: #7ed9b0; background: rgba(126,217,176,.16); }
         .vv-answer.correct { background: rgba(42,176,112,0.14); border-color: rgba(42,176,112,0.45); }
         .vv-answer.wrong { background: rgba(220,92,92,0.12); border-color: rgba(220,92,92,0.4); }
         .vv-feedback { margin-top: 18px; padding: 16px; border-radius: 16px; border: 1px solid var(--border); background: rgba(255,255,255,0.03); }
@@ -222,6 +249,7 @@ export default function VictoryVet() {
             </div>
           ) : (
             <div className="vv-question">
+              <div className="vv-context-image"><img src="/assets/covers/animal-class-quest-cover.webp" alt="Animal care context" /></div>
               <h2>{question.question}</h2>
               <div className="vv-answers">
                 {question.answers.map((answer) => {

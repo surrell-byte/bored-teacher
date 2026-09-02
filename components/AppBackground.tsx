@@ -56,7 +56,7 @@ export default function AppBackground() {
     entry = BACKGROUNDS.leaderboard;
   } else if (pathname.startsWith('/trophy')) {
     entry = BACKGROUNDS.trophy;
-  } else if (pathname.startsWith('/payment')) {
+  } else if (pathname.startsWith('/shop')) {
     entry = BACKGROUNDS.shop;
   } else if (pathname.startsWith('/resources')) {
     entry = BACKGROUNDS.resources;

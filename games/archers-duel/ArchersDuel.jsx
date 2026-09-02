@@ -365,7 +365,7 @@ export default function ArchersDuel({ onComplete }) {
     const frame = (now) => {
       const t = Math.min((now - start) / 700, 1);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      drawArrow(ctx, x - 8, y, 0, pts, special);
+      drawArrow(ctx, x - 8, y, Math.PI, pts, special);
       ctx.save();
       ctx.globalAlpha = (1 - t) * 0.85;
       ctx.beginPath();
@@ -591,6 +591,7 @@ export default function ArchersDuel({ onComplete }) {
         .setup-player-panel .sprite-card-label{font-size:1rem}
         .shot-turn-label{text-align:center;color:var(--gold-light);font:700 1rem Georgia,serif;letter-spacing:.12em;margin:8px 0 14px}
         .tiles-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;width:100%;align-items:stretch}
+        .tiles-row:not(:has(.tile:nth-child(4))){grid-template-columns:repeat(3,minmax(0,1fr));width:75%;margin-left:auto;margin-right:auto}
         .tiles-row .tile{width:100%;min-width:0}
         .tile-special .tile-face{background:linear-gradient(145deg,#bd4b0c,#ff9f1c);border-color:#ffc15c;box-shadow:0 0 22px #ff8a184d}
         .tile-special .tile-back{background:linear-gradient(145deg,#a43f0a,#f17d10);border-color:#ffc15c}

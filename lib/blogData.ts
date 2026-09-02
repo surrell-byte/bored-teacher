@@ -301,6 +301,23 @@ export const BLOG_SECTIONS = [
     title: 'Practical "Teacher Survival" Posts',
     description: 'Highly searchable articles for common classroom challenges.',
     posts: [
+      { slug: 'custom-word-list-builder', title: 'How to Build a Custom Word List Activity', published: true, content: `# How to Build a Custom Word List Activity
+
+    Start with the language your students actually need to use. A useful custom list is short, purposeful, and connected to the lesson rather than a collection of every unfamiliar word.
+
+    ## Choose the words
+
+    Select eight to twelve words that appear in the next reading, topic, or conversation. Include a mix of familiar words for confidence and new words for stretch. Add a simple definition, example, or picture prompt for each one.
+
+    ## Turn the list into practice
+
+    Use the list in three passes: students recognise the words, match them to meanings or images, and then use them in a sentence. Keep the first round quick, then spend more time on the words that cause difficulty.
+
+    ## Revisit the list
+
+    Bring the same words back later in the week through a game, exit ticket, or pair challenge. Spaced practice helps students remember more than one long vocabulary drill.
+
+    The best word list is small enough to use well and flexible enough to return to. Let student errors tell you which words deserve another round.`, },
       { slug: 'finish-lesson-early', title: 'What to Do When You Finish Your Lesson Early', published: false },
       { slug: 'activity-doesnt-work', title: 'What to Do When an Activity Doesn\'t Work', published: false },
       { slug: 'technology-stops-working', title: 'What to Do When Technology Stops Working', published: false },

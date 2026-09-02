@@ -17,7 +17,7 @@ const TYPE_META: Record<Resource['type'], { label: string; tagColor: string; act
   guide:     { label: 'Study Guide', tagColor: 'tag-bio',     action: 'Read Guide' },
   tip:       { label: 'Tip Sheet',   tagColor: 'tag-grammar', action: 'Read Tip' },
   worksheet: { label: 'Worksheet',   tagColor: 'tag-words',   action: 'Download PDF' },
-  tool:      { label: 'Tool',        tagColor: 'tag-vocab',   action: 'Coming Soon' },
+  tool:      { label: 'Tool',        tagColor: 'tag-vocab',   action: 'Open Tool' },
 };
 
 const SUBJECT_ICONS: Record<Resource['subject'], string> = {
@@ -43,7 +43,7 @@ const RESOURCES: Resource[] = [
   { id: 'w2', icon: '📄', title: 'Farm Animal Vocabulary Sheet',        desc: 'Pre-teach animal vocabulary before students play Farm Game.',                                  type: 'worksheet', subject: 'Science',        dateAdded: '2025-05-05' },
   { id: 'w3', icon: '📄', title: 'Flags of the World — Reference Card',desc: 'A printable cheat-sheet to scaffold students before Flagmaster.',                              type: 'worksheet', subject: 'Social Studies', dateAdded: '2025-05-06' },
   { id: 'w4', icon: '📄', title: 'Ocean Creature Classification Grid',  desc: 'Supports Ocean Quest and Deep Sea Reveal — classify 24 sea creatures by type.',                type: 'worksheet', subject: 'Science',        dateAdded: '2025-05-07' },
-  { id: 'c1', icon: '🛠️', title: 'Custom Word List Builder',            desc: 'Paste in any word list and the hub will generate a matching Word Match game (coming soon).', type: 'tool',      subject: 'English',        dateAdded: '2025-05-08' },
+  { id: 'c1', icon: '🛠️', title: 'Custom Word List Builder',            desc: 'A practical guide to turning your own vocabulary list into a focused Word Match activity.', type: 'tool',      subject: 'English',        dateAdded: '2025-05-08', link: '/blog/custom-word-list-builder' },
   { id: 'c2', icon: '📥', title: 'Export Leaderboard to CSV',           desc: 'Download your class leaderboard as a spreadsheet to share with parents or admin.',           type: 'tool',      subject: 'Life Skills',    dateAdded: '2025-05-09' },
 ];
 
@@ -223,7 +223,6 @@ export default function ResourcesPage() {
                     <button 
                       className="pill-btn" 
                       style={{ fontSize: '0.78rem', width: '100%', justifyContent: 'center' }} 
-                      disabled={(!hasTeacherPro && premiumResourceIds.has(r.id)) || r.type === 'tool' || !r.link}
                       onClick={async () => {
                         const currentUser = auth?.currentUser;
                         if (!hasTeacherPro && premiumResourceIds.has(r.id)) {
@@ -306,7 +305,6 @@ export default function ResourcesPage() {
                       <button 
                         className="pill-btn" 
                         style={{ fontSize: '0.78rem', width: '100%', justifyContent: 'center' }} 
-                        disabled={(!hasTeacherPro && premiumResourceIds.has(r.id)) || r.type === 'tool' || !r.link}
                         onClick={() => {
                           if (!hasTeacherPro && premiumResourceIds.has(r.id)) {
                             router.push('/subscription');

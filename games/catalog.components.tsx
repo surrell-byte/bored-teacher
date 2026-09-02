@@ -93,6 +93,7 @@ export const GAME_COMPONENTS: Partial<Record<string, React.LazyExoticComponent<R
   bubblepop: lazyGame('bubblepop', () => import('@/games/bubble-pop/BubblePop.jsx')),
   buildtower: lazyGame('buildtower', () => import('@/games/build-tower/BuildTower.jsx')),
   mathracing: lazyGame('mathracing', () => import('@/games/math-racing/MathRacing.jsx')),
+  weatherwizard: lazyGame('weatherwizard', () => import('@/games/weather-wizard/WeatherWizard.jsx')),
   pizzafractions: lazyGame('pizzafractions', () => import('@/games/pizza-fractions/PizzaFractions.jsx')),
   fishingnumbers: lazyGame('fishingnumbers', () => import('@/games/fishing-numbers/FishingNumbers.jsx')),
   shapebuilder: lazyGame('shapebuilder', () => import('@/games/shape-builder/ShapeBuilder.jsx')),

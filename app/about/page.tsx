@@ -103,6 +103,21 @@ export default function AboutPage() {
         </div>
       </section>
 
+      <section className="shell-card" style={{ padding: 'clamp(24px, 5vw, 52px)', borderRadius: 28, marginBottom: 24 }}>
+        <div style={{ fontSize: '0.74rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--gold)', fontWeight: 800, marginBottom: 12 }}>
+          Our starting point
+        </div>
+        <h2 style={{ fontSize: 'clamp(1.8rem, 4vw, 3rem)', lineHeight: 1.1, margin: '0 0 16px', fontFamily: 'var(--font-display, Syne)' }}>
+          Making learning feel less like work and more like play.
+        </h2>
+        <p style={{ maxWidth: '70ch', margin: 0, color: 'var(--muted)', lineHeight: 1.8 }}>
+          Bored Teacher is a game-based classroom hub for learning, practice, and motivation. It brings together short-form educational games, progress tracking, teacher resources, and rewarding milestones so students stay focused while teachers keep momentum high.
+        </p>
+        <p style={{ margin: '18px 0 0', color: 'var(--text)', lineHeight: 1.7, fontWeight: 700 }}>
+          Created by Russell Mkahanana, a Zimbabwean educator and software developer.
+        </p>
+      </section>
+
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 18 }}>
         {HIGHLIGHTS.map((item) => (
           <article key={item.title} className="shell-card" style={{ padding: 22, borderRadius: 24 }}>

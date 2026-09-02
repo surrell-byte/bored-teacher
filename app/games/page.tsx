@@ -11,6 +11,7 @@ import {
 import GameCard from '@/components/cards/GameCard';
 import ManagePlayersModal from '@/features/players/components/ManagePlayersModal';
 import { preloadGame } from '@/games/catalog.components';
+import { COMING_SOON_GAME_IDS } from '@/config/game-access';
 
 const CATEGORY_OPTIONS = [
   'All Categories',
@@ -40,12 +41,14 @@ export default function GamesPage() {
   const [sort,       setSort]       = useState('alpha');
   const [playedOnly, setPlayedOnly] = useState(false);
   const [showManage, setShowManage] = useState(false);
+  const [isCreator, setIsCreator] = useState(false);
 
   useEffect(() => {
     const isGuest = localStorage.getItem('guestUser') === 'true';
     if (isGuest) { setReady(true); return; }
     const unsub = onAuthStateChanged(user => {
       if (!user) { router.replace('/auth'); return; }
+      setIsCreator(user.email?.trim().toLowerCase() === 'boredteacherapp@gmail.com');
       setReady(true);
     });
     return unsub;
@@ -58,7 +61,7 @@ export default function GamesPage() {
 
   const filteredGames = useMemo(() => {
     const q = search.toLowerCase().trim();
-    let games = [...GAME_KEYS];
+    let games = [...GAME_KEYS].filter(gameId => isCreator || !COMING_SOON_GAME_IDS.has(gameId));
     if (playedOnly) games = games.filter(k => (state.games[k]?.completions ?? 0) > 0);
     if (category !== 'All Categories') games = games.filter(k => GAME_TAGS[k]?.label === category);
     if (difficulty !== 'All Difficulties') games = games.filter(k => GAME_DIFFICULTY[k] === difficulty);
@@ -78,7 +81,7 @@ export default function GamesPage() {
     if (sort === 'played') games.sort((a, b) => (state.games[b]?.completions ?? 0) - (state.games[a]?.completions ?? 0));
     if (sort === 'alpha')  games.sort((a, b) => (GAME_NAMES[a] ?? '').localeCompare(GAME_NAMES[b] ?? ''));
     return games;
-  }, [search, category, difficulty, sort, playedOnly, state.games]);
+  }, [search, category, difficulty, sort, playedOnly, state.games, isCreator]);
 
   const totalPlayed = GAME_KEYS.filter(k => (state.games[k]?.completions ?? 0) > 0).length;
   const totalScore  = Object.values(state.games).reduce((a, g) => a + (g.highScore ?? 0), 0);
@@ -91,6 +94,16 @@ export default function GamesPage() {
   }, [likelyNextGame, router]);
 
   const hasActiveFilters = category !== 'All Categories' || difficulty !== 'All Difficulties' || !!search || playedOnly;
+
+  const alphabeticalGroups = useMemo(() => {
+    if (sort !== 'alpha') return [] as Array<[string, string[]]>;
+    const groups = new Map<string, string[]>();
+    filteredGames.forEach(gameId => {
+      const letter = (GAME_NAMES[gameId]?.trim().charAt(0) || '#').toUpperCase();
+      groups.set(letter, [...(groups.get(letter) ?? []), gameId]);
+    });
+    return [...groups.entries()];
+  }, [filteredGames, sort]);
 
   function clearFilters() {
     setCategory('All Categories'); setDifficulty('All Difficulties'); setSearch(''); setPlayedOnly(false);
@@ -159,8 +172,8 @@ export default function GamesPage() {
             <h2 className="hub-section-title" style={{ marginBottom: 0 }}>⭐ Featured Games</h2>
           </div>
           <div className="hub-featured-grid">
-            {NEW_GAME_KEYS.map(gameId => (
-              <GameCard key={gameId} gameId={gameId} onClick={handlePlay} />
+            {NEW_GAME_KEYS.filter(gameId => isCreator || !COMING_SOON_GAME_IDS.has(gameId)).map(gameId => (
+              <GameCard key={gameId} gameId={gameId} onClick={handlePlay} comingSoon={isCreator && COMING_SOON_GAME_IDS.has(gameId)} />
             ))}
           </div>
         </section>
@@ -201,17 +214,34 @@ export default function GamesPage() {
             </div>
           </div>
         ) : (
-          <div className="hub-game-grid">
-            {filteredGames.map((gameId, i) => (
-              <div
-                key={gameId}
-                className="card-stagger"
-                style={{ '--stagger-i': i } as React.CSSProperties}
-              >
-                <GameCard gameId={gameId} onClick={handlePlay} />
+          sort === 'alpha' ? alphabeticalGroups.map(([letter, gameIds]) => (
+            <section className="games-letter-group" key={letter} aria-labelledby={`games-letter-${letter}`}>
+              <h3 className="games-letter-heading" id={`games-letter-${letter}`}>{letter}</h3>
+              <div className="hub-game-grid">
+                {gameIds.map((gameId, i) => (
+                  <div
+                    key={gameId}
+                    className="card-stagger"
+                    style={{ '--stagger-i': i } as React.CSSProperties}
+                  >
+                    <GameCard gameId={gameId} onClick={handlePlay} comingSoon={isCreator && COMING_SOON_GAME_IDS.has(gameId)} />
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </section>
+          )) : (
+            <div className="hub-game-grid">
+              {filteredGames.map((gameId, i) => (
+                <div
+                  key={gameId}
+                  className="card-stagger"
+                  style={{ '--stagger-i': i } as React.CSSProperties}
+                >
+                  <GameCard gameId={gameId} onClick={handlePlay} comingSoon={isCreator && COMING_SOON_GAME_IDS.has(gameId)} />
+                </div>
+              ))}
+            </div>
+          )
         )}
       </section>
 

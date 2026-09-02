@@ -220,14 +220,6 @@ export async function signIn(identifier: string, password: string) {
 
   try {
     const cred = await signInWithEmailAndPassword(auth, loginEmail, password);
-    const profile = await loadUserState(cred.user.uid);
-    if (profile && profile.emailVerified !== true) {
-      await firebaseSignOut(auth);
-      const expired = isVerificationExpired(profile.emailVerificationSentAt as string | number | undefined);
-      throw new Error(expired
-        ? 'Your email verification expired. Please request a fresh code to continue.'
-        : 'Please verify your email before using the app.');
-    }
     await markUserLoggedIn(cred.user.uid);
     return cred.user;
   } catch (error) {
@@ -290,10 +282,11 @@ export async function setDisplayName(user: User, name: string) {
 type GameState = Record<string, { highScore: number; completions: number; lastAccuracy: number; totalQuestions: number }>;
 
 interface UserState {
-  name: string; username: string; usernameLower: string; avatar: string; theme: string;
+  name: string; username: string; usernameLower: string; email?: string; avatar: string; theme: string;
   xp: number; level: number; coins: number; lastGame: string | null;
   lastLogin: unknown; loginStreak: number; sound: boolean; games: GameState;
   classId?: string; role?: AccountRole | null;
+  ownedItems?: string[];
   createdAt?: unknown;
   isActive?: boolean;
   teacherPro?: boolean;

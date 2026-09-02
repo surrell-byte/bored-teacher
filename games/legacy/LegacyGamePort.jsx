@@ -105,7 +105,7 @@ export default function LegacyGamePort({ gameId, onComplete }) {
   return <main className="legacy-port" data-mode={config.mode}>
     <style>{PORT_STYLES}</style>
     <section className="legacy-port-card">
-      <header className="legacy-port-header"><span>{config.icon}</span><div><p>React gameplay port</p><h1>{config.title}</h1></div><div className="legacy-port-score">{score}<small>points</small></div></header>
+      <header className="legacy-port-header"><span>{config.icon}</span><div><h1>{config.title}</h1></div><div className="legacy-port-score">{score}<small>points</small></div></header>
       <div className="legacy-port-progress"><span>Round {Math.min(round, 10)} / 10</span><div><i style={{ width:`${Math.min(round, 10) * 10}%` }} /></div></div>
       <p className="legacy-port-prompt">{config.prompt}</p>
       {config.mode === "count" && <div className="legacy-challenge"><div className="legacy-count-row"><span>{Array.from({ length:challenge.first }, () => challenge.item).join(" ")}</span>{challenge.second > 0 && <><b>+</b><span>{Array.from({ length:challenge.second }, () => challenge.item).join(" ")}</span></>}</div><div className="legacy-options">{challenge.options.map(option => <button disabled={locked} key={option} onClick={() => advance(option === challenge.answer)}>{option}</button>)}</div></div>}

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { auth, loadUserState, onAuthStateChanged, saveUserState } from '@/lib/firebase';
-import { getAvatarGiftOptions } from '@/lib/email-verification';
+import { getAvatarGiftOptions, generateVerificationCode, isVerificationExpired } from '@/lib/email-verification';
 
 const giftOptions = getAvatarGiftOptions();
 
@@ -52,10 +52,12 @@ export default function EmailVerificationPage() {
     setInfo('');
 
     try {
+      const verificationCode = generateVerificationCode();
+      await saveUserState(userUid, { emailVerificationCode: verificationCode, emailVerificationSentAt: Date.now(), emailVerified: false });
       const res = await fetch('/api/auth/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'send', uid: userUid, email, displayName }),
+        body: JSON.stringify({ action: 'send', email, displayName, code: verificationCode }),
       });
       const json = await res.json();
       if (!res.ok || !json.ok) throw new Error(json.error || 'Could not send the verification code.');
@@ -78,16 +80,14 @@ export default function EmailVerificationPage() {
     setInfo('');
 
     try {
-      const res = await fetch('/api/auth/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'verify', uid: userUid, code: code.trim() }),
-      });
-      const json = await res.json();
-      if (!res.ok || !json.ok) throw new Error(json.error || 'Verification failed.');
+      const profile = await loadUserState(userUid);
+      if (!profile?.emailVerificationCode) throw new Error('No verification code is active. Please request a new one.');
+      if (isVerificationExpired(profile.emailVerificationSentAt as string | number | undefined)) throw new Error('Your verification code expired. Please request a new one.');
+      if (profile.emailVerificationCode !== code.trim()) throw new Error('Incorrect verification code.');
+      await saveUserState(userUid, { emailVerified: true, emailVerificationCode: '', emailVerificationSentAt: Date.now() });
 
       setInfo('Email verified successfully!');
-      if (json.needsGiftSelection) {
+      if (!profile.welcomeGiftClaimed) {
         setGiftMode(true);
       } else {
         router.replace('/hub');
@@ -106,15 +106,9 @@ export default function EmailVerificationPage() {
     setInfo('');
 
     try {
-      const res = await fetch('/api/auth/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'claim-gift', uid: userUid, giftId: selectedGift }),
-      });
-      const json = await res.json();
-      if (!res.ok || !json.ok) throw new Error(json.error || 'Unable to claim your gift.');
-
-      await saveUserState(userUid, { avatar: json.avatar, welcomeGiftClaimed: true, welcomeGiftId: selectedGift });
+      const gift = giftOptions.find(option => option.id === selectedGift);
+      if (!gift) throw new Error('That avatar is not available.');
+      await saveUserState(userUid, { avatar: gift.emoji, ownedItems: [selectedGift], welcomeGiftClaimed: true, welcomeGiftId: selectedGift });
       if (auth?.currentUser) {
         auth.currentUser.reload().catch(() => undefined);
       }

@@ -65,6 +65,7 @@ export default function GameShell({
   const [paused, setPaused] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [soundOn, setSoundOn] = useState(true);
+  const [showExitNotice, setShowExitNotice] = useState(false);
   const shellRef = useRef<HTMLDivElement>(null);
 
   const emit = useCallback((event: GameSessionEvent) => {
@@ -133,12 +134,7 @@ export default function GameShell({
     }
   }, []);
 
-  const accuracy = completion ? Math.min(100, Math.max(0, completion.accuracy)) : 0;
-  const completionStats: GameStat[] = completion ? [
-    { label: 'Score', value: completion.score, icon: '🏆' },
-    { label: 'Accuracy', value: `${accuracy}%`, icon: '🎯' },
-  ] : [];
-  const topBarStats = [...(stats ?? []), ...completionStats];
+  const topBarStats = stats ?? [];
 
   return (
     <div
@@ -208,10 +204,7 @@ export default function GameShell({
                     <button
                       type="button"
                       className="game-shell-header-action"
-                      onClick={() => {
-                        const shouldExit = window.confirm('Leave this game and return to the games list?');
-                        if (shouldExit) window.location.assign('/games');
-                      }}
+                      onClick={() => setShowExitNotice(true)}
                     >
                       Exit
                     </button>
@@ -243,16 +236,16 @@ export default function GameShell({
                 </div>
               </section>
             )}
-            {completion && (
-              <section className="game-shell-overlay game-shell-completion" role="dialog" aria-modal="true" aria-labelledby="game-complete-title">
+            {showExitNotice && (
+              <section className="game-shell-overlay game-shell-exit-notice" role="dialog" aria-modal="true" aria-labelledby="game-exit-title">
                 <div className="game-shell-overlay-card">
-                  <span aria-hidden="true" className="game-shell-overlay-icon">🏆</span>
-                  <h2 id="game-complete-title">Round complete — {title}</h2>
-                  <div className="game-shell-result-grid">
-                    <span><b>{completion.score}</b>Score</span><span><b>{accuracy}%</b>Accuracy</span>
-                    <span><b>+{Math.round(accuracy / 2)}</b>XP</span><span><b>+{Math.round(accuracy / 10)}</b>Coins</span>
+                  <span aria-hidden="true" className="game-shell-overlay-icon">🚪</span>
+                  <h2 id="game-exit-title">Leave this game?</h2>
+                  <p>Your current round will end and you will return to the games list.</p>
+                  <div className="game-shell-overlay-actions">
+                    <button type="button" className="game-shell-primary-action" onClick={() => window.location.assign('/games')}>Leave game</button>
+                    <button type="button" className="game-shell-secondary-action" onClick={() => setShowExitNotice(false)}>Keep playing</button>
                   </div>
-                  <button type="button" className="game-shell-primary-action" onClick={onContinue}>Play again</button>
                 </div>
               </section>
             )}

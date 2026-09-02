@@ -13,11 +13,13 @@ import { preloadGame } from '@/games/catalog.components';
 interface GameCardProps {
   gameId: string;
   onClick: (gameId: string) => void;
+  comingSoon?: boolean;
 }
 
 export default function GameCard({
   gameId,
   onClick,
+  comingSoon = false,
 }: GameCardProps) {
   const cover = GAME_COVERS[gameId];
   const tag = GAME_TAGS[gameId];
@@ -52,6 +54,8 @@ export default function GameCard({
       <h3 className="card-name">
         {GAME_NAMES[gameId] ?? gameId}
       </h3>
+
+      {comingSoon && <span className="game-card-coming-soon">Coming soon</span>}
 
       <div className="card-footer">
         {tag && <span className={`card-tag ${tag.color}`}>{tag.label}</span>}

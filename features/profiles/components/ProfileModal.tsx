@@ -113,7 +113,7 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: '2.6rem',
           }}>
-            {avatar}
+            {avatar.startsWith('/') ? <img src={avatar} alt="Selected avatar" style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : avatar}
           </div>
           <span style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>Pick an avatar below</span>
         </div>
@@ -180,7 +180,7 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
                 aria-label={`Avatar: ${e}`}
                 aria-pressed={e === avatar}
               >
-                {e}
+                {e.startsWith('/') ? <img src={e} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : e}
               </button>
             ))}
           </div>

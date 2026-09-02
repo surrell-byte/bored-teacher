@@ -16,6 +16,7 @@ const NAV_ITEMS = [
   { href: '/leaderboard', label: 'Leaderboard', icon: '🏆' },
   { href: '/multiplayer', label: 'Multiplayer', icon: '🕹️' },
   { href: '/resources',   label: 'Resources',   icon: '📚' },
+  { href: '/shop',        label: 'Shop',        icon: '🛍️' },
   { href: '/blog',        label: 'Blog',        icon: '✍️' },
   { href: '/about',       label: 'About',        icon: 'ℹ️' },
   { href: '/trophy',      label: 'Trophy Room', icon: '⭐' },
@@ -155,7 +156,7 @@ export default function Navbar() {
               type="button"
             >
               <span className="player-chip-top">
-                <span className="player-chip-avatar">{state.avatar}</span>
+                <span className="player-chip-avatar">{state.avatar.startsWith('/') ? <img src={state.avatar} alt="" /> : state.avatar}</span>
                 <span className="player-chip-info">
                   <span className="player-chip-name">{state.name}</span>
                   <span className="player-chip-level">Level {state.level}</span>

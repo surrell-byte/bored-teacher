@@ -4,7 +4,7 @@
 import { useState, useEffect, FormEvent, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
-  signIn, signUp, resetPasswordByUsername, onAuthStateChanged, loadUserState,
+  signIn, signUp, resetPasswordByUsername, onAuthStateChanged, saveUserState,
 } from '@/lib/firebase';
 
 type Tab = 'login' | 'register';
@@ -29,11 +29,6 @@ function AuthPageInner() {
     if (localStorage.getItem('guestUser') === 'true') { router.replace('/hub'); return; }
     const unsub = onAuthStateChanged(async (user) => {
       if (user) {
-        const profile = await loadUserState(user.uid);
-        if (profile && profile.emailVerified === false) {
-          router.replace('/auth/verify');
-          return;
-        }
         router.replace('/hub');
         return;
       }
@@ -64,14 +59,21 @@ function AuthPageInner() {
       if (role !== 'student' && role !== 'teacher') { setError('Please choose Student or Teacher.'); setLoading(false); return; }
 
       const user = await signUp(email.trim(), password, name.trim(), role);
+      const verificationCode = String(Math.floor(100000 + Math.random() * 900000));
+      await saveUserState(user.uid, {
+        email: user.email || email.trim().toLowerCase(),
+        emailVerificationCode: verificationCode,
+        emailVerificationSentAt: Date.now(),
+        emailVerified: false,
+      });
       const sendRes = await fetch('/api/auth/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'send',
-          uid: user.uid,
           email: user.email || email.trim(),
           displayName: name.trim(),
+          code: verificationCode,
         }),
       });
       const sendJson = await sendRes.json().catch(() => ({ ok: false, error: 'Unable to send your verification email.' }));

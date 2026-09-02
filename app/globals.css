@@ -1369,6 +1369,8 @@ a { color: inherit; }
   pointer-events: auto;
 }
 
+.toast-container { left: 50% !important; right: auto !important; transform: translateX(-50%) !important; }
+
 /* ══════════════════════════════════════════════════════════════
    MODAL
 ══════════════════════════════════════════════════════════════ */
@@ -4206,6 +4208,13 @@ a { color: inherit; }
 .game-shell-overlay-icon, .game-shell-error-icon { display: block; margin-bottom: 10px; font-size: 2.5rem; }
 .game-shell-overlay-card h2, .game-shell-error h2 { margin: 0 0 8px; font-family: var(--font-display, Syne); }
 .game-shell-overlay-card p, .game-shell-error p { margin: 0; color: var(--muted); }
+.game-shell-overlay:not(.game-shell-completion) .game-shell-overlay-card { color: #f8fafc; background: #172033; border-color: #6b7da3; }
+.game-shell-overlay:not(.game-shell-completion) .game-shell-overlay-card h2 { color: #ffffff; }
+.game-shell-overlay:not(.game-shell-completion) .game-shell-overlay-card p { color: #d7deed; }
+.game-shell-overlay:not(.game-shell-completion) .game-shell-secondary-action { color: #f8fafc; border-color: #9aaaca; background: #263653; }
+.game-shell-exit-notice .game-shell-overlay-card { width: min(100%, 560px); padding: clamp(32px, 5vw, 52px); }
+.game-shell-exit-notice .game-shell-overlay-icon { font-size: 3.4rem; }
+.game-shell-exit-notice .game-shell-overlay-card h2 { font-size: clamp(1.6rem, 3vw, 2.2rem); }
 .game-shell-overlay-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
 .game-shell-primary-action, .game-shell-secondary-action { min-height: 42px; border-radius: 11px; padding: 8px 14px; font: inherit; font-weight: 800; cursor: pointer; }
 .game-shell-primary-action { border: 0; background: var(--gold); color: #1e1600; }
@@ -4226,6 +4235,18 @@ a { color: inherit; }
 .game-shell-result-grid span { display: grid; gap: 3px; padding: 10px; border-radius: 10px; background: var(--surface-soft); color: var(--muted); font-size: 0.78rem; }
 .game-shell-result-grid b { color: var(--text); font-size: 1.1rem; }
 .game-shell-error { position: relative; min-height: 280px; }
+.shop-items-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.shop-item { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+.shop-item-image-wrap { height: 180px; display: grid; place-items: center; border-radius: 16px; background: var(--surface-soft); overflow: hidden; }
+.shop-item-image { width: 100%; height: 100%; object-fit: contain; }
+.shop-item-copy { display: grid; gap: 8px; }
+.shop-item-copy h3, .shop-item-copy p { margin: 0; }
+.shop-item-copy p { min-height: 2.6em; color: var(--muted); }
+.shop-feedback { color: var(--gold); font-weight: 700; }
+.game-card-coming-soon { display: block; margin: 0 14px 8px; color: var(--gold); font-size: .7rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.player-chip-avatar img { width: 28px; height: 28px; display: block; object-fit: contain; }
+@media (max-width: 760px) { .shop-items-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .shop-hero { align-items: flex-start; flex-direction: column; } }
+@media (max-width: 480px) { .shop-items-grid { grid-template-columns: 1fr; } }
 @media (max-width: 640px) {
   .game-shell .game-layout-header { border-radius: 0; padding: 8px 10px; }
   .game-shell .game-header-default { align-items: flex-start; }

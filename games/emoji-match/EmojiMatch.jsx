@@ -9,7 +9,14 @@ import React, { useEffect, useRef } from 'react';
  * mount (it manipulates the DOM directly, exactly as it did in the static
  * HTML page). 
  */
-const EmojiMatch_HTML = `<div class="game-container">
+const EmojiMatch_HTML = `<div id="emojiLanding" class="emoji-landing">
+  <div class="emoji-landing-icon">😊</div>
+  <h1>Emoji Match</h1>
+  <p>Find every matching pair.</p>
+  <input id="emojiPlayerName" type="text" maxlength="20" placeholder="Your name..." autocomplete="off">
+  <button id="emojiStartButton" type="button">START GAME</button>
+</div>
+<div id="emojiGameContainer" class="game-container" style="display:none">
   <h2>🐣 EMOJI MATCH</h2>
   <div class="stats-panel">
     <span class="move-label">🎯 MOVES</span>
@@ -34,6 +41,8 @@ const EmojiMatch_CSS = `* {
       user-select: none;
     }
 
+    .emojimatch-root { min-height: 100%; width: 100%; }
+    .emojimatch-root { --ff-bg: #0d0d0f; --ff-surface: #141416; --ff-surface2: #1c1c20; --ff-accent: #e8c97a; --ff-green: #6fcf97; min-height: 100vh; background: radial-gradient(circle at 80% 0%, rgba(232,201,122,.12), transparent 34%), var(--ff-bg); color: #f0ede8; }
     body {
       background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
       min-height: 100vh;
@@ -46,15 +55,27 @@ const EmojiMatch_CSS = `* {
     }
 
     .game-container {
-      background: rgba(255, 255, 255, 0.08);
+      width: min(100%, 1180px);
+      min-height: calc(100vh - 40px);
+      background: var(--ff-surface);
       backdrop-filter: blur(2px);
-      border-radius: 48px;
+      border-radius: 28px;
       padding: 24px 20px 32px 20px;
       box-shadow: 0 25px 40px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.1);
       border: 1px solid rgba(255, 255, 255, 0.2);
       transition: all 0.2s;
       position: relative;
     }
+    .emojimatch-root .stats-panel { background: var(--ff-surface2); border-color: rgba(255,255,255,.12); }
+    .emojimatch-root .card { background: linear-gradient(135deg, #c4a45a, #e8c97a); border-color: rgba(232,201,122,.4); box-shadow: 0 12px 24px rgba(0,0,0,.35); }
+    .emojimatch-root .card.flipped { border-color: var(--ff-accent); }
+    .emojimatch-root .card.matched { background: linear-gradient(135deg, #6fcf97, #2e7d5e); border-color: #c6ffbc; }
+    .emoji-landing { min-height: 100%; display: grid; place-items: center; align-content: center; gap: 14px; padding: 48px 24px; text-align: center; color: #f8fafc; background: linear-gradient(145deg, #123c45, #0d1b2a); }
+    .emoji-landing-icon { font-size: clamp(4rem, 10vw, 7rem); }
+    .emoji-landing h1 { margin: 0; font-size: clamp(2.4rem, 6vw, 4.5rem); color: #ffcf5a; }
+    .emoji-landing p { color: #c7d9df; font-size: 1.2rem; }
+    .emoji-landing input { width: min(360px, 90vw); padding: 16px 20px; border: 2px solid #75cbd0; border-radius: 14px; background: #ffffff12; color: #fff; text-align: center; font-size: 1.1rem; }
+    .emoji-landing button { padding: 14px 28px; border: 0; border-radius: 14px; background: #ffca4f; color: #17212b; font-weight: 900; cursor: pointer; }
 
     h2 {
       text-align: center;
@@ -549,8 +570,12 @@ export default function EmojiMatch() {
     }
   });
   
-  // ---- Start the game on page load ----
-  initGame();
+  document.getElementById('emojiStartButton').addEventListener('click', () => {
+    if (!document.getElementById('emojiPlayerName').value.trim()) return;
+    document.getElementById('emojiLanding').style.display = 'none';
+    document.getElementById('emojiGameContainer').style.display = 'block';
+    initGame();
+  });
 })();`;
     container.appendChild(script);
 

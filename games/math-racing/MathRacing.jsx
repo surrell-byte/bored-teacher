@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from 'react';
 
-const TOTAL = 10;
+const TOTAL = 15;
+const AVATARS = ['🏎️', '🚀', '🦄', '🐉', '🐙', '🦊', '🐸', '🦖', '🐝', '👽', '🤖', '🐳'];
 
 function randomBetween(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -38,6 +39,7 @@ function makeQuestion(round) {
 }
 
 export default function MathRacing({ onComplete }) {
+  const [avatar, setAvatar] = useState('🚀');
   const [playerProgress, setPlayerProgress] = useState(0);
   const [cpuProgress, setCpuProgress] = useState(0);
   const [round, setRound] = useState(1);
@@ -127,18 +129,21 @@ export default function MathRacing({ onComplete }) {
           <div className="math-racing-scoreitem">⭐ <span>{score}</span></div>
           <div className="math-racing-scoreitem">❓ Q: <span>{Math.min(round, TOTAL)}</span>/<span>{TOTAL}</span></div>
         </div>
+        <div className="math-racing-avatar-picker" aria-label="Choose your racer">
+          {AVATARS.map((item) => <button type="button" key={item} className={avatar === item ? 'selected' : ''} onClick={() => setAvatar(item)}>{item}</button>)}
+        </div>
 
         <div className="math-racing-track-area">
           <div className="math-racing-track">
-            <div className="math-racing-track-label">🧒 You</div>
-            <div className="math-racing-car">🏎️</div>
+            <div className="math-racing-track-label">{avatar} You</div>
+            <div className="math-racing-car">{avatar}</div>
             <div className="math-racing-progress-bar"><div className="math-racing-progress-fill player" style={{ width: playerWidth }} /></div>
             <div className="math-racing-finish-flag">🏁</div>
           </div>
 
           <div className="math-racing-track">
             <div className="math-racing-track-label">🤖 CPU</div>
-            <div className="math-racing-car">🚗</div>
+            <div className="math-racing-car">🤖</div>
             <div className="math-racing-progress-bar"><div className="math-racing-progress-fill cpu" style={{ width: cpuWidth }} /></div>
             <div className="math-racing-finish-flag">🏁</div>
           </div>
@@ -206,6 +211,9 @@ const STYLES = `
   font-family: 'Fredoka One', 'Trebuchet MS', sans-serif;
   font-size: 1.2rem;
 }
+.math-racing-avatar-picker { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; margin: 2px 0 8px; }
+.math-racing-avatar-picker button { border: 1px solid #ffffff22; border-radius: 9px; padding: 4px 7px; background: #ffffff0c; cursor: pointer; font-size: 1.2rem; }
+.math-racing-avatar-picker button.selected { border-color: #ffe66d; background: #ffe66d22; transform: translateY(-2px); }
 .math-racing-track-area {
   width: 100%;
   max-width: 700px;

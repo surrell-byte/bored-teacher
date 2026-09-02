@@ -1,14 +1,14 @@
 /* Alphabet Hunt Game Styles */
 .alphabet-hunt {
-  --ink: #1b1b1f;
-  --paper: #eee8da;
-  --panel: #fffaf0;
+  --ink: var(--ah-ink, #1b1b1f);
+  --paper: var(--ah-paper, #eee8da);
+  --panel: var(--ah-panel, #fffaf0);
   --line: #1b1b1f;
-  --p1: #2f6f4f;
+  --p1: var(--ah-p1, #2f6f4f);
   --p1-soft: #dcebe1;
-  --p2: #5b3ea8;
+  --p2: var(--ah-p2, #5b3ea8);
   --p2-soft: #e6ddf6;
-  --gold: #c98a2c;
+  --gold: var(--ah-gold, #c98a2c);
 }
 
 .alphabet-hunt {
@@ -42,6 +42,9 @@
   box-shadow: 6px 6px 0 var(--ink);
   padding: 36px;
 }
+
+.ah-game-screen { align-items: flex-start; padding: 20px clamp(12px, 3vw, 48px); }
+.ah-game-screen .ah-card { max-width: 1120px; }
 
 .alphabet-hunt h1 {
   font-family: 'Trebuchet MS', 'Futura', sans-serif;
@@ -365,10 +368,17 @@
 /* Grid */
 .ah-grid {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(10, 1fr);
   gap: 9px;
   margin-bottom: 8px;
 }
+
+.ah-grid .ah-tile:nth-child(11) { grid-column: 2 / 3; }
+.ah-grid .ah-tile:nth-child(20) { grid-column: 3 / 4; }
+
+.ah-tile-back { padding: 4px; text-align: center; font-size: clamp(.72rem, 1.7vw, 1.1rem); }
+.ah-mode-toggle { display: block; margin: 0 0 20px; font-family: 'Trebuchet MS', sans-serif; font-weight: 700; }
+.ah-mode-toggle input { margin-right: 8px; accent-color: var(--gold); }
 
 .ah-tile {
   appearance: none;
@@ -475,7 +485,7 @@
 /* Game stats */
 .ah-game-stats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr) auto;
+  grid-template-columns: repeat(4, 1fr) auto;
   gap: 8px;
   align-items: center;
   margin-top: 14px;
@@ -671,7 +681,7 @@
   }
 
   .ah-grid {
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(10, 1fr);
     gap: 6px;
   }
 

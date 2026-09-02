@@ -7,6 +7,7 @@ import Navbar from './Navbar';
 import Toast from './ui/Toast';
 import AchievementToast from '@/features/achievements/components/AchievementToast';
 import { GameContext } from '@/providers/GameProvider';
+import { useEffect, useState } from 'react';
 
 const NO_SHELL_PATHS = ['/', '/auth'];
 
@@ -19,6 +20,13 @@ export default function AppShell({ children }: { children: ReactNode }) {
   const gameContext = useContext(GameContext);
   const pendingAchievement = gameContext?.pendingAchievement ?? null;
   const clearPendingAchievement = gameContext?.clearPendingAchievement ?? (() => {});
+  const [reward, setReward] = useState<any>(null);
+
+  useEffect(() => {
+    const handleReward = (event: Event) => setReward((event as CustomEvent).detail);
+    window.addEventListener('esl-game-reward', handleReward);
+    return () => window.removeEventListener('esl-game-reward', handleReward);
+  }, []);
 
   return (
     <div className={`app-shell-wrap${showShell ? '' : ' no-shell'}`}>
@@ -44,6 +52,17 @@ export default function AppShell({ children }: { children: ReactNode }) {
           description={pendingAchievement.description}
           color={pendingAchievement.color}
           onDone={clearPendingAchievement}
+        />
+      )}
+      {reward && !pendingAchievement && (
+        <AchievementToast
+          key={reward.id}
+          className={isGameRoute ? 'achievement-toast--game' : undefined}
+          icon={reward.icon}
+          title={reward.title}
+          description={reward.description}
+          color={reward.color}
+          onDone={() => setReward(null)}
         />
       )}
     </div>
