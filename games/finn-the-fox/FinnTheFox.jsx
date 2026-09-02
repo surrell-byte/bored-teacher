@@ -15,7 +15,7 @@ const QUIZ = [
   ['What did Finn find in the meadow?', ['A golden key', 'A lost firefly', 'A magic wand', 'A treasure chest'], 1],
   ['How did Finn feel at the end?', ['Sad and lonely', 'Angry and tired', 'Warm and happy', 'Scared and lost'], 2],
 ];
-const BLANKS = [['Whispering', 'woods'], ['Finn', 'fox'], ['shimmering', 'glow'], ['meadow', 'field'], ['firefly', 'insect'], ['family', 'loved ones'], ['warm', 'feeling']];
+const BLANKS = [['Whispering', 'woods'], ['Finn', 'fox'], ['shimmering', 'glow'], ['meadow', 'field']];
 const LEVELS = [
   { number: 1, name: 'The Starry Meadow', description: 'Read the first rescue story and find Luna.' },
   { number: 2, name: 'The Lost Duckling', description: 'Follow clues and answer what happened next.' },
@@ -33,6 +33,8 @@ export default function FinnTheFox({ onComplete }) {
   const [selectedBlank, setSelectedBlank] = useState(null);
   const [filled, setFilled] = useState({});
   const [mistakes, setMistakes] = useState(0);
+  const [retellError, setRetellError] = useState(false);
+  const [revealed, setRevealed] = useState(false);
   const [soundOn, setSoundOn] = useState(true);
   const quizScore = quizAnswers.filter((answer, index) => answer === QUIZ[index]?.[2]).length;
   const retellScore = Object.keys(filled).length;
@@ -40,7 +42,7 @@ export default function FinnTheFox({ onComplete }) {
   const words = useMemo(() => [...BLANKS.map(([word]) => word), 'lonely', 'dark', 'ocean', 'rabbit'].sort(() => Math.random() - .5), [phase]);
   const completionScore = Math.round(((quizScore + retellScore) / (QUIZ.length + BLANKS.length)) * 100);
 
-  function start(nextLevel = level) { setLevel(nextLevel); setPhase('story'); setPage(0); }
+  function start(nextLevel = level) { setLevel(nextLevel); setPhase('story'); setPage(0); setQuizIndex(0); setQuizAnswers([]); setSelectedBlank(null); setFilled({}); setMistakes(0); setRetellError(false); setRevealed(false); }
   function answerQuiz(index) {
     if (quizAnswers[quizIndex] !== undefined) return;
     setQuizAnswers(answers => [...answers, index]);
@@ -48,17 +50,22 @@ export default function FinnTheFox({ onComplete }) {
   function placeWord(word) {
     if (selectedBlank === null || filled[selectedBlank]) return;
     if (word.toLowerCase() === BLANKS[selectedBlank][0].toLowerCase()) setFilled(value => ({ ...value, [selectedBlank]: word }));
-    else setMistakes(value => value + 1);
+    else {
+      setMistakes(value => value + 1);
+      setRetellError(true);
+      window.setTimeout(() => setRetellError(false), 700);
+      if (mistakes + 1 >= 3) setRevealed(true);
+    }
     setSelectedBlank(null);
   }
-  function finish() { setPhase('results'); onComplete?.(completionScore, completionScore); }
-  function restart() { setPhase('menu'); setPage(0); setQuizIndex(0); setQuizAnswers([]); setSelectedBlank(null); setFilled({}); setMistakes(0); }
+  function finish() { if (revealed) return; setPhase('results'); onComplete?.(completionScore, completionScore); }
+  function restart() { start(level); }
 
   return <div className="finn-fox"><style>{CSS}</style><style>{`.finn-fox main{max-width:1100px;padding:clamp(28px,5vw,64px)}.ff-progress{max-width:1100px}.ff-story-layout{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);align-items:center;gap:clamp(24px,4vw,52px);min-height:520px}.ff-story-layout .ff-story-illustration{width:100%;height:auto;min-height:360px;object-fit:cover}.ff-story-layout .ff-story{margin-top:0;padding:clamp(26px,4vw,42px)}.ff-story-layout .ff-story p{font-size:clamp(1.15rem,2vw,1.55rem);line-height:1.75}.ff-level-menu{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-top:24px}.ff-level{display:flex;min-height:132px;flex-direction:column;justify-content:center;gap:7px;padding:18px;text-align:left;border:2px solid #ffb27e;border-radius:16px;background:#fff;color:#2e2013;cursor:pointer}.ff-level:hover{border-color:#d4531c;transform:translateY(-2px)}.ff-level strong{display:block;color:#d4531c;font-size:1.05rem}.ff-level span{display:block;font-size:1.05rem;font-weight:700;line-height:1.2}.ff-level small{display:block;color:#7a6a58;font-size:.78rem;line-height:1.45}@media(max-width:700px){.finn-fox main{padding:24px 18px}.ff-story-layout{grid-template-columns:1fr;gap:20px;min-height:0}.ff-story-layout .ff-story-illustration{min-height:0}.ff-story-layout .ff-story{padding:22px}.ff-story-layout .ff-story p{font-size:1.15rem}}`}</style><div className="ff-progress"><i style={{ width: `${phase === 'menu' ? 0 : phase === 'story' ? ((page + 1) / PAGES.length) * 33 : phase === 'quiz' ? 50 : phase === 'retell' ? 75 : 100}%` }} /></div><main>
     {phase === 'menu' && <section className="ff-welcome"><div>🦊</div><h1>Reading Rescue</h1><h2>Finn's comprehension adventure</h2><p>Rescue captured animals by reading carefully, answering comprehension questions, and rebuilding their story.</p><div className="ff-level-menu">{LEVELS.map(item => <button className="ff-level" key={item.number} onClick={() => start(item.number)}><strong>Level {item.number}</strong><span>{item.name}</span><small>{item.description}</small></button>)}</div></section>}
-    {phase === 'story' && <section className="ff-story-layout"><img className="ff-scene ff-story-illustration" src={`/finn-${page + 1}.webp`} alt={`Finn story page ${page + 1}`} /><div><article className="ff-story"><small>Page {page + 1} - {PAGES[page][0]}</small><p>{PAGES[page][1]}</p></article><div className="ff-actions"><button className="ff-secondary" disabled={!page} onClick={() => setPage(value => value - 1)}>⬅ Previous</button><button className="ff-primary" onClick={() => page < PAGES.length - 1 ? setPage(value => value + 1) : setPhase('quiz')}>{page < PAGES.length - 1 ? 'Next ➡' : '✅ Take the Quiz'}</button></div></div></section>}
+    {phase === 'story' && <section className="ff-story-layout"><img className="ff-scene ff-story-illustration" src={`/assets/games/finn-the-fox/finn-${page + 1}.png`} alt={`Finn story page ${page + 1}`} /><div><article className="ff-story"><small>Page {page + 1} - {PAGES[page][0]}</small><p>{PAGES[page][1]}</p></article><div className="ff-actions"><button className="ff-secondary" disabled={!page} onClick={() => setPage(value => value - 1)}>⬅ Previous</button><button className="ff-primary" onClick={() => page < PAGES.length - 1 ? setPage(value => value + 1) : setPhase('quiz')}>{page < PAGES.length - 1 ? 'Next ➡' : '✅ Take the Quiz'}</button></div></div></section>}
     {phase === 'quiz' && <section className="ff-card"><img className="ff-quiz-image" src={`/finn-${quizIndex + 1}.webp`} alt="Finn story scene" /><h2>{QUIZ[quizIndex][0]}</h2><div className="ff-options">{QUIZ[quizIndex][1].map((option, index) => <button key={option} disabled={quizAnswers[quizIndex] !== undefined} className={quizAnswers[quizIndex] === index ? index === QUIZ[quizIndex][2] ? 'correct' : 'wrong' : ''} onClick={() => answerQuiz(index)}>{option}</button>)}</div>{quizAnswers[quizIndex] !== undefined && <button className="ff-primary" onClick={() => quizIndex < QUIZ.length - 1 ? setQuizIndex(value => value + 1) : setPhase('retell')}>{quizIndex < QUIZ.length - 1 ? 'Next Question ➡' : 'Continue to Retelling ✍️'}</button>}</section>}
-    {phase === 'retell' && <section className="ff-card"><div className="ff-icon">✍️</div><p>Click a blank, then click its matching word.</p><p className="ff-retell">Deep in the <button onClick={() => setSelectedBlank(0)}>{filled[0] || '_____'} </button> Woods lived <button onClick={() => setSelectedBlank(1)}>{filled[1] || '_____'} </button>. He followed a <button onClick={() => setSelectedBlank(2)}>{filled[2] || '_____'} </button> glow to a beautiful <button onClick={() => setSelectedBlank(3)}>{filled[3] || '_____'} </button>.</p><div className="ff-word-bank">{words.filter(word => !Object.values(filled).includes(word)).map(word => <button key={word} onClick={() => placeWord(word)}>{word}</button>)}</div><button className="ff-primary" disabled={Object.keys(filled).length < 4} onClick={finish}>✅ Check My Story</button><small>{mistakes ? `${mistakes} mistake${mistakes > 1 ? 's' : ''}` : 'Keep going!'}</small></section>}
+    {phase === 'retell' && <section className={`ff-retell-layout${retellError ? ' ff-retell-error' : ''}`}><div className="ff-retell-copy"><div className="ff-icon">✍️</div><p>Click a blank, then click its matching word.</p><p className="ff-retell">Deep in the <button onClick={() => !revealed && setSelectedBlank(0)}>{filled[0] || (revealed ? BLANKS[0][0] : '_____')} </button> Woods lived <button onClick={() => !revealed && setSelectedBlank(1)}>{filled[1] || (revealed ? BLANKS[1][0] : '_____')} </button>. He followed a <button onClick={() => !revealed && setSelectedBlank(2)}>{filled[2] || (revealed ? BLANKS[2][0] : '_____')} </button> glow to a beautiful <button onClick={() => !revealed && setSelectedBlank(3)}>{filled[3] || (revealed ? BLANKS[3][0] : '_____')} </button>.</p>{!revealed && <div className="ff-word-bank">{words.filter(word => !Object.values(filled).includes(word)).map(word => <button key={word} onClick={() => placeWord(word)}>{word}</button>)}</div>}{revealed ? <><strong className="ff-game-over">The answers are revealed. Game over.</strong><button className="ff-primary" onClick={restart}>↩ Restart from checkpoint</button></> : <button className="ff-primary" disabled={Object.keys(filled).length < 4} onClick={finish}>✅ Check My Story</button>}<small>{mistakes ? `${mistakes}/3 mistakes — ${3 - mistakes} ${3 - mistakes === 1 ? 'try' : 'tries'} left` : 'Keep going!'}</small></div><img className="ff-retell-image" src="/finn-3.webp" alt="Finn in the starry meadow" /></section>}
     {phase === 'results' && <section className="ff-welcome"><div>🦊</div><h1>Adventure Complete!</h1><div className="ff-stars">{'⭐'.repeat(Math.max(1, Math.ceil(completionScore / 20)))}</div><p>You scored {completionScore}% overall comprehension.</p><button className="ff-primary" onClick={restart}>🔄 Play Again</button></section>}
   </main></div>;
 }

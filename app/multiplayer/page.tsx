@@ -12,6 +12,8 @@ export default function MultiplayerPage() {
   const [user, setUser] = useState<{ uid: string; name: string; role: LeagueRole } | null>(null);
   const [lobbies, setLobbies] = useState<any[]>([]);
   const [joinCode, setJoinCode] = useState('');
+  const [selectedGame, setSelectedGame] = useState('tictacroll');
+  const games = [{ id: 'tictacroll', name: 'Tic Tac Roll' }, { id: 'connect4', name: 'Connect 4' }];
 
   useEffect(() => {
     const unsub = onAuthStateChanged(async (currentUser) => {
@@ -42,7 +44,8 @@ export default function MultiplayerPage() {
 
   async function handleCreateLobby() {
     if (!user) return;
-    const lobby = await createLobby({ ownerId: user.uid, ownerName: user.name, role: user.role });
+    const game = games.find((item) => item.id === selectedGame) || games[0];
+    const lobby = await createLobby({ ownerId: user.uid, ownerName: user.name, role: user.role, gameId: game.id, gameName: game.name });
     await refresh();
     setJoinCode(lobby.id);
   }
@@ -66,6 +69,9 @@ export default function MultiplayerPage() {
 
       <div className="shell-card" style={{ padding: 20, marginBottom: 20 }}>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+          <select className="lb-input" value={selectedGame} onChange={(event) => setSelectedGame(event.target.value)} aria-label="Choose a multiplayer game">
+            {games.map((game) => <option key={game.id} value={game.id}>{game.name}</option>)}
+          </select>
           <button className="pill-btn active" onClick={handleCreateLobby}>Create lobby</button>
           <input
             className="lb-input"
@@ -84,6 +90,7 @@ export default function MultiplayerPage() {
               <div>
                 <p className="suggestions-kicker">Lobby</p>
                 <h3 style={{ margin: '8px 0 0' }}>{lobby.ownerName}'s room</h3>
+                <span style={{ color: 'var(--muted)', fontSize: '.9rem' }}>{lobby.gameName}</span>
               </div>
               <strong className="teacher-class-code" style={{ padding: '6px 8px', letterSpacing: '.08em' }}>{lobby.id}</strong>
             </div>

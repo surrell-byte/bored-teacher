@@ -47,6 +47,8 @@ export interface LobbyRecord {
   id: string;
   ownerId: string;
   ownerName: string;
+  gameId: string;
+  gameName: string;
   players: Array<{ id: string; name: string; role: LeagueRole }>;
   matches: LobbyResult[];
   createdAt: string;
@@ -126,6 +128,8 @@ function normalizeLobby(raw: Record<string, unknown>, id: string): LobbyRecord {
     id,
     ownerId: String(raw.ownerId ?? ''),
     ownerName: String(raw.ownerName ?? 'Owner'),
+    gameId: String(raw.gameId ?? 'tictacroll'),
+    gameName: String(raw.gameName ?? 'Tic Tac Roll'),
     players,
     matches,
     createdAt: mapTimestamp(raw.createdAt, new Date().toISOString()),
@@ -366,6 +370,8 @@ export async function saveLobbies(lobbies: LobbyRecord[]) {
           id: lobby.id,
           ownerId: lobby.ownerId,
           ownerName: lobby.ownerName,
+          gameId: lobby.gameId,
+          gameName: lobby.gameName,
           players: lobby.players,
           matches: lobby.matches,
           createdAt: serverTimestamp(),
@@ -377,11 +383,13 @@ export async function saveLobbies(lobbies: LobbyRecord[]) {
   }
 }
 
-export async function createLobby(input: { ownerId: string; ownerName: string; role: LeagueRole }) {
+export async function createLobby(input: { ownerId: string; ownerName: string; role: LeagueRole; gameId?: string; gameName?: string }) {
   const lobby: LobbyRecord = {
     id: `${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
     ownerId: input.ownerId,
     ownerName: input.ownerName,
+    gameId: input.gameId || 'tictacroll',
+    gameName: input.gameName || 'Tic Tac Roll',
     players: [{ id: input.ownerId, name: input.ownerName, role: input.role }],
     matches: [],
     createdAt: new Date().toISOString(),

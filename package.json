@@ -9,7 +9,8 @@
     "start": "next start",
     "lint": "next lint",
     "check-css": "node scripts/check-orphaned-classes.js",
-    "check-games": "node scripts/check-games.js"
+    "check-games": "node scripts/check-games.js",
+    "optimize-images": "node scripts/optimize-images.mjs"
   },
   "dependencies": {
     "@types/nodemailer": "^8.0.1",
@@ -30,6 +31,7 @@
     "eslint-config-next": "14.2.5",
     "eslint-plugin-import": "^2.32.0",
     "firebase-tools": "^15.28.2",
+    "sharp": "^0.35.4",
     "typescript": "^5"
   }
 }

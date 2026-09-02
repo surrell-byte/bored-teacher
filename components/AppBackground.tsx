@@ -17,7 +17,7 @@ const BACKGROUNDS: Record<string, { src: string; position: string }> = {
   trophy:       { src: '/assets/images/trophy-room-bg-desktop.webp', position: 'center' },
   shop:         { src: '/assets/images/shop-bg-desktop.webp',     position: 'center' },
   resources:    { src: '/assets/images/resources-bg-desktop.webp', position: 'center' },
-  blog:         { src: '/assets/images/blog-bg.webp',             position: 'center' },
+  blog:         { src: '/assets/images/plain-bg.png',             position: 'center' },
   subscription: { src: '/assets/images/subscription-bg.webp',    position: 'center' },
 };
 

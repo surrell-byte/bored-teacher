@@ -218,6 +218,15 @@ export default function LeaderboardPage() {
         </div>
       </section>}
 
+      <Link href="/leagues" className="lb-league-feature" style={{ textDecoration: 'none' }}>
+        <div>
+          <p className="suggestions-kicker">🏅 Community challenge</p>
+          <h2>Compete in a league</h2>
+          <p>Join a daily, weekly, or monthly challenge and see how your class ranks against the community.</p>
+        </div>
+        <span className="pill-btn active">View leagues →</span>
+      </Link>
+
       <section className="weekly-awards-section">
         <div className="lb-section-heading"><div><p className="suggestions-kicker">Celebrate progress</p><h2>Weekly awards</h2></div><span>Teacher-assigned recognition</span></div>
         <div className="weekly-awards-grid">

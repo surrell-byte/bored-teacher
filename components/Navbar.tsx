@@ -14,7 +14,6 @@ const NAV_ITEMS = [
   { href: '/hub',         label: 'Dashboard',   icon: '🏠' },
   { href: '/games',       label: 'Games',       icon: '🎮' },
   { href: '/leaderboard', label: 'Leaderboard', icon: '🏆' },
-  { href: '/leagues',     label: 'Leagues',     icon: '🏅' },
   { href: '/multiplayer', label: 'Multiplayer', icon: '🕹️' },
   { href: '/resources',   label: 'Resources',   icon: '📚' },
   { href: '/blog',        label: 'Blog',        icon: '✍️' },
@@ -103,7 +102,8 @@ export default function Navbar() {
               style={{ textDecoration: 'none' }}
               aria-current={isActive(item.href) ? 'page' : undefined}
             >
-              {item.icon} {item.label}
+              <span className="nav-icon" aria-hidden="true">{item.icon}</span>
+              <span>{item.label}</span>
               {item.href === '/trophy' && earnedAchievementIds.size > 0 && (
                 <span className="nav-achievement-count">{earnedAchievementIds.size}</span>
               )}

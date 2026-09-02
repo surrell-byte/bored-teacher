@@ -93,7 +93,7 @@ export default function MultiplayerRoomPage() {
         </div>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 12 }}>
           <Link href="/multiplayer" className="pill-btn" style={{ textDecoration: 'none' }}>← Back to lobby list</Link>
-          <Link href="/games/tictacroll" className="pill-btn active" style={{ textDecoration: 'none' }}>Launch Tic Tac Roll</Link>
+          <Link href={`/games/${lobby.gameId}`} className="pill-btn active" style={{ textDecoration: 'none' }}>Launch {lobby.gameName}</Link>
           {isOwner && (
             <button className="pill-btn" type="button" onClick={handleClose}>Close room</button>
           )}

@@ -205,7 +205,16 @@ export default function GameShell({
                     <button type="button" className="game-shell-header-action" onClick={onMainMenu}>Main menu</button>
                   )}
                   {!hideExitControl && (
-                    <Link className="game-shell-header-action" href={`/games/${gameId}`}>Exit</Link>
+                    <button
+                      type="button"
+                      className="game-shell-header-action"
+                      onClick={() => {
+                        const shouldExit = window.confirm('Leave this game and return to the games list?');
+                        if (shouldExit) window.location.assign('/games');
+                      }}
+                    >
+                      Exit
+                    </button>
                   )}
                 </>
               }

@@ -17,15 +17,41 @@ self.addEventListener('fetch', event => {
   const isPublicAsset = url.pathname.startsWith('/assets/');
   if (!isNextStatic && !isPublicAsset) return;
 
+  let preferredRequest = request;
+  if (request.destination === 'image' && url.pathname.startsWith('/assets/') && !url.pathname.includes('/.optimized/')) {
+    const optimizedUrl = new URL(url);
+    const originalPath = optimizedUrl.pathname.replace(/^\/assets\//, '');
+    optimizedUrl.pathname = `/assets/.optimized/${originalPath}`;
+    optimizedUrl.search = '';
+
+    const optimizedRequest = new Request(optimizedUrl, {
+      method: 'GET',
+      headers: request.headers,
+      redirect: 'follow',
+    });
+
+    preferredRequest = optimizedRequest;
+  }
+
   event.respondWith(
     caches.open(CACHE_NAME).then(async cache => {
-      const cached = await cache.match(request);
-      const refresh = fetch(request).then(response => {
-        if (response.ok) cache.put(request, response.clone());
+      const cached = await cache.match(preferredRequest);
+      const refresh = fetch(preferredRequest).then(response => {
+        if (response.ok) cache.put(preferredRequest, response.clone());
         return response;
       }).catch(() => cached);
 
-      return cached || refresh;
+      if (cached) return cached;
+
+      if (request.destination === 'image' && url.pathname.startsWith('/assets/') && !url.pathname.includes('/.optimized/')) {
+        const fallback = await fetch(request).then(res => {
+          if (res.ok) cache.put(request, res.clone());
+          return res;
+        }).catch(() => cached);
+        return fallback;
+      }
+
+      return refresh;
     })
   );
 });
