@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { onAuthStateChanged } from '@/lib/firebase';
+import { isCreatorUser, onAuthStateChanged } from '@/lib/firebase';
 import { useGame } from '@/providers/GameProvider';
 import {
   GAME_KEYS, NEW_GAME_KEYS, GAME_NAMES, GAME_TAGS,
@@ -48,7 +48,7 @@ export default function GamesPage() {
     if (isGuest) { setReady(true); return; }
     const unsub = onAuthStateChanged(user => {
       if (!user) { router.replace('/auth'); return; }
-      setIsCreator(user.email?.trim().toLowerCase() === 'boredteacherapp@gmail.com');
+      setIsCreator(isCreatorUser(user));
       setReady(true);
     });
     return unsub;

@@ -9,6 +9,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import ProfileModal from '@/features/profiles/components/ProfileModal';
 import { useResponsive } from '@/hooks/useResponsive';
 import { isSoundEnabled, setSoundEnabled } from '@/lib/sound/beep';
+import { isCreatorUser, onAuthStateChanged } from '@/lib/firebase';
 
 const NAV_ITEMS = [
   { href: '/hub',         label: 'Dashboard',   icon: '🏠' },
@@ -31,6 +32,7 @@ export default function Navbar() {
   const [showDropdown, setShowDropdown] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [soundOn, setSoundOn] = useState(true);
+  const [creator, setCreator] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { isMobile, presentationMode, setPresentationMode } = useResponsive();
 
@@ -62,6 +64,8 @@ export default function Navbar() {
   useEffect(() => {
     setSoundOn(isSoundEnabled());
   }, []);
+
+  useEffect(() => onAuthStateChanged(user => setCreator(isCreatorUser(user))), []);
 
   useEffect(() => {
     setSoundEnabled(soundOn);
@@ -110,6 +114,12 @@ export default function Navbar() {
               )}
             </Link>
           ))}
+          {creator && (
+            <Link href="/admin" className={`nav-link${pathname.startsWith('/admin') ? ' active' : ''}`} style={{ textDecoration: 'none' }}>
+              <span className="nav-icon" aria-hidden="true">🛠️</span>
+              <span>Creator View</span>
+            </Link>
+          )}
         </nav>
 
         {/* Right side — sound, profile dropdown, hamburger */}
@@ -249,6 +259,7 @@ export default function Navbar() {
               {item.icon} {item.label}
             </Link>
           ))}
+          {creator && <Link href="/admin" className={`mobile-nav-item${pathname.startsWith('/admin') ? ' active' : ''}`} onClick={() => setMobileOpen(false)}>🛠️ Creator View</Link>}
 
           <button className="mobile-nav-item" onClick={() => { setShowProfile(true); setMobileOpen(false); }}>
             ✏️ Edit Profile
