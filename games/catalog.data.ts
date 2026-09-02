@@ -779,6 +779,18 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     hasComponent: true,
     isNew: true,
   },
+  tonguetwister: {
+    name: "Tongue Twister Challenge",
+    icon: "👅",
+    desc: "Say, hear, and type increasingly tricky tongue twisters while building speed, accuracy, and pronunciation confidence.",
+    cover: "/assets/covers/what-am-i-cover.webp",
+    tag: { label: "Pronunciation", color: "tag-vocab" },
+    badge: "60 Twisters",
+    difficulty: "Mixed Skills",
+    barColor: "var(--teal)",
+    hasComponent: true,
+    isNew: true,
+  },
   finnthefox: {
     name: "Reading Rescue",
     icon: "🦊",

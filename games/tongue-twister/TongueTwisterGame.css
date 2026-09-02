@@ -1,0 +1,331 @@
+.tt-game {
+  min-height: 100%;
+  width: 100%;
+  padding: 1rem;
+  background: radial-gradient(circle at top, rgba(99, 102, 241, 0.18), transparent 40%), #0f172a;
+  color: #f8fafc;
+  font-family: Arial, sans-serif;
+}
+
+.tt-start-screen,
+.tt-end-screen {
+  min-height: 60vh;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  gap: 1rem;
+  padding: 2rem;
+}
+
+.tt-icon {
+  font-size: 4rem;
+}
+
+.tt-start-screen h1,
+.tt-end-screen h1 {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+}
+
+.tt-start-screen p,
+.tt-end-screen p {
+  max-width: 620px;
+  margin: 0;
+  color: #cbd5e1;
+  font-size: 1.05rem;
+}
+
+.tt-start-button,
+.tt-primary-button,
+.tt-speak-button,
+.tt-mic-button,
+.tt-secondary-button {
+  border: none;
+  border-radius: 12px;
+  padding: 0.9rem 1.2rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.tt-start-button,
+.tt-primary-button {
+  background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+  color: white;
+}
+
+.tt-speak-button {
+  background: rgba(59, 130, 246, 0.18);
+  color: #dbeafe;
+  border: 1px solid rgba(147, 197, 253, 0.4);
+}
+
+.tt-mic-button {
+  background: rgba(16, 185, 129, 0.18);
+  color: #d1fae5;
+  border: 1px solid rgba(52, 211, 153, 0.35);
+}
+
+.tt-mic-button.listening {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(252, 165, 165, 0.4);
+  color: #fee2e2;
+}
+
+.tt-secondary-button {
+  background: rgba(148, 163, 184, 0.15);
+  color: #e2e8f0;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.tt-level-preview {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.tt-level-preview span {
+  background: rgba(148, 163, 184, 0.15);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  padding: 0.45rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+}
+
+.tt-final-score {
+  font-size: clamp(2.4rem, 6vw, 4.5rem);
+  line-height: 1;
+  font-weight: 800;
+  margin-bottom: 0.3rem;
+}
+
+.tt-points-label {
+  color: #cbd5e1;
+  letter-spacing: 0.16em;
+  font-size: 0.75rem;
+}
+
+.tt-result-stats {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin: 1rem 0 1.2rem;
+}
+
+.tt-result-stats div {
+  display: flex;
+  flex-direction: column;
+  min-width: 110px;
+  background: rgba(148, 163, 184, 0.08);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 16px;
+  padding: 0.8rem;
+}
+
+.tt-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.tt-logo {
+  font-weight: 800;
+  font-size: 1.2rem;
+}
+
+.tt-stats {
+  display: flex;
+  gap: 0.8rem;
+}
+
+.tt-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(148, 163, 184, 0.1);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 12px;
+  padding: 0.55rem 0.8rem;
+}
+
+.tt-progress-area {
+  display: grid;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.tt-progress-info {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  color: #cbd5e1;
+  font-size: 0.9rem;
+}
+
+.tt-progress {
+  height: 12px;
+  background: rgba(148, 163, 184, 0.12);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.tt-progress-bar,
+.tt-timer-bar {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #8b5cf6, #22c55e);
+}
+
+.tt-main {
+  display: grid;
+  gap: 1rem;
+}
+
+.tt-level {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.tt-level-badge {
+  display: inline-block;
+  width: fit-content;
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.tt-level-badge.beginner { background: rgba(59,130,246,0.18); color: #dbeafe; }
+.tt-level-badge.elementary { background: rgba(16,185,129,0.18); color: #d1fae5; }
+.tt-level-badge.intermediate { background: rgba(168,85,247,0.18); color: #f3e8ff; }
+.tt-level-badge.upper-intermediate { background: rgba(249,115,22,0.18); color: #ffedd5; }
+.tt-level-badge.advanced { background: rgba(251,146,60,0.18); color: #ffedd5; }
+.tt-level-badge.mastery { background: rgba(236,72,153,0.18); color: #fce7f3; }
+
+.tt-level h1 {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 3rem);
+}
+
+.tt-level p {
+  margin: 0;
+  color: #cbd5e1;
+}
+
+.tt-challenge {
+  display: grid;
+  gap: 1rem;
+}
+
+.tt-card {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 20px;
+  padding: 1.2rem;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.45);
+}
+
+.tt-difficulty {
+  display: inline-block;
+  margin-bottom: 1rem;
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(96, 165, 250, 0.3);
+  color: #dbeafe;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+}
+
+.tt-twister {
+  font-size: clamp(1.1rem, 2vw, 1.8rem);
+  line-height: 1.6;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.tt-timer-area {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.tt-timer-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #cbd5e1;
+}
+
+.tt-timer {
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.12);
+  overflow: hidden;
+}
+
+.tt-input-area {
+  display: grid;
+  gap: 1rem;
+}
+
+.tt-input-area textarea {
+  width: 100%;
+  min-height: 120px;
+  resize: vertical;
+  background: rgba(15, 23, 42, 0.9);
+  color: #f8fafc;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 16px;
+  padding: 1rem;
+  font-size: 1rem;
+}
+
+.tt-input-area textarea:focus {
+  outline: 2px solid rgba(96, 165, 250, 0.6);
+}
+
+.tt-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.tt-feedback {
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  padding: 0.9rem 1rem;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  font-weight: 700;
+}
+
+.tt-feedback.success {
+  background: rgba(34, 197, 94, 0.12);
+  border-color: rgba(34, 197, 94, 0.35);
+  color: #dcfce7;
+}
+
+.tt-feedback.error {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(248, 113, 113, 0.35);
+  color: #fee2e2;
+}
+
+@media (max-width: 640px) {
+  .tt-header,
+  .tt-progress-info,
+  .tt-buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .tt-stats {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
