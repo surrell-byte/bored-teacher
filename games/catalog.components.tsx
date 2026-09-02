@@ -109,5 +109,7 @@ export const GAME_COMPONENTS: Partial<Record<string, React.LazyExoticComponent<R
   riddlebombs: lazyGame('riddlebombs', () => import('@/games/riddle-bombs/RiddleBombs.jsx')),
   finnthefox: lazyGame('finnthefox', () => import('@/games/finn-the-fox/FinnTheFox.jsx')),
   monsterbound: lazyGame('monsterbound', () => import('@/games/monsterbound/Monsterbound.jsx')),
+  pluralquest: lazyGame('pluralquest', () => import('@/games/plural-quest/PluralQuest.jsx')),
+  victoryvet: lazyGame('victoryvet', () => import('@/games/victory-vet/VictoryVet.jsx')),
   whatsmissing: lazyGame('whatsmissing', () => import('@/games/legacy/LegacyGamePort').then(({ default: LegacyGamePort }) => ({ default: (props: GameComponentProps) => <LegacyGamePort {...props} gameId="whatsmissing" /> }))),
 };

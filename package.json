@@ -12,9 +12,11 @@
     "check-games": "node scripts/check-games.js"
   },
   "dependencies": {
+    "@types/nodemailer": "^8.0.1",
     "firebase": "^10.12.0",
     "framer-motion": "^12.42.2",
     "next": "14.2.5",
+    "nodemailer": "^9.1.1",
     "react": "^18",
     "react-dom": "^18",
     "react-markdown": "^10.1.0"

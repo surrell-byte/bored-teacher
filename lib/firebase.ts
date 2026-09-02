@@ -28,6 +28,7 @@ import {
   updateDoc,
   serverTimestamp,
 } from 'firebase/firestore';
+import { isVerificationExpired } from '@/lib/email-verification';
 
 export type AccountRole = 'teacher' | 'student';
 
@@ -219,6 +220,14 @@ export async function signIn(identifier: string, password: string) {
 
   try {
     const cred = await signInWithEmailAndPassword(auth, loginEmail, password);
+    const profile = await loadUserState(cred.user.uid);
+    if (profile && profile.emailVerified !== true) {
+      await firebaseSignOut(auth);
+      const expired = isVerificationExpired(profile.emailVerificationSentAt as string | number | undefined);
+      throw new Error(expired
+        ? 'Your email verification expired. Please request a fresh code to continue.'
+        : 'Please verify your email before using the app.');
+    }
     await markUserLoggedIn(cred.user.uid);
     return cred.user;
   } catch (error) {
@@ -288,6 +297,11 @@ interface UserState {
   createdAt?: unknown;
   isActive?: boolean;
   teacherPro?: boolean;
+  emailVerified?: boolean;
+  emailVerificationCode?: string;
+  emailVerificationSentAt?: number | string | null;
+  welcomeGiftClaimed?: boolean;
+  welcomeGiftId?: string | null;
 }
 
 async function createUserProfile(uid: string, name: string, email: string, role: AccountRole) {
@@ -310,6 +324,11 @@ async function createUserProfile(uid: string, name: string, email: string, role:
       isActive: true,
       sound: true,
       teacherPro: false,
+      emailVerified: false,
+      emailVerificationCode: '',
+      emailVerificationSentAt: 0,
+      welcomeGiftClaimed: false,
+      welcomeGiftId: null,
       games: {},
       classId: '',
       role,

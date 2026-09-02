@@ -4,7 +4,7 @@
 import { useState, useEffect, FormEvent, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
-  signIn, signUp, resetPasswordByUsername, onAuthStateChanged,
+  signIn, signUp, resetPasswordByUsername, onAuthStateChanged, loadUserState,
 } from '@/lib/firebase';
 
 type Tab = 'login' | 'register';
@@ -27,8 +27,16 @@ function AuthPageInner() {
   // Auth guard — if already signed in, go to hub.
   useEffect(() => {
     if (localStorage.getItem('guestUser') === 'true') { router.replace('/hub'); return; }
-    const unsub = onAuthStateChanged((user) => {
-      if (user) { router.replace('/hub'); return; }
+    const unsub = onAuthStateChanged(async (user) => {
+      if (user) {
+        const profile = await loadUserState(user.uid);
+        if (profile && profile.emailVerified === false) {
+          router.replace('/auth/verify');
+          return;
+        }
+        router.replace('/hub');
+        return;
+      }
       setReady(true);
     });
     return unsub;
@@ -55,8 +63,24 @@ function AuthPageInner() {
       if (!name.trim()) { setError('Please enter your username.'); setLoading(false); return; }
       if (role !== 'student' && role !== 'teacher') { setError('Please choose Student or Teacher.'); setLoading(false); return; }
 
-      await signUp(email.trim(), password, name.trim(), role);
-      router.replace('/hub');
+      const user = await signUp(email.trim(), password, name.trim(), role);
+      const sendRes = await fetch('/api/auth/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'send',
+          uid: user.uid,
+          email: user.email || email.trim(),
+          displayName: name.trim(),
+        }),
+      });
+      const sendJson = await sendRes.json().catch(() => ({ ok: false, error: 'Unable to send your verification email.' }));
+      if (!sendRes.ok || !sendJson.ok) {
+        setInfo('Your account was created. We could not send the verification email yet — please use the resend option on the verification screen.');
+      } else {
+        setInfo('Account created. A verification code has been sent to your email — check spam/junk if needed.');
+      }
+      router.replace('/auth/verify');
     } catch (err: unknown) {
       setError(friendlyError(err));
       setLoading(false);

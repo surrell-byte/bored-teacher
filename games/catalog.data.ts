@@ -803,6 +803,30 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     hasComponent: true,
     isNew: true,
   },
+  pluralquest: {
+    name: "Plural Quest",
+    icon: "🔤",
+    desc: "Level up through plural noun rules, from basic -s endings to irregular and academic exceptions.",
+    cover: "",
+    tag: { label: "Grammar", color: "tag-grammar" },
+    badge: "6 Levels",
+    difficulty: "Mixed Skills",
+    barColor: "var(--purple)",
+    hasComponent: true,
+    isNew: true,
+  },
+  victoryvet: {
+    name: "Victory Vet",
+    icon: "🩺",
+    desc: "Learn how to care for animals by answering veterinary and welfare questions in a fun quiz adventure.",
+    cover: "",
+    tag: { label: "Science", color: "tag-bio" },
+    badge: "Animal Care",
+    difficulty: "Starter",
+    barColor: "var(--green)",
+    hasComponent: true,
+    isNew: true,
+  },
 };
 
 export const GAME_KEYS = Object.keys(GAME_CATALOG);
