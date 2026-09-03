@@ -31,6 +31,7 @@ export const COMING_SOON_GAME_IDS = new Set([
   'wgrandprix',
   'warriors',
   'wordfusion',
+  'shapebuilder',
 ]);
 
 export function canAccessGame(gameId: string, user: Parameters<typeof isCreatorUser>[0]) {

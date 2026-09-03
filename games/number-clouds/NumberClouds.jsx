@@ -1,6 +1,8 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
+
+const TOTAL_ROUNDS = 10;
 
 function randomBetween(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -12,270 +14,82 @@ function buildPuzzle() {
   const sequence = Array.from({ length }, (_, index) => start + index);
   const missingIndex = randomBetween(1, Math.max(1, length - 2));
   const missingValue = sequence[missingIndex];
-
-  let wrongA = missingValue + (Math.random() < 0.5 ? 1 : -1);
-  let wrongB = missingValue + (Math.random() < 0.5 ? 2 : -2);
-  const options = [...new Set([missingValue, wrongA, wrongB].filter((value) => value > 0))];
-
-  return {
-    sequence,
-    missingIndex,
-    missingValue,
-    options: [...options].sort(() => Math.random() - 0.5),
-  };
+  const wrongA = missingValue + (Math.random() < 0.5 ? 1 : -1);
+  const wrongB = missingValue + (Math.random() < 0.5 ? 2 : -2);
+  const options = [...new Set([missingValue, wrongA, wrongB].filter(value => value > 0))];
+  return { sequence, missingIndex, missingValue, options: options.sort(() => Math.random() - 0.5) };
 }
 
 export default function NumberClouds({ onComplete }) {
   const [score, setScore] = useState(0);
   const [round, setRound] = useState(1);
   const [puzzle, setPuzzle] = useState(() => buildPuzzle());
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [feedback, setFeedback] = useState('');
-  const [showNext, setShowNext] = useState(false);
 
-  const renderedSequence = useMemo(() => {
-    const items = [];
-    puzzle.sequence.forEach((value, index) => {
-      if (index > 0) items.push({ type: 'arrow', value: '→', key: `arrow-${index}` });
-      items.push({
-        type: 'cloud',
-        value: index === puzzle.missingIndex ? '?' : value,
-        key: `cloud-${index}`,
-        isMissing: index === puzzle.missingIndex,
-        isCorrect: false,
-      });
-    });
-    return items;
-  }, [puzzle]);
-
-  const startRound = () => {
-    setFeedback('');
-    setShowNext(false);
-    setPuzzle(buildPuzzle());
-  };
-
-  const checkAnswer = (value) => {
-    if (value === puzzle.missingValue) {
+  function handleAnswer(answer) {
+    if (selectedAnswer !== null) return;
+    setSelectedAnswer(answer);
+    if (answer === puzzle.missingValue) {
       const nextScore = score + 1;
       setScore(nextScore);
-      setFeedback('🎉 That\'s right!');
-      setShowNext(true);
+      setFeedback("That's right!");
       onComplete?.(nextScore, 100);
-      return;
+    } else {
+      setFeedback('Try again!');
     }
+  }
 
-    setFeedback('Try again! 🤔');
-  };
+  function nextRound() {
+    setRound(current => Math.min(TOTAL_ROUNDS, current + 1));
+    setPuzzle(buildPuzzle());
+    setSelectedAnswer(null);
+    setFeedback('');
+  }
 
   return (
-    <main className="number-clouds-game">
-      <style>{STYLES}</style>
-      <div className="sun">☀️</div>
-      <div className="bird">🐦</div>
+    <div className="number-clouds-page">
+      <div className="sky-decoration cloud-one">☁️</div>
+      <div className="sky-decoration cloud-two">☁️</div>
+      <div className="sky-decoration cloud-three">☁️</div>
+      <div className="bird bird-one">🕊️</div>
       <div className="bird bird-two">🦅</div>
-
-      <div className="number-clouds-shell">
-        <h1>☁️ Number Clouds</h1>
-        <div className="number-clouds-instruction">Hop across the clouds!</div>
-
-        <div className="number-clouds-row">
-          {renderedSequence.map((item) =>
-            item.type === 'arrow' ? (
-              <span key={item.key} className="number-clouds-arrow">→</span>
-            ) : (
-              <div key={item.key} className="number-clouds-cloud-wrap">
-                <div className={`number-clouds-cloud ${item.isMissing ? 'missing' : ''}`}>
-                  {item.value}
-                </div>
-              </div>
-            )
-          )}
-        </div>
-
-        <div className="number-clouds-choices">
-          {puzzle.options.map((option) => (
-            <button key={option} type="button" className="number-clouds-choice" onClick={() => checkAnswer(option)}>
-              {option}
-            </button>
-          ))}
-        </div>
-
-        <div className={`number-clouds-feedback ${feedback ? 'show' : ''}`}>{feedback}</div>
-        {showNext && (
-          <button type="button" className="number-clouds-next" onClick={() => { setRound((current) => current + 1); startRound(); }}>
-            Next Cloud ➡️
-          </button>
-        )}
-        <div className="number-clouds-score">⭐ Score: {score}</div>
-        <div className="number-clouds-round">Round {round}</div>
-      </div>
-    </main>
+      <div className="sun">☀️</div>
+      <main className="number-clouds-game">
+        <section className="game-heading">
+          <div className="game-title"><span className="title-cloud">☁️</span><h1>Number Clouds</h1></div>
+          <p className="game-subtitle">Hop across the clouds!</p>
+          <div className="round-progress"><span className="progress-label">ROUND {round} OF {TOTAL_ROUNDS}</span><div className="progress-track"><div className="progress-fill" style={{ width: `${(round / TOTAL_ROUNDS) * 100}%` }} /></div></div>
+        </section>
+        <section className="sequence-area">
+          <div className="sequence">
+            {puzzle.sequence.map((number, index) => <span key={index} className="sequence-part">{index > 0 && <span className="sequence-arrow">→</span>}<span className={`number-cloud ${index === puzzle.missingIndex ? 'missing-cloud' : ''}`}>{index === puzzle.missingIndex ? '?' : number}</span></span>)}
+          </div>
+          <div className="answer-area">
+            <p className="choose-label">Which number belongs on the cloud?</p>
+            <div className="answer-buttons">{puzzle.options.map(answer => { const state = selectedAnswer === answer ? (answer === puzzle.missingValue ? 'correct' : 'wrong') : ''; return <button key={answer} className={`answer-button ${state}`} onClick={() => handleAnswer(answer)} disabled={selectedAnswer !== null}>{answer}</button>; })}</div>
+            {feedback && <p className={`answer-feedback ${selectedAnswer === puzzle.missingValue ? 'correct-text' : 'wrong-text'}`}>{feedback}</p>}
+            {selectedAnswer === puzzle.missingValue && round < TOTAL_ROUNDS && <button className="next-round-button" onClick={nextRound}>Next cloud →</button>}
+            {selectedAnswer === puzzle.missingValue && round === TOTAL_ROUNDS && <p className="answer-feedback correct-text">You completed all the rounds!</p>}
+          </div>
+        </section>
+        <section className="game-hud"><div className="hud-item"><span className="hud-icon">⭐</span><div><span className="hud-label">SCORE</span><strong>{score}</strong></div></div><div className="hud-divider" /><div className="hud-item"><span className="hud-icon">☁️</span><div><span className="hud-label">ROUND</span><strong>{round}</strong></div></div><div className="hud-divider" /><div className="hud-item"><span className="hud-icon">🏆</span><div><span className="hud-label">BEST</span><strong>{score}</strong></div></div></section>
+      </main>
+      <div className="bottom-cloud-layer" />
+      <style>{STYLES}</style>
+    </div>
   );
 }
 
 const STYLES = `
-.number-clouds-game {
-  min-height: 100%;
-  width: 100%;
-  display: grid;
-  place-items: center;
-  background: linear-gradient(180deg, #87ceeb 0%, #b0e0ff 40%, #e8f4fd 100%);
-  font-family: 'Nunito', var(--font-body), sans-serif;
-  color: #1a5276;
-  position: relative;
-  overflow: hidden;
-}
-.sun {
-  position: absolute;
-  top: 18px;
-  right: 40px;
-  font-size: 5.5rem;
-  animation: number-clouds-spin 20s linear infinite;
-}
-.bird {
-  position: absolute;
-  left: -60px;
-  top: 20%;
-  font-size: 1.5rem;
-  animation: number-clouds-fly 12s linear infinite;
-}
-.bird-two {
-  top: 38%;
-  animation-duration: 17s;
-  animation-delay: -5s;
-}
-.number-clouds-shell {
-  position: relative;
-  z-index: 1;
-  width: min(100%, 760px);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 24px 18px 32px;
-  text-align: center;
-}
-.number-clouds-shell h1 {
-  margin: 0 0 8px;
-  font-family: 'Fredoka One', 'Trebuchet MS', sans-serif;
-  color: #1a5276;
-  font-size: clamp(2.2rem, 4vw, 3rem);
-  text-shadow: 2px 2px 0 rgba(255,255,255,0.7);
-}
-.number-clouds-instruction {
-  font-size: clamp(1.1rem, 2.2vw, 1.5rem);
-  color: #2c5f8a;
-  font-weight: 700;
-  margin-bottom: 18px;
-  background: rgba(255,255,255,0.6);
-  padding: 8px 18px;
-  border-radius: 20px;
-}
-.number-clouds-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  max-width: 700px;
-}
-.number-clouds-cloud-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-}
-.number-clouds-cloud {
-  position: relative;
-  min-width: 80px;
-  background: white;
-  border-radius: 50px;
-  padding: 18px 28px;
-  font-family: 'Fredoka One', 'Trebuchet MS', sans-serif;
-  font-size: clamp(1.7rem, 3vw, 2.2rem);
-  color: #1a5276;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-  text-align: center;
-}
-.number-clouds-cloud::before {
-  content: '';
-  position: absolute;
-  bottom: -18px;
-  left: 50%;
-  transform: translateX(-50%);
-  border: 20px solid transparent;
-  border-top-color: white;
-}
-.number-clouds-cloud.missing {
-  background: #ffe66d;
-  border: 3px dashed #e59400;
-  color: #e59400;
-  animation: number-clouds-pulse 1s ease infinite;
-}
-.number-clouds-cloud.missing::before { border-top-color: #ffe66d; }
-.number-clouds-arrow {
-  font-size: 1.8rem;
-  color: #5b9bd5;
-  font-weight: 900;
-}
-.number-clouds-choices {
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-top: 20px;
-}
-.number-clouds-choice {
-  appearance: none;
-  border: none;
-  border-radius: 20px;
-  background: linear-gradient(135deg, #4fc3f7, #0288d1);
-  color: white;
-  font-family: 'Fredoka One', 'Trebuchet MS', sans-serif;
-  font-size: clamp(1.4rem, 2.7vw, 1.8rem);
-  padding: 12px 28px;
-  cursor: pointer;
-  box-shadow: 0 4px 14px rgba(2,136,209,0.4);
-  transition: transform 0.15s ease;
-}
-.number-clouds-choice:hover { transform: scale(1.1); }
-.number-clouds-feedback {
-  min-height: 2.2rem;
-  font-size: clamp(1.2rem, 2.5vw, 1.6rem);
-  font-weight: 900;
-  margin-top: 12px;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-.number-clouds-feedback.show { opacity: 1; }
-.number-clouds-next {
-  appearance: none;
-  border: none;
-  border-radius: 40px;
-  background: linear-gradient(135deg, #66bb6a, #2e7d32);
-  color: white;
-  padding: 10px 24px;
-  margin-top: 10px;
-  cursor: pointer;
-  font-family: 'Fredoka One', 'Trebuchet MS', sans-serif;
-  font-size: 1.3rem;
-}
-.number-clouds-score,
-.number-clouds-round {
-  margin-top: 12px;
-  font-family: 'Fredoka One', 'Trebuchet MS', sans-serif;
-  font-size: 1.2rem;
-  color: #1a5276;
-}
-@keyframes number-clouds-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-@keyframes number-clouds-fly {
-  from { left: -60px; top: 20%; }
-  to { left: 110vw; top: 15%; }
-}
-@keyframes number-clouds-pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.07); }
-}
+.number-clouds-page { min-height:100%; position:relative; overflow:hidden; background:radial-gradient(circle at 50% 25%,rgba(255,255,255,.45),transparent 35%),linear-gradient(180deg,#72c7ea 0%,#a9ddf5 48%,#dff3fc 100%); color:#174d75; display:flex; justify-content:center; }
+.number-clouds-game { width:min(1100px,94vw); padding:38px 30px 45px; position:relative; z-index:5; display:flex; flex-direction:column; align-items:center; }
+.game-heading { text-align:center; margin-bottom:26px; }.game-title { display:flex; align-items:center; justify-content:center; gap:12px; }.title-cloud { font-size:42px; }.game-title h1 { margin:0; font-size:clamp(42px,5vw,64px); font-weight:900; color:#174f78; text-shadow:0 3px 0 rgba(255,255,255,.65),0 8px 20px rgba(29,94,131,.12); }.game-subtitle { display:inline-block; margin:12px 0 18px; padding:11px 24px; border-radius:999px; background:rgba(255,255,255,.78); color:#28618b; font-size:18px; font-weight:800; }
+.round-progress { width:min(420px,80vw); margin:0 auto; }.progress-label { display:block; margin-bottom:7px; color:#397296; font-size:11px; font-weight:900; letter-spacing:1.5px; }.progress-track { height:9px; overflow:hidden; border-radius:999px; background:rgba(255,255,255,.55); }.progress-fill { height:100%; border-radius:inherit; background:linear-gradient(90deg,#269ed8,#58c6ed); transition:width .4s ease; }
+.sequence-area { width:100%; padding:34px 25px 32px; border-radius:36px; background:rgba(255,255,255,.24); border:1px solid rgba(255,255,255,.45); box-shadow:0 25px 70px rgba(38,102,137,.13),inset 0 1px 0 rgba(255,255,255,.5); backdrop-filter:blur(8px); }.sequence { display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap; }.sequence-part { display:inline-flex; align-items:center; gap:10px; }.number-cloud { width:112px; height:82px; position:relative; display:flex; align-items:center; justify-content:center; border-radius:48% 52% 50% 46%; background:radial-gradient(circle at 35% 25%,#fff 0%,#fff 25%,#f3f8fb 60%,#dfeaf0 100%); color:#205c83; font-size:38px; font-weight:900; box-shadow:0 12px 20px rgba(43,101,132,.15),inset 0 -5px 0 rgba(185,211,223,.35); animation:cloudBob 3.6s ease-in-out infinite; }.number-cloud::before,.number-cloud::after { content:''; position:absolute; border-radius:50%; background:inherit; z-index:-1; }.number-cloud::before { width:46px; height:46px; left:13px; top:-14px; }.number-cloud::after { width:58px; height:58px; right:12px; top:-20px; }.missing-cloud { width:125px; height:92px; background:radial-gradient(circle at 35% 25%,#fff8bd,#ffe87d 65%,#ffd85c 100%); color:#e99a13; border:4px dashed #f4ae20; box-shadow:0 14px 28px rgba(228,155,27,.22); animation:cloudFloat 2.2s ease-in-out infinite; }.sequence-arrow { color:#4c9bd0; font-size:38px; font-weight:700; }.answer-area { text-align:center; margin-top:28px; }.choose-label { margin:0 0 15px; color:#397296; font-size:14px; font-weight:800; }.answer-buttons { display:flex; justify-content:center; gap:14px; flex-wrap:wrap; }.answer-button { min-width:92px; height:62px; border:0; border-radius:20px; cursor:pointer; background:linear-gradient(180deg,#35afe7,#168fcf); color:#fff; font-size:27px; font-weight:900; box-shadow:0 7px 0 #0875ad; }.answer-button:disabled { cursor:default; }.answer-button.correct { background:linear-gradient(180deg,#48d88b,#22b96b); box-shadow:0 7px 0 #159456; animation:correctAnswer .45s ease; }.answer-button.wrong { background:linear-gradient(180deg,#ff7777,#e94b4b); box-shadow:0 7px 0 #bd3434; animation:wrongAnswer .35s ease; }.answer-feedback { min-height:24px; margin:18px 0 0; font-size:18px; font-weight:900; }.correct-text { color:#159456; }.wrong-text { color:#bd3434; }.next-round-button { margin-top:12px; padding:11px 22px; border:0; border-radius:999px; color:#fff; background:#249ed3; font-weight:900; cursor:pointer; box-shadow:0 4px 0 #0875ad; }
+.game-hud { display:flex; align-items:center; justify-content:center; margin-top:25px; padding:13px 28px; border-radius:22px; background:rgba(255,255,255,.72); border:1px solid rgba(255,255,255,.85); box-shadow:0 12px 30px rgba(38,102,137,.12); }.hud-item { min-width:105px; display:flex; align-items:center; gap:9px; text-align:left; }.hud-icon { font-size:22px; }.hud-label { display:block; color:#6b96ae; font-size:9px; font-weight:900; letter-spacing:1px; }.hud-item strong { color:#205c83; font-size:20px; }.hud-divider { width:1px; height:34px; margin:0 16px; background:#c9e2ed; }
+.sky-decoration,.bird,.sun,.bottom-cloud-layer { position:absolute; pointer-events:none; }.sky-decoration { opacity:.7; }.cloud-one { left:-30px; top:17%; font-size:110px; opacity:.28; }.cloud-two { right:-35px; top:44%; font-size:150px; opacity:.2; }.cloud-three { left:10%; bottom:3%; font-size:100px; opacity:.2; }.sun { top:35px; right:65px; font-size:65px; }.bird { color:#355b70; opacity:.65; }.bird-one { top:110px; left:25%; font-size:24px; }.bird-two { top:170px; right:25%; font-size:22px; }.bottom-cloud-layer { left:-10%; bottom:-100px; width:120%; height:220px; background:radial-gradient(ellipse at center,rgba(255,255,255,.85),rgba(255,255,255,.25) 55%,transparent 70%); }
+@keyframes cloudBob { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-4px); } } @keyframes cloudFloat { 0%,100% { transform:translateY(0) rotate(-1deg); } 50% { transform:translateY(-8px) rotate(1deg); } } @keyframes correctAnswer { 0% { transform:scale(1); } 45% { transform:scale(1.12) rotate(-2deg); } 100% { transform:scale(1); } } @keyframes wrongAnswer { 0%,100% { transform:translateX(0); } 25% { transform:translateX(-8px); } 75% { transform:translateX(8px); } }
+@media (max-width:800px) { .number-clouds-game { padding:25px 15px 35px; }.sequence-area { padding:25px 12px; border-radius:25px; }.number-cloud { width:82px; height:64px; font-size:28px; }.missing-cloud { width:92px; height:70px; }.sequence-arrow { font-size:25px; }.game-title h1 { font-size:40px; }.game-hud { padding:11px 15px; }.hud-item { min-width:auto; }.hud-divider { margin:0 10px; }.sun { right:20px; font-size:45px; } }
+@media (max-width:560px) { .sequence { gap:6px; }.sequence-part { gap:6px; }.number-cloud { width:65px; height:52px; font-size:23px; }.missing-cloud { width:72px; height:58px; }.sequence-arrow { font-size:20px; }.answer-button { min-width:75px; height:54px; font-size:23px; }.hud-label { display:none; }.hud-item strong { font-size:17px; }.game-hud { border-radius:17px; } }
 `;

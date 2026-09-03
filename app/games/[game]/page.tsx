@@ -24,6 +24,7 @@ const GAMES_WITH_WELCOME = new Set([
   'animalAdventureRace', 'connect4', 'farmgame', 'findmyfood', 'flagmaster',
   'finnthefox', 'hiddencolours', 'oceanquest', 'parachutedrop', 'weatherwizard',
   'phonicsadventure', 'riddlebombs', 'tictacroll', 'tornado', 'wordfusion', 'weatherwizard', 'victoryvet',
+  'turbodash',
 ]);
 
 // ── Page ──────────────────────────────────────────────────────
