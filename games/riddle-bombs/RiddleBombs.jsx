@@ -63,7 +63,13 @@ const LEVELS = [
   ['Final Countdown', 'The ultimate riddles for true bomb-defusal masters.', 'Expert'],
 ];
 const PER_LEVEL = 10;
-const shuffle = items => [...items].sort(() => Math.random() - 0.5);
+function arrangeAnswers(riddleAnswers, questionNumber) {
+  const answers = riddleAnswers.map((answer, originalIndex) => ({ answer, originalIndex }));
+  const correctAnswer = answers.shift();
+  const targetPosition = questionNumber % answers.length;
+  answers.splice(targetPosition, 0, correctAnswer);
+  return answers;
+}
 
 export default function RiddleBombs({ onComplete }) {
   const [screen, setScreen] = useState('welcome');
@@ -108,7 +114,7 @@ export default function RiddleBombs({ onComplete }) {
     setLocked(false);
     setSelected(null);
     setFeedback(null);
-    setAnswers(shuffle(RIDDLES[nextLevel * PER_LEVEL].answers.map((answer, originalIndex) => ({ answer, originalIndex }))));
+    setAnswers(arrangeAnswers(RIDDLES[nextLevel * PER_LEVEL].answers, 0));
     setTimeLeft(15);
     setScreen('game');
   }
@@ -143,7 +149,7 @@ export default function RiddleBombs({ onComplete }) {
     setCorrectCount(totalCorrect);
     setSelected(null);
     setFeedback(null);
-    setAnswers(shuffle(nextRiddle.answers.map((answer, originalIndex) => ({ answer, originalIndex }))));
+    setAnswers(arrangeAnswers(nextRiddle.answers, nextIndex));
     setTimeLeft(Math.max(6, 15 - Math.floor(nextIndex / 3)));
     setLocked(false);
   }

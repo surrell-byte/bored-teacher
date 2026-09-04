@@ -43,6 +43,7 @@ export interface GameShellProps {
   hidePauseControl?: boolean;
   hideExitControl?: boolean;
   hideMainMenuButton?: boolean;
+  hideHeader?: boolean;
   themeVars?: {
     nav: string;
     navRaised: string;
@@ -59,7 +60,7 @@ export interface GameShellProps {
  */
 export default function GameShell({
   gameId, title, icon, stats, controls, headerExtra, children, sessionKey = 0,
-  completion, onContinue, onRestart, onMainMenu, onSessionEvent, themeVars, hidePauseControl = false, hideExitControl = false, hideMainMenuButton = false,
+  completion, onContinue, onRestart, onMainMenu, onSessionEvent, themeVars, hidePauseControl = false, hideExitControl = false, hideMainMenuButton = false, hideHeader = false,
   themeOptions, themeValue, onThemeChange,
 }: GameShellProps) {
   const [paused, setPaused] = useState(false);
@@ -151,7 +152,7 @@ export default function GameShell({
       } as React.CSSProperties : undefined}
     >
       <GameLayout
-        header={
+        header={!hideHeader && (
           <>
             <GameHeader
               title={title}
@@ -218,7 +219,7 @@ export default function GameShell({
               </div>
             )}
           </>
-        }
+        )}
       >
         <ErrorBoundary resetKey={sessionKey} onRetry={restart} onExit={() => window.location.assign('/games')}>
           <div className="game-shell-play-area" aria-busy={paused}>

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 700" role="img" aria-labelledby="title">
+  <title id="title">Sentence Builder learning character</title>
+  <defs><linearGradient id="body" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#47d7b0"/><stop offset="1" stop-color="#168c9b"/></linearGradient></defs>
+  <ellipse cx="260" cy="665" rx="150" ry="22" fill="#03151d" opacity=".45"/>
+  <path d="M124 470c-35 65-28 157 52 176 74 18 169 17 208-25 39-43 15-136-19-164Z" fill="url(#body)" stroke="#b5ffe1" stroke-width="9"/>
+  <circle cx="260" cy="248" r="174" fill="#62e4bd" stroke="#b5ffe1" stroke-width="10"/>
+  <path d="M131 145 83 46l93 52M389 145l48-99-93 52" fill="#ffd364" stroke="#d89032" stroke-width="9" stroke-linejoin="round"/>
+  <ellipse cx="199" cy="239" rx="35" ry="45" fill="#fff"/><ellipse cx="321" cy="239" rx="35" ry="45" fill="#fff"/>
+  <circle cx="207" cy="247" r="14" fill="#173653"/><circle cx="313" cy="247" r="14" fill="#173653"/><circle cx="211" cy="240" r="5" fill="#fff"/><circle cx="317" cy="240" r="5" fill="#fff"/>
+  <path d="M216 320c29 26 59 26 88 0" fill="none" stroke="#173653" stroke-width="11" stroke-linecap="round"/>
+  <circle cx="150" cy="303" r="17" fill="#ff9bad" opacity=".75"/><circle cx="370" cy="303" r="17" fill="#ff9bad" opacity=".75"/>
+  <path d="M92 455 20 420M428 455l72-35" stroke="#b5ffe1" stroke-width="18" stroke-linecap="round"/>
+  <path d="M168 580h-44M352 580h44" stroke="#ffd364" stroke-width="25" stroke-linecap="round"/>
+  <path d="M185 405h150v86H185z" fill="#23386b" stroke="#c7d8ff" stroke-width="7"/><path d="M205 433h110M205 458h72" stroke="#fff" stroke-width="9" stroke-linecap="round"/>
+</svg>

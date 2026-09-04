@@ -32,7 +32,8 @@ export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname() ?? '';
   const [showProfile, setShowProfile] = useState(false);
-  const [showDropdown, setShowDropdown] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [soundOn, setSoundOn] = useState(true);
   const [creator, setCreator] = useState(false);
@@ -55,7 +56,8 @@ export default function Navbar() {
     function handler(e: MouseEvent | TouchEvent) {
       const target = e.target as Node;
       if (dropdownRef.current && !dropdownRef.current.contains(target) && moreRef.current && !moreRef.current.contains(target)) {
-        setShowDropdown(false);
+        setShowProfileMenu(false);
+        setShowMoreMenu(false);
       }
     }
     document.addEventListener('mousedown', handler);
@@ -126,8 +128,8 @@ export default function Navbar() {
             </Link>
           )}
           <div className="nav-more-wrap" ref={moreRef}>
-            <button className={`nav-link nav-more-button${MORE_ITEMS.some(item => isActive(item.href)) ? ' active' : ''}`} onClick={() => setShowDropdown(value => !value)} aria-expanded={showDropdown} type="button">⋯ More</button>
-            {showDropdown && <div className="nav-more-menu" role="menu">{MORE_ITEMS.map(item => <Link key={item.href} href={item.href} className="dropdown-item" role="menuitem" onClick={() => setShowDropdown(false)}>{item.icon} {item.label}</Link>)}</div>}
+            <button className={`nav-link nav-more-button${showMoreMenu || MORE_ITEMS.some(item => isActive(item.href)) ? ' active' : ''}`} onClick={() => setShowMoreMenu(value => !value)} aria-expanded={showMoreMenu} type="button">⋯ More</button>
+            {showMoreMenu && <div className="nav-more-menu" role="menu">{MORE_ITEMS.map(item => <Link key={item.href} href={item.href} className="dropdown-item" role="menuitem" onClick={() => setShowMoreMenu(false)}>{item.icon} {item.label}</Link>)}</div>}
           </div>
         </nav>
 
@@ -164,8 +166,8 @@ export default function Navbar() {
           >
             <button
               className="player-chip-btn"
-              onClick={() => setShowDropdown(d => !d)}
-              aria-expanded={showDropdown}
+              onClick={() => router.push('/profile')}
+              aria-expanded={false}
               aria-haspopup="true"
               aria-label={`Profile menu for ${state.name}`}
               type="button"
@@ -180,7 +182,7 @@ export default function Navbar() {
               </span>
             </button>
 
-            {showDropdown && (
+            {showProfileMenu && (
               <div
                 className="profile-dropdown dropdown-animated"
                 role="menu"
@@ -195,7 +197,7 @@ export default function Navbar() {
                 <button
                   className="dropdown-item"
                   role="menuitem"
-                  onClick={() => { setShowProfile(true); setShowDropdown(false); }}
+                  onClick={() => { setShowProfile(true); setShowProfileMenu(false); }}
                 >
                   ✏️ Edit Profile
                 </button>
@@ -203,7 +205,7 @@ export default function Navbar() {
                 <button
                   className="dropdown-item"
                   role="menuitem"
-                  onClick={() => { router.push('/subscription'); setShowDropdown(false); }}
+                  onClick={() => { router.push('/subscription'); setShowProfileMenu(false); }}
                 >
                   💳 Manage Subscription
                 </button>
@@ -268,9 +270,7 @@ export default function Navbar() {
           <div className="mobile-nav-item mobile-more-heading">More</div>
           {MORE_ITEMS.map(item => <Link key={item.href} href={item.href} className={`mobile-nav-item${isActive(item.href) ? ' active' : ''}`} onClick={() => setMobileOpen(false)}>{item.icon} {item.label}</Link>)}
 
-          <button className="mobile-nav-item" onClick={() => { setShowProfile(true); setMobileOpen(false); }}>
-            ✏️ Edit Profile
-          </button>
+          <Link href="/profile" className="mobile-nav-item" onClick={() => setMobileOpen(false)}>✏️ Edit Profile</Link>
 
           {/* Theme switcher — now on mobile too */}
           <div className="mobile-nav-item mobile-theme-row">

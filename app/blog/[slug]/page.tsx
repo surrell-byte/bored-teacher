@@ -147,7 +147,7 @@ export default function BlogPostPage() {
           color: 'var(--text)'
         }}>
           {post.published ? (
-            <ReactMarkdown>{post.content ?? 'This article is being prepared.'}</ReactMarkdown>
+            <ReactMarkdown>{(post.content ?? 'This article is being prepared.').replace(/^#\s+[^\n]+\n+/, '')}</ReactMarkdown>
           ) : (
             <div>
               <div style={{ fontSize: '3rem', marginBottom: '12px' }}>🔜</div>

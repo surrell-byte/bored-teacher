@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" role="img" aria-labelledby="title desc">
+  <title id="title">Sky Dragon avatar</title>
+  <desc id="desc">A friendly blue sky dragon with gold horns and wings.</desc>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#8be7ff"/><stop offset="1" stop-color="#3974db"/></linearGradient>
+    <linearGradient id="belly" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#ffe99a"/><stop offset="1" stop-color="#f2a83b"/></linearGradient>
+  </defs>
+  <circle cx="320" cy="320" r="300" fill="#112c52"/>
+  <path d="M128 270C72 174 120 82 210 116c35-72 133-71 153 8 55-50 150-12 139 73 75 10 99 108 43 159-24 22-50 34-78 38-5 127-70 185-151 185S173 520 168 394c-26-5-54-18-73-40-48-56-18-143 33-153Z" fill="url(#sky)" stroke="#9ff2ff" stroke-width="10"/>
+  <path d="M246 367c-6 75 20 143 74 143s80-68 74-143c-31 19-113 19-148 0Z" fill="url(#belly)" stroke="#d88b32" stroke-width="7"/>
+  <path d="M174 222 101 128l118 33M453 222l86-94-127 33" fill="#ffd65a" stroke="#f0a83a" stroke-width="10" stroke-linejoin="round"/>
+  <path d="M177 335c-34 21-73 14-91-17 43 6 63-10 78-42M463 335c34 21 73 14 91-17-43 6-63-10-78-42" fill="none" stroke="#2c5cc0" stroke-width="24" stroke-linecap="round"/>
+  <ellipse cx="232" cy="290" rx="48" ry="57" fill="#fff"/><ellipse cx="408" cy="290" rx="48" ry="57" fill="#fff"/>
+  <ellipse cx="240" cy="300" rx="17" ry="27" fill="#182b58"/><ellipse cx="400" cy="300" rx="17" ry="27" fill="#182b58"/>
+  <circle cx="246" cy="289" r="6" fill="#fff"/><circle cx="406" cy="289" r="6" fill="#fff"/>
+  <path d="M287 370c22 18 44 18 66 0" fill="none" stroke="#182b58" stroke-width="10" stroke-linecap="round"/>
+  <circle cx="166" cy="356" r="16" fill="#ff91a7" opacity=".75"/><circle cx="474" cy="356" r="16" fill="#ff91a7" opacity=".75"/>
+</svg>

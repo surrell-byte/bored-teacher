@@ -74,7 +74,11 @@ export default function ShopPage() {
             <article className="shell-card shop-item" key={item.id}>
               <div className="shop-item-image-wrap">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={item.value} alt={item.name} className="shop-item-image" />
+                {item.value.startsWith('/') ? (
+                  <img src={item.value} alt={item.name} className="shop-item-image" />
+                ) : (
+                  <span className="shop-item-emoji" aria-label={item.name}>{item.value}</span>
+                )}
               </div>
               <div className="shop-item-copy">
                 <h3>{item.name}</h3>

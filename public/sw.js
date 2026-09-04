@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bored-teacher-runtime-v1';
+const CACHE_NAME = 'bored-teacher-runtime-v2';
 
 self.addEventListener('activate', event => {
   event.waitUntil(

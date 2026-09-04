@@ -53,7 +53,7 @@ export default function GamePage() {
   }, [gameId]);
 
   useEffect(() => onAuthStateChanged(user => {
-    setCanPlay(canAccessGame(gameId, user));
+    setCanPlay(canAccessGame(gameId));
     setAccessReady(true);
   }), [gameId]);
 
@@ -121,7 +121,7 @@ export default function GamePage() {
 
   if (!accessReady) return null;
 
-  if (COMING_SOON_GAME_IDS.has(gameId) && !canPlay) {
+  if (COMING_SOON_GAME_IDS.has(gameId)) {
     return (
       <div className="route-game-welcome">
         <div className="route-game-welcome-card">
@@ -158,6 +158,7 @@ export default function GamePage() {
         onRestart={handleContinue}
         onMainMenu={handleMainMenu}
         hideMainMenuButton={gameId === 'dragonslingshot'}
+        hideHeader
         hidePauseControl={isFlagmaster}
         hideExitControl={isFlagmaster}
         controls={null}

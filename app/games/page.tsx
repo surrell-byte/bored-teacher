@@ -61,7 +61,7 @@ export default function GamesPage() {
 
   const filteredGames = useMemo(() => {
     const q = search.toLowerCase().trim();
-    let games = [...GAME_KEYS].filter(gameId => isCreator || !COMING_SOON_GAME_IDS.has(gameId));
+    let games = [...GAME_KEYS].filter(gameId => !COMING_SOON_GAME_IDS.has(gameId));
     if (playedOnly) games = games.filter(k => (state.games[k]?.completions ?? 0) > 0);
     if (category !== 'All Categories') games = games.filter(k => GAME_TAGS[k]?.label === category);
     if (difficulty !== 'All Difficulties') games = games.filter(k => GAME_DIFFICULTY[k] === difficulty);
@@ -172,8 +172,8 @@ export default function GamesPage() {
             <h2 className="hub-section-title" style={{ marginBottom: 0 }}>⭐ Featured Games</h2>
           </div>
           <div className="hub-featured-grid">
-            {NEW_GAME_KEYS.filter(gameId => isCreator || !COMING_SOON_GAME_IDS.has(gameId)).map(gameId => (
-              <GameCard key={gameId} gameId={gameId} onClick={handlePlay} comingSoon={isCreator && COMING_SOON_GAME_IDS.has(gameId)} />
+            {NEW_GAME_KEYS.filter(gameId => !COMING_SOON_GAME_IDS.has(gameId)).map(gameId => (
+              <GameCard key={gameId} gameId={gameId} onClick={handlePlay} />
             ))}
           </div>
         </section>
@@ -224,7 +224,7 @@ export default function GamesPage() {
                     className="card-stagger"
                     style={{ '--stagger-i': i } as React.CSSProperties}
                   >
-                    <GameCard gameId={gameId} onClick={handlePlay} comingSoon={isCreator && COMING_SOON_GAME_IDS.has(gameId)} />
+                    <GameCard gameId={gameId} onClick={handlePlay} />
                   </div>
                 ))}
               </div>
@@ -237,7 +237,7 @@ export default function GamesPage() {
                   className="card-stagger"
                   style={{ '--stagger-i': i } as React.CSSProperties}
                 >
-                  <GameCard gameId={gameId} onClick={handlePlay} comingSoon={isCreator && COMING_SOON_GAME_IDS.has(gameId)} />
+                  <GameCard gameId={gameId} onClick={handlePlay} />
                 </div>
               ))}
             </div>

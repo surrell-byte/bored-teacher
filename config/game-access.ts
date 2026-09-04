@@ -1,5 +1,3 @@
-import { isCreatorUser } from '@/lib/firebase';
-
 export const COMING_SOON_GAME_IDS = new Set([
   'animalAdventureRace',
   'archersduel',
@@ -29,11 +27,10 @@ export const COMING_SOON_GAME_IDS = new Set([
   'victoryvet',
   'volcanoracer',
   'wgrandprix',
-  'warriors',
   'wordfusion',
   'shapebuilder',
 ]);
 
-export function canAccessGame(gameId: string, user: Parameters<typeof isCreatorUser>[0]) {
-  return !COMING_SOON_GAME_IDS.has(gameId) || isCreatorUser(user);
+export function canAccessGame(gameId: string) {
+  return !COMING_SOON_GAME_IDS.has(gameId);
 }
