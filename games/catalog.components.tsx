@@ -109,7 +109,7 @@ export const GAME_COMPONENTS: Partial<Record<string, React.LazyExoticComponent<R
   findthebee: lazyGame('findthebee', () => import('@/games/find-the-bee/FindTheBee.jsx')),
   riddlebombs: lazyGame('riddlebombs', () => import('@/games/riddle-bombs/RiddleBombs.jsx')),
   tonguetwister: lazyGame('tonguetwister', () => import('@/games/tongue-twister/TongueTwisterGame.jsx')),
-  finnthefox: lazyGame('finnthefox', () => import('@/games/finn-the-fox/FinnTheFox.jsx')),
+  finnthefox: lazyGame('finnthefox', () => import('@/games/finn-the-fox/ReadingRescue.jsx')),
   monsterbound: lazyGame('monsterbound', () => import('@/games/monsterbound/Monsterbound.jsx')),
   pluralquest: lazyGame('pluralquest', () => import('@/games/plural-quest/PluralQuest.jsx')),
   victoryvet: lazyGame('victoryvet', () => import('@/games/victory-vet/VictoryVet.jsx')),

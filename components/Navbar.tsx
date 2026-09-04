@@ -15,13 +15,16 @@ const NAV_ITEMS = [
   { href: '/hub',         label: 'Dashboard',   icon: '🏠' },
   { href: '/games',       label: 'Games',       icon: '🎮' },
   { href: '/leaderboard', label: 'Leaderboard', icon: '🏆' },
-  { href: '/multiplayer', label: 'Multiplayer', icon: '🕹️' },
   { href: '/resources',   label: 'Resources',   icon: '📚' },
-  { href: '/shop',        label: 'Shop',        icon: '🛍️' },
   { href: '/blog',        label: 'Blog',        icon: '✍️' },
-  { href: '/about',       label: 'About',        icon: 'ℹ️' },
-  { href: '/trophy',      label: 'Trophy Room', icon: '⭐' },
+];
+const MORE_ITEMS = [
+  { href: '/multiplayer', label: 'Multiplayer', icon: '🕹️' },
+  { href: '/shop', label: 'Shop', icon: '🛍️' },
+  { href: '/trophy', label: 'Trophy Room', icon: '⭐' },
   { href: '/suggestions', label: 'Suggestions', icon: '💡' },
+  { href: '/about', label: 'About', icon: 'ℹ️' },
+  { href: '/settings', label: 'Settings', icon: '⚙️' },
 ];
 
 export default function Navbar() {
@@ -34,6 +37,7 @@ export default function Navbar() {
   const [soundOn, setSoundOn] = useState(true);
   const [creator, setCreator] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const moreRef = useRef<HTMLDivElement>(null);
   const { isMobile, presentationMode, setPresentationMode } = useResponsive();
 
   // Presentation mode is only offered on screens big enough to matter for a
@@ -49,7 +53,8 @@ export default function Navbar() {
   // Close dropdown on outside click (mouse + touch)
   useEffect(() => {
     function handler(e: MouseEvent | TouchEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      if (dropdownRef.current && !dropdownRef.current.contains(target) && moreRef.current && !moreRef.current.contains(target)) {
         setShowDropdown(false);
       }
     }
@@ -120,6 +125,10 @@ export default function Navbar() {
               <span>Creator View</span>
             </Link>
           )}
+          <div className="nav-more-wrap" ref={moreRef}>
+            <button className={`nav-link nav-more-button${MORE_ITEMS.some(item => isActive(item.href)) ? ' active' : ''}`} onClick={() => setShowDropdown(value => !value)} aria-expanded={showDropdown} type="button">⋯ More</button>
+            {showDropdown && <div className="nav-more-menu" role="menu">{MORE_ITEMS.map(item => <Link key={item.href} href={item.href} className="dropdown-item" role="menuitem" onClick={() => setShowDropdown(false)}>{item.icon} {item.label}</Link>)}</div>}
+          </div>
         </nav>
 
         {/* Right side — sound, profile dropdown, hamburger */}
@@ -133,10 +142,6 @@ export default function Navbar() {
           >
             {soundOn ? '🔊' : '🔇'}
           </button>
-
-          <Link href="/settings" className="nav-link nav-link--compact" style={{ textDecoration: 'none' }} aria-label="Open settings">
-            ⚙️ Settings
-          </Link>
 
           {showPresentationToggle && (
             <button
@@ -260,6 +265,8 @@ export default function Navbar() {
             </Link>
           ))}
           {creator && <Link href="/admin" className={`mobile-nav-item${pathname.startsWith('/admin') ? ' active' : ''}`} onClick={() => setMobileOpen(false)}>🛠️ Creator View</Link>}
+          <div className="mobile-nav-item mobile-more-heading">More</div>
+          {MORE_ITEMS.map(item => <Link key={item.href} href={item.href} className={`mobile-nav-item${isActive(item.href) ? ' active' : ''}`} onClick={() => setMobileOpen(false)}>{item.icon} {item.label}</Link>)}
 
           <button className="mobile-nav-item" onClick={() => { setShowProfile(true); setMobileOpen(false); }}>
             ✏️ Edit Profile

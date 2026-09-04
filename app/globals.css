@@ -779,6 +779,11 @@ a { color: inherit; }
   gap: 8px;
   flex-shrink: 0;
 }
+.nav-more-wrap { position: relative; }
+.nav-more-menu { position: absolute; top: calc(100% + 8px); right: 0; z-index: 200; min-width: 190px; padding: 6px; border: 1px solid var(--border-bright); border-radius: 14px; background: var(--surface-strong); box-shadow: 0 16px 48px rgba(0,0,0,.4); }
+.nav-more-menu .dropdown-item { gap: 8px; }
+.mobile-more-heading { color: var(--gold); font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; pointer-events: none; }
+.payment-method-hidden { display: none; }
 
 .feedback-backdrop {
   position: fixed;
@@ -1009,6 +1014,7 @@ a { color: inherit; }
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.shop-item-image { width: 100%; height: 100%; object-fit: contain; object-position: center; }
 
 .pill-btn {
   display: inline-flex;

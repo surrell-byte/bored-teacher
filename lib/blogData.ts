@@ -7,6 +7,82 @@ export interface BlogPost {
   published: boolean;
 }
 
+const ARTICLE_CONTENT: Record<string, string> = {
+  'first-esl-class': `# Your First ESL Class: What to Do Before, During, and After
+
+Your first ESL class does not need to be perfect. The goal is to help students feel comfortable, learn something useful, and leave with a positive impression of English.
+
+## Before class
+
+Learn what you can about students' ages, levels, interests, class size, and learning goals. Choose one simple, measurable objective. Prepare only the materials that support it, test your technology, and keep a paper, board, or speaking activity ready as a backup.
+
+## During class
+
+Greet students warmly, introduce yourself, and use questions appropriate to their level. Keep instructions short: “Work with a partner. Ask these questions.” Demonstrate the task, check understanding with a specific question, and give students plenty of time to speak. Correct important errors without interrupting every sentence. Games are useful when they give students a clear reason to practise English.
+
+## After class
+
+Review what worked, what confused students, whether the objective was achieved, and what you would change. Keep notes about names, levels, interests, and useful activities. Your first class is not a final test; it is the first piece of evidence that helps you improve.`,
+  'plan-first-lesson': `# How to Plan Your First ESL Lesson
+
+Start with the end in mind. Write one objective describing what students will be able to do, such as “Students will be able to order food using three polite expressions.” Then identify the vocabulary, grammar, or functions they need.
+
+## A simple sequence
+
+Use a five-to-ten-minute warm-up to activate prior knowledge. Present a small amount of language in context, show examples, check meaning, and move into controlled practice such as matching or sentence completion. Finish with communication: a role-play, interview, information gap, or short presentation. Protect the final minutes for review and an exit task.
+
+Write approximate timings beside each stage, but treat the plan as a guide rather than a script. Prepare concise instructions, model the activity, and plan support for learners who need sentence starters or word banks. Add an extension for faster students and a no-technology backup. After class, record what worked and revise one stage for next time.`,
+  'first-month-teaching': `# What to Expect During Your First Month of Teaching
+
+The first month is a period of observation, routine-building, experimentation, and reflection. In week one, learn names, levels, interests, school procedures, and how long activities really take. Your lessons may not follow the plan; treat those moments as useful information.
+
+In week two, create predictable beginnings and endings. A greeting, review, objective, and closing question make classes feel organised. In week three, try different groupings, games, visual materials, and speaking tasks while noticing your natural strengths. Do not compare your first month with another teacher's years of experience.
+
+In week four, review what students need next and keep a list of effective materials. You may still feel nervous, and difficult classes may still happen. Build calm routines, protect your energy, reuse good resources, and make one improvement each week. Confidence grows from repeated experience, not from getting everything right immediately.`,
+  'common-mistakes-new-teachers': `# Common Mistakes New ESL Teachers Make
+
+New teachers often try to teach too much, talk too long, give complicated instructions, and correct every error. A focused lesson with one clear objective and abundant student practice is usually more effective than a crowded lesson plan.
+
+Use simple language, demonstrate activities, check understanding with specific questions, and give learners thinking time. Correct errors that affect meaning, repeat across the class, or connect to the lesson. Grammar matters, but students also need to use it in real communication. Games should have a learning purpose.
+
+Adjust support for different ability levels with word banks, examples, sentence starters, or extension challenges. Avoid overloaded slides and dependence on technology; keep a backup activity ready. Be warm, clear, and consistent with expectations. After each lesson, write down what to keep, change, and try. Progress matters more than perfection, and a failed activity can become valuable feedback for the next class.`,
+  'create-professional-portfolio': `# How to Create a Professional ESL Teacher Portfolio
+
+A portfolio shows what you can do, not only what certificates you hold. Begin with a clear introduction explaining who you teach, what you offer, and how your lessons help learners. Add relevant qualifications, teaching experience, age groups, levels, and environments.
+
+Explain your teaching philosophy in plain language. Show your style through sample lesson plans, worksheets, games, presentations, or speaking activities. Include three to five strong lesson examples with objectives, target language, timing, materials, and assessment. Genuine student feedback and measurable progress are useful when shared with permission and without private information.
+
+Keep the portfolio easy to navigate with sections such as About, Qualifications, Experience, Specialisations, Materials, Feedback, and Contact. Use consistent typography, clear headings, good images, and generous space. Update it whenever you gain experience or create useful work. You do not need years of teaching before starting; your portfolio should grow alongside your career.`,
+  'choose-specialization': `# How to Choose Your ESL Teaching Specialization
+
+A specialization gives your teaching career direction without putting you in a permanent box. Consider the learners you enjoy, your existing strengths, subjects you understand, and problems you can genuinely help students solve. Possible directions include young learners, teenagers, adults, Business English, exam preparation, conversation, phonics, travel, or English for a specific profession.
+
+Research student needs, qualifications, resources, and opportunities before committing. Try different classes and reflect on what you enjoyed, where you were effective, and what you want to learn next. You can combine areas, such as young learners and phonics or professionals and Business English.
+
+Build expertise through reading, training, observation, and materials development. Let your portfolio and marketing show the specialisation clearly. Choose a direction based on interest, strengths, student need, and sustainable opportunity rather than money alone. Your first specialisation can change as your experience develops.`,
+  'set-professional-goals': `# How to Set Professional Goals as an ESL Teacher
+
+Professional goals help you move from one lesson to the next with a clear direction. Think about the students, subjects, environment, income, and responsibilities you want in the future. Then choose a small number of goals across teaching, professional development, career, or business.
+
+Make goals SMART: specific, measurable, achievable, relevant, and time-bound. “Become a better teacher” can become “For the next three months, I will complete one course and use three new techniques.” Break large ambitions into small actions, track progress in a notebook or spreadsheet, and review goals monthly.
+
+Include goals for classroom management, student participation, qualifications, resources, income, or specialisation. Avoid setting so many goals that none receives attention. Learn from missed targets, adjust goals when circumstances change, and celebrate small milestones. A sustainable career is built from consistent actions that match your life, not from an impressive plan that exhausts you.`,
+  'dont-know-answer': `# What to Do When You Don't Know the Answer to a Student's Question
+
+No teacher knows everything. When a difficult question appears, stay calm and acknowledge it: “That is a good question.” Be honest: “I am not sure, and I do not want to give you the wrong answer.” Then decide whether to investigate together, ask what students think, use context, or write the question down for later.
+
+Check reliable dictionaries, grammar references, teaching materials, or other trusted sources. Be careful to distinguish incorrect language from language that is possible but unusual, informal, or regionally different. When you return with an answer, explain it at the learner's level and use clear examples.
+
+A question can become a useful lesson in vocabulary, critical thinking, dictionary skills, or independent learning. Follow up when you promise to do so, keep a notebook of questions, and never invent an explanation just to appear confident. Saying “I don't know yet; let's find out” is professional teaching.`,
+  'survive-difficult-class': `# How to Survive Your First Difficult Class
+
+Stay calm, pause, and avoid shouting over students. Regain attention with a short reset such as “Books closed. Look at me.” Keep expectations few, clear, and consistent. Use proximity, students' names, positive reinforcement, and private choices before escalating a problem.
+
+Check whether confusion, excessive difficulty, boredom, weak transitions, or too much teacher talk is feeding the behaviour. Simplify the task, demonstrate it, add movement, change the grouping, or switch to a backup activity when necessary. Do not embarrass students or turn a challenge into a public argument. Separate behaviour from the person and follow your school's procedures for consequences.
+
+After class, identify the trigger and choose one or two changes for next time. Ask a mentor or experienced teacher for help. Serious bullying, threats, violence, or safeguarding concerns require institutional support. One difficult lesson does not define you; it is information that can help you become calmer, clearer, and more effective.`,
+};
+
 export const BLOG_SECTIONS = [
   {
     id: 1,
@@ -38,16 +114,16 @@ export const BLOG_SECTIONS = [
     After class, note one activity that produced useful language and one moment when students became confused or quiet. Adjust that single part for next time. Small, deliberate changes build strong teaching habits faster than trying to redesign everything at once.
 
     The best ESL lessons are clear, active, and humane. Plan less content, create more opportunities to use it, and let student communication guide your next decision.`, },
-      { slug: 'first-esl-class', title: 'Your First ESL Class: What to Do Before, During, and After', published: false },
-      { slug: 'plan-first-lesson', title: 'How to Plan Your First ESL Lesson', published: false },
-      { slug: 'first-month-teaching', title: 'What to Expect During Your First Month of Teaching', published: false },
-      { slug: 'common-mistakes-new-teachers', title: 'Common Mistakes New ESL Teachers Make', published: false },
+      { slug: 'first-esl-class', title: 'Your First ESL Class: What to Do Before, During, and After', published: true, content: ARTICLE_CONTENT['first-esl-class'] },
+      { slug: 'plan-first-lesson', title: 'How to Plan Your First ESL Lesson', published: true, content: ARTICLE_CONTENT['plan-first-lesson'] },
+      { slug: 'first-month-teaching', title: 'What to Expect During Your First Month of Teaching', published: true, content: ARTICLE_CONTENT['first-month-teaching'] },
+      { slug: 'common-mistakes-new-teachers', title: 'Common Mistakes New ESL Teachers Make', published: true, content: ARTICLE_CONTENT['common-mistakes-new-teachers'] },
       { slug: 'build-confidence-new-teacher', title: 'How to Build Confidence as a New ESL Teacher', published: false },
-      { slug: 'create-professional-portfolio', title: 'How to Create a Professional ESL Teacher Portfolio', published: false },
-      { slug: 'choose-specialization', title: 'How to Choose Your ESL Teaching Specialization', published: false },
-      { slug: 'set-professional-goals', title: 'How to Set Professional Goals as an ESL Teacher', published: false },
-      { slug: 'dont-know-answer', title: 'What to Do When You Don\'t Know the Answer to a Student\'s Question', published: false },
-      { slug: 'survive-difficult-class', title: 'How to Survive Your First Difficult Class', published: false },
+      { slug: 'create-professional-portfolio', title: 'How to Create a Professional ESL Teacher Portfolio', published: true, content: ARTICLE_CONTENT['create-professional-portfolio'] },
+      { slug: 'choose-specialization', title: 'How to Choose Your ESL Teaching Specialization', published: true, content: ARTICLE_CONTENT['choose-specialization'] },
+      { slug: 'set-professional-goals', title: 'How to Set Professional Goals as an ESL Teacher', published: true, content: ARTICLE_CONTENT['set-professional-goals'] },
+      { slug: 'dont-know-answer', title: 'What to Do When You Don\'t Know the Answer to a Student\'s Question', published: true, content: ARTICLE_CONTENT['dont-know-answer'] },
+      { slug: 'survive-difficult-class', title: 'How to Survive Your First Difficult Class', published: true, content: ARTICLE_CONTENT['survive-difficult-class'] },
     ],
   },
   {

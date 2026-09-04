@@ -48,14 +48,13 @@ export default function PaymentPage() {
       </section>
       <section className="shell-card shop-payment">
         <div className="payment-option payment-copy">
-          <div className="hero-kicker">💳 Secure checkout</div>
           <h2>Pay with Paynow</h2>
           <div className="subscription-prices"><strong>$10 <span>/ month</span></strong><strong>$110 <span>/ year</span></strong><small>Save $10 per year, or 8.3% compared with monthly billing.</small></div>
           <p>Choose your subscription term, then complete payment securely with Paynow.</p>
           <a className="payment-paynow-button" href="https://www.paynow.co.zw/Payment/Link/?q=c2VhcmNoPXJ1c3NlbGxta2FoYW5hbmElNDBnbWFpbC5jb20mYW1vdW50PTcuMDAmcmVmZXJlbmNlPSZsPTE%3d" target="_blank" rel="noreferrer" onClick={handlePayNow}>Pay now with Paynow</a>
         </div>
 
-        <div className="payment-option payment-ecocash-wrap">
+        <div className="payment-option payment-ecocash-wrap payment-method-hidden">
           <div className="hero-kicker">💸 EcoCash</div>
           <h2>Pay with EcoCash</h2>
           <a
@@ -71,7 +70,7 @@ export default function PaymentPage() {
           <p className="payment-ecocash-instructions">Send amount to +263780074825 and send your slip to boredteacherapp@gmail.com</p>
         </div>
 
-        <div className="payment-option payment-qr-wrap">
+        <div className="payment-option payment-qr-wrap payment-method-hidden">
           <div className="hero-kicker">📱 Thai QR payment</div>
           <h2>Scan the QR code</h2>
           {/* eslint-disable-next-line @next/next/no-img-element */}

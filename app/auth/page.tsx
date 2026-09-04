@@ -222,7 +222,7 @@ function AuthPageInner() {
         .auth-page {
           min-height: 100vh;
           display: flex; align-items: center; justify-content: flex-start;
-          padding: 24px clamp(24px, 8vw, 120px);
+          padding: 24px clamp(24px, 8vw, 80px);
           background: transparent;
         }
         .deco {
@@ -243,6 +243,9 @@ function AuthPageInner() {
           box-shadow: 0 28px 80px rgba(0,0,0,0.5);
           position: relative; z-index: 1;
           animation: cardUp 0.5s cubic-bezier(0.22,1,0.36,1) both;
+        }
+        @media (min-width: 900px) {
+          .auth-page { padding-left: clamp(120px, 12vw, 220px); }
         }
         @keyframes cardUp {
           from { opacity:0; transform: translateY(30px) scale(0.97); }
