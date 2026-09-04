@@ -90,6 +90,7 @@ export const GAME_COMPONENTS: Partial<Record<string, React.LazyExoticComponent<R
   unicornwings: lazyGame('unicornwings', () => import('@/games/legacy/LegacyGamePort').then(({ default: LegacyGamePort }) => ({ default: (props: GameComponentProps) => <LegacyGamePort {...props} gameId="unicornwings" /> }))),
   feedmonster: lazyGame('feedmonster', () => import('@/games/feed-the-monster/FeedTheMonster.jsx')),
   numberclouds: lazyGame('numberclouds', () => import('@/games/number-clouds/NumberClouds.jsx')),
+  vocabvalley: lazyGame('vocabvalley', () => import('@/games/vocab-valley/VocabValley.jsx')),
   bubblepop: lazyGame('bubblepop', () => import('@/games/bubble-pop/BubblePop.jsx')),
   buildtower: lazyGame('buildtower', () => import('@/games/build-tower/BuildTower.jsx')),
   mathracing: lazyGame('mathracing', () => import('@/games/math-racing/MathRacing.jsx')),

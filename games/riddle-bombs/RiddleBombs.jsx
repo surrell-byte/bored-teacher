@@ -63,6 +63,7 @@ const LEVELS = [
   ['Final Countdown', 'The ultimate riddles for true bomb-defusal masters.', 'Expert'],
 ];
 const PER_LEVEL = 10;
+const ROUND_TIME_SECONDS = 30;
 function arrangeAnswers(riddleAnswers, questionNumber) {
   const answers = riddleAnswers.map((answer, originalIndex) => ({ answer, originalIndex }));
   const correctAnswer = answers.shift();
@@ -80,7 +81,7 @@ export default function RiddleBombs({ onComplete }) {
   const [streak, setStreak] = useState(0);
   const [correctCount, setCorrectCount] = useState(0);
   const [lives, setLives] = useState(3);
-  const [timeLeft, setTimeLeft] = useState(15);
+  const [timeLeft, setTimeLeft] = useState(ROUND_TIME_SECONDS);
   const [selected, setSelected] = useState(null);
   const [feedback, setFeedback] = useState(null);
   const [overlay, setOverlay] = useState(null);
@@ -88,7 +89,7 @@ export default function RiddleBombs({ onComplete }) {
   const [locked, setLocked] = useState(false);
 
   const riddle = RIDDLES[level * PER_LEVEL + questionIndex];
-  const maxTime = Math.max(6, 15 - Math.floor(questionIndex / 3));
+  const maxTime = ROUND_TIME_SECONDS;
   const timerPercent = Math.max(0, (timeLeft / maxTime) * 100);
 
   useEffect(() => {
@@ -115,7 +116,7 @@ export default function RiddleBombs({ onComplete }) {
     setSelected(null);
     setFeedback(null);
     setAnswers(arrangeAnswers(RIDDLES[nextLevel * PER_LEVEL].answers, 0));
-    setTimeLeft(15);
+    setTimeLeft(ROUND_TIME_SECONDS);
     setScreen('game');
   }
 
@@ -150,7 +151,7 @@ export default function RiddleBombs({ onComplete }) {
     setSelected(null);
     setFeedback(null);
     setAnswers(arrangeAnswers(nextRiddle.answers, nextIndex));
-    setTimeLeft(Math.max(6, 15 - Math.floor(nextIndex / 3)));
+    setTimeLeft(ROUND_TIME_SECONDS);
     setLocked(false);
   }
 
@@ -170,7 +171,14 @@ export default function RiddleBombs({ onComplete }) {
     setCorrectCount(nextCorrect);
     setScore(nextScore);
     setFeedback({ type: isCorrect ? 'correct' : 'wrong', text: isCorrect ? 'Correct! Keep the bomb ticking!' : originalIndex === null ? 'BOOM! Too slow!' : 'Wrong! The fuse just got shorter!' });
-    setTimeout(() => advance(questionIndex + 1, nextScore, nextLives, nextCorrect), 850);
+    if (isCorrect || originalIndex === null || nextLives <= 0) {
+      setTimeout(() => advance(questionIndex + 1, nextScore, nextLives, nextCorrect), 850);
+    } else {
+      setTimeout(() => {
+        setLocked(false);
+        setSelected(null);
+      }, 850);
+    }
   }
 
   if (screen === 'welcome') {

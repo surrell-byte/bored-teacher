@@ -563,6 +563,18 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     hasComponent: true,
     isNew: true,
   },
+  vocabvalley: {
+    name: "Vocab Valley",
+    icon: "🏞️",
+    desc: "Learn useful words across six categories with flashcards, sentence practice, and spelling challenges.",
+    cover: "/assets/covers/word-match-cover.webp",
+    tag: { label: "Vocabulary", color: "tag-vocab" },
+    badge: "3 Levels",
+    difficulty: "Starter",
+    barColor: "var(--teal)",
+    hasComponent: true,
+    isNew: true,
+  },
   bubblepop: {
     name: "Bubble Pop",
     icon: "🫧",

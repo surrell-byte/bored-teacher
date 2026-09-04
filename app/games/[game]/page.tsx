@@ -158,7 +158,6 @@ export default function GamePage() {
         onRestart={handleContinue}
         onMainMenu={handleMainMenu}
         hideMainMenuButton={gameId === 'dragonslingshot'}
-        hideHeader
         hidePauseControl={isFlagmaster}
         hideExitControl={isFlagmaster}
         controls={null}

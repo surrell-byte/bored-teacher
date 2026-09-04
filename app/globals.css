@@ -2849,12 +2849,12 @@ a { color: inherit; }
 }
 .achievement-toast--game {
   top: clamp(16px, 5vh, 56px);
-  right: auto;
+  right: 0;
   bottom: auto;
-  left: 50%;
+  left: 0;
+  margin-inline: auto;
   z-index: 510;
   width: min(440px, calc(100vw - 32px));
-  transform: translateX(-50%);
 }
 .achievement-toast--game .ach-inner {
   display: grid;
@@ -2879,9 +2879,9 @@ a { color: inherit; }
   .achievement-toast--game {
     top: max(12px, env(safe-area-inset-top));
     bottom: auto;
-    left: 50%;
-    right: auto;
-    translate: -50% 0;
+    left: 0;
+    right: 0;
+    margin-inline: auto;
   }
 }
 

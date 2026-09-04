@@ -2,30 +2,51 @@
 
 import { useState } from 'react';
 
-const TOTAL_ROUNDS = 10;
+const LEVELS = [
+  { id: 1, name: 'Cloud Hopper', rounds: 8 },
+  { id: 2, name: 'Sky Explorer', rounds: 8 },
+  { id: 3, name: 'Cloud Master', rounds: 8 },
+];
 
 function randomBetween(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function buildPuzzle() {
-  const start = randomBetween(1, 10);
-  const length = Math.random() < 0.5 ? 5 : 6;
-  const sequence = Array.from({ length }, (_, index) => start + index);
+function buildPuzzle(level) {
+  const start = randomBetween(1, level === 1 ? 20 : level === 2 ? 12 : 8);
+  const length = level === 1 ? 5 : level === 2 ? 6 : 6;
+  const step = level === 1 ? 1 : level === 2 ? randomBetween(2, 4) : randomBetween(3, 6);
+  let currentValue = start;
+  const sequence = Array.from({ length }, (_, index) => {
+    if (index === 0) return currentValue;
+    currentValue += level === 3 && index % 2 === 0 ? step + 2 : step;
+    return currentValue;
+  });
   const missingIndex = randomBetween(1, Math.max(1, length - 2));
   const missingValue = sequence[missingIndex];
-  const wrongA = missingValue + (Math.random() < 0.5 ? 1 : -1);
-  const wrongB = missingValue + (Math.random() < 0.5 ? 2 : -2);
+  const wrongA = missingValue + (level === 1 ? 1 : step);
+  const wrongB = missingValue - (level === 1 ? 1 : step);
   const options = [...new Set([missingValue, wrongA, wrongB].filter(value => value > 0))];
   return { sequence, missingIndex, missingValue, options: options.sort(() => Math.random() - 0.5) };
 }
 
 export default function NumberClouds({ onComplete }) {
+  const [level, setLevel] = useState(1);
   const [score, setScore] = useState(0);
   const [round, setRound] = useState(1);
-  const [puzzle, setPuzzle] = useState(() => buildPuzzle());
+  const [puzzle, setPuzzle] = useState(() => buildPuzzle(1));
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [feedback, setFeedback] = useState('');
+  const currentLevel = LEVELS[level - 1];
+
+  function startLevel(nextLevel) {
+    setLevel(nextLevel);
+    setScore(0);
+    setRound(1);
+    setPuzzle(buildPuzzle(nextLevel));
+    setSelectedAnswer(null);
+    setFeedback('');
+  }
 
   function handleAnswer(answer) {
     if (selectedAnswer !== null) return;
@@ -34,15 +55,15 @@ export default function NumberClouds({ onComplete }) {
       const nextScore = score + 1;
       setScore(nextScore);
       setFeedback("That's right!");
-      onComplete?.(nextScore, 100);
+      if (round === currentLevel.rounds) onComplete?.(nextScore, 100);
     } else {
       setFeedback('Try again!');
     }
   }
 
   function nextRound() {
-    setRound(current => Math.min(TOTAL_ROUNDS, current + 1));
-    setPuzzle(buildPuzzle());
+    setRound(current => Math.min(currentLevel.rounds, current + 1));
+    setPuzzle(buildPuzzle(level));
     setSelectedAnswer(null);
     setFeedback('');
   }
@@ -59,7 +80,8 @@ export default function NumberClouds({ onComplete }) {
         <section className="game-heading">
           <div className="game-title"><span className="title-cloud">☁️</span><h1>Number Clouds</h1></div>
           <p className="game-subtitle">Hop across the clouds!</p>
-          <div className="round-progress"><span className="progress-label">ROUND {round} OF {TOTAL_ROUNDS}</span><div className="progress-track"><div className="progress-fill" style={{ width: `${(round / TOTAL_ROUNDS) * 100}%` }} /></div></div>
+          <div className="level-picker">{LEVELS.map(item => <button key={item.id} className={item.id === level ? 'selected' : ''} onClick={() => startLevel(item.id)}>Level {item.id}</button>)}</div>
+          <div className="round-progress"><span className="progress-label">{currentLevel.name.toUpperCase()} · ROUND {round} OF {currentLevel.rounds}</span><div className="progress-track"><div className="progress-fill" style={{ width: `${(round / currentLevel.rounds) * 100}%` }} /></div></div>
         </section>
         <section className="sequence-area">
           <div className="sequence">
@@ -69,8 +91,8 @@ export default function NumberClouds({ onComplete }) {
             <p className="choose-label">Which number belongs on the cloud?</p>
             <div className="answer-buttons">{puzzle.options.map(answer => { const state = selectedAnswer === answer ? (answer === puzzle.missingValue ? 'correct' : 'wrong') : ''; return <button key={answer} className={`answer-button ${state}`} onClick={() => handleAnswer(answer)} disabled={selectedAnswer !== null}>{answer}</button>; })}</div>
             {feedback && <p className={`answer-feedback ${selectedAnswer === puzzle.missingValue ? 'correct-text' : 'wrong-text'}`}>{feedback}</p>}
-            {selectedAnswer === puzzle.missingValue && round < TOTAL_ROUNDS && <button className="next-round-button" onClick={nextRound}>Next cloud →</button>}
-            {selectedAnswer === puzzle.missingValue && round === TOTAL_ROUNDS && <p className="answer-feedback correct-text">You completed all the rounds!</p>}
+            {selectedAnswer === puzzle.missingValue && round < currentLevel.rounds && <button className="next-round-button" onClick={nextRound}>Next cloud →</button>}
+            {selectedAnswer === puzzle.missingValue && round === currentLevel.rounds && <p className="answer-feedback correct-text">You completed Level {level}!</p>}
           </div>
         </section>
         <section className="game-hud"><div className="hud-item"><span className="hud-icon">⭐</span><div><span className="hud-label">SCORE</span><strong>{score}</strong></div></div><div className="hud-divider" /><div className="hud-item"><span className="hud-icon">☁️</span><div><span className="hud-label">ROUND</span><strong>{round}</strong></div></div><div className="hud-divider" /><div className="hud-item"><span className="hud-icon">🏆</span><div><span className="hud-label">BEST</span><strong>{score}</strong></div></div></section>

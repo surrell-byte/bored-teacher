@@ -14,7 +14,7 @@ const NO_SHELL_PATHS = ['/', '/auth'];
 export default function AppShell({ children }: { children: ReactNode }) {
   const pathname   = usePathname() ?? '';
   const isGameRoute = pathname.startsWith('/games/');
-  const showShell  = !NO_SHELL_PATHS.includes(pathname);
+  const showShell  = !NO_SHELL_PATHS.includes(pathname) && !isGameRoute;
   
   // Safely get game context without throwing
   const gameContext = useContext(GameContext);
