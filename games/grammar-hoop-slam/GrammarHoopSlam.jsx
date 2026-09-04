@@ -123,8 +123,8 @@ export default function GrammarHoopSlam({ onComplete }) {
       backgroundRepeat: 'no-repeat',
     }}>
       <div style={{ fontSize: "3.5rem", marginBottom: 8 }}>🏀</div>
-      <h1 style={{ fontSize: "2rem", margin: "0 0 4px", color: "#fbbf24" }}>WARRIORS GRAMMAR SLAM</h1>
-      <p style={{ color: "#93c5fd", marginBottom: 24 }}>Tense Championship</p>
+      <h1 style={{ fontSize: "2rem", margin: "0 0 4px", color: "#fbbf24" }}>GRAMMAR GYM</h1>
+      <p style={{ color: "#93c5fd", marginBottom: 24 }}>Three-level grammar training</p>
       <input
         value={playerName}
         onChange={e => setPlayerName(e.target.value)}

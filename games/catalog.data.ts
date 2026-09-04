@@ -65,9 +65,9 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     hasComponent: true,
   },
   warriors: {
-    name: "Warriors Grammar Slam",
+    name: "Grammar Gym",
     icon: "🏀",
-    desc: "Train tense accuracy with increasingly challenging sentence choices.",
+    desc: "Build grammar confidence across three levels of increasingly challenging sentence choices.",
     cover: "/assets/covers/grammar-hoop-slam-cover.webp",
     tag: { label: "Grammar", color: "tag-grammar" },
     badge: "3 Levels",
