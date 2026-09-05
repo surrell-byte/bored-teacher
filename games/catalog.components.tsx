@@ -45,7 +45,7 @@ export const GAME_COMPONENTS: Partial<Record<string, React.LazyExoticComponent<R
   tilebattle: lazyGame('tilebattle', () => import('@/games/tile-battle/TileBattle')),
   quiztrail: lazyGame('quiztrail', () => import('@/games/quiz-trail/QuizTrail')),
   unicorn: lazyGame('unicorn', () => import('@/games/unicorn-run/UnicornRun.jsx')),
-  warriors: lazyGame('warriors', () => import('@/games/grammar-hoop-slam/GrammarHoopSlam.jsx')),
+  warriors: lazyGame('warriors', () => import('@/games/grammar-hoop-slam/GrammarGym.jsx')),
   compound: lazyGame('compound', () => import('@/games/compound-word-quest/CompoundWordQuest.jsx')),
   wordmatch: lazyGame('wordmatch', () => import('@/games/word-match/WordMatch.jsx')),
   memory: lazyGame('memory', () => import('@/games/memory-game/MemoryMatch.jsx')),

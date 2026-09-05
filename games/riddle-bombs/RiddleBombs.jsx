@@ -165,14 +165,14 @@ export default function RiddleBombs({ onComplete }) {
     const bonus = isCorrect ? Math.ceil(Math.max(timeLeft, 0) * 10) : 0;
     const nextScore = isCorrect ? score + 100 + bonus + nextStreak * 25 : score;
 
-    setSelected({ originalIndex, isCorrect });
+    setSelected({ originalIndex: originalIndex === null ? riddle.correct : originalIndex, isCorrect: originalIndex === null ? true : isCorrect });
     setLives(nextLives);
     setStreak(nextStreak);
     setCorrectCount(nextCorrect);
     setScore(nextScore);
-    setFeedback({ type: isCorrect ? 'correct' : 'wrong', text: isCorrect ? 'Correct! Keep the bomb ticking!' : originalIndex === null ? 'BOOM! Too slow!' : 'Wrong! The fuse just got shorter!' });
+    setFeedback({ type: isCorrect ? 'correct' : originalIndex === null ? 'timeout' : 'wrong', text: isCorrect ? 'Correct! Keep the bomb ticking!' : originalIndex === null ? `Time is up! The answer was "${riddle.answers[riddle.correct]}".` : 'Wrong! The fuse just got shorter!' });
     if (isCorrect || originalIndex === null || nextLives <= 0) {
-      setTimeout(() => advance(questionIndex + 1, nextScore, nextLives, nextCorrect), 850);
+      setTimeout(() => advance(questionIndex + 1, nextScore, nextLives, nextCorrect), originalIndex === null ? 2800 : 850);
     } else {
       setTimeout(() => {
         setLocked(false);

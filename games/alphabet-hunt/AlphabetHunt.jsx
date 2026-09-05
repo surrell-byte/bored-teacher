@@ -9,6 +9,7 @@ const THEMES = {
   arcade: { name: 'Arcade', paper: '#24183d', panel: '#352354', ink: '#fff7e6', p1: '#5de2a7', p2: '#ff71ce', gold: '#ffd166' },
 };
 const EFFECTS = ['-300 points', '+500 points', 'Steal 100 points'];
+const QWERTY_KEYS = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'].join('').split('');
 
 export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
   const [screen, setScreen] = useState('welcome');
@@ -51,8 +52,7 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
   };
 
   const startGame = () => {
-    const letters = [];
-    for (let i = 0; i < 26; i++) letters.push(String.fromCharCode(65 + i));
+    const letters = QWERTY_KEYS;
 
     const contents = [];
     for (let a = 0; a < 5; a++) contents.push('p1');
@@ -63,7 +63,7 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
     const newTiles = letters.map((letter, idx) => ({
       letter,
       content: contents[idx],
-      flipped: false,
+      revealed: false,
       matched: false,
     }));
 
@@ -107,11 +107,11 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
   };
 
   const handleTileClick = (idx) => {
-    if (lock || !tiles[idx] || tiles[idx].flipped || tiles[idx].matched) return;
+    if (lock || !tiles[idx] || tiles[idx].revealed || tiles[idx].matched) return;
 
     const newTiles = [...tiles];
     const tile = newTiles[idx];
-    tile.flipped = true;
+    tile.revealed = true;
     setTiles(newTiles);
 
     const mine = (current === 1 && tile.content === 'p1') || (current === 2 && tile.content === 'p2');
@@ -233,9 +233,9 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
       <div className="alphabet-hunt ah-screen ah-welcome-screen" style={{ '--paper': theme.paper, '--panel': theme.panel, '--ink': theme.ink, '--p1': theme.p1, '--p2': theme.p2, '--gold': theme.gold }}>
         <div className="ah-card">
           <h1>Alphabet Hunt</h1>
-          <p className="ah-tag">A two-player memory game, 26 tiles wide</p>
+          <p className="ah-tag">A two-player memory game on a QWERTY keyboard</p>
           <p className="ah-rules">
-            Twenty-six tiles cover the alphabet, A to Z. Underneath, five tiles hide
+            Twenty-six keys cover a QWERTY keyboard. Underneath, five keys hide
             <b> Player One's</b> avatar and five hide <b>Player Two's</b> avatar &mdash;
             the rest are empty. Take turns flipping one tile at a time. Find your own
             avatar and you flip again; find an empty tile or your opponent's avatar and
@@ -382,7 +382,7 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
             {tiles.map((tile, idx) => (
               <button
                 key={idx}
-                className={`ah-tile ${tile.flipped ? 'flipped' : ''} ${tile.matched ? 'matched' : ''}`}
+                className={`ah-tile ${tile.revealed ? 'flipped' : ''} ${tile.matched ? 'matched' : ''}`}
                 onClick={() => handleTileClick(idx)}
                 disabled={lock || tile.matched}
               >
