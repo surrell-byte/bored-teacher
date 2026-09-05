@@ -59,6 +59,14 @@ export default function CountAndAdd({ onComplete }) {
   const question = useMemo(() => makeQuestion(difficulty, theme), [difficulty, theme, questionKey]);
 
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('count-add:hud', { detail: { difficulty, level, levelStars, score, streak } }));
+  }, [difficulty, level, levelStars, score, streak]);
+  useEffect(() => {
+    const changeDifficulty = event => restart(event.detail);
+    window.addEventListener('count-add:set-difficulty', changeDifficulty);
+    return () => window.removeEventListener('count-add:set-difficulty', changeDifficulty);
+  }, [difficulty]);
   const later = (callback, delay) => {
     const id = window.setTimeout(callback, delay);
     timers.current.push(id);
@@ -124,21 +132,6 @@ export default function CountAndAdd({ onComplete }) {
   return <main className="count-add-game">
     <style>{COUNT_ADD_STYLES}</style>
     <div className="count-add-game__frame">
-      <div className="count-add-game__topbar">
-        <div className="count-add-game__level-row">
-          <div className="count-add-game__stars" aria-label={`${levelStars} of ${LEVEL_SIZE} stars`}>{Array.from({ length: LEVEL_SIZE }, (_, index) => <span key={index} className={index < levelStars ? 'is-lit' : ''}>{index < levelStars ? '⭐' : '☆'}</span>)}</div>
-          <span className="count-add-game__level">Level {level}</span>
-        </div>
-        <div className="count-add-game__score-row">
-          {streak >= 2 && <span className="count-add-game__streak">🔥 {streak}</span>}
-          <span className="count-add-game__score"><small>score</small>{score}</span>
-        </div>
-      </div>
-
-      <div className="count-add-game__difficulty" aria-label="Choose difficulty">
-        {Object.entries(DIFFICULTIES).map(([key, value]) => <button key={key} type="button" onClick={() => restart(key)} className={difficulty === key ? 'is-active' : ''}>{value.label}</button>)}
-      </div>
-
       <section className="count-add-game__card-wrap">
         {showLevelUp && <div className="count-add-game__level-up" role="status"><div>{theme.items[0]}{theme.items[1]}</div><strong>Level {level + 1} Unlocked!</strong><span>{THEMES[Math.min(level, THEMES.length - 1)].name} — let&apos;s go!</span></div>}
         <div className="count-add-game__card">

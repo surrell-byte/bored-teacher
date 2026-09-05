@@ -47,6 +47,7 @@ export default function GamePage() {
   const [showRouteWelcome, setShowRouteWelcome] = useState(!GAMES_WITH_WELCOME.has(gameId));
   const [accessReady, setAccessReady] = useState(false);
   const [canPlay, setCanPlay] = useState(false);
+  const [countAddHud, setCountAddHud] = useState<any>(null);
 
   useEffect(() => {
     setShowRouteWelcome(!GAMES_WITH_WELCOME.has(gameId));
@@ -56,6 +57,13 @@ export default function GamePage() {
     setCanPlay(canAccessGame(gameId));
     setAccessReady(true);
   }), [gameId]);
+
+  useEffect(() => {
+    if (gameId !== 'countadd') return undefined;
+    const handleHud = (event: Event) => setCountAddHud((event as CustomEvent).detail);
+    window.addEventListener('count-add:hud', handleHud);
+    return () => window.removeEventListener('count-add:hud', handleHud);
+  }, [gameId]);
 
   const gameName  = GAME_NAMES[gameId] ?? 'Game';
   const gameIcon  = GAME_ICONS[gameId] ?? '🎮';
@@ -67,6 +75,8 @@ export default function GamePage() {
   const isFruitWordHunt = gameId === 'fruitwordhunt';
   const isWordFusion = gameId === 'wordfusion';
   const isWeatherWizard = gameId === 'weatherwizard';
+  const isVocabValley = gameId === 'vocabvalley';
+  const isCountAdd = gameId === 'countadd';
   const zooShellTheme = {
     savanna: { nav: '#4a3728', navRaised: '#b8863a', navText: '#fff8e7', navMuted: '#fce9c8', background: '#d9c9a8' },
     ocean: { nav: '#16445a', navRaised: '#2f8da3', navText: '#effcff', navMuted: '#bde8ec', background: '#8ed1d5' },
@@ -167,6 +177,16 @@ export default function GamePage() {
         onThemeChange={isTicTacRoll ? themeId => setTicTheme(TIC_TAC_ROLL_THEMES.find(theme => theme.id === themeId) ?? TIC_TAC_ROLL_THEMES[0]) : isAlphabetHunt ? setAlphabetTheme : isWordFusion ? setWordFusionTheme : isZooGame ? setZooTheme : undefined}
         headerExtra={
           <>
+            {isVocabValley && <button className="game-shell-header-action" type="button" onClick={() => window.dispatchEvent(new Event('vocab-valley:trail-map'))}>← Trail map</button>}
+            {isCountAdd && countAddHud && (
+              <>
+                <span className="game-shell-topbar-stats" aria-label="Count and Add progress">
+                  <span className="game-shell-topbar-stat"><b>{Array.from({ length: 5 }, (_, index) => index < countAddHud.levelStars ? '⭐' : '☆').join('')}</b><span>Level {countAddHud.level}</span></span>
+                  <span className="game-shell-topbar-stat"><b>{countAddHud.score}</b><span>Score</span></span>
+                </span>
+                {Object.entries({ easy: '🐣 Easy', medium: '🐥 Medium', hard: '🦅 Hard' }).map(([key, label]) => <button key={key} className="game-shell-header-action" type="button" aria-pressed={countAddHud.difficulty === key} onClick={() => window.dispatchEvent(new CustomEvent('count-add:set-difficulty', { detail: key }))}>{label}</button>)}
+              </>
+            )}
             {isConnect4 && c4Hud ? <Connect4HeaderActions hud={c4Hud} /> : null}
             {isTicTacRoll && (
               <>

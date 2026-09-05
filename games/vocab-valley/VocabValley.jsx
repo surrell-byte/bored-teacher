@@ -53,6 +53,39 @@ const LEVELS = [
   { id: 3, title: 'Spell It', subtitle: 'Type each vocabulary word from memory.', icon: '✏️' },
 ];
 
+const CONTEXT = {
+  elephant: 'I am large, I have a trunk, and I use my ears to stay cool.',
+  penguin: 'I am a black-and-white bird, I swim well, and I cannot fly.',
+  rabbit: 'I have long ears, I hop, and I love crunchy vegetables.',
+  giraffe: 'I am tall, I have a very long neck, and I eat leaves.',
+  dolphin: 'I live in the sea, I am clever, and I jump out of the water.',
+  banana: 'I am yellow, I am soft, and monkeys love to eat me.',
+  sandwich: 'I have bread around me, and people often eat me for lunch.',
+  carrot: 'I am orange, I am crunchy, and rabbits like to eat me.',
+  pancakes: 'I am round, I am cooked in a pan, and people eat me for breakfast.',
+  watermelon: 'I am large, I am green outside, and I am juicy and pink inside.',
+  rainbow: 'I have many colours, and you may see me after rain.',
+  mountain: 'I am very high, I have rocky sides, and people climb me.',
+  butterfly: 'I have colourful wings, and I fly from flower to flower.',
+  sunshine: 'I am warm and bright, and I come from the sun.',
+  waterfall: 'I am water falling over rocks, and I can be very loud.',
+  backpack: 'I carry books and pencils, and students wear me on their backs.',
+  scissors: 'I have two sharp blades, and I help you cut paper.',
+  notebook: 'I have pages, and students write notes in me.',
+  library: 'I am a quiet place where you can borrow and read books.',
+  dictionary: 'I explain words and their meanings.',
+  airport: 'Planes take off and land here.',
+  suitcase: 'I hold clothes when you travel.',
+  passport: 'I am a small book you need to travel to another country.',
+  lighthouse: 'I shine a light to guide ships near the coast.',
+  journey: 'I am a trip from one place to another.',
+  excited: 'I feel very happy and full of energy before something special.',
+  nervous: 'I feel worried or unsure before something important.',
+  proud: 'I feel happy because I did something well.',
+  curious: 'I want to know more, so I ask lots of questions.',
+  grateful: 'I feel thankful for someone or something kind.',
+};
+
 function shuffle(items) {
   return [...items].sort(() => Math.random() - 0.5);
 }
@@ -72,18 +105,36 @@ export default function VocabValley({ onComplete }) {
   const [answer, setAnswer] = useState('');
   const [feedback, setFeedback] = useState(null);
   const [score, setScore] = useState(0);
+  const [letterTiles, setLetterTiles] = useState([]);
 
   const current = items[index];
   const activeLevel = LEVELS[level - 1];
 
+  useEffect(() => {
+    const goToTrailMap = () => setScreen('menu');
+    window.addEventListener('vocab-valley:trail-map', goToTrailMap);
+    return () => window.removeEventListener('vocab-valley:trail-map', goToTrailMap);
+  }, []);
+
+  function makeLetterTiles(word) {
+    const extras = shuffle('abcdefghijklmnopqrstuvwxyz'.split('')).slice(0, Math.max(3, Math.min(6, word.length)));
+    return shuffle([...word.replace(/[^a-z]/gi, '').toUpperCase().split(''), ...extras.map(letter => letter.toUpperCase())]);
+  }
+
+  function prepareItems() {
+    return shuffle(CATEGORIES[category]).map(item => ({ ...item, options: shuffle(item.options) }));
+  }
+
   function startLevel(nextLevel) {
     setLevel(nextLevel);
-    setItems(shuffle(CATEGORIES[category]));
+    const nextItems = prepareItems();
+    setItems(nextItems);
     setIndex(0);
     setRevealed(false);
     setAnswer('');
     setFeedback(null);
     setScore(0);
+    setLetterTiles(makeLetterTiles(nextItems[0].word));
     setScreen('game');
   }
 
@@ -109,6 +160,7 @@ export default function VocabValley({ onComplete }) {
     setRevealed(false);
     setAnswer('');
     setFeedback(null);
+    setLetterTiles(makeLetterTiles(items[index + 1].word));
   }
 
   function revealCard() {
@@ -150,11 +202,11 @@ export default function VocabValley({ onComplete }) {
 
   return (
     <div className="vocab-valley"><style>{STYLES}</style><main className="vv-panel vv-game">
-      <div className="vv-game-top"><button className="vv-secondary vv-small" onClick={() => setScreen('menu')}>← Trail map</button><div><span className="vv-kicker">{category}</span><h1>{activeLevel.icon} {activeLevel.title}</h1></div><span className="vv-progress">{index + 1} / {items.length}</span></div>
+      <div className="vv-game-top"><div><span className="vv-kicker">{category}</span><h1>{activeLevel.icon} {activeLevel.title}</h1></div><span className="vv-progress">{index + 1} / {items.length}</span></div>
       <div className="vv-progress-bar"><i style={{ width: `${((index + 1) / items.length) * 100}%` }} /></div>
-      {level === 1 && <section className="vv-learning"><p className="vv-instruction">Click the card to reveal the picture and word.</p><button className={`vv-flashcard ${revealed ? 'revealed' : ''}`} onClick={revealCard}>{revealed ? <><span className="vv-picture">{current.emoji}</span><strong>{current.word}</strong><small>Say it aloud and remember the picture.</small></> : <><span className="vv-picture vv-hidden-picture">❔</span><strong>Tap to discover</strong><small>Picture and word hidden</small></>}</button>{revealed && <button className="vv-primary" onClick={nextCard}>{index + 1 === items.length ? 'Finish Level' : 'Next word →'}</button>}</section>}
-      {level === 2 && <section className="vv-quiz"><p className="vv-instruction">{current.emoji} {current.sentence.replace('______', '_____')}</p><div className="vv-options">{current.options.map(option => <button key={option} className={feedback?.type === 'correct' && option === current.word ? 'correct' : feedback?.type === 'wrong' && option !== current.word ? '' : ''} onClick={() => answerSentence(option)} disabled={feedback?.type === 'correct'}>{option}</button>)}</div>{feedback && <p className={`vv-feedback ${feedback.type}`}>{feedback.text}</p>}{feedback?.type === 'correct' && <button className="vv-primary" onClick={nextCard}>{index + 1 === items.length ? 'Finish Level' : 'Next sentence →'}</button>}</section>}
-      {level === 3 && <section className="vv-quiz"><div className="vv-word-prompt"><span>{current.emoji}</span><p>Spell the word for this picture.</p></div><form onSubmit={checkSpelling} className="vv-spell-form"><input value={answer} onChange={event => setAnswer(event.target.value)} autoFocus autoComplete="off" aria-label="Type the vocabulary word" placeholder="Type the word" disabled={feedback?.type === 'correct'} /><button className="vv-primary" type="submit" disabled={feedback?.type === 'correct'}>Check</button></form>{feedback && <p className={`vv-feedback ${feedback.type}`}>{feedback.text}</p>}{feedback?.type === 'correct' && <button className="vv-primary" onClick={nextCard}>{index + 1 === items.length ? 'Finish Level' : 'Next word →'}</button>}</section>}
+      {level === 1 && <section className="vv-learning"><p className="vv-instruction">Click the silhouette to reveal the picture, name, and context clue.</p><button className={`vv-flashcard ${revealed ? 'revealed' : ''}`} onClick={revealCard}>{revealed ? <><span className="vv-picture">{current.emoji}</span><strong>{current.word}</strong><small>{CONTEXT[current.word]}</small></> : <><span className="vv-picture vv-silhouette" aria-hidden="true">{current.emoji}</span><strong>Tap to discover</strong><small>Picture and word hidden</small></>}</button>{revealed && <button className="vv-primary" onClick={nextCard}>{index + 1 === items.length ? 'Finish Level' : 'Next word →'}</button>}</section>}
+      {level === 2 && <section className="vv-quiz"><div className="vv-hero-picture" aria-hidden="true">{current.emoji}</div><p className="vv-context">{CONTEXT[current.word]}</p><p className="vv-instruction">{current.sentence.replace('______', '_____')}</p><div className="vv-options">{current.options.map(option => <button key={option} className={feedback?.type === 'correct' && option === current.word ? 'correct' : ''} onClick={() => answerSentence(option)} disabled={feedback?.type === 'correct'}>{option}</button>)}</div>{feedback && <p className={`vv-feedback ${feedback.type}`}>{feedback.text}</p>}{feedback?.type === 'correct' && <button className="vv-primary" onClick={nextCard}>{index + 1 === items.length ? 'Finish Level' : 'Next sentence →'}</button>}</section>}
+      {level === 3 && <section className="vv-quiz"><div className="vv-word-prompt"><span>{current.emoji}</span><p>Spell the word for this picture.</p></div><form onSubmit={checkSpelling} className="vv-spell-form"><input value={answer} onChange={event => setAnswer(event.target.value)} autoFocus autoComplete="off" aria-label="Type the vocabulary word" placeholder="Type the word" disabled={feedback?.type === 'correct'} /><button className="vv-primary" type="submit" disabled={feedback?.type === 'correct'}>Check</button></form><div className="vv-letter-tiles" aria-label="Optional letter tiles">{letterTiles.map((letter, tileIndex) => <button key={`${letter}-${tileIndex}`} type="button" onClick={() => setAnswer(value => `${value}${letter.toLowerCase()}`)} disabled={feedback?.type === 'correct'}>{letter}</button>)}</div><button type="button" className="vv-clear-tiles" onClick={() => setAnswer('')} disabled={feedback?.type === 'correct'}>Clear spelling</button>{feedback && <p className={`vv-feedback ${feedback.type}`}>{feedback.text}</p>}{feedback?.type === 'correct' && <button className="vv-primary" onClick={nextCard}>{index + 1 === items.length ? 'Finish Level' : 'Next word →'}</button>}</section>}
       <div className="vv-scorebar">⭐ {score} stars <span>{activeLevel.subtitle}</span></div>
     </main></div>
   );

@@ -33,11 +33,13 @@ function generateOrders() {
   };
 }
 
+const INITIAL_ORDERS = generateOrders();
+
 export default function PizzaFractions({ onComplete }) {
   const [score, setScore] = useState(0);
-  const [orders, setOrders] = useState(() => generateOrders());
+  const [orders, setOrders] = useState(INITIAL_ORDERS);
   const [activeToppingIndex, setActiveToppingIndex] = useState(0);
-  const [sliceAssignments, setSliceAssignments] = useState([]);
+  const [sliceAssignments, setSliceAssignments] = useState(() => Array(INITIAL_ORDERS.slices).fill(null));
   const [feedback, setFeedback] = useState('');
   const [nextVisible, setNextVisible] = useState(false);
 
