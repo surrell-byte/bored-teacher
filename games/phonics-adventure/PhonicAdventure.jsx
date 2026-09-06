@@ -36,6 +36,11 @@ const BG_COLORS = [
   "#fff7ed","#ecfdf5","#eff6ff","#fdf4ff","#f0fdf4",
 ];
 
+const CIRCLE_PASSAGES = [
+  { sound: "ow", words: ["The", "brown", "cow", "found", "a", "flower", "by", "the", "town"], answers: ["brown", "cow", "found", "flower", "town"] },
+  { sound: "ou", words: ["The", "mouse", "ran", "around", "the", "house", "with", "a", "loud", "sound"], answers: ["mouse", "around", "house", "loud", "sound"] },
+];
+
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
 
 function PhonicStyles() {
@@ -865,6 +870,9 @@ export default function PhonicAdventure({ onComplete }) {
   const [spellingIdx, setSpellingIdx] = useState(0);
   const [spellingInput, setSpellingInput] = useState("");
   const [spellingResult, setSpellingResult] = useState(null);
+  const [circleIdx, setCircleIdx] = useState(0);
+  const [circleSelected, setCircleSelected] = useState([]);
+  const [circleResult, setCircleResult] = useState(null);
 
   useEffect(() => {
     if (searchParams.get("screen") === "menu") setScreen("menu");
@@ -929,6 +937,33 @@ export default function PhonicAdventure({ onComplete }) {
     setSpellingIdx(Math.floor(Math.random() * ALPHABET.length));
     setSpellingInput("");
     setSpellingResult(null);
+  };
+
+  const startCircle = () => {
+    setCircleIdx(0);
+    setCircleSelected([]);
+    setCircleResult(null);
+    setScreen("circle");
+  };
+
+  const checkCircle = () => {
+    const passage = CIRCLE_PASSAGES[circleIdx];
+    const expected = new Set(passage.answers);
+    const selected = new Set(circleSelected);
+    const correct = expected.size === selected.size && [...expected].every(word => selected.has(word));
+    setCircleResult(correct ? "correct" : "wrong");
+    if (correct) setScore(value => value + 20);
+  };
+
+  const nextCircle = () => {
+    if (circleIdx + 1 >= CIRCLE_PASSAGES.length) {
+      onComplete?.(score, circleResult === "correct" ? 100 : 50);
+      setScreen("menu");
+      return;
+    }
+    setCircleIdx(index => index + 1);
+    setCircleSelected([]);
+    setCircleResult(null);
   };
 
   const quizAnswer = (opt) => {
@@ -1001,6 +1036,10 @@ export default function PhonicAdventure({ onComplete }) {
               <span className="menu-level-icon">✏️</span>
               <span><span className="menu-level-title">Spelling Challenge</span><span className="menu-level-description">Spell the word shown by the emoji.</span></span>
             </button>
+            <button className="menu-level" onClick={startCircle}>
+              <span className="menu-level-icon">⭕</span>
+              <span><span className="menu-level-title">Sound Circle</span><span className="menu-level-description">Circle every word with the target phonics sound.</span></span>
+            </button>
           </div>
         </div>
       </div>
@@ -1034,6 +1073,34 @@ export default function PhonicAdventure({ onComplete }) {
       </div>
     </div>
   );
+
+  if (screen === "circle") {
+    const passage = CIRCLE_PASSAGES[circleIdx];
+    return (
+      <div className="phonic-root">
+        <PhonicStyles />
+        <div className="phonic-screen">
+          <div className="phonic-panel quiz-card" style={{ maxWidth: 860 }}>
+            <div className="game-mark">⭕</div>
+            <h2 className="game-title">Circle the sound</h2>
+            <p className="game-subtitle">Tap every word that contains the <strong>{passage.sound}</strong> sound.</p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center", padding: 24, background: "rgba(255,255,255,.08)", borderRadius: 20 }}>
+              {passage.words.map((word, index) => {
+                const chosen = circleSelected.includes(word);
+                return <button key={`${word}-${index}`} type="button" onClick={() => !circleResult && setCircleSelected(current => chosen ? current.filter(item => item !== word) : [...current, word])} style={{ padding: "14px 18px", borderRadius: 14, border: chosen ? "4px solid #fbbf24" : "2px solid rgba(255,255,255,.2)", background: chosen ? "rgba(251,191,36,.2)" : "rgba(255,255,255,.08)", color: "white", fontSize: 22, fontWeight: 700, cursor: circleResult ? "default" : "pointer", textDecoration: chosen ? "underline" : "none" }}>{word}</button>;
+              })}
+            </div>
+            {circleResult && <p style={{ color: circleResult === "correct" ? "#4ade80" : "#f87171", fontWeight: 800 }}>{circleResult === "correct" ? "✅ Brilliant! You found them all." : `Try again. Look for words with ${passage.sound}.`}</p>}
+            <div className="result-actions">
+              {!circleResult && <button className="primary-button" onClick={checkCircle}>Check answers</button>}
+              {circleResult && <button className="primary-button" onClick={circleResult === "correct" ? nextCircle : () => { setCircleSelected([]); setCircleResult(null); }}> {circleResult === "correct" ? "Next passage →" : "Try again"}</button>}
+              <button className="secondary-button" onClick={() => setScreen("menu")}>Back to Home</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Learn mode — flip through alphabet
   if (screen === "learn") {

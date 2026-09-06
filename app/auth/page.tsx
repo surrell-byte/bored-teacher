@@ -23,13 +23,13 @@ function AuthPageInner() {
   const [resetLoading, setResetLoading] = useState(false);
   const [ready, setReady]     = useState(false);
   const [showPwd, setShowPwd] = useState(false);
+  const returnTo = searchParams.get('returnTo') || '/hub';
 
   // Auth guard — if already signed in, go to hub.
   useEffect(() => {
-    if (localStorage.getItem('guestUser') === 'true') { router.replace('/hub'); return; }
     const unsub = onAuthStateChanged(async (user) => {
       if (user) {
-        router.replace('/hub');
+        router.replace(returnTo);
         return;
       }
       setReady(true);
@@ -50,7 +50,7 @@ function AuthPageInner() {
     try {
       if (tab === 'login') {
         await signIn(email.trim(), password);
-        router.replace('/hub');
+        router.replace(returnTo);
         return;
       }
 

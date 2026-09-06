@@ -34,6 +34,7 @@ function getLetterPool(word) {
 export default function EmojiSpellingMaster({ onComplete }) {
   const { completeGame } = useGame();
   const [screen, setScreen] = useState("start"); // start | game | over
+  const [mode, setMode] = useState("spell");
   const [level, setLevel] = useState("easy");
   const [questions, setQuestions] = useState([]);
   const [qIdx, setQIdx] = useState(0);
@@ -45,9 +46,11 @@ export default function EmojiSpellingMaster({ onComplete }) {
   const [lives, setLives] = useState(5);
   const [feedback, setFeedback] = useState("");
   const [won, setWon] = useState(false);
+  const [missing, setMissing] = useState(null);
 
   const startGame = useCallback((lvl) => {
     const qs = shuffle(DATA[lvl]);
+    setMode("spell");
     setLevel(lvl);
     setQuestions(qs);
     setQIdx(0);
@@ -63,7 +66,42 @@ export default function EmojiSpellingMaster({ onComplete }) {
     setScreen("game");
   }, []);
 
+  const startMissing = useCallback((lvl) => {
+    const qs = shuffle(DATA[lvl]);
+    setMode("missing");
+    setLevel(lvl);
+    setQuestions(qs);
+    setQIdx(0);
+    setScore(0);
+    setCorrectCount(0);
+    setLives(5);
+    setFeedback("");
+    setWon(false);
+    setMissing({ index: Math.floor(Math.random() * qs[0].word.length), choice: null });
+    setScreen("game");
+  }, []);
+
   const current = questions[qIdx] || null;
+
+  const chooseMissing = (letter) => {
+    if (!current || !missing || feedback) return;
+    const isCorrect = letter === current.word[missing.index];
+    setMissing(prev => prev ? { ...prev, choice: letter } : prev);
+    setFeedback(isCorrect ? "correct" : "wrong");
+    if (isCorrect) setScore(s => s + 10);
+    else setLives(value => value - 1);
+    setTimeout(() => {
+      const nextIdx = qIdx + 1;
+      if (nextIdx >= questions.length || (!isCorrect && lives <= 1)) {
+        setWon(isCorrect && nextIdx >= questions.length);
+        setScreen("over");
+        return;
+      }
+      setQIdx(nextIdx);
+      setMissing({ index: Math.floor(Math.random() * questions[nextIdx].word.length), choice: null });
+      setFeedback("");
+    }, 700);
+  };
 
   const tapLetter = (poolIdx, letter) => {
     if (!current || usedPoolIdx.has(poolIdx) || typed.length >= current.word.length) return;
@@ -149,6 +187,10 @@ export default function EmojiSpellingMaster({ onComplete }) {
           }}>{lvl}</button>
         ))}
       </div>
+      <p style={{ color: "#c4b5fd", margin: "28px 0 12px" }}>Choose the missing letter</p>
+      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
+        {["easy","medium","hard"].map(lvl => <button key={`missing-${lvl}`} onClick={() => startMissing(lvl)} style={{ padding: "10px 22px", borderRadius: 999, border: "1px solid #818cf8", background: "transparent", color: "#e0e7ff", fontWeight: 700, cursor: "pointer", textTransform: "capitalize" }}>{lvl}</button>)}
+      </div>
     </div>
   );
 
@@ -165,7 +207,7 @@ export default function EmojiSpellingMaster({ onComplete }) {
       </h2>
       <p style={{ color: "#a5b4fc", fontSize: "1.2rem", marginBottom: 24 }}>Final Score: {score}</p>
       <div style={{ display: "flex", gap: 12 }}>
-        <button onClick={() => startGame(level)} style={{
+        <button onClick={() => (mode === "missing" ? startMissing(level) : startGame(level))} style={{
           padding: "14px 28px", borderRadius: 999, border: "none",
           background: "#6366f1", color: "#fff", fontWeight: 700, cursor: "pointer",
         }}>🔄 Play Again</button>
@@ -178,6 +220,21 @@ export default function EmojiSpellingMaster({ onComplete }) {
   );
 
   if (!current) return null;
+
+  if (mode === "missing") return (
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg,#1e1b4b,#312e81,#1e1b4b)", fontFamily: "'Segoe UI', sans-serif", color: "#e0e7ff", padding: 24 }}>
+      <div style={{ width: "100%", maxWidth: 760, textAlign: "center" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}><span>{level.toUpperCase()}</span><span style={{ color: "#fbbf24" }}>Score: {score}</span><span>{Array.from({ length: 5 }, (_, i) => i < lives ? "❤️" : "🖤").join("")}</span></div>
+        <div style={{ background: "rgba(255,255,255,.08)", borderRadius: 24, padding: 32, border: feedback === "correct" ? "2px solid #22c55e" : feedback === "wrong" ? "2px solid #ef4444" : "2px solid rgba(255,255,255,.1)" }}>
+          <div style={{ fontSize: "clamp(4rem, 12vw, 8rem)" }}>{current.emoji}</div>
+          <h2 style={{ fontSize: "clamp(2rem, 6vw, 4rem)", letterSpacing: 8 }}>{current.word.split("").map((letter, index) => index === missing.index ? (missing.choice || "_") : letter).join("")}</h2>
+          <p>Which letter completes the word?</p>
+          <div style={{ display: "flex", justifyContent: "center", flexWrap: "wrap", gap: 10, marginTop: 24 }}>{shuffle([current.word[missing.index], ...ALPHABET.filter(letter => letter !== current.word[missing.index])]).slice(0, 5).map((letter, index) => <button key={`${letter}-${index}`} disabled={!!feedback} onClick={() => chooseMissing(letter)} style={{ width: 58, height: 58, borderRadius: 12, border: "none", background: "#4f46e5", color: "white", fontSize: "1.5rem", fontWeight: 800, cursor: "pointer" }}>{letter}</button>)}</div>
+          {feedback && <p style={{ color: feedback === "correct" ? "#4ade80" : "#f87171", fontWeight: 700 }}>{feedback === "correct" ? "✅ Correct!" : `❌ The answer is ${current.word[missing.index]}`}</p>}
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div style={{

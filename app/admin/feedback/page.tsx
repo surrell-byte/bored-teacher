@@ -28,7 +28,7 @@ export default function FeedbackAdminPage() {
         return;
       }
       if (!isCreatorUser(user)) {
-        setStatus('denied');
+        router.replace('/hub');
         return;
       }
       try {

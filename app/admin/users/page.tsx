@@ -21,7 +21,7 @@ export default function UsersAdminPage() {
       }
 
       if (!isCreatorUser(user)) {
-        setStatus('denied');
+        router.replace('/hub');
         return;
       }
 

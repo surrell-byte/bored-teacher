@@ -54,12 +54,6 @@ export default function SplashPage() {
       router.replace(destinationRef.current);
     }, SPLASH_DURATION_MS);
 
-    const isGuest = localStorage.getItem('guestUser') === 'true';
-    if (isGuest) {
-      resolved = true;
-      destinationRef.current = '/hub';
-    }
-
     const unsub = onAuthStateChanged((user) => {
       if (resolved) return;
       resolved = true;

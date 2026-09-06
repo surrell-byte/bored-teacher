@@ -105,6 +105,7 @@ export const GAME_COMPONENTS: Partial<Record<string, React.LazyExoticComponent<R
   tankwars: lazyGame('tankwars', () => import('@/games/tank-wars/TankWars.jsx')),
   zoogame: lazyGame('zoogame', () => import('@/games/zoo-game/ZooGame.jsx')),
   whatami: lazyGame('whatami', () => import('@/games/what-am-i/WhatAmI.jsx')),
+  descriptiondetective: lazyGame('descriptiondetective', () => import('@/games/description-detective/DescriptionDetective.jsx')),
   'sentence-builder': lazyGame('sentence-builder', () => import('@/SentenceBuilder.jsx')),
   animalAdventureRace: lazyGame('animalAdventureRace', () => import('@/games/animal-adventure-race/AnimalAdventureRace.jsx')),
   findthebee: lazyGame('findthebee', () => import('@/games/find-the-bee/FindTheBee.jsx')),

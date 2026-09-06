@@ -22,7 +22,7 @@ export default function CreatorViewPage() {
     } else if (isCreatorUser(user)) {
       setStatus('ready');
     } else {
-      setStatus('denied');
+      router.replace('/hub');
     }
   }), [router]);
 

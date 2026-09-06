@@ -113,7 +113,9 @@ for (const folder of physicalFolders) {
 // ---- 4. compare cover paths against public/assets/covers ----
 console.log('\nChecking catalog cover paths against public/assets/covers...');
 const coversDir = path.join(ROOT, 'public/assets/covers');
-const coverFiles = new Set(fs.readdirSync(coversDir).filter((f) => f.endsWith('.webp')));
+const validExtensions = new Set(['.webp', '.png', '.jpg', '.jpeg', '.avif']);
+const coverFiles = new Set(fs.readdirSync(coversDir)
+  .filter((f) => validExtensions.has(path.extname(f).toLowerCase())));
 for (const id of catalogIds) {
   const cover = catalog[id].cover;
   if (!cover) { fail(`"${id}" has no cover set`); continue; }

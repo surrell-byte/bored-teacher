@@ -64,6 +64,7 @@ const SentenceBuilder_HTML = `<canvas id="confettiCanvas"></canvas>
             <button class="btn-clear" onclick="clearSlots()" title="Clear all slots">↺ Clear</button>
             <button class="btn-hint" onclick="showHint()">💡 Hint</button>
             <button class="btn-check" onclick="checkSentence()">✅ Check</button>
+            <button class="btn-hint" id="threeWaysBtn">🧩 Three Ways</button>
         </div>
 
         <!-- Message -->
@@ -461,6 +462,30 @@ const SentenceBuilder_CSS = `:root {
             margin-top: 20px;
         }
 
+        .challenge-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin: 10px 0;
+            color: var(--text-muted);
+        }
+        .challenge-row .challenge-slot {
+            min-width: 96px;
+            min-height: 44px;
+            padding: 8px 12px;
+            border: 2px dashed rgba(255,255,255,.25);
+            border-radius: 10px;
+            color: var(--text);
+            background: var(--slot-bg);
+            cursor: pointer;
+        }
+        .challenge-row .challenge-slot.filled { border-style: solid; border-color: var(--gold); }
+        .challenge-row .challenge-number { width: 22px; color: var(--gold-light); font-weight: 700; }
+        .challenge-row.active { outline: 2px solid rgba(240,214,138,.35); outline-offset: 6px; border-radius: 10px; }
+        .challenge-instructions { color: var(--text-muted); margin: 10px 0 18px; }
+
         button {
             padding: 13px 22px;
             font-size: 0.95rem;
@@ -696,6 +721,15 @@ export default function SentenceBuilder() {
             let currentSentence = [];
             let currentDifficulty = 'easy';
             let hintUsed = false;
+            let challengeMode = false;
+            let challengeRows = [[], [], []];
+            let challengeRow = 0;
+            const challengeWords = ['kangaroo', 'raisin', 'thicket'];
+            const challengeTargets = [
+                ['kangaroo', 'thicket', 'raisin'],
+                ['raisin', 'kangaroo', 'thicket'],
+                ['thicket', 'kangaroo', 'raisin']
+            ];
 
             // DOM refs
             const sentenceArea = document.getElementById('sentenceArea');
@@ -709,6 +743,7 @@ export default function SentenceBuilder() {
             const progressLabel = document.getElementById('progressLabel');
             const confettiCanvas = document.getElementById('confettiCanvas');
             const ctx = confettiCanvas.getContext('2d');
+            const threeWaysBtn = document.getElementById('threeWaysBtn');
 
             // Confetti system
             let confettiParticles = [];
@@ -791,6 +826,7 @@ export default function SentenceBuilder() {
             // Load Level
             // ─────────────────────────────────────
             function loadLevel() {
+                challengeMode = false;
                 messageEl.textContent = '';
                 messageEl.className = '';
                 hintUsed = false;
@@ -800,6 +836,95 @@ export default function SentenceBuilder() {
                 createSlots();
                 createWords();
                 updateProgress();
+            }
+
+            function startThreeWays() {
+                challengeMode = true;
+                challengeRows = [[], [], []];
+                challengeRow = 0;
+                messageEl.textContent = '';
+                messageEl.className = '';
+                sentenceArea.innerHTML = '<p class="challenge-instructions">Use the same three words in three different ways. Click a row to choose it, then click words to fill the blanks.</p>';
+                for (let row = 0; row < 3; row++) {
+                    const line = document.createElement('div');
+                    line.className = 'challenge-row' + (row === 0 ? ' active' : '');
+                    line.dataset.row = row;
+                    line.innerHTML = '<span class="challenge-number">' + (row + 1) + '</span><span>A</span>';
+                    ['subject', 'place', 'food'].forEach((part, index) => {
+                        const slot = document.createElement('button');
+                        slot.type = 'button';
+                        slot.className = 'challenge-slot';
+                        slot.dataset.index = index;
+                        slot.textContent = 'word';
+                        slot.addEventListener('click', () => {
+                            if (challengeRows[row][index]) {
+                                challengeRows[row][index] = '';
+                                renderChallenge();
+                            }
+                        });
+                        line.appendChild(slot);
+                        if (index === 0) line.insertAdjacentHTML('beforeend', ' jumped out of a ');
+                        if (index === 1) line.insertAdjacentHTML('beforeend', ' and ate a ');
+                        if (index === 2) line.insertAdjacentHTML('beforeend', '.');
+                    });
+                    line.addEventListener('click', (event) => {
+                        if (event.target.classList.contains('challenge-slot')) return;
+                        challengeRow = row;
+                        renderChallenge();
+                    });
+                    sentenceArea.appendChild(line);
+                }
+                wordBank.innerHTML = '';
+                challengeWords.forEach(word => {
+                    const button = document.createElement('button');
+                    button.className = 'word';
+                    button.type = 'button';
+                    button.textContent = word;
+                    button.addEventListener('click', () => {
+                        const empty = challengeRows[challengeRow].findIndex(value => !value);
+                        if (empty === -1) return;
+                        challengeRows[challengeRow][empty] = word;
+                        renderChallenge();
+                    });
+                    wordBank.appendChild(button);
+                });
+                renderChallenge();
+            }
+
+            function renderChallenge() {
+                sentenceArea.querySelectorAll('.challenge-row').forEach((line, row) => {
+                    line.classList.toggle('active', row === challengeRow);
+                    line.querySelectorAll('.challenge-slot').forEach((slot, index) => {
+                        slot.textContent = challengeRows[row][index] || 'word';
+                        slot.classList.toggle('filled', Boolean(challengeRows[row][index]));
+                    });
+                });
+            }
+
+            function checkThreeWays() {
+                if (!challengeMode) return false;
+                if (challengeRows.some(row => row.length !== 3 || row.some(word => !word))) {
+                    messageEl.textContent = '⚠️ Fill all three sentences first';
+                    messageEl.className = 'msg-error';
+                    return true;
+                }
+                const valid = challengeRows.every((row, index) => row.join('|') === challengeTargets[index].join('|'));
+                const different = new Set(challengeRows.map(row => row.join('|'))).size === 3;
+                if (valid && different) {
+                    messageEl.textContent = '✅ Brilliant! Three different sentences!';
+                    messageEl.className = 'msg-success';
+                    score += 40;
+                    totalCompleted++;
+                    level++;
+                    scoreEl.textContent = score;
+                    levelEl.textContent = level;
+                    spawnConfetti();
+                    setTimeout(loadLevel, 1600);
+                } else {
+                    messageEl.textContent = '❌ Try a different arrangement for each sentence.';
+                    messageEl.className = 'msg-error';
+                }
+                return true;
             }
 
             function createSlots() {
@@ -1004,6 +1129,7 @@ export default function SentenceBuilder() {
             // Check Sentence
             // ─────────────────────────────────────
             function checkSentence() {
+                if (checkThreeWays()) return;
                 const slots = sentenceArea.querySelectorAll('.slot');
                 let answer = [];
                 let allFilled = true;
@@ -1131,6 +1257,7 @@ export default function SentenceBuilder() {
                 });
             }
             window.showHint = showHint;
+            threeWaysBtn.addEventListener('click', startThreeWays);
 
             // ─────────────────────────────────────
             // Progress
