@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { auth, loadUserState, onAuthStateChanged, setTeacherProAccess } from '@/lib/firebase';
+import { loadUserState, onAuthStateChanged } from '@/lib/firebase';
 
 const PLANS = [
   {
@@ -46,19 +46,16 @@ export default function SubscriptionPage() {
   useEffect(() => {
     const isGuest = localStorage.getItem('guestUser') === 'true';
     const syncSubscription = async (user?: { uid: string } | null) => {
-      const localAccess = localStorage.getItem('teacherProAccess') === 'true';
       if (user) {
         const profile = await loadUserState(user.uid);
-        const subscriptionEnabled = Boolean(localAccess || profile?.teacherPro);
-        setHasTeacherPro(subscriptionEnabled);
-        if (subscriptionEnabled) localStorage.setItem('teacherProAccess', 'true');
+        setHasTeacherPro(Boolean(profile?.teacherPro));
       } else {
-        setHasTeacherPro(localAccess);
+        setHasTeacherPro(false);
       }
     };
 
     if (isGuest) {
-      setHasTeacherPro(localStorage.getItem('teacherProAccess') === 'true');
+      setHasTeacherPro(false);
       setJoinedAt(new Date().toISOString());
       setReady(true);
       return;
@@ -123,13 +120,6 @@ export default function SubscriptionPage() {
                 disabled={plan.name === 'Free' && !hasTeacherPro}
                 onClick={async () => {
                   if (plan.name === 'Teacher Pro') {
-                    const user = auth?.currentUser;
-                    if (user) {
-                      await setTeacherProAccess(user.uid, true);
-                      setHasTeacherPro(true);
-                    } else {
-                      localStorage.setItem('teacherProAccess', 'true');
-                    }
                     router.push('/payment?plan=resource-library');
                     return;
                   }

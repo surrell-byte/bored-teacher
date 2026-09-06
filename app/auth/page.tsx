@@ -245,7 +245,7 @@ function AuthPageInner() {
           animation: cardUp 0.5s cubic-bezier(0.22,1,0.36,1) both;
         }
         @media (min-width: 900px) {
-          .auth-page { padding-left: clamp(120px, 12vw, 220px); }
+          .auth-page { padding-left: clamp(180px, 18vw, 300px); }
         }
         @keyframes cardUp {
           from { opacity:0; transform: translateY(30px) scale(0.97); }

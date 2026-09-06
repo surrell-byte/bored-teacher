@@ -74,19 +74,16 @@ export default function ResourcesPage() {
   useEffect(() => {
     const isGuest = localStorage.getItem('guestUser') === 'true';
     const syncState = async (user?: { uid: string } | null) => {
-      const localAccess = localStorage.getItem('teacherProAccess') === 'true';
       if (user) {
         const profile = await loadUserState(user.uid);
-        const isPremium = Boolean(profile?.teacherPro ?? localAccess);
-        setHasTeacherPro(isPremium);
-        if (isPremium) localStorage.setItem('teacherProAccess', 'true');
+        setHasTeacherPro(Boolean(profile?.teacherPro));
       } else {
-        setHasTeacherPro(localAccess);
+        setHasTeacherPro(false);
       }
     };
 
     if (isGuest) {
-      setHasTeacherPro(localStorage.getItem('teacherProAccess') === 'true');
+      setHasTeacherPro(false);
       setReady(true);
       return;
     }

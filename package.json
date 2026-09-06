@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npm run check-games && next build",
+    "build": "npm run check-env && npm run check-games && npm test && next build",
+    "check-env": "node scripts/check-env.mjs",
+    "test": "node --test tests/*.test.js",
     "cleanup": "sh scripts/cleanup-generated.sh",
     "start": "next start",
     "lint": "next lint",

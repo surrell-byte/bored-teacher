@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { auth, onAuthStateChanged, setTeacherProAccess } from '@/lib/firebase';
+import { onAuthStateChanged } from '@/lib/firebase';
 
 export default function PaymentPage() {
   const router = useRouter();
@@ -28,15 +28,6 @@ export default function PaymentPage() {
     return unsubscribe;
   }, [router]);
 
-  const handlePayNow = async () => {
-    const user = auth?.currentUser;
-    if (user) {
-      await setTeacherProAccess(user.uid, true);
-    } else {
-      localStorage.setItem('teacherProAccess', 'true');
-    }
-  };
-
   if (!ready) return null;
 
   return (
@@ -51,7 +42,8 @@ export default function PaymentPage() {
           <h2>Pay with Paynow</h2>
           <div className="subscription-prices"><strong>$10 <span>/ month</span></strong><strong>$110 <span>/ year</span></strong><small>Save $10 per year, or 8.3% compared with monthly billing.</small></div>
           <p>Choose your subscription term, then complete payment securely with Paynow.</p>
-          <a className="payment-paynow-button" href="https://www.paynow.co.zw/Payment/Link/?q=c2VhcmNoPXJ1c3NlbGxta2FoYW5hbmElNDBnbWFpbC5jb20mYW1vdW50PTcuMDAmcmVmZXJlbmNlPSZsPTE%3d" target="_blank" rel="noreferrer" onClick={handlePayNow}>Pay now with Paynow</a>
+          <a className="payment-paynow-button" href="https://www.paynow.co.zw/Payment/Link/?q=c2VhcmNoPXJ1c3NlbGxta2FoYW5hbmElNDBnbWFpbC5jb20mYW1vdW50PTcuMDAmcmVmZXJlbmNlPSZsPTE%3d" target="_blank" rel="noreferrer">Pay now with Paynow</a>
+          <p className="payment-proof-note">Your account is upgraded only after payment is verified. Please keep your payment receipt.</p>
         </div>
 
         <div className="payment-option payment-ecocash-wrap payment-method-hidden">

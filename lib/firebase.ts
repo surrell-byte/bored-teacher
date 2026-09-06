@@ -60,7 +60,20 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID ?? '',
 };
 
-const hasFirebaseConfig = Boolean(firebaseConfig.apiKey && firebaseConfig.projectId);
+const missingFirebaseKeys = Object.entries({
+  NEXT_PUBLIC_FIREBASE_API_KEY: firebaseConfig.apiKey,
+  NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: firebaseConfig.authDomain,
+  NEXT_PUBLIC_FIREBASE_PROJECT_ID: firebaseConfig.projectId,
+  NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: firebaseConfig.storageBucket,
+  NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: firebaseConfig.messagingSenderId,
+  NEXT_PUBLIC_FIREBASE_APP_ID: firebaseConfig.appId,
+}).filter(([, value]) => !value).map(([key]) => key);
+
+const hasFirebaseConfig = missingFirebaseKeys.length === 0;
+
+export function firebaseConfigError(): string | null {
+  return hasFirebaseConfig ? null : `Firebase is not configured. Missing: ${missingFirebaseKeys.join(', ')}. Restart the Next.js server after updating .env.local.`;
+}
 
 if (!hasFirebaseConfig) {
   console.warn('Firebase environment variables are missing. Set NEXT_PUBLIC_FIREBASE_* values in your environment before running the app.');
@@ -76,7 +89,7 @@ if (typeof window !== 'undefined' && auth) {
 
 function requireFirebase() {
   if (!auth || !db) {
-    throw new Error('Firebase is not configured. Set NEXT_PUBLIC_FIREBASE_* values in your environment before using Firebase features.');
+    throw new Error(firebaseConfigError() || 'Firebase is not available.');
   }
   return { auth, db };
 }
@@ -176,7 +189,7 @@ export function onAuthStateChanged(cb: (user: User | null) => void) {
 
 export async function signUp(email: string, password: string, displayName: string, role: AccountRole) {
   if (!auth || !db) {
-    throw new Error('Firebase is not configured. Set NEXT_PUBLIC_FIREBASE_* values in your environment before signing up.');
+    throw new Error(firebaseConfigError() || 'Firebase is not available.');
   }
 
   const cleanEmail = email.trim().toLowerCase();
@@ -199,7 +212,7 @@ export async function signUp(email: string, password: string, displayName: strin
 
 export async function signIn(identifier: string, password: string) {
   if (!auth || !db) {
-    throw new Error('Firebase is not configured. Set NEXT_PUBLIC_FIREBASE_* values in your environment before signing in.');
+    throw new Error(firebaseConfigError() || 'Firebase is not available.');
   }
 
   const rawIdentifier = identifier.trim();
@@ -333,8 +346,13 @@ async function createUserProfile(uid: string, name: string, email: string, role:
 
 export async function saveUserState(uid: string, state: Partial<UserState>) {
   if (!uid || !db) return;
+  const writableState = Object.fromEntries(Object.entries(state).filter(([key]) => [
+    'name', 'username', 'usernameLower', 'avatar', 'theme', 'sound', 'games', 'xp', 'level', 'coins',
+    'lastGame', 'loginStreak', 'classId', 'emailVerificationCode', 'emailVerificationSentAt',
+    'emailVerified', 'welcomeGiftClaimed', 'welcomeGiftId', 'ownedItems', 'lastLogin', 'isActive'
+  ].includes(key)));
   try {
-    await setDoc(doc(db, 'users', uid), { ...state, updatedAt: serverTimestamp() }, { merge: true });
+    await setDoc(doc(db, 'users', uid), { ...writableState, updatedAt: serverTimestamp() }, { merge: true });
   } catch (_) {}
 }
 
@@ -349,17 +367,13 @@ export async function loadUserState(uid: string): Promise<UserState | null> {
 export async function getTeacherProStatus(uid: string | null | undefined): Promise<boolean> {
   if (!uid) return false;
   const profile = await loadUserState(uid);
-  if (profile?.teacherPro) return true;
-  return typeof window !== 'undefined' && localStorage.getItem('teacherProAccess') === 'true';
+  return Boolean(profile?.teacherPro);
 }
 
 export async function setTeacherProAccess(uid: string | null | undefined, enabled: boolean): Promise<boolean> {
-  if (!uid) return false;
-  await saveUserState(uid, { teacherPro: enabled });
-  if (typeof window !== 'undefined') {
-    localStorage.setItem('teacherProAccess', String(enabled));
-  }
-  return true;
+  void uid;
+  void enabled;
+  throw new Error('Teacher Pro access is granted only after verified payment confirmation.');
 }
 
 export async function loadUsersForCreator(): Promise<UserSummary[]> {

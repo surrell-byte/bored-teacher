@@ -18,17 +18,29 @@ service cloud.firestore {
 
     match /users/{userId} {
       allow create: if request.auth != null
-        && request.auth.uid == userId;
+        && request.auth.uid == userId
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.teacherPro == false
+        && request.resource.data.emailVerified == false;
 
       allow read: if request.auth != null && (
         request.auth.uid == userId ||
         request.auth.token.email == 'boredteacherapp@gmail.com'
       );
 
-      allow update, delete: if request.auth != null && (
-        request.auth.uid == userId ||
-        request.auth.token.email == 'boredteacherapp@gmail.com'
+      allow update: if request.auth != null && (
+        request.auth.token.email == 'boredteacherapp@gmail.com' ||
+        (request.auth.uid == userId && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'name', 'username', 'usernameLower', 'avatar', 'theme', 'sound', 'games',
+          'xp', 'level', 'coins', 'lastGame', 'loginStreak', 'classId',
+          'emailVerificationCode', 'emailVerificationSentAt', 'emailVerified',
+          'welcomeGiftClaimed', 'welcomeGiftId', 'ownedItems', 'lastLogin',
+          'isActive', 'updatedAt'
+        ]))
       );
+
+      allow delete: if request.auth != null
+        && request.auth.token.email == 'boredteacherapp@gmail.com';
     }
 
     match /classCodes/{classCode} {
