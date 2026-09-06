@@ -25,6 +25,7 @@ const GAMES_WITH_WELCOME = new Set([
   'finnthefox', 'hiddencolours', 'oceanquest', 'parachutedrop', 'weatherwizard',
   'phonicsadventure', 'riddlebombs', 'tictacroll', 'tornado', 'wordfusion', 'weatherwizard', 'victoryvet',
   'turbodash',
+  'numberclouds',
 ]);
 
 // ── Page ──────────────────────────────────────────────────────
@@ -48,6 +49,7 @@ export default function GamePage() {
   const [accessReady, setAccessReady] = useState(false);
   const [canPlay, setCanPlay] = useState(false);
   const [countAddHud, setCountAddHud] = useState<any>(null);
+  const [numberCloudsHud, setNumberCloudsHud] = useState<any>(null);
 
   useEffect(() => {
     setShowRouteWelcome(!GAMES_WITH_WELCOME.has(gameId));
@@ -77,6 +79,7 @@ export default function GamePage() {
   const isWeatherWizard = gameId === 'weatherwizard';
   const isVocabValley = gameId === 'vocabvalley';
   const isCountAdd = gameId === 'countadd';
+  const isNumberClouds = gameId === 'numberclouds';
   const zooShellTheme = {
     savanna: { nav: '#4a3728', navRaised: '#b8863a', navText: '#fff8e7', navMuted: '#fce9c8', background: '#d9c9a8' },
     ocean: { nav: '#16445a', navRaised: '#2f8da3', navText: '#effcff', navMuted: '#bde8ec', background: '#8ed1d5' },
@@ -120,9 +123,10 @@ export default function GamePage() {
   function handleMainMenu() {
     setResult(null);
     setC4Hud(null);
-    if (isWeatherWizard) {
+    if (isWeatherWizard || isNumberClouds) {
       setShowRouteWelcome(false);
-      window.dispatchEvent(new Event('weather-wizard:main-menu'));
+      if (isWeatherWizard) window.dispatchEvent(new Event('weather-wizard:main-menu'));
+      else setGameSession(session => session + 1);
     } else {
       setShowRouteWelcome(true);
       setGameSession(session => session + 1);
@@ -187,6 +191,13 @@ export default function GamePage() {
                 {Object.entries({ easy: '🐣 Easy', medium: '🐥 Medium', hard: '🦅 Hard' }).map(([key, label]) => <button key={key} className="game-shell-header-action" type="button" aria-pressed={countAddHud.difficulty === key} onClick={() => window.dispatchEvent(new CustomEvent('count-add:set-difficulty', { detail: key }))}>{label}</button>)}
               </>
             )}
+            {isNumberClouds && numberCloudsHud && (
+              <span className="game-shell-topbar-stats" aria-label="Number Clouds progress">
+                <span className="game-shell-topbar-stat"><b>⭐ {numberCloudsHud.score}</b><span>Score</span></span>
+                <span className="game-shell-topbar-stat"><b>☁️ {numberCloudsHud.round}</b><span>Round</span></span>
+                <span className="game-shell-topbar-stat"><b>🏆 {numberCloudsHud.best}</b><span>Best</span></span>
+              </span>
+            )}
             {isConnect4 && c4Hud ? <Connect4HeaderActions hud={c4Hud} /> : null}
             {isTicTacRoll && (
               <>
@@ -198,7 +209,7 @@ export default function GamePage() {
             {isFlagmaster && <button className="game-shell-header-action" type="button" onClick={() => setFlagDarkMode(value => !value)} aria-label="Toggle Flagmaster theme">{flagDarkMode ? '☀️ Light' : '🌙 Dark'}</button>}
           </>
         }
-        stats={[
+        stats={isNumberClouds ? [] : [
           { label: 'Best', value: state.games[gameId]?.highScore ?? 0, icon: '⭐' },
           { label: 'Coins', value: state.coins, icon: '🪙' },
         ]}
@@ -230,6 +241,7 @@ export default function GamePage() {
               onComplete={handleComplete}
               {...(isTicTacRoll ? { themeId: ticTheme.id, onThemeChange: setTicTheme } : {})}
               {...(isConnect4 ? { onHudUpdate: setC4Hud } : {})}
+              {...(isNumberClouds ? { onHudUpdate: setNumberCloudsHud } : {})}
               {...(isFlagmaster ? { darkMode: flagDarkMode } : {})}
               {...(isZooGame ? { themeId: zooTheme } : {})}
                {...(isAlphabetHunt ? { themeId: alphabetTheme } : {})}

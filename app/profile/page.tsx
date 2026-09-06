@@ -26,8 +26,19 @@ export default function ProfilePage() {
   const [isGuest, setIsGuest] = useState(false);
 
   useEffect(() => {
-    if (localStorage.getItem('guestUser') === 'true') { setIsGuest(true); setReady(true); return; }
-    return onAuthStateChanged(user => { if (!user) router.replace('/auth'); else setReady(true); });
+    const guestMode = localStorage.getItem('guestUser') === 'true';
+    return onAuthStateChanged(user => {
+      if (user) {
+        localStorage.removeItem('guestUser');
+        setIsGuest(false);
+        setReady(true);
+      } else if (guestMode) {
+        setIsGuest(true);
+        setReady(true);
+      } else {
+        router.replace('/auth');
+      }
+    });
   }, [router]);
   useEffect(() => { setName(state.name === 'Explorer' ? '' : state.name); setUsername(state.username || ''); setAvatar(state.avatar || '👤'); }, [state.name, state.username, state.avatar]);
 

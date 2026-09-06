@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const LEVELS = [
-  { id: 1, name: 'Cloud Hopper', rounds: 8 },
-  { id: 2, name: 'Sky Explorer', rounds: 8 },
-  { id: 3, name: 'Cloud Master', rounds: 8 },
+  { id: 1, name: 'Cloud Hopper', rounds: 8, difficulty: 'Easy', description: 'Count forward with simple number patterns.', icon: '🌱' },
+  { id: 2, name: 'Sky Explorer', rounds: 8, difficulty: 'Medium', description: 'Spot bigger jumps and changing sequences.', icon: '🧭' },
+  { id: 3, name: 'Cloud Master', rounds: 8, difficulty: 'Hard', description: 'Solve tricky patterns with changing steps.', icon: '🏆' },
 ];
 
 function randomBetween(min, max) {
@@ -30,14 +30,20 @@ function buildPuzzle(level) {
   return { sequence, missingIndex, missingValue, options: options.sort(() => Math.random() - 0.5) };
 }
 
-export default function NumberClouds({ onComplete }) {
+export default function NumberClouds({ onComplete, onHudUpdate }) {
+  const [screen, setScreen] = useState('menu');
   const [level, setLevel] = useState(1);
   const [score, setScore] = useState(0);
   const [round, setRound] = useState(1);
   const [puzzle, setPuzzle] = useState(() => buildPuzzle(1));
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [feedback, setFeedback] = useState('');
+  const [bestScore, setBestScore] = useState(0);
   const currentLevel = LEVELS[level - 1];
+
+  useEffect(() => {
+    onHudUpdate?.({ score, round, best: Math.max(bestScore, score) });
+  }, [bestScore, onHudUpdate, round, score]);
 
   function startLevel(nextLevel) {
     setLevel(nextLevel);
@@ -46,6 +52,7 @@ export default function NumberClouds({ onComplete }) {
     setPuzzle(buildPuzzle(nextLevel));
     setSelectedAnswer(null);
     setFeedback('');
+    setScreen('game');
   }
 
   function handleAnswer(answer) {
@@ -54,11 +61,18 @@ export default function NumberClouds({ onComplete }) {
     if (answer === puzzle.missingValue) {
       const nextScore = score + 1;
       setScore(nextScore);
+      setBestScore(value => Math.max(value, nextScore));
       setFeedback("That's right!");
       if (round === currentLevel.rounds) onComplete?.(nextScore, 100);
     } else {
       setFeedback('Try again!');
     }
+  }
+
+  function returnToMenu() {
+    setScreen('menu');
+    setSelectedAnswer(null);
+    setFeedback('');
   }
 
   function nextRound() {
@@ -77,12 +91,17 @@ export default function NumberClouds({ onComplete }) {
       <div className="bird bird-two">🦅</div>
       <div className="sun">☀️</div>
       <main className="number-clouds-game">
-        <section className="game-heading">
+        {screen === 'menu' && <section className="number-clouds-menu">
           <div className="game-title"><span className="title-cloud">☁️</span><h1>Number Clouds</h1></div>
           <p className="game-subtitle">Hop across the clouds!</p>
-          <div className="level-picker">{LEVELS.map(item => <button key={item.id} className={item.id === level ? 'selected' : ''} onClick={() => startLevel(item.id)}>Level {item.id}</button>)}</div>
-          <div className="round-progress"><span className="progress-label">{currentLevel.name.toUpperCase()} · ROUND {round} OF {currentLevel.rounds}</span><div className="progress-track"><div className="progress-fill" style={{ width: `${(round / currentLevel.rounds) * 100}%` }} /></div></div>
-        </section>
+          <p className="menu-intro">Choose your flight path.</p>
+          <div className="menu-levels">{LEVELS.map(item => <button key={item.id} className={`menu-level-card menu-level-${item.id}`} onClick={() => startLevel(item.id)}><span className="menu-level-icon">{item.icon}</span><span className="menu-level-copy"><strong>Level {item.id}: {item.name}</strong><small>{item.description}</small></span><span className="menu-level-difficulty">{item.difficulty}</span></button>)}</div>
+        </section>}
+        {screen === 'game' && <section className="game-heading">
+          <p className="game-subtitle">{currentLevel.name}</p>
+          <div className="round-progress"><span className="progress-label">{currentLevel.difficulty.toUpperCase()} · ROUND {round} OF {currentLevel.rounds}</span><div className="progress-track"><div className="progress-fill" style={{ width: `${(round / currentLevel.rounds) * 100}%` }} /></div></div>
+        </section>}
+        {screen === 'game' && <>
         <section className="sequence-area">
           <div className="sequence">
             {puzzle.sequence.map((number, index) => <span key={index} className="sequence-part">{index > 0 && <span className="sequence-arrow">→</span>}<span className={`number-cloud ${index === puzzle.missingIndex ? 'missing-cloud' : ''}`}>{index === puzzle.missingIndex ? '?' : number}</span></span>)}
@@ -95,7 +114,8 @@ export default function NumberClouds({ onComplete }) {
             {selectedAnswer === puzzle.missingValue && round === currentLevel.rounds && <p className="answer-feedback correct-text">You completed Level {level}!</p>}
           </div>
         </section>
-        <section className="game-hud"><div className="hud-item"><span className="hud-icon">⭐</span><div><span className="hud-label">SCORE</span><strong>{score}</strong></div></div><div className="hud-divider" /><div className="hud-item"><span className="hud-icon">☁️</span><div><span className="hud-label">ROUND</span><strong>{round}</strong></div></div><div className="hud-divider" /><div className="hud-item"><span className="hud-icon">🏆</span><div><span className="hud-label">BEST</span><strong>{score}</strong></div></div></section>
+        <button className="menu-return-button" onClick={returnToMenu}>← Choose another level</button>
+        </>}
       </main>
       <div className="bottom-cloud-layer" />
       <style>{STYLES}</style>
@@ -107,6 +127,7 @@ const STYLES = `
 .number-clouds-page { min-height:100%; position:relative; overflow:hidden; background:radial-gradient(circle at 50% 25%,rgba(255,255,255,.45),transparent 35%),linear-gradient(180deg,#72c7ea 0%,#a9ddf5 48%,#dff3fc 100%); color:#174d75; display:flex; justify-content:center; }
 .number-clouds-game { width:min(1100px,94vw); padding:38px 30px 45px; position:relative; z-index:5; display:flex; flex-direction:column; align-items:center; }
 .game-heading { text-align:center; margin-bottom:26px; }.game-title { display:flex; align-items:center; justify-content:center; gap:12px; }.title-cloud { font-size:42px; }.game-title h1 { margin:0; font-size:clamp(42px,5vw,64px); font-weight:900; color:#174f78; text-shadow:0 3px 0 rgba(255,255,255,.65),0 8px 20px rgba(29,94,131,.12); }.game-subtitle { display:inline-block; margin:12px 0 18px; padding:11px 24px; border-radius:999px; background:rgba(255,255,255,.78); color:#28618b; font-size:18px; font-weight:800; }
+.number-clouds-menu { width:min(760px,100%); padding:34px 30px 38px; border-radius:36px; background:rgba(255,255,255,.3); border:1px solid rgba(255,255,255,.6); box-shadow:0 25px 70px rgba(38,102,137,.16),inset 0 1px rgba(255,255,255,.6); text-align:center; }.menu-intro { margin:0 0 22px; color:#397296; font-weight:800; }.menu-levels { display:grid; gap:13px; }.menu-level-card { display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:16px; width:100%; padding:18px 20px; border:1px solid rgba(255,255,255,.7); border-radius:20px; color:#174d75; text-align:left; cursor:pointer; box-shadow:0 8px 18px rgba(38,102,137,.12); transition:transform .18s,box-shadow .18s; }.menu-level-card:hover { transform:translateY(-3px); box-shadow:0 13px 24px rgba(38,102,137,.2); }.menu-level-1 { background:linear-gradient(110deg,#eafff2,#c8f2dc); }.menu-level-2 { background:linear-gradient(110deg,#fff8d9,#ffeaa0); }.menu-level-3 { background:linear-gradient(110deg,#e9f3ff,#c9e2ff); }.menu-level-icon { font-size:34px; }.menu-level-copy strong,.menu-level-copy small { display:block; }.menu-level-copy strong { font-size:18px; }.menu-level-copy small { margin-top:4px; color:#397296; font-size:13px; }.menu-level-difficulty { padding:6px 10px; border-radius:999px; background:rgba(255,255,255,.65); color:#397296; font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:.08em; }.menu-return-button { margin-top:20px; padding:10px 18px; border:1px solid rgba(42,111,151,.25); border-radius:999px; background:rgba(255,255,255,.5); color:#28618b; cursor:pointer; font-weight:800; }
 .round-progress { width:min(420px,80vw); margin:0 auto; }.progress-label { display:block; margin-bottom:7px; color:#397296; font-size:11px; font-weight:900; letter-spacing:1.5px; }.progress-track { height:9px; overflow:hidden; border-radius:999px; background:rgba(255,255,255,.55); }.progress-fill { height:100%; border-radius:inherit; background:linear-gradient(90deg,#269ed8,#58c6ed); transition:width .4s ease; }
 .sequence-area { width:100%; padding:34px 25px 32px; border-radius:36px; background:rgba(255,255,255,.24); border:1px solid rgba(255,255,255,.45); box-shadow:0 25px 70px rgba(38,102,137,.13),inset 0 1px 0 rgba(255,255,255,.5); backdrop-filter:blur(8px); }.sequence { display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap; }.sequence-part { display:inline-flex; align-items:center; gap:10px; }.number-cloud { width:112px; height:82px; position:relative; display:flex; align-items:center; justify-content:center; border-radius:48% 52% 50% 46%; background:radial-gradient(circle at 35% 25%,#fff 0%,#fff 25%,#f3f8fb 60%,#dfeaf0 100%); color:#205c83; font-size:38px; font-weight:900; box-shadow:0 12px 20px rgba(43,101,132,.15),inset 0 -5px 0 rgba(185,211,223,.35); animation:cloudBob 3.6s ease-in-out infinite; }.number-cloud::before,.number-cloud::after { content:''; position:absolute; border-radius:50%; background:inherit; z-index:-1; }.number-cloud::before { width:46px; height:46px; left:13px; top:-14px; }.number-cloud::after { width:58px; height:58px; right:12px; top:-20px; }.missing-cloud { width:125px; height:92px; background:radial-gradient(circle at 35% 25%,#fff8bd,#ffe87d 65%,#ffd85c 100%); color:#e99a13; border:4px dashed #f4ae20; box-shadow:0 14px 28px rgba(228,155,27,.22); animation:cloudFloat 2.2s ease-in-out infinite; }.sequence-arrow { color:#4c9bd0; font-size:38px; font-weight:700; }.answer-area { text-align:center; margin-top:28px; }.choose-label { margin:0 0 15px; color:#397296; font-size:14px; font-weight:800; }.answer-buttons { display:flex; justify-content:center; gap:14px; flex-wrap:wrap; }.answer-button { min-width:92px; height:62px; border:0; border-radius:20px; cursor:pointer; background:linear-gradient(180deg,#35afe7,#168fcf); color:#fff; font-size:27px; font-weight:900; box-shadow:0 7px 0 #0875ad; }.answer-button:disabled { cursor:default; }.answer-button.correct { background:linear-gradient(180deg,#48d88b,#22b96b); box-shadow:0 7px 0 #159456; animation:correctAnswer .45s ease; }.answer-button.wrong { background:linear-gradient(180deg,#ff7777,#e94b4b); box-shadow:0 7px 0 #bd3434; animation:wrongAnswer .35s ease; }.answer-feedback { min-height:24px; margin:18px 0 0; font-size:18px; font-weight:900; }.correct-text { color:#159456; }.wrong-text { color:#bd3434; }.next-round-button { margin-top:12px; padding:11px 22px; border:0; border-radius:999px; color:#fff; background:#249ed3; font-weight:900; cursor:pointer; box-shadow:0 4px 0 #0875ad; }
 .game-hud { display:flex; align-items:center; justify-content:center; margin-top:25px; padding:13px 28px; border-radius:22px; background:rgba(255,255,255,.72); border:1px solid rgba(255,255,255,.85); box-shadow:0 12px 30px rgba(38,102,137,.12); }.hud-item { min-width:105px; display:flex; align-items:center; gap:9px; text-align:left; }.hud-icon { font-size:22px; }.hud-label { display:block; color:#6b96ae; font-size:9px; font-weight:900; letter-spacing:1px; }.hud-item strong { color:#205c83; font-size:20px; }.hud-divider { width:1px; height:34px; margin:0 16px; background:#c9e2ed; }

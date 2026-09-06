@@ -47,7 +47,6 @@ export default function PaymentPage() {
         </div>
 
         <div className="payment-option payment-ecocash-wrap payment-method-hidden">
-          <div className="hero-kicker">💸 EcoCash</div>
           <h2>Pay with EcoCash</h2>
           <a
             className="payment-ecocash-button"
@@ -63,7 +62,6 @@ export default function PaymentPage() {
         </div>
 
         <div className="payment-option payment-qr-wrap payment-method-hidden">
-          <div className="hero-kicker">📱 Thai QR payment</div>
           <h2>Scan the QR code</h2>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className="payment-qr" src="/assets/images/thai-payment-qr-code.jpg" alt="Scan to pay with the payment QR code" />
