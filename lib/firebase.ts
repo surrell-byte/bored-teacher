@@ -376,6 +376,21 @@ export async function setTeacherProAccess(uid: string | null | undefined, enable
   throw new Error('Teacher Pro access is granted only after verified payment confirmation.');
 }
 
+export async function setCreatorTeacherProAccess(uid: string, enabled: boolean): Promise<void> {
+  if (!auth?.currentUser || !isCreatorUser(auth.currentUser)) {
+    throw new Error('Only the creator account can change Teacher Pro access.');
+  }
+  if (!uid || !db) {
+    throw new Error(firebaseConfigError() || 'Firebase is not available.');
+  }
+  await updateDoc(doc(db, 'users', uid), {
+    teacherPro: enabled,
+    teacherProSource: 'creator-manual',
+    teacherProUpdatedAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+}
+
 export async function loadUsersForCreator(): Promise<UserSummary[]> {
   if (!db) return [];
   try {

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { isCreatorUser, loadUsersForCreator, onAuthStateChanged, type UserSummary } from '@/lib/firebase';
+import { isCreatorUser, loadUsersForCreator, onAuthStateChanged, setCreatorTeacherProAccess, type UserSummary } from '@/lib/firebase';
 import { buildCreatorCohortSummary, buildCreatorConversionFunnel, buildCreatorMonetisationSnapshot, buildCreatorRevenueTrend, estimateTeacherProRevenue } from '@/lib/monetisation-utils';
 
 export default function UsersAdminPage() {
@@ -12,6 +12,8 @@ export default function UsersAdminPage() {
   const [query, setQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<'all' | 'student' | 'teacher'>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  const [updatingUid, setUpdatingUid] = useState<string | null>(null);
+  const [actionError, setActionError] = useState('');
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(async user => {
@@ -68,6 +70,19 @@ export default function UsersAdminPage() {
   const revenueTrend = useMemo(() => buildCreatorRevenueTrend(users, new Date()), [users]);
   const conversionFunnel = useMemo(() => buildCreatorConversionFunnel(users), [users]);
   const cohortSummary = useMemo(() => buildCreatorCohortSummary(users, new Date()), [users]);
+
+  async function updateTeacherPro(user: UserSummary) {
+    setUpdatingUid(user.uid);
+    setActionError('');
+    try {
+      await setCreatorTeacherProAccess(user.uid, !user.teacherPro);
+      setUsers(current => current.map(item => item.uid === user.uid ? { ...item, teacherPro: !user.teacherPro } : item));
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : 'Could not update Teacher Pro access.');
+    } finally {
+      setUpdatingUid(null);
+    }
+  }
 
   if (status === 'loading') return null;
 
@@ -210,6 +225,7 @@ export default function UsersAdminPage() {
       </section>
 
       <section className="admin-feedback-list" style={{ marginTop: 20 }}>
+        {actionError && <div className="auth-error" role="alert">{actionError}</div>}
         {filteredUsers.length ? (
           filteredUsers.map((user) => (
             <article key={user.uid} className="shell-card admin-feedback-item" style={{ marginBottom: 14 }}>
@@ -226,6 +242,9 @@ export default function UsersAdminPage() {
                 <div><strong>Email:</strong> {user.email || 'No email'}</div>
                 <div><strong>Class:</strong> {user.classId || 'None'}</div>
                 <div><strong>Teacher Pro:</strong> {user.teacherPro ? 'Active' : 'Not active'}</div>
+                <button type="button" className="pill-btn" onClick={() => updateTeacherPro(user)} disabled={updatingUid === user.uid} style={{ justifySelf: 'start' }}>
+                  {updatingUid === user.uid ? 'Updating…' : user.teacherPro ? 'Remove Teacher Pro' : 'Grant Teacher Pro'}
+                </button>
                 <div><strong>Sign up date:</strong> {formatDate(user.createdAt)}</div>
                 <div><strong>Last login:</strong> {formatDate(user.lastLogin)}</div>
                 <div><strong>UID:</strong> {user.uid}</div>
