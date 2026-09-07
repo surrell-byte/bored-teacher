@@ -40,6 +40,7 @@ export default function GamesPage() {
   const [difficulty, setDifficulty] = useState('All Difficulties');
   const [sort,       setSort]       = useState('alpha');
   const [playedOnly, setPlayedOnly] = useState(false);
+  const [viewMode, setViewMode] = useState<'alpha' | 'category'>('alpha');
   const [showManage, setShowManage] = useState(false);
   const [isCreator, setIsCreator] = useState(false);
 
@@ -61,7 +62,7 @@ export default function GamesPage() {
 
   const filteredGames = useMemo(() => {
     const q = search.toLowerCase().trim();
-    let games = [...GAME_KEYS].filter(gameId => !COMING_SOON_GAME_IDS.has(gameId));
+    let games = [...GAME_KEYS].filter(gameId => isCreator || !COMING_SOON_GAME_IDS.has(gameId));
     if (playedOnly) games = games.filter(k => (state.games[k]?.completions ?? 0) > 0);
     if (category !== 'All Categories') games = games.filter(k => GAME_TAGS[k]?.label === category);
     if (difficulty !== 'All Difficulties') games = games.filter(k => GAME_DIFFICULTY[k] === difficulty);
@@ -104,6 +105,15 @@ export default function GamesPage() {
     });
     return [...groups.entries()];
   }, [filteredGames, sort]);
+
+  const categoryGroups = useMemo(() => {
+    const groups = new Map<string, string[]>();
+    filteredGames.forEach(gameId => {
+      const label = GAME_TAGS[gameId]?.label || 'Other';
+      groups.set(label, [...(groups.get(label) ?? []), gameId]);
+    });
+    return [...groups.entries()].sort(([left], [right]) => left.localeCompare(right));
+  }, [filteredGames]);
 
   function clearFilters() {
     setCategory('All Categories'); setDifficulty('All Difficulties'); setSearch(''); setPlayedOnly(false);
@@ -193,6 +203,10 @@ export default function GamesPage() {
           <select className="games-select" value={sort} onChange={e => setSort(e.target.value)} aria-label="Sort games">
             {SORT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
+          <div className="games-view-toggle" role="group" aria-label="Choose game view">
+            <button type="button" className={viewMode === 'alpha' ? 'active' : ''} onClick={() => setViewMode('alpha')} aria-pressed={viewMode === 'alpha'}>A–Z</button>
+            <button type="button" className={viewMode === 'category' ? 'active' : ''} onClick={() => setViewMode('category')} aria-pressed={viewMode === 'category'}>Categories</button>
+          </div>
         </div>
 
         <div className="hub-game-count">
@@ -214,7 +228,7 @@ export default function GamesPage() {
             </div>
           </div>
         ) : (
-          sort === 'alpha' ? alphabeticalGroups.map(([letter, gameIds]) => (
+          viewMode === 'alpha' ? alphabeticalGroups.map(([letter, gameIds]) => (
             <section className="games-letter-group" key={letter} aria-labelledby={`games-letter-${letter}`}>
               <h3 className="games-letter-heading" id={`games-letter-${letter}`}>{letter}</h3>
               <div className="hub-game-grid">
@@ -229,19 +243,18 @@ export default function GamesPage() {
                 ))}
               </div>
             </section>
-          )) : (
-            <div className="hub-game-grid">
-              {filteredGames.map((gameId, i) => (
-                <div
-                  key={gameId}
-                  className="card-stagger"
-                  style={{ '--stagger-i': i } as React.CSSProperties}
-                >
-                  <GameCard gameId={gameId} onClick={handlePlay} />
-                </div>
-              ))}
-            </div>
-          )
+          )) : categoryGroups.map(([group, gameIds]) => (
+            <section className="games-letter-group games-category-group" key={group} aria-labelledby={`games-category-${group}`}>
+              <h3 className="games-letter-heading" id={`games-category-${group}`}>{group}</h3>
+              <div className="hub-game-grid">
+                {gameIds.map((gameId, i) => (
+                  <div key={gameId} className="card-stagger" style={{ '--stagger-i': i } as React.CSSProperties}>
+                    <GameCard gameId={gameId} onClick={handlePlay} />
+                  </div>
+                ))}
+              </div>
+            </section>
+          ))
         )}
       </section>
 

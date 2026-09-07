@@ -2153,6 +2153,32 @@ a { color: inherit; }
   gap: clamp(12px, 2vw, 28px);
 }
 
+.games-view-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(255,255,255,.04);
+}
+.games-view-toggle button {
+  border: 0;
+  border-radius: 9px;
+  padding: 9px 13px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: .78rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+.games-view-toggle button.active {
+  background: var(--teal);
+  color: #fff;
+}
+.games-category-group { margin-top: 26px; }
+
 /* ══════════════════════════════════════════════════════════════
    MANAGE PLAYERS MODAL
 ══════════════════════════════════════════════════════════════ */

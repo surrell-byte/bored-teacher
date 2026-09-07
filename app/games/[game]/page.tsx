@@ -4,7 +4,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useGame } from '@/lib/gameState';
-import { auth, onAuthStateChanged, saveStudentScore } from '@/lib/firebase';
+import { auth, isCreatorUser, onAuthStateChanged, saveStudentScore } from '@/lib/firebase';
 import { syncCurrentPlayerToLeaderboard } from '@/features/leaderboard/api';
 import { GAME_NAMES, GAME_ICONS } from '@/constants/index';
 import { GAME_COMPONENTS } from '@/games/catalog.components';
@@ -48,6 +48,7 @@ export default function GamePage() {
   const [showRouteWelcome, setShowRouteWelcome] = useState(!GAMES_WITH_WELCOME.has(gameId));
   const [accessReady, setAccessReady] = useState(false);
   const [canPlay, setCanPlay] = useState(false);
+  const [isCreator, setIsCreator] = useState(false);
   const [countAddHud, setCountAddHud] = useState<any>(null);
   const [numberCloudsHud, setNumberCloudsHud] = useState<any>(null);
 
@@ -56,7 +57,9 @@ export default function GamePage() {
   }, [gameId]);
 
   useEffect(() => onAuthStateChanged(user => {
-    setCanPlay(canAccessGame(gameId));
+    const creator = isCreatorUser(user);
+    setIsCreator(creator);
+    setCanPlay(creator || canAccessGame(gameId));
     setAccessReady(true);
   }), [gameId]);
 
@@ -135,7 +138,7 @@ export default function GamePage() {
 
   if (!accessReady) return null;
 
-  if (COMING_SOON_GAME_IDS.has(gameId)) {
+  if (COMING_SOON_GAME_IDS.has(gameId) && !isCreator) {
     return (
       <div className="route-game-welcome">
         <div className="route-game-welcome-card">
