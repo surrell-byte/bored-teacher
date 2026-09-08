@@ -137,6 +137,16 @@ export async function findUserByUsername(username: string) {
   if (!normalized) return null;
 
   try {
+    const index = await getDoc(doc(db, 'usernames', normalized));
+    if (index.exists()) {
+      const data = index.data() as { uid?: string; email?: string };
+      return { email: data.email, usernameLower: normalized };
+    }
+  } catch {
+    // Continue to the legacy lookup for older profiles without an index entry.
+  }
+
+  try {
     const q = query(collection(db, 'users'), where('usernameLower', '==', normalized));
     const snap = await getDocs(q);
     if (!snap.empty) {
@@ -341,6 +351,7 @@ async function createUserProfile(uid: string, name: string, email: string, role:
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     }, { merge: true });
+    await setDoc(doc(db, 'usernames', username), { uid, email: email.toLowerCase() }, { merge: true });
   } catch (_) {}
 }
 
@@ -353,6 +364,9 @@ export async function saveUserState(uid: string, state: Partial<UserState>) {
   ].includes(key)));
   try {
     await setDoc(doc(db, 'users', uid), { ...writableState, updatedAt: serverTimestamp() }, { merge: true });
+    const username = typeof writableState.usernameLower === 'string' ? writableState.usernameLower : '';
+    const email = auth?.currentUser?.email?.toLowerCase();
+    if (username && email) await setDoc(doc(db, 'usernames', username), { uid, email }, { merge: true });
   } catch (_) {}
 }
 

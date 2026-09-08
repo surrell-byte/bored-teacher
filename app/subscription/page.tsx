@@ -120,7 +120,7 @@ export default function SubscriptionPage() {
                 disabled={plan.name === 'Free' && !hasTeacherPro}
                 onClick={async () => {
                   if (plan.name === 'Teacher Pro') {
-                    router.push('/payment?plan=resource-library');
+                    router.push('/payment?plan=teacher-pro-monthly');
                     return;
                   }
                   if (plan.name === 'School') {

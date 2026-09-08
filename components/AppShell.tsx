@@ -1,18 +1,20 @@
 'use client';
 // components/AppShell.tsx
 
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { type ReactNode, useContext } from 'react';
 import Navbar from './Navbar';
 import Toast from './ui/Toast';
 import AchievementToast from '@/features/achievements/components/AchievementToast';
 import { GameContext } from '@/providers/GameProvider';
+import { isCreatorUser, loadUserState, onAuthStateChanged } from '@/lib/firebase';
 import { useEffect, useState } from 'react';
 
 const NO_SHELL_PATHS = ['/', '/auth'];
 
 export default function AppShell({ children }: { children: ReactNode }) {
   const pathname   = usePathname() ?? '';
+  const router = useRouter();
   const isGameRoute = pathname.startsWith('/games/');
   const showShell  = !NO_SHELL_PATHS.includes(pathname) && !isGameRoute;
   
@@ -27,6 +29,19 @@ export default function AppShell({ children }: { children: ReactNode }) {
     window.addEventListener('esl-game-reward', handleReward);
     return () => window.removeEventListener('esl-game-reward', handleReward);
   }, []);
+
+  useEffect(() => {
+    if (!pathname || pathname === '/' || pathname === '/auth' || pathname === '/auth/verify') return;
+    if (localStorage.getItem('guestUser') === 'true') return;
+
+    return onAuthStateChanged(async user => {
+      if (!user || isCreatorUser(user)) return;
+      const profile = await loadUserState(user.uid);
+      if (profile?.emailVerified === false) {
+        router.replace(`/auth/verify?returnTo=${encodeURIComponent(pathname)}`);
+      }
+    });
+  }, [pathname, router]);
 
   return (
     <div className={`app-shell-wrap${showShell ? '' : ' no-shell'}`}>

@@ -18,6 +18,7 @@ export const COMING_SOON_GAME_IDS = new Set([
   'picturerace',
   'tankwars',
   'unicorn',
+  'turbodash',
   'superwings',
   'pluralquest',
   'quiztrail',

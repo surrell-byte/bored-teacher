@@ -4,15 +4,31 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged } from '@/lib/firebase';
 
+const PAYMENT_PLANS = {
+  monthly: {
+    label: '$10',
+    cadence: '/ month',
+    encodedPaynow: 'c2VhcmNoPXJ1c3NlbGxta2FoYW5hbmElNDBnbWFpbC5jb20mYW1vdW50PTEwLjAwJnJlZmVyZW5jZT0mbD0x',
+  },
+  annual: {
+    label: '$110',
+    cadence: '/ year',
+    encodedPaynow: 'c2VhcmNoPXJ1c3NlbGxta2FoYW5hbmElNDBnbWFpbC5jb20mYW1vdW50PTExMC4wMCZyZWZlcmVuY2U9Jmw9MQ==',
+  },
+} as const;
+
 export default function PaymentPage() {
   const router = useRouter();
   const [ready, setReady] = useState(false);
+  const [billing, setBilling] = useState<'monthly' | 'annual'>('monthly');
 
   useEffect(() => {
-    if (!new URLSearchParams(window.location.search).get('plan')) {
+    const plan = new URLSearchParams(window.location.search).get('plan');
+    if (!plan) {
       router.replace('/shop');
       return;
     }
+    if (plan === 'teacher-pro-annual') setBilling('annual');
     const isGuest = localStorage.getItem('guestUser') === 'true';
     if (isGuest) {
       setReady(true);
@@ -30,6 +46,8 @@ export default function PaymentPage() {
 
   if (!ready) return null;
 
+  const selectedPlan = PAYMENT_PLANS[billing];
+
   return (
     <div className="payment-page">
       <section className="shell-card payment-header">
@@ -40,9 +58,13 @@ export default function PaymentPage() {
       <section className="shell-card shop-payment">
         <div className="payment-option payment-copy">
           <h2>Pay with Paynow</h2>
-          <div className="subscription-prices"><strong>$10 <span>/ month</span></strong><strong>$110 <span>/ year</span></strong><small>Save $10 per year, or 8.3% compared with monthly billing.</small></div>
+          <div className="subscription-prices"><strong>{selectedPlan.label} <span>{selectedPlan.cadence}</span></strong><small>Save $10 per year, or 8.3% compared with monthly billing.</small></div>
+          <div className="payment-term-toggle" role="group" aria-label="Choose billing term">
+            <button type="button" className={billing === 'monthly' ? 'active' : ''} onClick={() => setBilling('monthly')}>Monthly · $10</button>
+            <button type="button" className={billing === 'annual' ? 'active' : ''} onClick={() => setBilling('annual')}>Annual · $110</button>
+          </div>
           <p>Choose your subscription term, then complete payment securely with Paynow.</p>
-          <a className="payment-paynow-button" href="https://www.paynow.co.zw/Payment/Link/?q=c2VhcmNoPXJ1c3NlbGxta2FoYW5hbmElNDBnbWFpbC5jb20mYW1vdW50PTcuMDAmcmVmZXJlbmNlPSZsPTE%3d" target="_blank" rel="noreferrer">Pay now with Paynow</a>
+          <a className="payment-paynow-button" href={`https://www.paynow.co.zw/Payment/Link/?q=${encodeURIComponent(selectedPlan.encodedPaynow)}`} target="_blank" rel="noreferrer">Pay now with Paynow</a>
           <p className="payment-proof-note">Your account is upgraded only after payment is verified. Please keep your payment receipt.</p>
         </div>
 

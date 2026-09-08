@@ -6,9 +6,8 @@ import React, { useEffect, useRef } from 'react';
  * self-contained React component. Markup is injected via a ref, the
  * original CSS is scoped inside a <style> tag, and the original
  * script.js game logic runs unmodified inside a useEffect after mount.
- * Note: the <audio> elements reference assets/sounds/*.mp3 — if those
- * files aren't bundled alongside this component, playback fails silently
- * (the original script already wraps .play() in a .catch(() => {})).
+ * Note: sound playback is optional and remains silent when no audio assets
+ * are bundled with this component.
  */
 const MonkeyTreeClimb_HTML = `<div id="game">
     <!-- Sky decorations -->
@@ -47,10 +46,6 @@ const MonkeyTreeClimb_HTML = `<div id="game">
         <button onclick="restartGame()" style="background:#ff9800;">🔄 Play Again</button>
     </div>
 
-    <!-- Sound effects (optional – add your own files in assets/sounds/) -->
-    <audio id="climbSound" src="assets/sounds/climb.mp3" preload="auto"></audio>
-    <audio id="slipSound" src="assets/sounds/slip.mp3" preload="auto"></audio>
-    <audio id="winSound" src="assets/sounds/win.mp3" preload="auto"></audio>
 </div>`;
 
 const MonkeyTreeClimb_CSS = `* {

@@ -3,6 +3,27 @@ import { getAvatarGiftOptions } from '@/lib/email-verification';
 import { sendVerificationEmail, sendWelcomeEmail } from '@/lib/email-sender';
 
 const GIFT_CHOICES = getAvatarGiftOptions();
+const SEND_WINDOW_MS = 15 * 60 * 1000;
+const SEND_LIMIT = 3;
+const sendAttempts = new Map<string, { count: number; resetAt: number }>();
+
+function getRequestKey(req: Request, email: string) {
+  const forwardedFor = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim();
+  return `${forwardedFor || 'unknown'}:${email}`;
+}
+
+function canSendVerification(req: Request, email: string) {
+  const now = Date.now();
+  const key = getRequestKey(req, email);
+  const previous = sendAttempts.get(key);
+  if (!previous || previous.resetAt <= now) {
+    sendAttempts.set(key, { count: 1, resetAt: now + SEND_WINDOW_MS });
+    return true;
+  }
+  if (previous.count >= SEND_LIMIT) return false;
+  previous.count += 1;
+  return true;
+}
 
 export async function GET() {
   return NextResponse.json({
@@ -23,8 +44,11 @@ export async function POST(req: Request) {
       const displayName = String(body?.displayName || 'Player').trim();
       const code = String(body?.code || '').trim();
 
-      if (!email || !code) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !/^\d{6}$/.test(code)) {
         return NextResponse.json({ ok: false, error: 'Missing email or verification code.' }, { status: 400 });
+      }
+      if (!canSendVerification(req, email)) {
+        return NextResponse.json({ ok: false, error: 'Too many verification emails. Please try again later.' }, { status: 429 });
       }
 
       await sendVerificationEmail(email, code, displayName || 'Player');

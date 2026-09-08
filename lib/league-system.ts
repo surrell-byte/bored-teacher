@@ -179,6 +179,7 @@ export async function saveLeagues(leagues: LeagueRecord[]) {
           ownerRole: league.ownerRole,
           createdAt: serverTimestamp(),
           members: league.members,
+          memberIds: league.members.map((member) => member.userId),
         }),
       ),
     );
@@ -207,6 +208,7 @@ export async function createLeague(input: { name: string; type: LeagueType; owne
         ...next,
         createdAt: serverTimestamp(),
         members: next.members.map((member) => ({ ...member, updatedAt: serverTimestamp() })),
+        memberIds: next.members.map((member) => member.userId),
       });
       return { ...next, id: docRef.id };
     } catch {
@@ -257,6 +259,7 @@ export async function joinLeague(leagueId: string, member: { userId: string; nam
     try {
       await updateDoc(doc(db, 'leagues', leagueId), {
         members: updated.members,
+        memberIds: updated.members.map((member) => member.userId),
       });
       return updated;
     } catch {
@@ -282,6 +285,7 @@ export async function leaveLeague(leagueId: string, userId: string) {
     try {
       await updateDoc(doc(db, 'leagues', leagueId), {
         members: updated.members,
+        memberIds: updated.members.map((member) => member.userId),
       });
       return updated;
     } catch {
@@ -311,6 +315,7 @@ export async function submitLeagueScore(input: { leagueId: string; userId: strin
     try {
       await updateDoc(doc(db, 'leagues', input.leagueId), {
         members: updated.members,
+        memberIds: updated.members.map((member) => member.userId),
       });
       return updated;
     } catch {
@@ -374,6 +379,7 @@ export async function saveLobbies(lobbies: LobbyRecord[]) {
           gameName: lobby.gameName,
           players: lobby.players,
           matches: lobby.matches,
+          memberIds: lobby.players.map((player) => player.id),
           createdAt: serverTimestamp(),
         }),
       ),
@@ -399,6 +405,7 @@ export async function createLobby(input: { ownerId: string; ownerName: string; r
     try {
       const docRef = await addDoc(collection(db, 'lobbies'), {
         ...lobby,
+        memberIds: lobby.players.map((player) => player.id),
         createdAt: serverTimestamp(),
       });
       return { ...lobby, id: docRef.id };
@@ -424,6 +431,7 @@ export async function joinLobby(lobbyId: string, participant: { userId: string; 
     try {
       await updateDoc(doc(db, 'lobbies', lobbyId), {
         players: updated.players,
+        memberIds: updated.players.map((player) => player.id),
       });
       return updated;
     } catch {

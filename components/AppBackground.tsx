@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
+import { useResponsive } from '@/hooks/useResponsive';
 
 // Each background image's focal point — the point that should stay
 // visible when `background-size: cover` crops the image to fit the
 // viewport. Tune these once per image, not per viewport.
 const BACKGROUNDS: Record<string, { src: string; position: string }> = {
   plain:        { src: '/assets/images/plain-bg.png',              position: 'center' },
+  general:      { src: '/assets/images/general-bg.webp',           position: 'center' },
   welcome:      { src: '/assets/images/welcome-page.webp',        position: 'center' },
   startPlaying: { src: '/assets/images/start-playing-page.webp',  position: 'center' },
   auth:         { src: '/assets/images/auth-screen-bg.webp',     position: 'center' },
@@ -23,6 +25,7 @@ const BACKGROUNDS: Record<string, { src: string; position: string }> = {
 
 export default function AppBackground() {
   const pathname = usePathname();
+  const { isMobile, isTablet } = useResponsive();
   const [splashStage, setSplashStage] = useState<'welcome' | 'start-playing'>('welcome');
 
   useEffect(() => {
@@ -64,6 +67,10 @@ export default function AppBackground() {
     entry = BACKGROUNDS.plain;
   } else if (pathname.startsWith('/subscription')) {
     entry = BACKGROUNDS.subscription;
+  }
+
+  if (isMobile || isTablet) {
+    entry = BACKGROUNDS.general;
   }
 
   useEffect(() => {
