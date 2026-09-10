@@ -25,6 +25,7 @@ export const COMING_SOON_GAME_IDS = new Set([
   'shuttlecock',
   'tonguetwister',
   'treasurechest',
+  'unicornwings',
   'victoryvet',
   'volcanoracer',
   'wgrandprix',
