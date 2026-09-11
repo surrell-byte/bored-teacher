@@ -13,6 +13,7 @@ const allCountries = countryData.map(([code, name]) => ({ name, emoji: getFlagEm
 
 const LEVELS = [
   { name: "World Map", icon:"🌍", region:"world", timerSec: 0, sub:"Global country mapping · No timer" },
+  { name: "World Atlas", icon:"🗺️", region:"world", timerSec: 0, sub:"World map expedition · No timer" },
   { name: "Europe Zone", icon:"🏰", region:"europe", timerSec: 20, sub:"Identify countries in Europe" },
   { name: "Africa Zone", icon:"🌍", region:"africa", timerSec: 20, sub:"Identify countries in Africa" },
   { name: "Asia Zone", icon:"⛩️", region:"asia", timerSec: 16, sub:"Identify countries in Asia" },
@@ -30,7 +31,7 @@ const REGION_CODES = {
   caribbean: "AG AI AW BS BB BM BZ BQ KY CU CW DM DO GD GP HT JM MQ MS PR BL KN LC MF VC SX TT TC VG VI".split(" "),
 };
 
-const NODE_POSITIONS = [{x:8,y:78},{x:23,y:62},{x:38,y:48},{x:53,y:34},{x:68,y:48},{x:82,y:30},{x:92,y:62}];
+const NODE_POSITIONS = [{x:8,y:78},{x:23,y:62},{x:38,y:48},{x:53,y:34},{x:68,y:48},{x:82,y:30},{x:92,y:62},{x:50,y:81}];
 
 const popularityCodes = {
   US:10,GB:10,FR:10,DE:10,JP:10,CN:10,AU:10,BR:10,CA:10,IN:10,
@@ -61,7 +62,10 @@ function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
 
 // Keep the level-pool factory deterministic so the imported component stays
 // server-safe and client-safe instead of reordering from Math.random() at load time.
+// Include an extra world-map pool so the new map-driven Level can share the
+// same world atlas dataset without changing the exported game contract.
 const levelPools = [
+  [...allCountries],
   [...allCountries],
   ...Object.values(REGION_CODES).map(codes => codes.map(code => allCountries.find(country => country.code === code)).filter(Boolean)),
 ];
