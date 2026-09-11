@@ -4328,3 +4328,23 @@ a { color: inherit; }
   .game-shell-topbar-stats { order: 2; width: 100%; justify-content: flex-end; }
   .game-shell-topbar-stat { min-height: 28px; padding: 4px 7px; font-size: 0.7rem; }
 }
+
+
+.hub-review-section { display: grid; gap: 14px; padding: 22px; border-radius: 26px; border: 1px solid var(--border); background: var(--surface); }
+.hub-review-list { display: grid; gap: 12px; }
+.hub-review-card { padding: 14px 10px; border-bottom: 1px solid var(--border); }
+.hub-review-stars { color: var(--gold); font-size: 0.82rem; letter-spacing: 0.05rem; }
+.hub-review-date { color: var(--muted); font-size: 0.78rem; margin-left: 8px; }
+.hub-review-card strong { display: inline-block; }
+.hub-review-card p { color: var(--muted); margin: 8px 0 0; }
+.hub-review-form { display: grid; gap: 12px; padding-top: 10px; }
+.hub-review-form-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.hub-review-label { color: var(--muted); font-weight: 800; font-size: 0.78rem; }
+.hub-review-form select, .hub-review-form textarea { border: 1px solid var(--border); border-radius: 12px; background: var(--surface-soft); color: var(--text); padding: 10px; }
+.hub-review-form textarea { min-width: min(460px, 100%); width: min(640px, 100%); resize: vertical; }
+.hub-review-form-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.hub-review-message { color: var(--gold); font-size: 0.78rem; }
+.admin-feedback-notifications { display: grid; gap: 12px; margin-bottom: 16px; }
+.admin-feedback-notification-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.admin-feedback-notification-list { display: grid; gap: 12px; }
+.admin-feedback-notification-item { padding: 16px; }

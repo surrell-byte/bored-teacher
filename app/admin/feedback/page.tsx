@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { auth, isCreatorUser, loadFeedback, onAuthStateChanged, resolveFeedback } from '@/lib/firebase';
+import { auth, isCreatorUser, loadFeedback, loadNotificationsForCreator, onAuthStateChanged, resolveFeedback, type CreatorNotificationItem } from '@/lib/firebase';
 
 type FeedbackItem = {
   id: string;
@@ -18,6 +18,7 @@ type FeedbackItem = {
 export default function FeedbackAdminPage() {
   const router = useRouter();
   const [items, setItems] = useState<FeedbackItem[]>([]);
+  const [notifications, setNotifications] = useState<CreatorNotificationItem[]>([]);
   const [status, setStatus] = useState<'loading' | 'ready' | 'denied' | 'error'>('loading');
   const [filter, setFilter] = useState<'open' | 'resolved' | 'all'>('open');
 
@@ -33,6 +34,7 @@ export default function FeedbackAdminPage() {
       }
       try {
         setItems((await loadFeedback()) as FeedbackItem[]);
+        setNotifications(await loadNotificationsForCreator());
         setStatus('ready');
       } catch (_) {
         setStatus('error');
@@ -74,6 +76,15 @@ export default function FeedbackAdminPage() {
       <div className="admin-feedback-filters" role="group" aria-label="Filter feedback">
         {(['open', 'resolved', 'all'] as const).map(option => <button key={option} className={`pill-btn${filter === option ? ' active' : ''}`} onClick={() => setFilter(option)}>{option === 'open' ? 'Needs review' : option === 'resolved' ? 'Resolved' : 'All messages'}</button>)}
       </div>
+      <section className="admin-feedback-notifications">
+        <div className="admin-feedback-notification-header"><span className="suggestions-kicker">Notifications inbox</span><span className="admin-feedback-count"><strong>{notifications.length}</strong><span>comment updates</span></span></div>
+        <div className="admin-feedback-notification-list">{notifications.length ? notifications.map(item => <article className="shell-card admin-feedback-notification-item" key={item.id}>
+          <div className="admin-feedback-item-top"><span className="admin-feedback-type">{item.type === 'review-comment' ? '★ Review' : '✉'} {item.title}</span><time>{formatDate(item.createdAt as any)}</time></div>
+          <p>{item.message}</p>
+          <div className="admin-feedback-item-bottom"><small>{item.userName || 'Guest'} · {item.page || '/hub'}</small></div>
+        </article>) : <section className="shell-card admin-feedback-empty"><h2>No comment updates yet</h2><p>Five-star and four-star reviews will land here for the creator account.</p></section>}
+        </div>
+      </section>
       <section className="admin-feedback-list">
         {visibleItems.length ? visibleItems.map(item => <article className={`shell-card admin-feedback-item${item.resolved ? ' resolved' : ''}`} key={item.id}>
           <div className="admin-feedback-item-top"><span className={`admin-feedback-type ${item.type === 'grievance' ? 'problem' : ''}`}>{item.resolved ? '✓ Resolved' : item.type === 'grievance' ? '🐛 Problem or bug' : '💡 Suggestion'}</span><time>{formatDate(item.createdAt)}</time></div>

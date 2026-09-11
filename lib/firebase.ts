@@ -28,6 +28,31 @@ import {
   updateDoc,
   serverTimestamp,
 } from 'firebase/firestore';
+
+export interface ReviewItem {
+  id?: string;
+  userId?: string | null;
+  userName?: string;
+  userEmail?: string | null;
+  rating: number;
+  comment: string;
+  page?: string;
+  createdAt?: unknown;
+}
+
+export interface CreatorNotificationItem {
+  id?: string;
+  type: 'review-comment' | 'feedback' | 'system';
+  recipientEmail?: string | null;
+  recipientUid?: string | null;
+  userId?: string | null;
+  userName?: string;
+  title: string;
+  message: string;
+  reviewId?: string | null;
+  createdAt?: unknown;
+  read?: boolean;
+}
 import { isVerificationExpired } from '@/lib/email-verification';
 
 export type AccountRole = 'teacher' | 'student';
@@ -509,6 +534,101 @@ export async function loadAllStudentScores(classId: string) {
     const snap = await getDocs(q);
     return snap.docs.map(d => ({ uid: d.id, ...d.data() }));
   } catch (_) { return []; }
+}
+
+export async function submitReview(data: {
+  userId?: string | null;
+  userName?: string | null;
+  userEmail?: string | null;
+  rating: number;
+  comment: string;
+  page?: string;
+}) {
+  if (!db) {
+    throw new Error('Firebase is not configured. Set NEXT_PUBLIC_FIREBASE_* values in your environment before submitting a review.');
+  }
+
+  const rating = Math.min(5, Math.max(1, Math.round(Number(data.rating) || 5)));
+  const comment = String(data.comment ?? '').trim();
+  if (!comment) throw new Error('Review comment text is required.');
+
+  const review = {
+    userId: data.userId ?? null,
+    userName: (data.userName ?? auth?.currentUser?.displayName ?? 'Explorer').trim() || 'Explorer',
+    userEmail: (data.userEmail ?? auth?.currentUser?.email ?? '').trim().toLowerCase() || null,
+    rating,
+    comment,
+    page: data.page ?? '/hub',
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  };
+
+  const reviewSnap = await addDoc(collection(db, 'reviews'), review);
+
+  await addDoc(collection(db, 'notifications'), {
+    type: 'review-comment',
+    recipientEmail: CREATOR_EMAIL,
+    recipientUid: null,
+    userId: data.userId ?? auth?.currentUser?.uid ?? null,
+    userName: review.userName,
+    title: 'New 4–5 star review',
+    message: `${review.userName} added a ${rating}/5 review: ${comment}`,
+    reviewId: reviewSnap.id,
+    page: data.page ?? '/hub',
+    rating,
+    read: false,
+    createdAt: serverTimestamp(),
+  });
+}
+
+export async function loadReviews() {
+  if (!db) {
+    return [
+      { id: 'fallback-1', userName: 'Mina', userEmail: 'teacher@example.com', rating: 5, comment: 'The new learning path feels calm, joyful, and classroom friendly.', page: '/hub', createdAt: Date.now() },
+      { id: 'fallback-2', userName: 'Kai', userEmail: 'coach@example.com', rating: 4, comment: 'Loved the game choices and the helpful classroom flow.', page: '/hub', createdAt: Date.now() - 3600000 },
+    ];
+  }
+
+  try {
+    const snapshot = await getDocs(collection(db, 'reviews'));
+    const items = snapshot.docs
+      .map(docSnap => ({ id: docSnap.id, ...(docSnap.data() as Record<string, unknown>) } as ReviewItem))
+      .filter(item => Number(item.rating) >= 4)
+      .sort((left, right) => {
+        const leftTime = left.createdAt && typeof (left.createdAt as { toMillis?: () => number }).toMillis === 'function'
+          ? (left.createdAt as { toMillis: () => number }).toMillis()
+          : new Date(String(left.createdAt ?? 0)).getTime();
+        const rightTime = right.createdAt && typeof (right.createdAt as { toMillis?: () => number }).toMillis === 'function'
+          ? (right.createdAt as { toMillis: () => number }).toMillis()
+          : new Date(String(right.createdAt ?? 0)).getTime();
+        return rightTime - leftTime;
+      });
+
+    return items.map(item => ({ ...item, rating: Number(item.rating) }));
+  } catch {
+    return [];
+  }
+}
+
+export async function loadNotificationsForCreator() {
+  if (!db) return [];
+
+  try {
+    const snap = await getDocs(query(collection(db, 'notifications'), where('recipientEmail', '==', CREATOR_EMAIL)));
+    return snap.docs
+      .map(docSnap => ({ id: docSnap.id, ...(docSnap.data() as Record<string, unknown>) } as CreatorNotificationItem))
+      .sort((left, right) => {
+        const leftTime = left.createdAt && typeof (left.createdAt as { toMillis?: () => number }).toMillis === 'function'
+          ? (left.createdAt as { toMillis: () => number }).toMillis()
+          : new Date(String(left.createdAt ?? 0)).getTime();
+        const rightTime = right.createdAt && typeof (right.createdAt as { toMillis?: () => number }).toMillis === 'function'
+          ? (right.createdAt as { toMillis: () => number }).toMillis()
+          : new Date(String(right.createdAt ?? 0)).getTime();
+        return rightTime - leftTime;
+      });
+  } catch {
+    return [];
+  }
 }
 
 export async function submitFeedback(data: {
