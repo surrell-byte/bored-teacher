@@ -59,17 +59,11 @@ function getPopularity(code) { return popularityCodes[code] || 3; }
 
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
 
-// Split all countries into 5 popularity tiers (famous → obscure), one per level.
-// Computed once at module load, exactly like the HTML's buildLevelPools().
-function buildLevelPools() {
-  const sorted = [...allCountries].sort((a, b) => getPopularity(b.code) - getPopularity(a.code));
-  const total = sorted.length;
-  const chunk = Math.ceil(total / 5);
-  return [0,1,2,3,4].map(i => shuffle(sorted.slice(i * chunk, (i + 1) * chunk)));
-}
+// Keep the level-pool factory deterministic so the imported component stays
+// server-safe and client-safe instead of reordering from Math.random() at load time.
 const levelPools = [
-  shuffle(allCountries),
-  ...Object.values(REGION_CODES).map(codes => shuffle(codes.map(code => allCountries.find(country => country.code === code)).filter(Boolean))),
+  [...allCountries],
+  ...Object.values(REGION_CODES).map(codes => codes.map(code => allCountries.find(country => country.code === code)).filter(Boolean)),
 ];
 
 function buildOptions(country) {
@@ -90,7 +84,7 @@ const THEME_CSS = `
   --cream:#f9f3e3; --cream-2:#f0e6c8; --ink:#1c2a3a;
   --rust:#b34a2b; --teal:#2a7c6f; --parchment:#fdf6e3;
 
-  --theme-body-bg:#0b1628;
+  --theme-body-bg:#f9f3e3;
   --theme-card-bg: linear-gradient(160deg, rgba(253,246,227,0.97) 0%, rgba(240,230,200,0.97) 100%);
   --theme-card-color:#1c2a3a;
   --theme-passport-bg:#fdf6e3;
@@ -104,16 +98,14 @@ const THEME_CSS = `
   --theme-msg-bg: rgba(11,22,40,0.06);
   --theme-body-text: rgba(28,42,58,0.85);
   --theme-sub-color: rgba(26,51,88,0.45);
-  --theme-bg-overlay: radial-gradient(ellipse 80% 60% at 20% 10%, rgba(42,124,111,0.07) 0%, transparent 60%),
-                      radial-gradient(ellipse 60% 80% at 80% 90%, rgba(179,74,43,0.06) 0%, transparent 60%),
-                      radial-gradient(ellipse 100% 100% at 50% 50%, #112240 0%, #0b1628 70%);
+  --theme-bg-overlay: linear-gradient(180deg, #f9f3e3 0%, #f0e6c8 100%);
 
   font-family: 'Cormorant Garamond', Georgia, serif;
   background: var(--theme-body-bg);
   color: var(--cream);
-  min-height: 100%; height: 100%; width: 100%;
-  display: flex; justify-content: center; align-items: flex-start;
-  padding: 24px 16px 48px; position: relative; overflow-x: hidden;
+  min-height: 100vh; height: 100vh; width: 100vw;
+  display: flex; justify-content: center; align-items: stretch;
+  padding: 0; position: relative; overflow: hidden;
 }
 .fm-root.fm-dark {
   --theme-body-bg:#05070d;
@@ -150,7 +142,7 @@ const THEME_CSS = `
 .fm-theme-toggle:hover { transform: scale(1.1); }
 .fm-theme-toggle:active { transform: scale(0.95); }
 
-.fm-screen { width: 100%; max-width: 580px; position: relative; z-index: 2; animation: fm-screenIn .4s cubic-bezier(.2,.9,.3,1); margin: 0 auto; }
+.fm-screen { width: 100%; max-width: none; min-height: 100vh; position: relative; z-index: 2; animation: fm-screenIn .4s cubic-bezier(.2,.9,.3,1); margin: 0 auto; background: var(--theme-card-bg); }
 @keyframes fm-screenIn { from { opacity:0; transform:translateY(28px) scale(.98); } to { opacity:1; transform:none; } }
 
 .fm-card {
@@ -528,7 +520,7 @@ export default function Flagmaster({ onComplete, darkMode = false }) {
   if (screen === "title") {
     const preview = countryCode ? allCountries.find(c => c.code === countryCode) : null;
     return (
-      <div className={rootCls}><Style /><div className="fm-bg-layer" /><ThemeToggle />
+      <div className={rootCls}><Style /><div className="fm-bg-layer" />
         <div className="fm-screen fm-wide-screen"><div className="fm-card"><div className="fm-card-inner">
           <div className="fm-display-sub">Expedition Registration</div>
           <h2 className="fm-display-title">ISSUE PASSPORT</h2>

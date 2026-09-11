@@ -53,6 +53,8 @@ export default function AppBackground() {
     entry = BACKGROUNDS.auth;
   } else if (pathname.startsWith('/hub')) {
     entry = BACKGROUNDS.hub;
+  } else if (pathname.startsWith('/games/flagmaster')) {
+    entry = BACKGROUNDS.general;
   } else if (pathname === '/games' || pathname.startsWith('/games/')) {
     entry = BACKGROUNDS.games;
   } else if (pathname.startsWith('/leaderboard')) {
