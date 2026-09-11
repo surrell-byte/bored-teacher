@@ -50,6 +50,7 @@ export interface CreatorNotificationItem {
   title: string;
   message: string;
   reviewId?: string | null;
+  page?: string;
   createdAt?: unknown;
   read?: boolean;
 }
