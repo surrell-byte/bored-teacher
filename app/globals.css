@@ -1131,6 +1131,7 @@ a { color: inherit; }
 
   position: relative;
   overflow: hidden;
+  contain: layout;
 
   box-shadow:
     0 10px 25px rgba(0,0,0,.18),
@@ -1152,12 +1153,8 @@ a { color: inherit; }
 }
 .game-card:hover {
   transform: translateY(-8px);
-
   border-color: rgba(245,200,66,.45);
-
-  box-shadow:
-    0 25px 55px rgba(0,0,0,.35),
-    0 0 24px rgba(245,200,66,.12);
+  filter: drop-shadow(0 15px 35px rgba(0,0,0,.3)) drop-shadow(0 0 20px rgba(245,200,66,.1));
 }
 .game-card:hover::before { opacity: 1; }
 .game-card:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
@@ -2149,8 +2146,9 @@ a { color: inherit; }
 
 .hub-game-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 340px));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: clamp(12px, 2vw, 28px);
+  contain: layout style;
 }
 
 .games-view-toggle {
@@ -2276,7 +2274,6 @@ a { color: inherit; }
 /* ── Staggered game cards ───────────────────────────────── */
 .card-stagger {
   animation: cardStagger 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
-  animation-delay: calc(min(var(--stagger-i, 0) * 0.04s, 0.5s));
 }
 
 /* ── Animate in utility ─────────────────────────────────── */

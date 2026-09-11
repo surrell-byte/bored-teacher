@@ -26,18 +26,21 @@ export interface ResponsiveState {
 const SSR_DEFAULT_WIDTH = 1280;
 
 export function useResponsive(): ResponsiveState {
-  const [width, setWidth] = useState<number>(
-    typeof window === 'undefined' ? SSR_DEFAULT_WIDTH : window.innerWidth
-  );
+  // Always use SSR default to match server render—sync to real width in effect
+  const [width, setWidth] = useState<number>(SSR_DEFAULT_WIDTH);
   const [isTouch, setIsTouch] = useState(false);
   const [presentationMode, setPresentationModeState] = useState(false);
   const rafId = useRef<number | null>(null);
 
   useEffect(() => {
+    // Sync to real window width after hydration (avoids hydration mismatch)
+    setWidth(window.innerWidth);
+    
     function handleResize() {
       if (rafId.current !== null) cancelAnimationFrame(rafId.current);
       rafId.current = requestAnimationFrame(() => setWidth(window.innerWidth));
     }
+    // Also listen for future resizes
     handleResize();
     window.addEventListener('resize', handleResize);
 

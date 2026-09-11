@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import {
   GAME_NAMES,
   GAME_ICONS,
@@ -16,7 +17,7 @@ interface GameCardProps {
   comingSoon?: boolean;
 }
 
-export default function GameCard({
+function GameCard({
   gameId,
   onClick,
   comingSoon = false,
@@ -66,3 +67,5 @@ export default function GameCard({
     </button>
   );
 }
+
+export default React.memo(GameCard);
