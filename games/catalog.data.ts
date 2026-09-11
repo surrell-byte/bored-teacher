@@ -89,6 +89,18 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     isNew: true,
     hasComponent: true,
   },
+  snowyslopes: {
+    name: "Snowy Slopes",
+    icon: "❄️",
+    desc: "Race through phonics challenges by matching sounds, spelling patterns, and words across Snowy Slopes levels.",
+    cover: "/assets/covers/emoji-match-cover.webp",
+    tag: { label: "Phonics", color: "tag-vocab" },
+    badge: "Phonics",
+    difficulty: "Starter",
+    barColor: "var(--blue)",
+    isNew: true,
+    hasComponent: true,
+  },
   unicorn: {
     name: "Unicorn Trophy Run",
     icon: "🦄",

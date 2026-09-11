@@ -47,6 +47,7 @@ export const GAME_COMPONENTS: Partial<Record<string, React.LazyExoticComponent<R
   findtheword: lazyGame('findtheword', () => import('@/games/find-the-word/FindTheWord.jsx')),
   lookandsay: lazyGame('lookandsay', () => import('@/games/look-and-say/LookAndSay.jsx')),
   emojisportsquiz: lazyGame('emojisportsquiz', () => import('@/games/emoji-sports-quiz/EmojiSportsQuiz.jsx')),
+  snowyslopes: lazyGame('snowyslopes', () => import('@/games/snowy-slopes/SnowySlopes.jsx')),
   unicorn: lazyGame('unicorn', () => import('@/games/unicorn-run/UnicornRun.jsx')),
   warriors: lazyGame('warriors', () => import('@/games/grammar-hoop-slam/GrammarGym.jsx')),
   compound: lazyGame('compound', () => import('@/games/compound-word-quest/CompoundWordQuest.jsx')),
