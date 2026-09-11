@@ -287,7 +287,7 @@ function Rider({ className = '' }) {
   );
 }
 
-export default function SnowySlopes() {
+export default function SnowySlopes({ onHudUpdate } = {}) {
   const [screen, setScreen] = useState('start');
   const [mode, setMode] = useState('beginner');
   const [level, setLevel] = useState(1);
@@ -308,6 +308,25 @@ export default function SnowySlopes() {
   const [crash, setCrash] = useState(false);
   const [boost, setBoost] = useState(false);
   const [feedback, setFeedback] = useState({ text: '', type: 'good', show: false });
+
+  // Emit HUD state to GameShell navbar
+  useEffect(() => {
+    if (!onHudUpdate || screen !== 'game') return;
+    const progressPct = questions.length
+      ? Math.min(100, (questionIndex / Math.max(1, questions.length - 1)) * 100)
+      : 0;
+    onHudUpdate({
+      lives,
+      coins,
+      xp,
+      score,
+      questionIndex,
+      totalQuestions: questions.length,
+      progressPct,
+      level,
+      mode: mode.toUpperCase(),
+    });
+  }, [screen, lives, coins, xp, score, questionIndex, questions.length, level, mode, onHudUpdate]);
 
   const audioCtxRef = useRef(null);
   const feedbackTimerRef = useRef(null);
@@ -763,20 +782,22 @@ export default function SnowySlopes() {
 
       {screen === 'game' && (
         <div className="ss-game-screen">
-          <header className="ss-hud">
-            <div className="ss-hud-logo">❄️ Snowy Slopes</div>
-            <div className="ss-pill hearts">❤️ {lives}</div>
-            <div className="ss-pill coins">🪙 {coins}</div>
-            <div className="ss-pill xp">⭐ {xp}</div>
-            <div className="ss-pill">{questions.length ? `${questionIndex + 1}/${questions.length}` : '0/0'}</div>
-            <div className="ss-progress-wrap">
-              <div className="ss-progress-label">Summit progress</div>
-              <div className="ss-progress-bar">
-                <div className="ss-progress-fill" style={{ width: `${progressPct}%` }} />
+          {!onHudUpdate && (
+            <header className="ss-hud">
+              <div className="ss-hud-logo">❄️ Snowy Slopes</div>
+              <div className="ss-pill hearts">❤️ {lives}</div>
+              <div className="ss-pill coins">🪙 {coins}</div>
+              <div className="ss-pill xp">⭐ {xp}</div>
+              <div className="ss-pill">{questions.length ? `${questionIndex + 1}/${questions.length}` : '0/0'}</div>
+              <div className="ss-progress-wrap">
+                <div className="ss-progress-label">Summit progress</div>
+                <div className="ss-progress-bar">
+                  <div className="ss-progress-fill" style={{ width: `${progressPct}%` }} />
+                </div>
               </div>
-            </div>
-            <button className="ss-exit-btn" onClick={backToLevels}>✕</button>
-          </header>
+              <button className="ss-exit-btn" onClick={backToLevels}>✕</button>
+            </header>
+          )}
 
           <div className="ss-game-area">
             <AmbientScene flakeCount={26} />

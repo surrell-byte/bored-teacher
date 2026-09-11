@@ -4345,3 +4345,4 @@ a { color: inherit; }
 .admin-feedback-notification-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .admin-feedback-notification-list { display: grid; gap: 12px; }
 .admin-feedback-notification-item { padding: 16px; }
+/* Snowy Slopes: hide internal HUD when rendered in GameShell */

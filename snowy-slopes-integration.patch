@@ -1,0 +1,21 @@
+--- a/app/games/[game]/page.tsx
++++ b/app/games/[game]/page.tsx
+@@ -54,6 +54,7 @@ export default function GamePage() {
+   const [countAddHud, setCountAddHud] = useState<any>(null);
+   const [numberCloudsHud, setNumberCloudsHud] = useState<any>(null);
++  const [snowySlopesHud, setSnowySlopesHud] = useState<any>(null);
+ 
+   useEffect(() => {
+     setShowRouteWelcome(!GAMES_WITH_WELCOME.has(gameId));
+@@ -68,6 +69,7 @@ export default function GamePage() {
+     window.addEventListener('count-add:hud', handleHud);
+     return () => window.removeEventListener('count-add:hud', handleHud);
+   }, [gameId]);
++  const isSnowySlopes = gameId === 'snowyslopes';
+ 
+   const gameName  = GAME_NAMES[gameId] ?? 'Game';
+   const gameIcon  = GAME_ICONS[gameId] ?? '🎮';
+@@ -227,6 +229,30 @@ export default function GamePage() {
+               {...(isNumberClouds ? { onHudUpdate: setNumberCloudsHud } : {})}
++              {...(isSnowySlopes ? { onHudUpdate: setSnowySlopesHud } : {})}
+               {...(isFlagmaster ? { darkMode: flagDarkMode } : {})}

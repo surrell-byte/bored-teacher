@@ -51,6 +51,7 @@ export default function GamePage() {
   const [isCreator, setIsCreator] = useState(false);
   const [countAddHud, setCountAddHud] = useState<any>(null);
   const [numberCloudsHud, setNumberCloudsHud] = useState<any>(null);
+  const [snowySlopesHud, setSnowySlopesHud] = useState<any>(null);
 
   useEffect(() => {
     setShowRouteWelcome(!GAMES_WITH_WELCOME.has(gameId));
@@ -83,6 +84,7 @@ export default function GamePage() {
   const isVocabValley = gameId === 'vocabvalley';
   const isCountAdd = gameId === 'countadd';
   const isNumberClouds = gameId === 'numberclouds';
+  const isSnowySlopes = gameId === 'snowyslopes';
   const zooShellTheme = {
     savanna: { nav: '#4a3728', navRaised: '#b8863a', navText: '#fff8e7', navMuted: '#fce9c8', background: '#d9c9a8' },
     ocean: { nav: '#16445a', navRaised: '#2f8da3', navText: '#effcff', navMuted: '#bde8ec', background: '#8ed1d5' },
@@ -201,6 +203,16 @@ export default function GamePage() {
                 <span className="game-shell-topbar-stat"><b>🏆 {numberCloudsHud.best}</b><span>Best</span></span>
               </span>
             )}
+            {isSnowySlopes && snowySlopesHud && (
+              <span className="game-shell-topbar-stats" aria-label="Snowy Slopes progress">
+                <span className="game-shell-topbar-stat"><b>❤️ {snowySlopesHud.lives}</b></span>
+                <span className="game-shell-topbar-stat"><b>🪙 {snowySlopesHud.coins}</b></span>
+                <span className="game-shell-topbar-stat"><b>⭐ {snowySlopesHud.xp}</b></span>
+                <span className="game-shell-topbar-stat">
+                  <b style={{ fontSize: '0.8rem' }}>Q{snowySlopesHud.questionIndex + 1}/{snowySlopesHud.totalQuestions}</b>
+                </span>
+              </span>
+            )}
             {isConnect4 && c4Hud ? <Connect4HeaderActions hud={c4Hud} /> : null}
             {isTicTacRoll && (
               <>
@@ -245,6 +257,7 @@ export default function GamePage() {
               {...(isTicTacRoll ? { themeId: ticTheme.id, onThemeChange: setTicTheme } : {})}
               {...(isConnect4 ? { onHudUpdate: setC4Hud } : {})}
               {...(isNumberClouds ? { onHudUpdate: setNumberCloudsHud } : {})}
+              {...(isSnowySlopes ? { onHudUpdate: setSnowySlopesHud } : {})}
               {...(isFlagmaster ? { darkMode: flagDarkMode } : {})}
               {...(isZooGame ? { themeId: zooTheme } : {})}
                {...(isAlphabetHunt ? { themeId: alphabetTheme } : {})}
