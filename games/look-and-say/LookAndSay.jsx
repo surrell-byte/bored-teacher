@@ -71,7 +71,7 @@ export default function LookAndSay() {
   const progress = items.length > 0 ? ((current + 1) / items.length) * 100 : 0;
 
   return (
-    <div className="game">
+    <div className="look-and-say-game">
       {!started && (
         <div className="start">
           <div className="start-box">

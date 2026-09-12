@@ -25,12 +25,11 @@ function GameCard({
   const cover = GAME_COVERS[gameId];
   const tag = GAME_TAGS[gameId];
   const accent = GAME_BAR_COLOR[gameId] ?? 'var(--teal)';
+  const coverStyle = { '--cover-accent': accent } as React.CSSProperties;
 
   return (
     <button
       className="game-card"
-      onPointerEnter={() => preloadGame(gameId)}
-      onFocus={() => preloadGame(gameId)}
       onClick={() => {
         preloadGame(gameId);
         onClick(gameId);
@@ -38,7 +37,7 @@ function GameCard({
     >
       <div
         className={`card-cover${cover ? ' has-image' : ''}`}
-        style={{ ['--cover-accent' as any]: accent }}
+        style={coverStyle}
       >
         {cover && (
           <div

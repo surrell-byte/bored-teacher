@@ -23,6 +23,9 @@ function lazyGame(gameId: string, loader: GameLoader) {
     if (existing) return existing;
     const promise = loader();
     loadedGames.set(gameId, promise);
+    promise.catch(() => {
+      if (loadedGames.get(gameId) === promise) loadedGames.delete(gameId);
+    });
     return promise;
   };
 
@@ -31,7 +34,8 @@ function lazyGame(gameId: string, loader: GameLoader) {
 }
 
 export function preloadGame(gameId: string) {
-  gameLoaders[gameId]?.();
+  const load = gameLoaders[gameId];
+  if (load) void load().catch(() => {});
 }
 
 export type GameComponentProps = {
