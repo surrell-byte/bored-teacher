@@ -135,7 +135,10 @@ export default function GameShell({
     }
   }, []);
 
-  const topBarStats = stats ?? [];
+  const topBarStats = (stats ?? []).map(stat => ({
+    ...stat,
+    value: typeof stat.value === 'number' && Number.isFinite(stat.value) ? stat.value : 0,
+  }));
 
   return (
     <div

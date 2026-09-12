@@ -364,12 +364,13 @@ export default function FindTheBee({ onComplete }) {
           -webkit-tap-highlight-color: transparent;
           color: #2c2233;
           min-height: 100%;
+          min-height: 100dvh;
           padding: clamp(14px, 2.5vh, 28px) clamp(14px, 4vw, 40px) clamp(16px, 3vh, 28px);
-          max-width: 1180px;
+          max-width: none;
           margin: 0 auto;
           position: relative;
           width: 100%;
-          background: url('/assets/images/find-the-bee-game-screen-bg.webp') center / cover;
+          background: url('/assets/images/find-the-bee-game-screen-bg.webp') center center / cover no-repeat;
           border-radius: 0;
         }
         .ftb-eyebrow {

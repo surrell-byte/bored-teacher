@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState, useCallback } from 'react';
 
 const toppingDefs = [
   { name: 'Cheese', emoji: '🧀', color: '#ffd93d' },
@@ -33,40 +33,34 @@ function generateOrders() {
   };
 }
 
-const INITIAL_ORDERS = generateOrders();
-
 export default function PizzaFractions({ onComplete }) {
+  const [initialOrder] = useState(generateOrders);
+  const [slices, setSlices] = useState(initialOrder.slices);
+  const [orders, setOrders] = useState(initialOrder.orders);
+  const [assignments, setAssignments] = useState(() => Array(initialOrder.slices).fill(null));
+  const [activeIdx, setActiveIdx] = useState(0);
   const [score, setScore] = useState(0);
-  const [orders, setOrders] = useState(INITIAL_ORDERS);
-  const [activeToppingIndex, setActiveToppingIndex] = useState(0);
-  const [sliceAssignments, setSliceAssignments] = useState(() => Array(INITIAL_ORDERS.slices).fill(null));
-  const [feedback, setFeedback] = useState('');
-  const [nextVisible, setNextVisible] = useState(false);
+  const [feedback, setFeedback] = useState({ text: '', ok: false });
+  const [showNext, setShowNext] = useState(false);
 
-  const selectedCounts = useMemo(() => {
-    const counts = orders.orders.map((_, index) => sliceAssignments.filter((value) => value === index).length);
-    return counts.join(' + ');
-  }, [orders.orders, sliceAssignments]);
-
-  const nextOrder = () => {
+  const nextOrder = useCallback(() => {
     const fresh = generateOrders();
-    setOrders(fresh);
-    setActiveToppingIndex(0);
-    setSliceAssignments(Array(fresh.slices).fill(null));
-    setFeedback('');
-    setNextVisible(false);
-  };
+    setSlices(fresh.slices);
+    setOrders(fresh.orders);
+    setAssignments(Array(fresh.slices).fill(null));
+    setActiveIdx(0);
+    setFeedback({ text: '', ok: false });
+    setShowNext(false);
+  }, []);
 
   const toggleSlice = (index) => {
-    setSliceAssignments((current) => {
+    setAssignments((current) => {
       const next = [...current];
       const currentValue = next[index];
-      if (currentValue === null) {
-        next[index] = activeToppingIndex;
-      } else if (currentValue === activeToppingIndex) {
+      if (currentValue === activeIdx) {
         next[index] = null;
       } else {
-        next[index] = activeToppingIndex;
+        next[index] = activeIdx;
       }
       return next;
     });
@@ -75,21 +69,21 @@ export default function PizzaFractions({ onComplete }) {
   const checkAnswer = () => {
     let isCorrect = true;
     orders.orders.forEach((order, index) => {
-      const got = sliceAssignments.filter((value) => value === index).length;
-      const expected = Math.round((order.n / order.d) * orders.slices);
+      const got = assignments.filter((value) => value === index).length;
+      const expected = Math.round((order.n / order.d) * slices);
       if (got !== expected) isCorrect = false;
     });
 
     if (isCorrect) {
       const nextScore = score + 15;
       setScore(nextScore);
-      setFeedback('🎉 Perfect pizza! The customer is happy!');
-      setNextVisible(true);
+      setFeedback({ text: '🎉 Perfect pizza! The customer is happy!', ok: true });
+      setShowNext(true);
       onComplete?.(nextScore, 100);
       return;
     }
 
-    setFeedback('🤔 Not quite right! Check the fractions!');
+    setFeedback({ text: '🤔 Not quite right! Check the fractions!', ok: false });
   };
 
   return (
@@ -99,16 +93,19 @@ export default function PizzaFractions({ onComplete }) {
         <h1>🍕 Pizza Fractions!</h1>
 
         <div className="pizza-fractions-order-box">
-          <div className="pizza-fractions-order-text">Customer wants: {orders.orders.map((order) => `${order.n}/${order.d} ${order.topping.emoji} ${order.topping.name}`).join(' + ')}</div>
+          <div className="pizza-fractions-order-text">Customer wants: {orders.map((order) => `${order.n}/${order.d} ${order.topping.emoji} ${order.topping.name}`).join(' + ')}</div>
           <div className="pizza-fractions-order-sub">Click the correct slices, then press Check!</div>
         </div>
 
         <div className="pizza-fractions-main">
           <div className="pizza-fractions-pizza-container">
             <svg className="pizza-fractions-pizza" viewBox="0 0 240 240" width="240" height="240">
-              {Array.from({ length: orders.slices }, (_, index) => {
-                const start = (index / orders.slices) * Math.PI * 2 - Math.PI / 2;
-                const end = ((index + 1) / orders.slices) * Math.PI * 2 - Math.PI / 2;
+              <circle cx="120" cy="120" r="110" fill="#c8860a" />
+              <circle cx="120" cy="120" r="102" fill="#f0c040" />
+              <circle cx="120" cy="120" r="84" fill="#c0392b" />
+              {Array.from({ length: slices }, (_, index) => {
+                const start = (index / slices) * Math.PI * 2 - Math.PI / 2;
+                const end = ((index + 1) / slices) * Math.PI * 2 - Math.PI / 2;
                 const cx = 120;
                 const cy = 120;
                 const r = 110;
@@ -116,7 +113,7 @@ export default function PizzaFractions({ onComplete }) {
                 const y1 = cy + r * Math.sin(start);
                 const x2 = cx + r * Math.cos(end);
                 const y2 = cy + r * Math.sin(end);
-                const fill = sliceAssignments[index] === null ? 'transparent' : orders.orders[sliceAssignments[index]].topping.color + 'bb';
+                const fill = assignments[index] === null ? 'transparent' : orders[assignments[index]].topping.color + 'bb';
 
                 return (
                   <g key={`slice-${index}`}>
@@ -127,17 +124,14 @@ export default function PizzaFractions({ onComplete }) {
                   </g>
                 );
               })}
-              <circle cx="120" cy="120" r="110" fill="#c8860a" />
-              <circle cx="120" cy="120" r="102" fill="#f0c040" />
-              <circle cx="120" cy="120" r="84" fill="#c0392b" />
             </svg>
-            <div className="pizza-fractions-info-panel">Selected: <strong>{selectedCounts}</strong> / {orders.slices} slices</div>
+            <div className="pizza-fractions-info-panel">Selected: <strong>{orders.length ? orders.map((_, index) => assignments.filter((value) => value === index).length).join(' + ') : 0}</strong> / {slices} slices</div>
           </div>
 
           <div className="pizza-fractions-toppings-panel">
             <div className="pizza-fractions-label">🎨 Choose topping:</div>
-            {orders.orders.map((order, index) => (
-              <button key={`${order.topping.name}-${index}`} type="button" className={`pizza-fractions-button ${index === activeToppingIndex ? 'active' : ''}`} style={{ background: `${order.topping.color}cc` }} onClick={() => setActiveToppingIndex(index)}>
+            {orders.map((order, index) => (
+              <button key={`${order.topping.name}-${index}`} type="button" className={`pizza-fractions-button ${index === activeIdx ? 'active' : ''}`} style={{ background: `${order.topping.color}cc` }} onClick={() => setActiveIdx(index)}>
                 {order.topping.emoji} {order.topping.name}
               </button>
             ))}
@@ -145,9 +139,9 @@ export default function PizzaFractions({ onComplete }) {
         </div>
 
         <button type="button" className="pizza-fractions-check" onClick={checkAnswer}>Check Pizza ✅</button>
-        <div className="pizza-fractions-feedback">{feedback}</div>
+        <div className={`pizza-fractions-feedback ${feedback.ok ? 'pizza-fractions-ok' : ''}`}>{feedback.text}</div>
         <div className="pizza-fractions-score-row">⭐ Score: <span>{score}</span></div>
-        {nextVisible && <button type="button" className="pizza-fractions-next" onClick={nextOrder}>Next Order! 🍕</button>}
+        {showNext && <button type="button" className="pizza-fractions-next" onClick={nextOrder}>Next Order! 🍕</button>}
       </div>
     </main>
   );
