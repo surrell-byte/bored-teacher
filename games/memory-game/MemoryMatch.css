@@ -2,7 +2,8 @@
    MEMORY MATCH - ESL GAME HUB
 ========================================================= */
 
-* {
+.memory-game,
+.memory-game * {
   box-sizing: border-box;
 }
 
@@ -906,7 +907,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  * {
+  .memory-game * {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;

@@ -1,4 +1,5 @@
-* { box-sizing: border-box; }
+.snowy-slopes,
+.snowy-slopes * { box-sizing: border-box; }
 
 .snowy-slopes {
   min-height: 100vh;

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { useResponsive } from '@/hooks/useResponsive';
 
 // Each background image's focal point — the point that should stay
 // visible when `background-size: cover` crops the image to fit the
@@ -22,10 +21,8 @@ const BACKGROUNDS: Record<string, { src: string; position: string }> = {
   blog:         { src: '/assets/images/plain-bg.png',             position: 'center' },
   subscription: { src: '/assets/images/subscription-bg.webp',    position: 'center' },
 };
-
 export default function AppBackground() {
   const pathname = usePathname();
-  const { isMobile, isTablet } = useResponsive();
   const [splashStage, setSplashStage] = useState<'welcome' | 'start-playing'>('welcome');
 
   useEffect(() => {
@@ -69,10 +66,6 @@ export default function AppBackground() {
     entry = BACKGROUNDS.plain;
   } else if (pathname.startsWith('/subscription')) {
     entry = BACKGROUNDS.subscription;
-  }
-
-  if (isMobile || isTablet) {
-    entry = BACKGROUNDS.general;
   }
 
   useEffect(() => {

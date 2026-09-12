@@ -1,23 +1,14 @@
-* {
+.zoogame-root,
+.zoogame-root * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-html, body {
-  height: 100%;
-}
-
-body {
+.zoogame-root {
   font-family: 'Comic Sans MS', 'Chalkboard SE', cursive, sans-serif;
   background: linear-gradient(145deg, #f8f0d5 0%, #e8dcc0 100%);
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   padding: 18px;
-  margin: 0;
-  overflow: hidden;
 }
 
 .game-wrapper {

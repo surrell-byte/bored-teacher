@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useGame } from "@/lib/gameState";
 import { playBeep as playTone } from "@/lib/sound/beep";
 
@@ -42,7 +42,7 @@ function playBeep(type){
   playTone(type === "correct" ? 880 : 300, 0.25, type === "correct" ? 0.3 : 0.25);
 }
 
-export default function AnimalClassQuest({ onComplete }) {
+export default function AnimalClassQuest({ onComplete, onHudUpdate }) {
   const { completeGame } = useGame();
   const [screen, setScreen]     = useState("menu");
   const [level, setLevel]       = useState("easy");
@@ -61,6 +61,19 @@ export default function AnimalClassQuest({ onComplete }) {
   },[]);
 
   const current = questions[idx];
+
+  useEffect(() => {
+    if (screen !== "game") {
+      onHudUpdate?.(null);
+      return;
+    }
+    onHudUpdate?.({
+      level: level.charAt(0).toUpperCase() + level.slice(1),
+      score,
+      questionIndex: idx,
+      totalQuestions: questions.length,
+    });
+  }, [idx, level, onHudUpdate, questions.length, score, screen]);
 
   const answer = (cls) => {
     if(answered) return;

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import "./MoneyBlocks.css";
 
 const GOAL = 1_000_000;
@@ -187,14 +187,6 @@ export default function MoneyBlocks() {
     () => tiles.filter((tile) => !tile.used),
     [tiles]
   );
-
-  useEffect(() => {
-    document.body.dataset.theme = theme;
-
-    return () => {
-      delete document.body.dataset.theme;
-    };
-  }, [theme]);
 
   function startGame() {
     setScreen("setup");
@@ -655,7 +647,7 @@ export default function MoneyBlocks() {
   }
 
   return (
-    <div className="money-blocks">
+    <div className={`money-blocks theme-${theme}`}>
       {screen === "welcome" && (
         <div className="screen-overlay">
           <div className="welcome-box">

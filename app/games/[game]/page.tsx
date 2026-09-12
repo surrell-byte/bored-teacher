@@ -50,8 +50,10 @@ export default function GamePage() {
   const [canPlay, setCanPlay] = useState(false);
   const [isCreator, setIsCreator] = useState(false);
   const [countAddHud, setCountAddHud] = useState<any>(null);
+  const [emojiSportsHud, setEmojiSportsHud] = useState<any>(null);
   const [numberCloudsHud, setNumberCloudsHud] = useState<any>(null);
   const [snowySlopesHud, setSnowySlopesHud] = useState<any>(null);
+  const [animalClassHud, setAnimalClassHud] = useState<any>(null);
 
   useEffect(() => {
     setShowRouteWelcome(!GAMES_WITH_WELCOME.has(gameId));
@@ -83,8 +85,10 @@ export default function GamePage() {
   const isWeatherWizard = gameId === 'weatherwizard';
   const isVocabValley = gameId === 'vocabvalley';
   const isCountAdd = gameId === 'countadd';
+  const isEmojiSports = gameId === 'emojisportsquiz';
   const isNumberClouds = gameId === 'numberclouds';
   const isSnowySlopes = gameId === 'snowyslopes';
+  const isAnimalClass = gameId === 'animalclass';
   const zooShellTheme = {
     savanna: { nav: '#4a3728', navRaised: '#b8863a', navText: '#fff8e7', navMuted: '#fce9c8', background: '#d9c9a8' },
     ocean: { nav: '#16445a', navRaised: '#2f8da3', navText: '#effcff', navMuted: '#bde8ec', background: '#8ed1d5' },
@@ -128,7 +132,11 @@ export default function GamePage() {
   function handleMainMenu() {
     setResult(null);
     setC4Hud(null);
-    if (isWeatherWizard || isNumberClouds) {
+    if (isAnimalClass) {
+      setAnimalClassHud(null);
+      setShowRouteWelcome(false);
+      setGameSession(session => session + 1);
+    } else if (isWeatherWizard || isNumberClouds) {
       setShowRouteWelcome(false);
       if (isWeatherWizard) window.dispatchEvent(new Event('weather-wizard:main-menu'));
       else setGameSession(session => session + 1);
@@ -193,8 +201,26 @@ export default function GamePage() {
                   <span className="game-shell-topbar-stat"><b>{Array.from({ length: 5 }, (_, index) => index < countAddHud.levelStars ? '⭐' : '☆').join('')}</b><span>Level {countAddHud.level}</span></span>
                   <span className="game-shell-topbar-stat"><b>{countAddHud.score}</b><span>Score</span></span>
                 </span>
-                {Object.entries({ easy: '🐣 Easy', medium: '🐥 Medium', hard: '🦅 Hard' }).map(([key, label]) => <button key={key} className="game-shell-header-action" type="button" aria-pressed={countAddHud.difficulty === key} onClick={() => window.dispatchEvent(new CustomEvent('count-add:set-difficulty', { detail: key }))}>{label}</button>)}
+                <label className="game-shell-header-action" style={{ gap: 6 }}>
+                  <span aria-hidden="true">🎯</span>
+                  <select
+                    value={countAddHud.difficulty}
+                    onChange={event => window.dispatchEvent(new CustomEvent('count-add:set-difficulty', { detail: event.target.value }))}
+                    aria-label="Choose Count and Add difficulty"
+                    style={{ border: 0, background: 'transparent', color: 'inherit', font: 'inherit', fontWeight: 800, outline: 0, cursor: 'pointer' }}
+                  >
+                    <option value="easy">🐣 Easy</option>
+                    <option value="medium">🐥 Medium</option>
+                    <option value="hard">🦅 Hard</option>
+                  </select>
+                </label>
               </>
+            )}
+            {isEmojiSports && emojiSportsHud && (
+              <span className="game-shell-topbar-stats" aria-label="Emoji Sports Quiz progress">
+                <span className="game-shell-topbar-stat"><b>⭐ {emojiSportsHud.score}</b><span>Score</span></span>
+                <span className="game-shell-topbar-stat"><b>🔥 {emojiSportsHud.streak}</b><span>Streak</span></span>
+              </span>
             )}
             {isNumberClouds && numberCloudsHud && (
               <span className="game-shell-topbar-stats" aria-label="Number Clouds progress">
@@ -211,6 +237,13 @@ export default function GamePage() {
                 <span className="game-shell-topbar-stat">
                   <b style={{ fontSize: '0.8rem' }}>Q{snowySlopesHud.questionIndex + 1}/{snowySlopesHud.totalQuestions}</b>
                 </span>
+              </span>
+            )}
+            {isAnimalClass && animalClassHud && (
+              <span className="game-shell-topbar-stats" aria-label="Animal Class Quest progress">
+                <span className="game-shell-topbar-stat"><b>{animalClassHud.level}</b></span>
+                <span className="game-shell-topbar-stat"><b>⭐ {animalClassHud.score}</b></span>
+                <span className="game-shell-topbar-stat"><b>{animalClassHud.questionIndex + 1}/{animalClassHud.totalQuestions}</b></span>
               </span>
             )}
             {isConnect4 && c4Hud ? <Connect4HeaderActions hud={c4Hud} /> : null}
@@ -257,7 +290,9 @@ export default function GamePage() {
               {...(isTicTacRoll ? { themeId: ticTheme.id, onThemeChange: setTicTheme } : {})}
               {...(isConnect4 ? { onHudUpdate: setC4Hud } : {})}
               {...(isNumberClouds ? { onHudUpdate: setNumberCloudsHud } : {})}
+              {...(isEmojiSports ? { onHudUpdate: setEmojiSportsHud } : {})}
               {...(isSnowySlopes ? { onHudUpdate: setSnowySlopesHud } : {})}
+              {...(isAnimalClass ? { onHudUpdate: setAnimalClassHud } : {})}
               {...(isFlagmaster ? { darkMode: flagDarkMode } : {})}
               {...(isZooGame ? { themeId: zooTheme } : {})}
                {...(isAlphabetHunt ? { themeId: alphabetTheme } : {})}

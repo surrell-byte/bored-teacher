@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./EmojiSportsQuiz.css";
 
 const questions = [
@@ -24,15 +24,22 @@ const questions = [
   { emojis: "🤺⚔️🏆", answer: "Fencing", options: ["Fencing", "Archery", "Boxing", "Judo"] },
 ];
 
-export default function EmojiSportsQuiz() {
+const shuffleOptions = (options) => [...options].sort(() => Math.random() - 0.5);
+
+export default function EmojiSportsQuiz({ onHudUpdate }) {
   const [screen, setScreen] = useState("start");
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [answered, setAnswered] = useState(false);
+  const [options, setOptions] = useState(() => shuffleOptions(questions[0].options));
 
   const question = questions[currentQuestion];
+
+  useEffect(() => {
+    onHudUpdate?.(screen === "quiz" ? { score, streak } : null);
+  }, [onHudUpdate, screen, score, streak]);
 
   const startGame = () => {
     setCurrentQuestion(0);
@@ -40,6 +47,7 @@ export default function EmojiSportsQuiz() {
     setStreak(0);
     setSelectedAnswer(null);
     setAnswered(false);
+    setOptions(shuffleOptions(questions[0].options));
     setScreen("quiz");
   };
 
@@ -69,7 +77,9 @@ export default function EmojiSportsQuiz() {
       return;
     }
 
-    setCurrentQuestion((prev) => prev + 1);
+    const nextIndex = currentQuestion + 1;
+    setCurrentQuestion(nextIndex);
+    setOptions(shuffleOptions(questions[nextIndex].options));
     setSelectedAnswer(null);
     setAnswered(false);
   };
@@ -120,14 +130,6 @@ export default function EmojiSportsQuiz() {
   return (
     <div className="emoji-sports-page">
       <div className="emoji-sports-game">
-        <div className="quiz-header">
-          <div className="quiz-title">Emoji <span>Sports</span></div>
-          <div className="stats">
-            <div className="stat"><small>SCORE</small><strong>{score}</strong></div>
-            <div className="stat"><small>STREAK</small><strong>{streak}</strong></div>
-          </div>
-        </div>
-
         <div className="progress">
           <div className="progress-bar" style={{ width: `${progress}%` }} />
         </div>
@@ -139,7 +141,7 @@ export default function EmojiSportsQuiz() {
         </div>
 
         <div className="answers">
-          {question.options.map((option) => {
+          {options.map((option, optionIndex) => {
             const isCorrect = option === question.answer;
             const isSelected = option === selectedAnswer;
 
@@ -150,7 +152,7 @@ export default function EmojiSportsQuiz() {
 
             return (
               <button key={option} className={className} onClick={() => selectAnswer(option)} disabled={answered}>
-                <span className="answer-letter">{String.fromCharCode(65 + question.options.indexOf(option))}</span>
+                <span className="answer-letter">{String.fromCharCode(65 + optionIndex)}</span>
                 {option}
               </button>
             );

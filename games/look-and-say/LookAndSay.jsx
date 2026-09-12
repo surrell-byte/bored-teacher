@@ -4,18 +4,21 @@ import "./LookAndSay.css";
 const items = [
   {
     word: "apple",
+    emoji: "🍎",
     image: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzAwMDAwMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iNDUiIHI9IjM1IiBmaWxsPSIjZWQzMzMzIi8+PHBhdGggZD0iTTUwIDEwIHYtNSIgc3Ryb2tlPSIjODQzMDEwIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==",
     sentence: "It is a red apple.",
     choices: ["It is a red apple.", "It is a red strawberry.", "It is a red cherry."]
   },
   {
     word: "ball",
+    emoji: "🟡",
     image: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2RlZmZlZmYiLz48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0NCIgZmlsbD0iI2Y2YzE0ZiIvPjwvc3ZnPg==",
     sentence: "It is a yellow ball.",
     choices: ["It is a blue ball.", "It is a yellow ball.", "It is a green kite."]
   },
   {
     word: "flower",
+    emoji: "🌼",
     image: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2VlZjk3NCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iNjAiIHI9IjgiIGZpbGw9IiNmZmQwMDAiLz48Y2lyY2xlIGN4PSIzMCIgY3k9IjQwIiByPSIxMCIgZmlsbD0iI2ZmYjZjMSIvPjxjaXJjbGUgY3g9IjcwIiBjeT0iNDAiIHI9IjEwIiBmaWxsPSIjZmZiNmMxIi8+PGNpcmNsZSBjeD0iMjUiIGN5PSI1NSIgcj0iMTAiIGZpbGw9IiNmZmI2YzEiLz48Y2lyY2xlIGN4PSI3NSIgY3k9IjU1IiByPSIxMCIgZmlsbD0iI2ZmYjZjMSIvPjxwYXRoIGQ9Ik01MCA2MCBsLTEgLTI0IiBzdHJva2U9IiM4OGRlMzIiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PC9zdmc+",
     sentence: "It is a yellow flower.",
     choices: ["It is a yellow flower.", "It is a red balloon.", "It is a green tree."]
@@ -99,14 +102,6 @@ export default function LookAndSay() {
 
       {started && !finished && item && (
         <>
-          <div className="top">
-            <div>
-              <div className="title"><span className="bulb">💡</span>Look and say.</div>
-              <div className="subtitle">Look carefully. Choose the sentence that matches the picture.</div>
-            </div>
-            <div className="score">⭐ {score}</div>
-          </div>
-
           <div className="progress">
             <div className="bar" style={{ width: `${progress}%` }} />
           </div>
@@ -114,7 +109,7 @@ export default function LookAndSay() {
           <div className="question-number">Question {current + 1} of {items.length}</div>
 
           <div className="picture-card">
-            <img src={item.image} alt={item.word} />
+            <div className="picture-emoji" role="img" aria-label={item.word}>{item.emoji}</div>
           </div>
 
           <div className="question">Which sentence matches the picture?</div>

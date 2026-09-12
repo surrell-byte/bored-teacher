@@ -26,7 +26,6 @@ const MORE_ITEMS = [
   { href: '/about', label: 'About', icon: 'ℹ️' },
   { href: '/settings', label: 'Settings', icon: '⚙️' },
 ];
-
 export default function Navbar() {
   const { state, applyTheme, earnedAchievementIds } = useGame();
   const router = useRouter();
@@ -37,13 +36,14 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [soundOn, setSoundOn] = useState(true);
   const [creator, setCreator] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const moreRef = useRef<HTMLDivElement>(null);
   const { isMobile, presentationMode, setPresentationMode } = useResponsive();
 
   // Presentation mode is only offered on screens big enough to matter for a
   // classroom display (tablet and up) — it has nothing to add on a phone.
-  const showPresentationToggle = !isMobile;
+  const showPresentationToggle = hydrated && !isMobile;
 
   const isGuest = typeof window !== 'undefined' && localStorage.getItem('guestUser') === 'true';
 
@@ -70,6 +70,13 @@ export default function Navbar() {
 
   useEffect(() => {
     setSoundOn(isSoundEnabled());
+  }, []);
+
+  useEffect(() => {
+    // This state change intentionally happens after hydration so responsive
+    // controls cannot change the server-rendered navbar structure.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setHydrated(true);
   }, []);
 
   useEffect(() => onAuthStateChanged(user => setCreator(isCreatorUser(user))), []);

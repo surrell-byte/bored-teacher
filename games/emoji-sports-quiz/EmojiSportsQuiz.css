@@ -1,4 +1,5 @@
-* { box-sizing: border-box; }
+.emoji-sports-page,
+.emoji-sports-page * { box-sizing: border-box; }
 
 .emoji-sports-page {
   min-height: 100vh;

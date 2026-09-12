@@ -1,4 +1,5 @@
-* { box-sizing: border-box; }
+.screen,
+.screen * { box-sizing: border-box; }
 
 .screen.active.welcome-screen { min-height: 100vh; width: 100%; padding: 30px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle at 50% 130%, #132c52, #061625); color: white; }
 
