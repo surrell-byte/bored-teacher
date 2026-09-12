@@ -51,6 +51,7 @@ export default function GamePage() {
   const [isCreator, setIsCreator] = useState(false);
   const [countAddHud, setCountAddHud] = useState<any>(null);
   const [emojiSportsHud, setEmojiSportsHud] = useState<any>(null);
+  const [weatherWizardHud, setWeatherWizardHud] = useState<any>(null);
   const [numberCloudsHud, setNumberCloudsHud] = useState<any>(null);
   const [snowySlopesHud, setSnowySlopesHud] = useState<any>(null);
   const [animalClassHud, setAnimalClassHud] = useState<any>(null);
@@ -138,7 +139,10 @@ export default function GamePage() {
       setGameSession(session => session + 1);
     } else if (isWeatherWizard || isNumberClouds) {
       setShowRouteWelcome(false);
-      if (isWeatherWizard) window.dispatchEvent(new Event('weather-wizard:main-menu'));
+      if (isWeatherWizard) {
+        setWeatherWizardHud(null);
+        window.dispatchEvent(new Event('weather-wizard:main-menu'));
+      }
       else setGameSession(session => session + 1);
     } else {
       setShowRouteWelcome(true);
@@ -222,6 +226,11 @@ export default function GamePage() {
                 <span className="game-shell-topbar-stat"><b>🔥 {emojiSportsHud.streak}</b><span>Streak</span></span>
               </span>
             )}
+            {isWeatherWizard && weatherWizardHud && (
+              <span className="game-shell-topbar-stats" aria-label="Weather Wizard progress">
+                <span className="game-shell-topbar-stat"><b>{weatherWizardHud.question}</b><span>Progress</span></span>
+              </span>
+            )}
             {isNumberClouds && numberCloudsHud && (
               <span className="game-shell-topbar-stats" aria-label="Number Clouds progress">
                 <span className="game-shell-topbar-stat"><b>⭐ {numberCloudsHud.score}</b><span>Score</span></span>
@@ -291,6 +300,7 @@ export default function GamePage() {
               {...(isConnect4 ? { onHudUpdate: setC4Hud } : {})}
               {...(isNumberClouds ? { onHudUpdate: setNumberCloudsHud } : {})}
               {...(isEmojiSports ? { onHudUpdate: setEmojiSportsHud } : {})}
+              {...(isWeatherWizard ? { onHudUpdate: setWeatherWizardHud } : {})}
               {...(isSnowySlopes ? { onHudUpdate: setSnowySlopesHud } : {})}
               {...(isAnimalClass ? { onHudUpdate: setAnimalClassHud } : {})}
               {...(isFlagmaster ? { darkMode: flagDarkMode } : {})}

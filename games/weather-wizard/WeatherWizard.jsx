@@ -7,12 +7,12 @@ const LEVELS = [
   { title: 'Season Keeper', icon: '🌸', questions: [['🌸', 'Which season is famous for flowers?', ['Winter', 'Spring', 'Summer', 'Autumn'], 'Spring'], ['🏖️', 'Which season is usually the hottest?', ['Winter', 'Autumn', 'Summer', 'Spring'], 'Summer'], ['🍂', 'Leaves often fall from trees in...', ['Spring', 'Summer', 'Autumn', 'Winter'], 'Autumn']] },
   { title: 'Weather Master', icon: '🌪️', questions: [['🌡️', 'What instrument measures temperature?', ['Thermometer', 'Compass', 'Clock', 'Ruler'], 'Thermometer'], ['🌈', 'What can appear when sunlight shines through rain?', ['Rainbow', 'Snowman', 'Tornado', 'Fog'], 'Rainbow'], ['⚡', 'Which weather event produces a flash of light?', ['Lightning', 'Fog', 'Drizzle', 'Wind'], 'Lightning']] },
   { title: 'Spelling Storm', icon: '🔤', type: 'spelling', questions: [['☀️', 'sunny'], ['🌧️', 'rainy'], ['☁️', 'cloudy'], ['💨', 'windy']] },
-  { title: 'Sentence Sky', icon: '✏️', questions: [['It is very _____ today.', ['sunny', 'snowy', 'foggy'], 'sunny'], ['Take an umbrella. It is _____ outside.', ['rainy', 'windy', 'hot'], 'rainy'], ['We build snowmen in _____.', ['summer', 'winter', 'spring'], 'winter']] },
+  { title: 'Sentence Sky', icon: '✏️', type: 'sentence', questions: [['It is very _____ today.', ['sunny', 'snowy', 'foggy'], 'sunny'], ['Take an umbrella. It is _____ outside.', ['rainy', 'windy', 'hot'], 'rainy'], ['We build snowmen in _____.', ['summer', 'winter', 'spring'], 'winter']] },
   { title: 'Weather Wizard', icon: '🧙', questions: [['🌈', 'Which condition is often needed before a rainbow appears?', ['Rain', 'Snow', 'Fog', 'Heat'], 'Rain'], ['🌡️', 'If the temperature drops below 0°C, water can...', ['Freeze', 'Boil', 'Disappear', 'Become hotter'], 'Freeze'], ['🌪️', 'What is a powerful spinning column of air?', ['Tornado', 'Cloud', 'Breeze', 'Rainbow'], 'Tornado']] },
 ];
 const shuffle = (items) => [...items].sort(() => Math.random() - 0.5);
 
-export default function WeatherWizard({ onComplete }) {
+export default function WeatherWizard({ onComplete, onHudUpdate }) {
   const [screen, setScreen] = useState('welcome');
   const [level, setLevel] = useState(0);
   const [question, setQuestion] = useState(0);
@@ -21,18 +21,31 @@ export default function WeatherWizard({ onComplete }) {
   const [selected, setSelected] = useState(null);
   const [spelling, setSpelling] = useState([]);
   const [feedback, setFeedback] = useState('');
+  const [isCorrect, setIsCorrect] = useState(false);
+  const [spellingOptions, setSpellingOptions] = useState([]);
+  const [answerOptions, setAnswerOptions] = useState([]);
   const current = LEVELS[level];
   const item = current?.questions[question];
 
   useEffect(() => {
-    const showWelcome = () => setScreen('welcome');
+    if (screen !== 'game' || !current) {
+      onHudUpdate?.(null);
+      return;
+    }
+    onHudUpdate?.({ question: `${question + 1}/${current.questions.length}` });
+  }, [current, onHudUpdate, question, screen]);
+
+  useEffect(() => {
+    const showWelcome = () => setScreen('levels');
     window.addEventListener('weather-wizard:main-menu', showWelcome);
     return () => window.removeEventListener('weather-wizard:main-menu', showWelcome);
   }, []);
 
   function startLevel(nextLevel) {
     if (nextLevel > 0 && !completed.includes(nextLevel - 1)) return;
-    setLevel(nextLevel); setQuestion(0); setScore(0); setSelected(null); setSpelling([]); setFeedback(''); setScreen('game');
+    const firstQuestion = LEVELS[nextLevel].questions[0];
+    const firstOptions = shuffle(LEVELS[nextLevel].type === 'spelling' ? firstQuestion[1].toUpperCase().split('') : LEVELS[nextLevel].type === 'sentence' ? firstQuestion[1] : firstQuestion[2]);
+    setLevel(nextLevel); setQuestion(0); setScore(0); setSelected(null); setIsCorrect(false); setSpelling([]); setSpellingOptions(firstOptions); setAnswerOptions(firstOptions); setFeedback(''); setScreen('game');
   }
   function advance(nextScore) {
     if (question + 1 >= current.questions.length) {
@@ -41,21 +54,39 @@ export default function WeatherWizard({ onComplete }) {
       onComplete?.(nextScore, Math.round((nextScore / current.questions.length) * 100));
       return;
     }
-    setQuestion((value) => value + 1); setSelected(null); setSpelling([]); setFeedback('');
+    const nextQuestion = current.questions[question + 1];
+    const nextOptions = shuffle(current.type === 'spelling' ? nextQuestion[1].toUpperCase().split('') : current.type === 'sentence' ? nextQuestion[1] : nextQuestion[2]);
+    setQuestion((value) => value + 1); setSelected(null); setIsCorrect(false); setSpelling([]); setSpellingOptions(nextOptions); setAnswerOptions(nextOptions); setFeedback('');
   }
   function answer(value) {
     if (selected !== null) return;
     setSelected(value);
     const correct = current.type === 'spelling' ? value === item[1].toUpperCase() : value === (current.questions[question][current.type === 'sentence' ? 2 : 3]);
-    if (correct) { const nextScore = score + 1; setScore(nextScore); setFeedback('✨ Correct!'); setTimeout(() => advance(nextScore), 550); }
-    else { setFeedback(`💡 Try again. Answer: ${current.type === 'sentence' ? item[2] : item[3]}`); setTimeout(() => { setSelected(null); setFeedback(''); }, 900); }
+    if (correct) { const nextScore = score + 1; setScore(nextScore); setFeedback('✨ Correct!'); setTimeout(() => advance(nextScore), 3000); }
+    setIsCorrect(correct);
+    if (!correct) { setFeedback(`💡 Try again. Answer: ${current.type === 'sentence' ? item[2] : item[3]}`); setTimeout(() => { setSelected(null); setFeedback(''); setIsCorrect(false); }, 900); }
   }
   if (screen === 'welcome') return <main className="weather-wizard ww"><section className="ww-hero"><div><span className="ww-badge">WEATHER ACADEMY</span><h1>Become a <em>Weather Wizard</em></h1><p>Explore weather, seasons, spelling, and sentence challenges across six magical levels.</p><button onClick={() => setScreen('levels')}>Begin Adventure ✨</button></div><div className="ww-wizard">☀️🌧️🌈⚡</div></section></main>;
   if (screen === 'levels') return <main className="weather-wizard ww"><section className="ww-panel"><span className="ww-badge">WIZARD ACADEMY</span><h1>Your Adventure</h1><div className="ww-levels">{LEVELS.map((entry, index) => <button key={entry.title} disabled={index > 0 && !completed.includes(index - 1)} onClick={() => startLevel(index)}>{index > 0 && !completed.includes(index - 1) ? '🔒' : entry.icon}<strong>{index + 1}. {entry.title}</strong><small>{completed.includes(index) ? '✓ Completed' : entry.description || 'Start level'}</small></button>)}</div></section></main>;
   if (screen === 'result') return <main className="weather-wizard ww"><section className="ww-panel ww-result"><div className="ww-wizard">🏆</div><span className="ww-badge">LEVEL COMPLETE</span><h1>{current.title} Complete!</h1><p>You scored <strong>{score} / {current.questions.length}</strong></p><div className="ww-stars">{'⭐'.repeat(score >= current.questions.length * .8 ? 3 : score >= current.questions.length * .6 ? 2 : 1)}</div><button onClick={() => level < LEVELS.length - 1 ? startLevel(level + 1) : setScreen('levels')}>{level < LEVELS.length - 1 ? 'Continue Adventure →' : 'View Academy Map'}</button></section></main>;
   const isSpelling = current.type === 'spelling';
-  const options = isSpelling ? shuffle(item[1].toUpperCase().split('')) : current.type === 'sentence' ? shuffle(item[1]) : shuffle(item[2]);
-  return <main className="weather-wizard ww"><section className="ww-panel ww-game"><header><strong>{current.icon} {current.title}</strong><span>{question + 1}/{current.questions.length}</span></header><div className="ww-progress"><i style={{ width: `${((question + 1) / current.questions.length) * 100}%` }} /></div><div className="ww-question"><div className="ww-visual">{isSpelling ? item[0] : current.type === 'sentence' ? '✏️' : item[0]}</div><h2>{isSpelling ? 'Spell the weather word' : current.type === 'sentence' ? item[0] : item[1]}</h2>{isSpelling && <div className="ww-word">{item[1].toUpperCase().split('').map((_, index) => <span key={index}>{spelling[index] || '_'}</span>)}</div>}<div className="ww-answers">{options.map((option, index) => <button key={`${option}-${index}`} disabled={selected !== null} className={selected === option ? 'selected' : ''} onClick={() => isSpelling ? setSpelling((letters) => [...letters, option]) : answer(option)}>{option}</button>)}</div>{isSpelling && <><button className="ww-secondary" onClick={() => { setSpelling([]); setSelected(null); }}>Clear</button><button onClick={() => answer(spelling.join(''))}>Check</button></>}<div className="ww-feedback">{feedback}</div></div></section></main>;
+  const options = isSpelling ? spellingOptions : answerOptions;
+  const chooseLetter = (letter, index) => {
+    setSpelling((letters) => [...letters, letter]);
+    setSpellingOptions((letters) => letters.filter((_, optionIndex) => optionIndex !== index));
+  };
+  const resetSpelling = () => { setSpelling([]); setSpellingOptions(answerOptions); setSelected(null); setIsCorrect(false); };
+  const backspaceSpelling = () => {
+    const nextSpelling = spelling.slice(0, -1);
+    const available = [...answerOptions];
+    nextSpelling.forEach((letter) => {
+      const index = available.indexOf(letter);
+      if (index >= 0) available.splice(index, 1);
+    });
+    setSpelling(nextSpelling);
+    setSpellingOptions(available);
+  };
+  return <main className="weather-wizard ww"><style>{`.ww-sentence-question h2{max-width:760px;margin:16px auto 24px;font-size:clamp(1.8rem,3.5vw,3rem);line-height:1.2}.ww-sentence-question .ww-visual{width:96px;height:96px;font-size:48px;margin:8px auto 14px}.ww-sentence-question .ww-answers{margin-top:12px}.ww-answers button.correct{background:#d8f5e5!important;border-color:#31b66c!important;color:#145c38!important}.ww-answers button.selected:not(.correct){background:#ffe0e5!important;border-color:#e65d73!important;color:#8f2639!important}`}</style><section className="ww-panel ww-game"><div className="ww-progress"><i style={{ width: `${((question + 1) / current.questions.length) * 100}%` }} /></div><div className={`ww-question${current.type === 'sentence' ? ' ww-sentence-question' : ''}`}><div className="ww-visual">{isSpelling ? item[0] : current.type === 'sentence' ? '✏️' : item[0]}</div><h2>{isSpelling ? 'Spell the weather word' : current.type === 'sentence' ? item[0] : item[1]}</h2>{isSpelling && <div className="ww-word">{item[1].toUpperCase().split('').map((_, index) => <span key={index}>{spelling[index] || '_'}</span>)}</div>}<div className="ww-answers">{options.map((option, index) => <button key={`${option}-${index}`} disabled={selected !== null} className={selected === option ? (isCorrect ? 'selected correct' : 'selected') : ''} onClick={() => isSpelling ? chooseLetter(option, index) : answer(option)}>{option}</button>)}</div>{isSpelling && <div className="ww-spelling-actions"><button className="ww-secondary" onClick={backspaceSpelling}>Backspace</button><button className="ww-secondary" onClick={resetSpelling}>Reset</button><button onClick={() => answer(spelling.join(''))}>Check</button></div>}<div className="ww-feedback">{feedback}</div></div></section></main>;
 }
 
 const STYLES = `
