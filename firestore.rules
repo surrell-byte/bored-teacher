@@ -28,7 +28,10 @@ service cloud.firestore {
         && request.resource.data.message is string
         && request.resource.data.message.size() > 0
         && request.resource.data.message.size() <= 2000
-        && request.resource.data.type in ['suggestion', 'grievance'];
+        && request.resource.data.type in ['suggestion', 'grievance']
+        && request.resource.data.page is string
+        && (request.resource.data.userId == null || request.resource.data.userId is string)
+        && (request.resource.data.userName == null || request.resource.data.userName is string);
       allow read: if request.auth != null
         && request.auth.token.email == 'boredteacherapp@gmail.com';
       allow update, delete: if request.auth != null
