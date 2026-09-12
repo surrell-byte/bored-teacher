@@ -5,6 +5,9 @@
   box-sizing: border-box;
 }
 
+.zoo-menu-start { display: block; margin: 28px auto 0; padding: 14px 30px; border: 0; border-radius: 999px; background: #b8863a; color: #fff8e7; font: inherit; font-weight: 900; font-size: 1.05rem; cursor: pointer; box-shadow: 0 4px 0 #8d672d; }
+.zoo-menu-grid button.selected { background: #fcdb8a; border-color: #dba555; box-shadow: 0 4px 0 #b8863a; }
+
 .zoogame-root {
   font-family: 'Comic Sans MS', 'Chalkboard SE', cursive, sans-serif;
   background: linear-gradient(145deg, #f8f0d5 0%, #e8dcc0 100%);

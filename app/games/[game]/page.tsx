@@ -137,6 +137,9 @@ export default function GamePage() {
       setAnimalClassHud(null);
       setShowRouteWelcome(false);
       setGameSession(session => session + 1);
+    } else if (isZooGame) {
+      setShowRouteWelcome(false);
+      window.dispatchEvent(new Event('zoo-game:main-menu'));
     } else if (isWeatherWizard || isNumberClouds) {
       setShowRouteWelcome(false);
       if (isWeatherWizard) {

@@ -5,7 +5,7 @@ export function ActPanel({ currentAnimal, actState, onCheck }) {
   const sentence = currentAnimal ? `I see a ${currentAnimal.name}.` : 'I see a giraffe.';
 
   return (
-    <section className="panel" id="panel-act" role="tabpanel">
+    <section className="panel active" id="panel-act" role="tabpanel">
       <div className="instruction">
         🎭 Act & Say! <small>— Act like the animal and say the sentence.</small>
       </div>

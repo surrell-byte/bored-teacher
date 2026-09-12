@@ -9,7 +9,7 @@ export function LookPanel({
   onHint,
 }) {
   return (
-    <section className="panel" id="panel-look" role="tabpanel">
+    <section className="panel active" id="panel-look" role="tabpanel">
       <div className="instruction">
         👀 Look, Listen & Say! <small>— Complete the sentence.</small>
       </div>
