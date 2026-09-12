@@ -10,7 +10,13 @@
 
 .zoogame-root {
   font-family: 'Comic Sans MS', 'Chalkboard SE', cursive, sans-serif;
-  background: linear-gradient(145deg, #f8f0d5 0%, #e8dcc0 100%);
+  --zoo-page-bg: linear-gradient(145deg, #f8f0d5 0%, #e8dcc0 100%);
+  --zoo-surface: #fff8e7;
+  --zoo-text: #4a3728;
+  min-height: 100%;
+  height: 100%;
+  width: 100%;
+  background: var(--zoo-page-bg);
   padding: 18px;
 }
 
@@ -203,7 +209,7 @@
   padding: 20px 20px 16px;
   text-align: center;
   border: 5px solid #d9c9a8;
-  min-height: 230px;
+  min-height: 320px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -215,14 +221,14 @@
 .animal-emoji {
   font-size: 140px;
   line-height: 1;
-  transition: all 0.4s ease;
+  transition: filter 0.4s ease, transform 0.4s ease;
   user-select: none;
 }
 
 .animal-emoji.partial {
   filter: blur(10px) brightness(0.65);
   transform: scale(0.85);
-  transition: all 0.5s ease;
+  transition: none;
 }
 
 .animal-emoji.revealed {
@@ -500,7 +506,7 @@
   }
 
   .animal-display {
-    min-height: 180px;
+    min-height: 270px;
   }
 
   .animal-emoji {
@@ -594,14 +600,184 @@
   }
 
   .animal-display {
-    min-height: 160px;
+    min-height: 220px;
   }
 }
 
 .zoogame-root {
-  min-height: 100%;
-  width: 100%;
   display: block;
+}
+
+/* The menu owns the full play surface so a previous theme cannot show through. */
+.zoo-main-menu {
+  position: relative;
+  min-height: calc(100% + 36px);
+  width: calc(100% + 36px);
+  margin: -18px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 35px 40px 45px;
+  color: #173b2b;
+  background:
+    radial-gradient(circle at 50% 15%, rgba(255, 255, 255, 0.75), transparent 35%),
+    linear-gradient(180deg, #fff8df 0%, #f8edc9 55%, #efe0ad 100%);
+}
+
+.zoo-menu-hero,
+.zoo-menu-section {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 900px);
+  text-align: center;
+}
+
+.zoo-menu-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 5px;
+}
+
+.zoo-menu-icon {
+  font-size: 82px;
+  line-height: 1;
+  filter: drop-shadow(0 10px 8px rgba(63, 57, 30, 0.15));
+}
+
+.zoo-menu-kicker {
+  margin: 12px 0 5px;
+  color: #1f6746;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.zoo-menu-hero h1 {
+  margin: 0;
+  color: #173b2b;
+  font-size: clamp(38px, 5vw, 64px);
+  line-height: 1;
+  font-weight: 900;
+  text-shadow: 0 3px 0 rgba(255, 255, 255, 0.75);
+}
+
+.zoo-menu-hero > p:last-child {
+  margin: 12px 0 0;
+  color: #55705d;
+  font-size: 18px;
+  line-height: 1.5;
+  font-weight: 600;
+}
+
+.zoo-menu-section {
+  margin-top: 28px;
+}
+
+.zoo-menu-section h2 {
+  margin: 0 0 12px;
+  color: #173b2b;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.zoo-menu-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  width: 100%;
+}
+
+.zoo-menu-grid button {
+  min-height: 86px;
+  padding: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.78);
+  color: #173b2b;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 7px 20px rgba(80, 70, 35, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.zoo-menu-grid button:hover,
+.zoo-menu-grid button.selected {
+  transform: translateY(-3px);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 12px 24px rgba(80, 70, 35, 0.14);
+}
+
+.zoo-menu-grid button.selected {
+  outline: 3px solid #b77b2c;
+  outline-offset: -3px;
+}
+
+.zoo-menu-grid button small {
+  display: block;
+  margin-top: 5px;
+  color: #55705d;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.zoo-menu-start {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 260px;
+  margin: 28px auto 0;
+  padding: 17px 38px;
+  border: 0;
+  border-radius: 20px;
+  background: linear-gradient(180deg, #c98d39 0%, #b87929 100%);
+  color: white;
+  font: inherit;
+  font-size: 21px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 7px 0 #8c5b22, 0 13px 25px rgba(112, 73, 25, 0.2);
+}
+
+.zoogame-root.zoo-theme-ocean {
+  --zoo-page-bg: linear-gradient(180deg, #8ed1d5 0%, #55aeb8 100%);
+}
+
+.zoogame-root.zoo-theme-jungle {
+  --zoo-page-bg: linear-gradient(180deg, #9fc27b 0%, #5f9b68 100%);
+}
+
+.zoogame-root.zoo-theme-ocean .zoo-main-menu {
+  color: #123d4c;
+  background: linear-gradient(180deg, #effcff 0%, #bde8ec 55%, #8ed1d5 100%);
+}
+
+.zoogame-root.zoo-theme-jungle .zoo-main-menu {
+  color: #173b2b;
+  background: linear-gradient(180deg, #f2ffe9 0%, #c9e6af 55%, #9fc27b 100%);
+}
+
+.zoogame-root.zoo-theme-ocean .zoo-main-menu h1,
+.zoogame-root.zoo-theme-ocean .zoo-menu-section h2,
+.zoogame-root.zoo-theme-ocean .zoo-menu-grid button { color: #123d4c; }
+
+.zoogame-root.zoo-theme-jungle .zoo-main-menu h1,
+.zoogame-root.zoo-theme-jungle .zoo-menu-section h2,
+.zoogame-root.zoo-theme-jungle .zoo-menu-grid button { color: #173b2b; }
+
+@media (max-width: 600px) {
+  .zoo-main-menu { padding: 25px 15px 30px; }
+  .zoo-menu-grid { grid-template-columns: repeat(2, 1fr); gap: 9px; }
+  .zoo-menu-grid button { min-height: 80px; padding: 10px; font-size: 13px; }
+  .zoo-menu-hero h1 { font-size: 38px; }
+  .zoo-menu-hero > p:last-child { font-size: 15px; }
+  .zoo-menu-start { width: 90%; min-width: 0; padding: 15px 25px; font-size: 18px; }
 }
 
 .zoogame-root.zoo-theme-ocean .game-wrapper {
@@ -618,6 +794,32 @@
 .zoogame-root.zoo-theme-jungle .game-wrapper {
   background: #f2ffe9;
   border-color: #83a866;
+}
+
+.zoogame-root.zoo-theme-ocean .zoo-victory {
+  background: #effcff;
+  color: #123d4c;
+}
+
+.zoogame-root.zoo-theme-jungle .zoo-victory {
+  background: #f2ffe9;
+  color: #173b2b;
+}
+
+.zoogame-root.zoo-theme-ocean .question-counter,
+.zoogame-root.zoo-theme-ocean .instruction,
+.zoogame-root.zoo-theme-ocean .instruction small,
+.zoogame-root.zoo-theme-ocean .feedback,
+.zoogame-root.zoo-theme-ocean .act-card .speech-bubble {
+  color: #123d4c;
+}
+
+.zoogame-root.zoo-theme-jungle .question-counter,
+.zoogame-root.zoo-theme-jungle .instruction,
+.zoogame-root.zoo-theme-jungle .instruction small,
+.zoogame-root.zoo-theme-jungle .feedback,
+.zoogame-root.zoo-theme-jungle .act-card .speech-bubble {
+  color: #173b2b;
 }
 
 .zoogame-root.zoo-theme-jungle .cat-btn.active,

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { GuessPanel } from './components/GuessPanel';
 import { ActPanel } from './components/ActPanel';
@@ -7,7 +7,7 @@ import { VictoryOverlay } from './components/VictoryOverlay';
 import { useZooGame } from './hooks/useZooGame';
 import './styles/zooGame.css';
 
-export default function ZooGame({ themeId = 'savanna' }) {
+export default function ZooGame({ themeId = 'savanna', onComplete }) {
   const {
     categories,
     categoryOrder,
@@ -33,12 +33,25 @@ export default function ZooGame({ themeId = 'savanna' }) {
   const [showMenu, setShowMenu] = useState(true);
   const [menuCategory, setMenuCategory] = useState(currentCategory);
   const [menuMode, setMenuMode] = useState(activeTab);
+  const completionReportedRef = useRef(false);
 
   useEffect(() => {
     const openMenu = () => setShowMenu(true);
     window.addEventListener('zoo-game:main-menu', openMenu);
     return () => window.removeEventListener('zoo-game:main-menu', openMenu);
   }, []);
+
+  useEffect(() => {
+    if (!categoryComplete) {
+      completionReportedRef.current = false;
+      return;
+    }
+
+    if (completionReportedRef.current || !onComplete) return;
+    completionReportedRef.current = true;
+    const totalQuestions = categories[currentCategory].animals.length;
+    onComplete(score, Math.round((score / totalQuestions) * 100));
+  }, [categoryComplete, categories, currentCategory, onComplete, score]);
 
   const startGame = () => {
     const category = menuCategory;

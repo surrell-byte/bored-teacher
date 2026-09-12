@@ -1,6 +1,5 @@
 import { AnimalDisplay } from './AnimalDisplay';
 import { Attempts } from './Attempts';
-import { Feedback } from './Feedback';
 
 export function LookPanel({
   currentAnimal,
@@ -53,7 +52,6 @@ export function LookPanel({
         </button>
       </div>
 
-      <Feedback tone={lookState.revealed ? 'correct' : 'hint'}>{lookState.feedback}</Feedback>
     </section>
   );
 }

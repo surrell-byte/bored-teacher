@@ -193,7 +193,7 @@ export function useZooGame() {
       setScore((prev) => prev + 1);
       guessTimerRef.current = setTimeout(() => {
         advanceCurrentQuestion();
-      }, 1800);
+      }, 3000);
       return;
     }
 
@@ -218,7 +218,7 @@ export function useZooGame() {
       });
       guessTimerRef.current = setTimeout(() => {
         advanceCurrentQuestion();
-      }, 2400);
+      }, 3000);
       return;
     }
 
@@ -250,7 +250,7 @@ export function useZooGame() {
       setScore((prev) => prev + 1);
       lookTimerRef.current = setTimeout(() => {
         advanceCurrentQuestion();
-      }, 1800);
+      }, 3000);
       return;
     }
 
@@ -278,7 +278,7 @@ export function useZooGame() {
       });
       lookTimerRef.current = setTimeout(() => {
         advanceCurrentQuestion();
-      }, 2400);
+      }, 3000);
       return;
     }
 
@@ -300,7 +300,7 @@ export function useZooGame() {
     setScore((prev) => prev + 1);
     actTimerRef.current = setTimeout(() => {
       advanceCurrentQuestion();
-    }, 2500);
+    }, 3000);
   }, [actState.done, advanceCurrentQuestion, currentAnimal]);
 
   const handleLookHint = useCallback(() => {
