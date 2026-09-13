@@ -4411,9 +4411,15 @@ a { color: inherit; }
 .hub-review-author-copy { display: grid; min-width: 0; gap: 2px; }
 .hub-review-author-copy strong, .hub-review-author-copy small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .hub-review-author-copy small { color: var(--muted); }
+.hub-reviews-panel { width: 100%; margin-top: 20px; padding: 22px; }
+.hub-review-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.hub-review-item { padding: 14px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface-soft); }
+@media (max-width: 900px) { .hub-review-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 639px) {
   .hub-dashboard > .hub-preview-grid { margin-bottom: 22px; }
   .hub-dashboard > .hub-reviews-panel { margin-top: 22px; }
+  .hub-reviews-panel { padding: 16px; }
+  .hub-review-grid { grid-template-columns: 1fr; }
   .hub-mini-avatar { display: grid; width: 34px; height: 34px; place-items: center; overflow: hidden; }
   .hub-mini-avatar-image { display: block; width: 34px; height: 34px; object-fit: contain; }
   .hub-mini-avatar-emoji { font-size: 1.35rem; }

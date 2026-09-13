@@ -2,35 +2,42 @@
 
 import { useState, useCallback } from 'react';
 
-const toppingDefs = [
-  { name: 'Cheese', emoji: '🧀', color: '#ffd93d' },
-  { name: 'Pepperoni', emoji: '🔴', color: '#c0392b' },
-  { name: 'Mushrooms', emoji: '🍄', color: '#8b5e3c' },
-  { name: 'Peppers', emoji: '🌶️', color: '#27ae60' },
-];
-
-const fractions = [{ n: 1, d: 2 }, { n: 1, d: 4 }, { n: 3, d: 4 }, { n: 1, d: 3 }, { n: 2, d: 3 }, { n: 3, d: 8 }, { n: 5, d: 8 }];
-
-function randomBetween(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
+const TOPPING_COLORS = { Cheese: '#ffd93d', Pepperoni: '#c0392b', Mushrooms: '#8b5e3c', Peppers: '#27ae60', Corn: '#e5b82e', Olives: '#526b2f', Pineapple: '#f4c542' };
+const QUESTION_BANK = [
+  ['Customer wants: 1/4 🍅 Pepperoni + 3/4 🫑 Peppers', [['Peppers', '🌶️', 3], ['Pepperoni', '🔴', 1]]],
+  ['Customer wants: 1/4 🔴 Pepperoni + 3/4 🧀 Cheese', [['Cheese', '🧀', 3], ['Pepperoni', '🔴', 1]]],
+  ['Customer wants: 1/4 🌽 Corn + 3/4 🍄 Mushrooms', [['Corn', '🌽', 1], ['Mushrooms', '🍄', 3]]],
+  ['Customer wants: 1/4 🫒 Olives + 3/4 🧀 Cheese', [['Olives', '🫒', 1], ['Cheese', '🧀', 3]]],
+  ['Customer wants: 1/4 🍍 Pineapple + 3/4 🔴 Pepperoni', [['Pineapple', '🍍', 1], ['Pepperoni', '🔴', 3]]],
+  ['Customer wants: 1/2 🫑 Peppers + 1/2 🔴 Pepperoni', [['Peppers', '🌶️', 2], ['Pepperoni', '🔴', 2]]],
+  ['Customer wants: 1/2 🧀 Cheese + 1/2 🍄 Mushrooms', [['Cheese', '🧀', 2], ['Mushrooms', '🍄', 2]]],
+  ['Customer wants: 1/2 🔴 Pepperoni + 1/4 🫒 Olives + 1/4 🌽 Corn', [['Pepperoni', '🔴', 2], ['Olives', '🫒', 1], ['Corn', '🌽', 1]]],
+  ['Customer wants: 1/2 🍄 Mushrooms + 1/4 🧀 Cheese + 1/4 🫑 Peppers', [['Mushrooms', '🍄', 2], ['Cheese', '🧀', 1], ['Peppers', '🌶️', 1]]],
+  ['Customer wants: 1/2 🍍 Pineapple + 1/4 🔴 Pepperoni + 1/4 🫒 Olives', [['Pineapple', '🍍', 2], ['Pepperoni', '🔴', 1], ['Olives', '🫒', 1]]],
+  ['Customer wants: 1/4 🫑 Peppers + 1/4 🔴 Pepperoni + 1/2 🧀 Cheese', [['Peppers', '🌶️', 1], ['Pepperoni', '🔴', 1], ['Cheese', '🧀', 2]]],
+  ['Customer wants: 1/4 🍄 Mushrooms + 1/2 🫒 Olives + 1/4 🌽 Corn', [['Mushrooms', '🍄', 1], ['Olives', '🫒', 2], ['Corn', '🌽', 1]]],
+  ['Customer wants: 3/4 🔴 Pepperoni + 1/4 🍍 Pineapple', [['Pepperoni', '🔴', 3], ['Pineapple', '🍍', 1]]],
+  ['Customer wants: 1/4 🧀 Cheese + 3/4 🍄 Mushrooms', [['Cheese', '🧀', 1], ['Mushrooms', '🍄', 3]]],
+  ['Customer wants: 1/2 🫑 Peppers + 1/4 🫒 Olives + 1/4 🍍 Pineapple', [['Peppers', '🌶️', 2], ['Olives', '🫒', 1], ['Pineapple', '🍍', 1]]],
+  ['Customer wants: 2/4 🔴 Pepperoni + 1/4 🫑 Peppers + 1/4 🫒 Olives', [['Pepperoni', '🔴', 2], ['Peppers', '🌶️', 1], ['Olives', '🫒', 1]]],
+  ['Customer wants: 2/4 🍄 Mushrooms + 2/4 🧀 Cheese', [['Mushrooms', '🍄', 2], ['Cheese', '🧀', 2]]],
+  ['Customer wants: 3/4 🌽 Corn + 1/4 🍍 Pineapple', [['Corn', '🌽', 3], ['Pineapple', '🍍', 1]]],
+  ['Customer wants: 2/4 🫑 Peppers + 1/4 🔴 Pepperoni + 1/4 🍄 Mushrooms', [['Peppers', '🌶️', 2], ['Pepperoni', '🔴', 1], ['Mushrooms', '🍄', 1]]],
+  ['Customer wants: 1/4 🫒 Olives + 1/4 🌽 Corn + 2/4 🔴 Pepperoni', [['Olives', '🫒', 1], ['Corn', '🌽', 1], ['Pepperoni', '🔴', 2]]],
+  ['Customer wants: 1/2 🔴 Pepperoni + 1/4 🫑 Peppers + 1/4 🍄 Mushrooms', [['Pepperoni', '🔴', 2], ['Peppers', '🌶️', 1], ['Mushrooms', '🍄', 1]]],
+  ['Customer wants: 1/4 🍍 Pineapple + 1/4 🫒 Olives + 1/2 🧀 Cheese', [['Pineapple', '🍍', 1], ['Olives', '🫒', 1], ['Cheese', '🧀', 2]]],
+  ['Customer wants: 3/4 🫑 Peppers + 1/4 🌽 Corn', [['Peppers', '🌶️', 3], ['Corn', '🌽', 1]]],
+  ['Customer wants: 1/4 🔴 Pepperoni + 1/4 🧀 Cheese + 1/4 🍄 Mushrooms + 1/4 🫒 Olives', [['Pepperoni', '🔴', 1], ['Cheese', '🧀', 1], ['Mushrooms', '🍄', 1], ['Olives', '🫒', 1]]],
+  ['Customer wants: 1/2 🍄 Mushrooms + 1/4 🫑 Peppers + 1/4 🍍 Pineapple', [['Mushrooms', '🍄', 2], ['Peppers', '🌶️', 1], ['Pineapple', '🍍', 1]]],
+  ['🔥 BONUS! Customer wants: 1/4 🔴 Pepperoni + 1/4 🫑 Peppers + 1/2 🍄 Mushrooms', [['Pepperoni', '🔴', 1], ['Peppers', '🌶️', 1], ['Mushrooms', '🍄', 2]]],
+  ['🔥 BONUS! Customer wants: 3/4 🧀 Cheese + 1/4 🍍 Pineapple', [['Cheese', '🧀', 3], ['Pineapple', '🍍', 1]]],
+  ['🔥 BONUS! Customer wants: 1/2 🫒 Olives + 1/4 🌽 Corn + 1/4 🔴 Pepperoni', [['Olives', '🫒', 2], ['Corn', '🌽', 1], ['Pepperoni', '🔴', 1]]],
+  ['🔥 BONUS! Customer wants: 1/4 🫑 Peppers + 1/4 🍄 Mushrooms + 1/4 🫒 Olives + 1/4 🍍 Pineapple', [['Peppers', '🌶️', 1], ['Mushrooms', '🍄', 1], ['Olives', '🫒', 1], ['Pineapple', '🍍', 1]]],
+  ['🔥 BONUS! Customer wants: 1/2 🔴 Pepperoni + 1/4 🍍 Pineapple + 1/4 🧀 Cheese', [['Pepperoni', '🔴', 2], ['Pineapple', '🍍', 1], ['Cheese', '🧀', 1]]],
+].map(([question, rawOrders]) => ({ question, slices: 4, orders: rawOrders.map(([name, emoji, n]) => ({ topping: { name, emoji, color: TOPPING_COLORS[name] }, n, d: 4 })) }));
 
 function generateOrders() {
-  const numToppings = Math.random() < 0.4 ? 2 : 1;
-  const shuffled = [...toppingDefs].sort(() => Math.random() - 0.5).slice(0, numToppings);
-
-  if (numToppings === 1) {
-    const fraction = fractions[randomBetween(0, fractions.length - 1)];
-    return { slices: fraction.d, orders: [{ topping: shuffled[0], n: fraction.n, d: fraction.d }] };
-  }
-
-  return {
-    slices: 4,
-    orders: [
-      { topping: shuffled[0], n: 1, d: 4 },
-      { topping: shuffled[1], n: 3, d: 4 },
-    ],
-  };
+  return QUESTION_BANK[Math.floor(Math.random() * QUESTION_BANK.length)];
 }
 
 export default function PizzaFractions({ onComplete }) {
@@ -156,7 +163,7 @@ const STYLES = `
   font-family: 'Nunito', var(--font-body), sans-serif;
 }
 .pizza-fractions-shell {
-  width: min(100%, 760px);
+  width: min(100%, 1120px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -176,6 +183,7 @@ const STYLES = `
   border-radius: 20px;
   padding: 12px 18px;
   margin-bottom: 18px;
+  width: min(100%, 900px);
 }
 .pizza-fractions-order-text {
   font-family: 'Fredoka One', 'Trebuchet MS', sans-serif;
@@ -193,6 +201,7 @@ const STYLES = `
   align-items: flex-start;
   flex-wrap: wrap;
   justify-content: center;
+  width: min(100%, 900px);
 }
 .pizza-fractions-pizza-container {
   display: flex;
@@ -221,6 +230,7 @@ const STYLES = `
   flex-direction: column;
   gap: 10px;
   min-width: 150px;
+  align-self: center;
 }
 .pizza-fractions-label {
   font-family: 'Fredoka One', 'Trebuchet MS', sans-serif;
@@ -277,4 +287,12 @@ const STYLES = `
   color: #ffd700;
   margin-top: 8px;
 }
+@media (min-width: 900px) {
+  .pizza-fractions-shell { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 0.72fr); column-gap: 32px; align-items: center; text-align: left; }
+  .pizza-fractions-order-box { grid-column: 1 / -1; justify-self: center; text-align: center; }
+  .pizza-fractions-main { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(320px, 1fr) minmax(260px, 0.72fr); align-items: center; justify-self: center; }
+  .pizza-fractions-pizza-container { justify-self: center; }
+  .pizza-fractions-check, .pizza-fractions-feedback, .pizza-fractions-score-row, .pizza-fractions-next { grid-column: 1 / -1; justify-self: center; }
+}
+@media (max-width: 899px) { .pizza-fractions-shell { max-width: 760px; } }
 `;
