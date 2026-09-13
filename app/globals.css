@@ -4328,6 +4328,17 @@ a { color: inherit; }
   .game-shell-topbar-stat { min-height: 28px; padding: 4px 7px; font-size: 0.7rem; }
 }
 
+/* Landscape phones have tablet-like width but phone-like height. Give the
+   title its own row so the compact controls cannot squeeze it into an ellipsis. */
+@media (orientation: landscape) and (max-width: 1023px) {
+  .game-shell .game-layout-header { padding: 7px 12px; }
+  .game-shell .game-header-default { align-items: flex-start; flex-wrap: wrap; }
+  .game-shell .game-header-title { flex: 0 0 100%; width: 100%; max-width: none; }
+  .game-shell .game-header-actions { width: 100%; justify-content: flex-start; gap: 5px; }
+  .game-shell-header-action { min-height: 38px; padding: 6px 9px; font-size: 0.76rem; }
+  .game-shell-topbar-stat { min-height: 38px; padding: 6px 8px; font-size: 0.76rem; }
+}
+
 
 .hub-review-section { display: grid; gap: 14px; padding: 22px; border-radius: 26px; border: 1px solid var(--border); background: var(--surface); }
 .hub-review-list { display: grid; gap: 12px; }
