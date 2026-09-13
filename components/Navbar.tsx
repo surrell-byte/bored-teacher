@@ -10,6 +10,7 @@ import ProfileModal from '@/features/profiles/components/ProfileModal';
 import { useResponsive } from '@/hooks/useResponsive';
 import { isSoundEnabled, setSoundEnabled } from '@/lib/sound/beep';
 import { isCreatorUser, onAuthStateChanged } from '@/lib/firebase';
+import ProfileAvatar from '@/components/profile/ProfileAvatar';
 
 const NAV_ITEMS = [
   { href: '/hub',         label: 'Dashboard',   icon: '🏠' },
@@ -180,7 +181,7 @@ export default function Navbar() {
               type="button"
             >
               <span className="player-chip-top">
-                <span className="player-chip-avatar">{state.avatar.startsWith('/') ? <img src={state.avatar} alt="" /> : state.avatar}</span>
+                <span className="player-chip-avatar"><ProfileAvatar value={state.avatar} /></span>
                 <span className="player-chip-info">
                   <span className="player-chip-name">{state.name}</span>
                   <span className="player-chip-level">Level {state.level}</span>

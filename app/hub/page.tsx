@@ -11,6 +11,7 @@ import { getSortedLeaderboard, type LBPlayerWithScore } from '@/features/leaderb
 import { ACHIEVEMENTS } from '@/features/achievements/achievements';
 import { LATEST_SHOP_ITEMS } from '@/features/shop/catalog';
 import { COMING_SOON_GAME_IDS } from '@/config/game-access';
+import ProfileAvatar from '@/components/profile/ProfileAvatar';
 
 function PreviewHeader({ title, href, action = 'View all' }: { title: string; href: string; action?: string }) { return <div className="hub-preview-header"><h2 className="hub-section-title">{title}</h2><Link href={href} className="pill-btn">{action} →</Link></div>; }
 const FEATURED_RESOURCES = [
@@ -21,7 +22,8 @@ const FEATURED_RESOURCES = [
 const ADVERTISED_NEW_GAMES = ['riddlebombs', ...NEW_GAME_KEYS.filter(id => id !== 'riddlebombs').slice(-3)];
 
 export default function HubPage() {
-  const router = useRouter(); const { state, checkDailyReward } = useGame();
+  const router = useRouter(); const { state: rawState, checkDailyReward } = useGame();
+  const state = { ...rawState, avatar: <ProfileAvatar value={rawState.avatar} size={36} /> };
   const [isCreator, setIsCreator] = useState(false);
   const [ready, setReady] = useState(false); const [leaders, setLeaders] = useState<LBPlayerWithScore[]>([]); const [hasTeacherPro, setHasTeacherPro] = useState(false);
   const [reviews, setReviews] = useState<any[]>([]);

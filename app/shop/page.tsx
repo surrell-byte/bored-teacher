@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { onAuthStateChanged } from '@/lib/firebase';
 import { useGame } from '@/providers/GameProvider';
 import { SHOP_ITEMS } from '@/features/shop/catalog';
+import ProfileAvatar, { isImageAvatar } from '@/components/profile/ProfileAvatar';
 
 const AVATAR_ITEMS = SHOP_ITEMS.filter(item => item.type === 'avatar');
 
@@ -73,12 +74,7 @@ export default function ShopPage() {
           return (
             <article className="shell-card shop-item" key={item.id}>
               <div className="shop-item-image-wrap">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                {item.value.startsWith('/') ? (
-                  <img src={item.value} alt={item.name} className="shop-item-image" />
-                ) : (
-                  <span className="shop-item-emoji" aria-label={item.name}>{item.value}</span>
-                )}
+                <ProfileAvatar value={item.value} alt={item.name} className={isImageAvatar(item.value) ? 'shop-item-image' : 'shop-item-emoji'} />
               </div>
               <div className="shop-item-copy">
                 <h3>{item.name}</h3>

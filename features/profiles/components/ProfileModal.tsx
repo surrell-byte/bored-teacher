@@ -6,6 +6,7 @@ import { useGame } from '@/providers/GameProvider';
 import { auth, setDisplayName } from '@/lib/firebase';
 import { AVATARS, THEMES } from '@/constants/index';
 import { SHOP_ITEMS } from '@/features/shop/catalog';
+import ProfileAvatar from '@/components/profile/ProfileAvatar';
 
 const ALL_AVATARS = [...new Set(Object.values(AVATARS).flat())];
 type Cat = 'all' | keyof typeof AVATARS;
@@ -113,7 +114,7 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: '2.6rem',
           }}>
-            {avatar.startsWith('/') ? <img src={avatar} alt="Selected avatar" style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : avatar}
+            <ProfileAvatar value={avatar} alt="Selected avatar" style={{ width: '100%', height: '100%' }} />
           </div>
           <span style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>Pick an avatar below</span>
         </div>
@@ -180,7 +181,7 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
                 aria-label={`Avatar: ${e}`}
                 aria-pressed={e === avatar}
               >
-                {e.startsWith('/') ? <img src={e} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : e}
+                <ProfileAvatar value={e} style={{ width: '100%', height: '100%' }} />
               </button>
             ))}
           </div>

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { onAuthStateChanged } from '@/lib/firebase';
 import { useGame } from '@/providers/GameProvider';
 import { ACHIEVEMENT_CATEGORIES, ACHIEVEMENTS, type Achievement } from '@/features/achievements/achievements';
+import ProfileAvatar from '@/components/profile/ProfileAvatar';
 
 function formatDate(iso: string | undefined) {
   if (!iso) return 'Earned';
@@ -64,7 +65,7 @@ export default function TrophyPage() {
       <div className="shell-card trophy-hero-grid" style={{ padding: 'clamp(20px, 4vw, 40px)', marginBottom: 20, borderRadius: 32, gap: 24 }}>
         <div>
           <div className="hero-kicker">🏆 Trophy Room</div>
-          <div className="trophy-hero-name">{state.avatar} {state.name}</div>
+          <div className="trophy-hero-name"><ProfileAvatar value={state.avatar} size={36} /> {state.name}</div>
           {state.username && <div className="trophy-hero-handle">@{state.username}</div>}
           <p style={{ color: 'var(--muted)', fontSize: '0.88rem', lineHeight: 1.6, maxWidth: '48ch' }}>
             Celebrate your achievements and track your learning journey.
