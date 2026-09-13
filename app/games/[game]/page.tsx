@@ -204,7 +204,7 @@ export default function GamePage() {
         onThemeChange={isTicTacRoll ? themeId => setTicTheme(TIC_TAC_ROLL_THEMES.find(theme => theme.id === themeId) ?? TIC_TAC_ROLL_THEMES[0]) : isAlphabetHunt ? setAlphabetTheme : isWordFusion ? setWordFusionTheme : isZooGame ? setZooTheme : undefined}
         headerExtra={
           <>
-            {isVocabValley && <button className="game-shell-header-action" type="button" onClick={() => window.dispatchEvent(new Event('vocab-valley:trail-map'))}>← Trail map</button>}
+            {isVocabValley && <button className="game-shell-header-action" type="button" onClick={() => window.dispatchEvent(new Event('vocab-valley:trail-map'))} aria-label="Trail map" title="Trail map"><span aria-hidden="true">←</span><span className="game-shell-action-label">Trail map</span></button>}
             {isCountAdd && countAddHud && (
               <>
                 <span className="game-shell-topbar-stats" aria-label="Count and Add progress">
@@ -265,11 +265,11 @@ export default function GamePage() {
             {isTicTacRoll && (
               <>
                 <button className="game-shell-header-action" type="button" onClick={() => window.dispatchEvent(new Event('tictacroll:new-game'))}>
-                  New Game
+                  <span aria-hidden="true">↻</span><span className="game-shell-action-label">New Game</span>
                 </button>
               </>
             )}
-            {isFlagmaster && <button className="game-shell-header-action" type="button" onClick={() => setFlagDarkMode(value => !value)} aria-label="Toggle Flagmaster theme">{flagDarkMode ? '☀️ Light' : '🌙 Dark'}</button>}
+            {isFlagmaster && <button className="game-shell-header-action" type="button" onClick={() => setFlagDarkMode(value => !value)} aria-label="Toggle Flagmaster theme" title="Toggle Flagmaster theme"><span aria-hidden="true">{flagDarkMode ? '☀️' : '🌙'}</span><span className="game-shell-action-label">{flagDarkMode ? 'Light' : 'Dark'}</span></button>}
           </>
         }
         stats={isNumberClouds ? [] : [

@@ -168,7 +168,7 @@ export default function GameShell({
                         <span key={stat.label} className="game-shell-topbar-stat">
                           {stat.icon && <span aria-hidden="true">{stat.icon}</span>}
                           <b>{stat.value}</b>
-                          <span>{stat.label}</span>
+                          <span className="game-shell-topbar-stat-label">{stat.label}</span>
                         </span>
                       ))}
                     </div>
@@ -192,25 +192,35 @@ export default function GameShell({
                     className="game-shell-header-action"
                     onClick={() => setSoundOn(value => !value)}
                     aria-label={soundOn ? 'Mute sound' : 'Enable sound'}
+                    title={soundOn ? 'Mute sound' : 'Enable sound'}
                   >
-                    {soundOn ? '🔊 Sound' : '🔇 Sound'}
+                    <span aria-hidden="true">{soundOn ? '🔊' : '🔇'}</span>
+                    <span className="game-shell-action-label">{soundOn ? 'Sound' : 'Sound off'}</span>
                   </button>
-                  {!hidePauseControl && <button type="button" className="game-shell-header-action" onClick={paused ? resume : pause} aria-pressed={paused}>
-                    {paused ? 'Resume' : 'Pause'}
+                  {!hidePauseControl && <button type="button" className="game-shell-header-action" onClick={paused ? resume : pause} aria-pressed={paused} aria-label={paused ? 'Resume game' : 'Pause game'} title={paused ? 'Resume game' : 'Pause game'}>
+                    <span aria-hidden="true">{paused ? '▶' : '⏸'}</span>
+                    <span className="game-shell-action-label">{paused ? 'Resume' : 'Pause'}</span>
                   </button>}
-                  <button type="button" className="game-shell-header-action" onClick={toggleFullscreen}>
-                    {isFullscreen ? 'Exit full screen' : 'Full screen'}
+                  <button type="button" className="game-shell-header-action" onClick={toggleFullscreen} aria-label={isFullscreen ? 'Exit full screen' : 'Enter full screen'} title={isFullscreen ? 'Exit full screen' : 'Enter full screen'}>
+                    <span aria-hidden="true">⛶</span>
+                    <span className="game-shell-action-label">{isFullscreen ? 'Exit full screen' : 'Full screen'}</span>
                   </button>
                   {!hideMainMenuButton && onMainMenu && (
-                    <button type="button" className="game-shell-header-action" onClick={onMainMenu}>Main menu</button>
+                    <button type="button" className="game-shell-header-action" onClick={onMainMenu} aria-label="Main menu" title="Main menu">
+                      <span aria-hidden="true">⌂</span>
+                      <span className="game-shell-action-label">Main menu</span>
+                    </button>
                   )}
                   {!hideExitControl && (
                     <button
                       type="button"
                       className="game-shell-header-action"
                       onClick={() => setShowExitNotice(true)}
+                      aria-label="Exit game"
+                      title="Exit game"
                     >
-                      Exit
+                      <span aria-hidden="true">✕</span>
+                      <span className="game-shell-action-label">Exit</span>
                     </button>
                   )}
                 </>

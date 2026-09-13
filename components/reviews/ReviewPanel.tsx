@@ -3,6 +3,12 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { auth, loadReviews, submitReview, type ReviewItem } from '@/lib/firebase';
 
+function countryFlag(countryCode?: string) {
+  const code = countryCode?.trim().toUpperCase();
+  if (!code || code.length !== 2) return '🌍';
+  return String.fromCodePoint(...[...code].map(letter => 127397 + letter.charCodeAt(0)));
+}
+
 export default function ReviewPanel({ isCreator = false }: { isCreator?: boolean }) {
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
   const [comment, setComment] = useState('');
@@ -30,6 +36,8 @@ export default function ReviewPanel({ isCreator = false }: { isCreator?: boolean
         userId: auth?.currentUser?.uid ?? null,
         userName: auth?.currentUser?.displayName ?? (isCreator ? 'Creator' : 'Guest'),
         userEmail: auth?.currentUser?.email ?? null,
+        avatar: '🙂',
+        countryCode: 'GB',
         rating,
         comment: text,
         page: '/hub',
@@ -49,7 +57,7 @@ export default function ReviewPanel({ isCreator = false }: { isCreator?: boolean
     <section className="shell-card hub-reviews-panel" aria-labelledby="hub-reviews-title">
       <div className="hub-preview-header"><h2 id="hub-reviews-title" className="hub-section-title">💬 What people say</h2><span className="hub-review-count">{reviews.length} reviews</span></div>
       <div className="hub-review-grid">
-        {reviews.length ? reviews.map(review => <article className="hub-review-item" key={review.id || `${review.userName}-${review.comment}`}><div className="hub-review-stars">{'★'.repeat(Math.max(1, Math.min(5, Number(review.rating) || 5)))}</div><p>{review.comment}</p><small>{review.userName || 'Guest'}</small></article>) : <p className="hub-review-empty">Be the first to review Bored Teacher.</p>}
+        {reviews.length ? reviews.map(review => <article className="hub-review-item" key={review.id || `${review.userName}-${review.comment}`}><div className="hub-review-stars" aria-label={`${review.rating} out of 5 stars`}>{'★'.repeat(Math.max(1, Math.min(5, Number(review.rating) || 5)))}</div><p>{review.comment}</p><div className="hub-review-author"><span className="hub-review-avatar" aria-hidden="true">{review.avatar || '🙂'}</span><span className="hub-review-author-copy"><strong>{review.userName || 'Guest'}</strong><small>{review.age ? `${review.age} · ` : 'Age not shared · '}{countryFlag(review.countryCode)}</small></span></div></article>) : <p className="hub-review-empty">Be the first to review Bored Teacher.</p>}
       </div>
       {isCreator && <form className="hub-review-form" onSubmit={handleSubmit}><strong>Add a review to the hub</strong><div className="hub-review-form-row"><select value={rating} onChange={event => setRating(Number(event.target.value))} aria-label="Review rating">{[5, 4, 3, 2, 1].map(value => <option key={value} value={value}>{value} stars</option>)}</select><input value={comment} onChange={event => setComment(event.target.value)} maxLength={500} placeholder="Write a featured review" aria-label="Review comment" /><button className="pill-btn" disabled={saving}>{saving ? 'Saving...' : 'Add review'}</button></div>{message && <small role="status">{message}</small>}</form>}
     </section>

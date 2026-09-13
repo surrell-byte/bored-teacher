@@ -34,6 +34,9 @@ export interface ReviewItem {
   userId?: string | null;
   userName?: string;
   userEmail?: string | null;
+  avatar?: string;
+  age?: number | null;
+  countryCode?: string;
   rating: number;
   comment: string;
   page?: string;
@@ -541,6 +544,9 @@ export async function submitReview(data: {
   userId?: string | null;
   userName?: string | null;
   userEmail?: string | null;
+  avatar?: string;
+  age?: number | null;
+  countryCode?: string;
   rating: number;
   comment: string;
   page?: string;
@@ -557,6 +563,9 @@ export async function submitReview(data: {
     userId: data.userId ?? null,
     userName: (data.userName ?? auth?.currentUser?.displayName ?? 'Explorer').trim() || 'Explorer',
     userEmail: (data.userEmail ?? auth?.currentUser?.email ?? '').trim().toLowerCase() || null,
+    avatar: data.avatar ?? '🙂',
+    age: data.age ?? null,
+    countryCode: data.countryCode?.trim().toUpperCase() || 'GB',
     rating,
     comment,
     page: data.page ?? '/hub',
@@ -584,10 +593,10 @@ export async function submitReview(data: {
 
 export async function loadReviews() {
   const fallbackReviews: ReviewItem[] = [
-    { id: 'fallback-1', userName: 'Mina', userEmail: 'teacher@example.com', rating: 5, comment: 'The new learning path feels calm, joyful, and classroom friendly.', page: '/hub', createdAt: Date.now() },
-    { id: 'fallback-2', userName: 'Kai', userEmail: 'coach@example.com', rating: 4, comment: 'Loved the game choices and the helpful classroom flow.', page: '/hub', createdAt: Date.now() - 3600000 },
-    { id: 'fallback-3', userName: 'Ari', userEmail: 'family@example.com', rating: 5, comment: 'The activities are bright, easy to understand, and fun to revisit.', page: '/hub', createdAt: Date.now() - 7200000 },
-    { id: 'fallback-4', userName: 'Sam', userEmail: 'school@example.com', rating: 5, comment: 'A thoughtful learning space with games children actually want to play.', page: '/hub', createdAt: Date.now() - 10800000 },
+    { id: 'fallback-1', userName: 'Mina', userEmail: 'teacher@example.com', avatar: '👩🏽‍🏫', age: 29, countryCode: 'GB', rating: 5, comment: 'The new learning path feels calm, joyful, and classroom friendly.', page: '/hub', createdAt: Date.now() },
+    { id: 'fallback-2', userName: 'Kai', userEmail: 'coach@example.com', avatar: '🧑🏻‍💻', age: 34, countryCode: 'CA', rating: 4, comment: 'Loved the game choices and the helpful classroom flow.', page: '/hub', createdAt: Date.now() - 3600000 },
+    { id: 'fallback-3', userName: 'Ari', userEmail: 'family@example.com', avatar: '🧑🏾‍🎨', age: 27, countryCode: 'AU', rating: 5, comment: 'The activities are bright, easy to understand, and fun to revisit.', page: '/hub', createdAt: Date.now() - 7200000 },
+    { id: 'fallback-4', userName: 'Sam', userEmail: 'school@example.com', avatar: '🧑🏼‍🏫', age: 41, countryCode: 'US', rating: 5, comment: 'A thoughtful learning space with games children actually want to play.', page: '/hub', createdAt: Date.now() - 10800000 },
   ];
   if (!db) {
     return fallbackReviews;
