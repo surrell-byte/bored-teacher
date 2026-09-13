@@ -26,6 +26,7 @@ const GAMES_WITH_WELCOME = new Set([
   'phonicsadventure', 'riddlebombs', 'tictacroll', 'tornado', 'wordfusion', 'weatherwizard', 'victoryvet',
   'turbodash',
   'numberclouds',
+  'countadd',
 ]);
 
 // ── Page ──────────────────────────────────────────────────────
@@ -147,6 +148,9 @@ export default function GamePage() {
         window.dispatchEvent(new Event('weather-wizard:main-menu'));
       }
       else setGameSession(session => session + 1);
+    } else if (gameId === 'snowyslopes' || gameId === 'countadd') {
+      setShowRouteWelcome(false);
+      window.dispatchEvent(new Event(`${gameId === 'snowyslopes' ? 'snowy-slopes' : 'count-add'}:main-menu`));
     } else if (isTicTacRoll) {
       setShowRouteWelcome(false);
       window.dispatchEvent(new Event('tictacroll:main-menu'));
@@ -222,6 +226,7 @@ export default function GamePage() {
                     <option value="easy">🐣 Easy</option>
                     <option value="medium">🐥 Medium</option>
                     <option value="hard">🦅 Hard</option>
+                    <option value="mixed">🎲 Mixed</option>
                   </select>
                 </label>
               </>

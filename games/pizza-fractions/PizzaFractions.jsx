@@ -68,7 +68,7 @@ export default function PizzaFractions({ onComplete }) {
 
   const checkAnswer = () => {
     let isCorrect = true;
-    orders.orders.forEach((order, index) => {
+    orders.forEach((order, index) => {
       const got = assignments.filter((value) => value === index).length;
       const expected = Math.round((order.n / order.d) * slices);
       if (got !== expected) isCorrect = false;
@@ -90,8 +90,6 @@ export default function PizzaFractions({ onComplete }) {
     <main className="pizza-fractions-game">
       <style>{STYLES}</style>
       <div className="pizza-fractions-shell">
-        <h1>🍕 Pizza Fractions!</h1>
-
         <div className="pizza-fractions-order-box">
           <div className="pizza-fractions-order-text">Customer wants: {orders.map((order) => `${order.n}/${order.d} ${order.topping.emoji} ${order.topping.name}`).join(' + ')}</div>
           <div className="pizza-fractions-order-sub">Click the correct slices, then press Check!</div>

@@ -309,6 +309,12 @@ export default function SnowySlopes({ onHudUpdate } = {}) {
   const [boost, setBoost] = useState(false);
   const [feedback, setFeedback] = useState({ text: '', type: 'good', show: false });
 
+  useEffect(() => {
+    const returnToChallenges = () => setScreen('level');
+    window.addEventListener('snowy-slopes:main-menu', returnToChallenges);
+    return () => window.removeEventListener('snowy-slopes:main-menu', returnToChallenges);
+  }, []);
+
   // Emit HUD state to GameShell navbar
   useEffect(() => {
     if (!onHudUpdate || screen !== 'game') return;

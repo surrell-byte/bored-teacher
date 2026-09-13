@@ -21,6 +21,7 @@ const FEATURED_RESOURCES = [
   { id:'w3', icon:'📄', title:'Flags of the World — Reference Card', type:'Worksheet', subject:'Social Studies' },
 ];
 const ADVERTISED_NEW_GAMES = ['riddlebombs', ...NEW_GAME_KEYS.filter(id => id !== 'riddlebombs').slice(-3)];
+const FEATURED_GAME_IDS = ['alphabethunt', 'tilebattle', 'emojisportsquiz', 'snowyslopes', 'countadd', 'moneyblocks', 'findmyfood', 'flagmaster'];
 
 export default function HubPage() {
   const router = useRouter(); const { state: rawState, checkDailyReward } = useGame();
@@ -32,7 +33,7 @@ export default function HubPage() {
   useEffect(() => { if (ready) setLeaders(getSortedLeaderboard().slice(0, 3)); }, [ready]);
   const play = useCallback((gameId: string) => router.push(`/games/${gameId}`), [router]);
   const visibleGameIds = useMemo(() => GAME_KEYS.filter(id => isCreator || !COMING_SOON_GAME_IDS.has(id)), [isCreator]);
-  const featuredGames = useMemo(() => { const unplayed = visibleGameIds.filter(id => (state.games[id]?.completions ?? 0) === 0); return (unplayed.length ? unplayed : visibleGameIds).slice(0, 4); }, [state.games, visibleGameIds]);
+  const featuredGames = useMemo(() => FEATURED_GAME_IDS.filter(id => visibleGameIds.includes(id)), [visibleGameIds]);
   const latestTrophies = useMemo(() => ACHIEVEMENTS.filter(item => state.earnedAt[item.id]).sort((a,b) => state.earnedAt[b.id].localeCompare(state.earnedAt[a.id])).slice(0,3), [state.earnedAt]);
   const totalPlayed = GAME_KEYS.filter(id => (state.games[id]?.completions ?? 0) > 0).length; const xpPct = Math.min(100, Math.round((state.xp / xpForLevel(state.level)) * 100));
 
