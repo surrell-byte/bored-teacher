@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { WHATS_MISSING_ITEMS } from "./whatsMissingData";
 
 const CONFIG = {
   countadd: { title:"Count & Add", icon:"➕", mode:"count", prompt:"Count both groups and choose the total.", items:["🍎","🐠","⭐","🦕"] },
@@ -23,7 +24,9 @@ const CLUES = [
   { clue:"I am yellow and monkeys like to eat me.", answer:"Banana", options:["Banana","Carrot","Cheese"] },
   { clue:"I am bright in the sky during the day.", answer:"Sun", options:["Moon","Sun","Star"] },
 ];
-const MEMORY_ITEMS = ["🍎","🍌","🐶","🐱","⚽","🚗","🌈","🎸"];
+const DEFAULT_MEMORY_ITEMS = ["🍎", "🍌", "🐶", "🐱", "⚽", "🚗", "🌈", "🎸"];
+const MEMORY_ITEMS = [...new Set(WHATS_MISSING_ITEMS.filter(item => typeof item === "string" && item.trim()))];
+const SAFE_MEMORY_ITEMS = MEMORY_ITEMS.length >= 8 ? MEMORY_ITEMS : DEFAULT_MEMORY_ITEMS;
 const shuffle = (items) => [...items].sort(() => Math.random() - .5);
 const randomNumber = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
@@ -58,8 +61,9 @@ export default function LegacyGamePort({ gameId, onComplete }) {
     }
     if (config.mode === "clue") return CLUES[randomNumber(0, CLUES.length - 1)];
     if (config.mode === "missing") {
-      const items = shuffle(MEMORY_ITEMS).slice(0, 5), missingIndex = randomNumber(0, 4);
-      return { items, answer:items[missingIndex], missingIndex, options:shuffle([items[missingIndex], ...shuffle(MEMORY_ITEMS.filter(item => !items.includes(item))).slice(0, 3)]) };
+      const items = shuffle(SAFE_MEMORY_ITEMS).slice(0, 5), missingIndex = randomNumber(0, items.length - 1);
+      const distractors = SAFE_MEMORY_ITEMS.filter(item => !items.includes(item));
+      return { items, answer:items[missingIndex], missingIndex, options:shuffle([items[missingIndex], ...shuffle(distractors).slice(0, 3)]) };
     }
     return {};
   }, [config, gameId, seed]);

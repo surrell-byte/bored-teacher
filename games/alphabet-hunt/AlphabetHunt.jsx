@@ -3,11 +3,13 @@ import './alphabetHunt.css';
 
 const AVATARS = ['🚗', '🐱', '⭐', '🚀', '🐸', '🍩', '🎈', '🦖', '⚽', '🌵', '🐳', '🎧', '🍕', '🦋', '🐧', '🍄', '🎩', '🐝', '🌙', '🎲', '🦉', '🍉', '🐢', '🎯', '🐙', '🍦'];
 const CELEBRATION_PIECES = ['🎉', '⭐', '✨', '🎊', '🏆', '🎈'];
+const DEFAULT_THEME = { name: 'Classroom', paper: '#eee8da', panel: '#fffaf0', ink: '#1b1b1f', p1: '#2f6f4f', p2: '#5b3ea8', gold: '#c98a2c', p1Soft: '#dcebe1', p2Soft: '#e6ddf6', muted: '#5a5a52', tileHover: '#303037' };
 const THEMES = {
-  classroom: { name: 'Classroom', paper: '#eee8da', panel: '#fffaf0', ink: '#1b1b1f', p1: '#2f6f4f', p2: '#5b3ea8', gold: '#c98a2c' },
-  ocean: { name: 'Ocean', paper: '#dff4f2', panel: '#f7fffe', ink: '#123844', p1: '#087f8c', p2: '#d45a3d', gold: '#e5a83b' },
-  arcade: { name: 'Arcade', paper: '#24183d', panel: '#352354', ink: '#fff7e6', p1: '#5de2a7', p2: '#ff71ce', gold: '#ffd166' },
+  classroom: { name: 'Classroom', paper: '#eee8da', panel: '#fffaf0', ink: '#1b1b1f', p1: '#2f6f4f', p2: '#5b3ea8', gold: '#c98a2c', p1Soft: '#dcebe1', p2Soft: '#e6ddf6', muted: '#5a5a52', tileHover: '#303037' },
+  ocean: { name: 'Ocean', paper: '#dff4f2', panel: '#f7fffe', ink: '#123844', p1: '#087f8c', p2: '#d45a3d', gold: '#e5a83b', p1Soft: '#d5f2f1', p2Soft: '#fde1da', muted: '#355661', tileHover: '#0b6d78' },
+  arcade: { name: 'Arcade', paper: '#24183d', panel: '#352354', ink: '#fff7e6', p1: '#5de2a7', p2: '#ff71ce', gold: '#ffd166', p1Soft: '#1f5b4c', p2Soft: '#6f2d62', muted: '#f6d9ef', tileHover: '#453064' },
 };
+const resolveTheme = (themeId) => ({ ...DEFAULT_THEME, ...(THEMES[themeId] || {}) });
 const EFFECTS = ['-300 points', '+500 points', 'Steal 100 points'];
 const QWERTY_KEYS = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'].join('').split('');
 
@@ -33,7 +35,7 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
   const [scores, setScores] = useState({ 1: 0, 2: 0 });
   const [streaks, setStreaks] = useState({ 1: 0, 2: 0 });
   const [lastCorrectPlayer, setLastCorrectPlayer] = useState(null);
-  const theme = THEMES[themeId] || THEMES.classroom;
+  const theme = resolveTheme(themeId);
 
   const chooseAvatar = (playerNum, avatar) => {
     const other = playerNum === 1 ? av2 : av1;
@@ -230,7 +232,7 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
   // Welcome screen
   if (screen === 'welcome') {
     return (
-      <div className="alphabet-hunt ah-screen ah-welcome-screen" style={{ '--paper': theme.paper, '--panel': theme.panel, '--ink': theme.ink, '--p1': theme.p1, '--p2': theme.p2, '--gold': theme.gold }}>
+      <div className="alphabet-hunt ah-screen ah-welcome-screen" style={{ '--paper': theme.paper, '--panel': theme.panel, '--ink': theme.ink, '--p1': theme.p1, '--p2': theme.p2, '--p1-soft': theme.p1Soft, '--p2-soft': theme.p2Soft, '--muted': theme.muted, '--tile-hover': theme.tileHover, '--gold': theme.gold }}>
         <div className="ah-card">
           <h1>Alphabet Hunt</h1>
           <p className="ah-tag">A two-player memory game on a QWERTY keyboard</p>
@@ -259,7 +261,7 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
           : '';
 
     return (
-      <div className="alphabet-hunt ah-screen ah-setup-screen" style={{ '--paper': theme.paper, '--panel': theme.panel, '--ink': theme.ink, '--p1': theme.p1, '--p2': theme.p2, '--gold': theme.gold }}>
+      <div className="alphabet-hunt ah-screen ah-setup-screen" style={{ '--paper': theme.paper, '--panel': theme.panel, '--ink': theme.ink, '--p1': theme.p1, '--p2': theme.p2, '--p1-soft': theme.p1Soft, '--p2-soft': theme.p2Soft, '--muted': theme.muted, '--tile-hover': theme.tileHover, '--gold': theme.gold }}>
         <div className="ah-card">
           <h1 style={{ fontSize: '2rem' }}>Who's playing?</h1>
           <p className="ah-tag">Enter a name and pick an avatar for each player</p>
@@ -338,7 +340,7 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
     };
 
     return (
-      <div className="alphabet-hunt ah-screen ah-game-screen" style={{ '--paper': theme.paper, '--panel': theme.panel, '--ink': theme.ink, '--p1': theme.p1, '--p2': theme.p2, '--gold': theme.gold }}>
+      <div className="alphabet-hunt ah-screen ah-game-screen" style={{ '--paper': theme.paper, '--panel': theme.panel, '--ink': theme.ink, '--p1': theme.p1, '--p2': theme.p2, '--p1-soft': theme.p1Soft, '--p2-soft': theme.p2Soft, '--muted': theme.muted, '--tile-hover': theme.tileHover, '--gold': theme.gold }}>
         <div className="ah-card">
           {showRoundOverlay && (
             <div className="ah-round-overlay show">
@@ -446,7 +448,7 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
     const name = current === 1 ? name1 : name2;
 
     return (
-      <div className="alphabet-hunt ah-screen ah-win-screen" style={{ '--paper': theme.paper, '--panel': theme.panel, '--ink': theme.ink, '--p1': theme.p1, '--p2': theme.p2, '--gold': theme.gold }}>
+      <div className="alphabet-hunt ah-screen ah-win-screen" style={{ '--paper': theme.paper, '--panel': theme.panel, '--ink': theme.ink, '--p1': theme.p1, '--p2': theme.p2, '--p1-soft': theme.p1Soft, '--p2-soft': theme.p2Soft, '--muted': theme.muted, '--tile-hover': theme.tileHover, '--gold': theme.gold }}>
         <div className="ah-card ah-win-card">
           <div className="ah-win-avatar">{avatar}</div>
           <h1 className="ah-win-title">{name} wins!</h1>

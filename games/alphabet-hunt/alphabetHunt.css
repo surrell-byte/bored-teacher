@@ -5,9 +5,11 @@
   --panel: var(--ah-panel, #fffaf0);
   --line: #1b1b1f;
   --p1: var(--ah-p1, #2f6f4f);
-  --p1-soft: #dcebe1;
+  --p1-soft: var(--ah-p1-soft, #dcebe1);
   --p2: var(--ah-p2, #5b3ea8);
-  --p2-soft: #e6ddf6;
+  --p2-soft: var(--ah-p2-soft, #e6ddf6);
+  --muted: var(--ah-muted, #5a5a52);
+  --tile-hover: var(--ah-tile-hover, #303037);
   --gold: var(--ah-gold, #c98a2c);
 }
 
@@ -58,7 +60,7 @@
 .ah-tag {
   font-family: 'Trebuchet MS', 'Futura', sans-serif;
   font-size: 0.95rem;
-  color: #5a5a52;
+  color: var(--muted);
   margin: 0 0 28px;
 }
 
@@ -439,7 +441,7 @@
 }
 
 .ah-tile:hover:not(:disabled) .ah-tile-front {
-  background: #303037;
+  background: var(--tile-hover);
 }
 
 .ah-tile-back {
@@ -479,7 +481,7 @@
   font-size: 0.95rem;
   min-height: 1.4em;
   margin-top: 6px;
-  color: #5a5a52;
+  color: var(--muted);
 }
 
 /* Game stats */
@@ -505,7 +507,7 @@
   font-size: 0.65rem;
   font-weight: 800;
   letter-spacing: 0.7px;
-  color: #666;
+  color: color-mix(in srgb, var(--ink) 62%, var(--paper));
 }
 
 .ah-game-stats strong {
@@ -652,7 +654,7 @@
   font-family: 'Trebuchet MS', sans-serif;
   font-size: 0.7rem;
   text-transform: uppercase;
-  color: #666;
+  color: color-mix(in srgb, var(--ink) 62%, var(--paper));
   margin-top: 3px;
 }
 
