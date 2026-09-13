@@ -104,32 +104,29 @@ export default function PizzaFractions({ onComplete }) {
 
         <div className="pizza-fractions-main">
           <div className="pizza-fractions-pizza-container">
-            <svg className="pizza-fractions-pizza" viewBox="0 0 240 240" width="240" height="240">
-              <circle cx="120" cy="120" r="110" fill="#c8860a" />
-              <circle cx="120" cy="120" r="102" fill="#f0c040" />
-              <circle cx="120" cy="120" r="84" fill="#c0392b" />
-              {Array.from({ length: slices }, (_, index) => {
-                const start = (index / slices) * Math.PI * 2 - Math.PI / 2;
-                const end = ((index + 1) / slices) * Math.PI * 2 - Math.PI / 2;
-                const cx = 120;
-                const cy = 120;
-                const r = 110;
-                const x1 = cx + r * Math.cos(start);
-                const y1 = cy + r * Math.sin(start);
-                const x2 = cx + r * Math.cos(end);
-                const y2 = cy + r * Math.sin(end);
-                const fill = assignments[index] === null ? 'transparent' : orders[assignments[index]].topping.color + 'bb';
-
-                return (
-                  <g key={`slice-${index}`}>
-                    <path d={`M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 0 1 ${x2} ${y2} Z`} fill={fill} stroke="#8b6914" strokeWidth="2" onClick={() => toggleSlice(index)} style={{ cursor: 'pointer' }} />
-                    <text x={cx + (r * 0.58) * Math.cos((start + end) / 2)} y={cy + (r * 0.58) * Math.sin((start + end) / 2)} textAnchor="middle" dominantBaseline="middle" fill="rgba(255,255,255,0.6)" fontSize="14" fontFamily="Fredoka One, cursive">
-                      {index + 1}
-                    </text>
-                  </g>
-                );
-              })}
-            </svg>
+            <div className="pizza-fractions-wooden-board">
+              <span className="pizza-fractions-flour pizza-fractions-flour-one" aria-hidden="true" />
+              <span className="pizza-fractions-flour pizza-fractions-flour-two" aria-hidden="true" />
+              <span className="pizza-fractions-flour pizza-fractions-flour-three" aria-hidden="true" />
+              <div className="pizza-fractions-pizza" role="group" aria-label="Pizza slices">
+                {Array.from({ length: slices }, (_, index) => {
+                  const assigned = assignments[index];
+                  const topping = assigned === null ? null : orders[assigned]?.topping;
+                  return (
+                    <button
+                      key={`slice-${index}`}
+                      type="button"
+                      className={`pizza-fractions-slice pizza-fractions-slice-${index + 1}${assigned !== null ? ' selected' : ''}`}
+                      onClick={() => toggleSlice(index)}
+                      aria-label={`Pizza slice ${index + 1}${topping ? `, ${topping.name}` : ', unassigned'}`}
+                    >
+                      {topping && <span className="pizza-fractions-topping" aria-hidden="true">{topping.emoji}</span>}
+                      <span className="pizza-fractions-slice-number" aria-hidden="true">{index + 1}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
             <div className="pizza-fractions-info-panel">Selected: <strong>{orders.length ? orders.map((_, index) => assignments.filter((value) => value === index).length).join(' + ') : 0}</strong> / {slices} slices</div>
           </div>
 
@@ -287,6 +284,29 @@ const STYLES = `
   color: #ffd700;
   margin-top: 8px;
 }
+.pizza-fractions-game { background: linear-gradient(rgba(35,14,5,.16),rgba(35,14,5,.16)), url('/games/pizza-fractions/game-bg.png') center / cover fixed; overflow: auto; }
+.pizza-fractions-wooden-board { width: min(620px, 70vw); aspect-ratio: 1.18; position: relative; display: grid; place-items: center; padding: 35px; overflow: hidden; border: 7px solid #6d3215; border-radius: 28px; background: linear-gradient(135deg,#a65b25,#d4873c 25%,#8c451c 55%,#c8752d); box-shadow: 0 15px 0 #3c190a,0 25px 45px rgba(0,0,0,.55),inset 0 0 0 3px rgba(255,210,130,.25),inset 0 0 35px rgba(60,20,5,.35); }
+.pizza-fractions-wooden-board::before { content: ''; position: absolute; inset: 0; pointer-events: none; opacity: .9; background: repeating-linear-gradient(4deg,transparent 0,transparent 13px,rgba(70,30,10,.11) 14px,transparent 17px); }
+.pizza-fractions-pizza { position: relative; z-index: 1; width: min(450px, 55vw); aspect-ratio: 1; overflow: hidden; border: 13px solid #e7a53b; border-radius: 50%; background: radial-gradient(circle at 50% 45%,#e84519 0,#c92710 55%,#a7190b 100%); box-shadow: 0 10px 15px rgba(0,0,0,.45),0 3px 0 #7a3d0e,inset 0 0 0 5px #f5c45c,inset 0 0 30px rgba(80,15,0,.35); }
+.pizza-fractions-pizza::before { content: ''; position: absolute; inset: 18px; z-index: 0; border-radius: 50%; background: radial-gradient(circle at 30% 30%,#ffd75c 0 3%,transparent 4%),radial-gradient(circle at 70% 25%,#f6c83f 0 4%,transparent 5%),radial-gradient(circle at 50% 70%,#ffdf68 0 3%,transparent 4%),linear-gradient(135deg,#ffd85b,#efaa28); }
+.pizza-fractions-slice { position: absolute; z-index: 2; width: 50%; height: 50%; padding: 0; border: 0; cursor: pointer; background: radial-gradient(circle at 50% 50%,#f8cf50,#df9f27); transition: transform .18s ease,filter .18s ease,box-shadow .18s ease; overflow: hidden; }
+.pizza-fractions-slice::after { content: ''; position: absolute; inset: 0; border: 2px solid rgba(110,50,10,.65); pointer-events: none; }
+.pizza-fractions-slice-1 { top: 0; left: 0; border-right: 3px solid rgba(110,50,10,.65); border-bottom: 3px solid rgba(110,50,10,.65); border-radius: 100% 0 0 0; }
+.pizza-fractions-slice-2 { top: 0; right: 0; border-left: 3px solid rgba(110,50,10,.65); border-bottom: 3px solid rgba(110,50,10,.65); border-radius: 0 100% 0 0; }
+.pizza-fractions-slice-3 { bottom: 0; left: 0; border-right: 3px solid rgba(110,50,10,.65); border-top: 3px solid rgba(110,50,10,.65); border-radius: 0 0 0 100%; }
+.pizza-fractions-slice-4 { bottom: 0; right: 0; border-left: 3px solid rgba(110,50,10,.65); border-top: 3px solid rgba(110,50,10,.65); border-radius: 0 0 100% 0; }
+.pizza-fractions-slice:hover { filter: brightness(1.12); transform: scale(1.025); z-index: 4; }
+.pizza-fractions-slice.selected { filter: brightness(1.12) saturate(1.2); box-shadow: inset 0 0 0 6px #fff3a1,inset 0 0 25px rgba(255,220,70,.6),0 0 20px rgba(255,215,80,.65); z-index: 3; }
+.pizza-fractions-slice.selected::before { content: '✓'; position: absolute; top: 45%; left: 45%; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; background: #3d8b42; border: 3px solid white; color: white; font-size: 20px; font-weight: 900; z-index: 5; }
+.pizza-fractions-topping { position: absolute; top: 32%; left: 32%; z-index: 4; font-size: clamp(1.5rem,3vw,2.6rem); filter: drop-shadow(0 3px 3px rgba(0,0,0,.45)); pointer-events: none; }
+.pizza-fractions-slice-number { position: absolute; z-index: 4; color: rgba(255,255,255,.72); font-size: 15px; text-shadow: 0 2px 3px rgba(0,0,0,.7); }
+.pizza-fractions-slice-1 .pizza-fractions-slice-number,.pizza-fractions-slice-3 .pizza-fractions-slice-number { right: 30%; }
+.pizza-fractions-slice-2 .pizza-fractions-slice-number,.pizza-fractions-slice-4 .pizza-fractions-slice-number { left: 30%; }
+.pizza-fractions-slice-1 .pizza-fractions-slice-number,.pizza-fractions-slice-2 .pizza-fractions-slice-number { top: 28%; }
+.pizza-fractions-slice-3 .pizza-fractions-slice-number,.pizza-fractions-slice-4 .pizza-fractions-slice-number { bottom: 28%; }
+.pizza-fractions-flour { position: absolute; z-index: 1; width: 100px; height: 45px; border-radius: 50%; background: radial-gradient(ellipse,rgba(255,248,220,.8),rgba(255,248,220,0)); filter: blur(2px); }
+.pizza-fractions-flour-one { top: 35px; left: 40px; transform: rotate(-15deg); }.pizza-fractions-flour-two { right: 40px; bottom: 35px; transform: rotate(20deg); }.pizza-fractions-flour-three { left: 75px; bottom: 80px; width: 60px; height: 25px; }
+@media (max-width: 899px) { .pizza-fractions-wooden-board { width: min(600px,90vw); padding: 20px; } .pizza-fractions-pizza { width: min(450px,80vw); } }
 @media (min-width: 900px) {
   .pizza-fractions-shell { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 0.72fr); column-gap: 32px; align-items: center; text-align: left; }
   .pizza-fractions-order-box { grid-column: 1 / -1; justify-self: center; text-align: center; }

@@ -4258,6 +4258,7 @@ a { color: inherit; }
 .game-shell--archersduel { --completion-border: #d8ad45; --completion-surface: linear-gradient(160deg, #192f20, #101d16); --completion-text: #fff7df; --completion-accent: #ffe49a; --completion-action: #d8ad45; --completion-action-text: #07130d; }
 .game-shell--findmyfood { --completion-border: #f5c842; --completion-surface: linear-gradient(160deg, #293747, #202b3a); --completion-text: #f4f7fb; --completion-accent: #ffd166; --completion-action: #63d7ba; --completion-action-text: #10221e; }
 .game-shell--finnthefox .game-shell-play-area { background: #fffdf7; }
+.game-shell--pizzafractions .route-game-welcome { background: linear-gradient(rgba(35,14,5,.16),rgba(35,14,5,.16)), url('/games/pizza-fractions/welcome-screen-bg.png') center / cover fixed; }
 .finn-fox { min-height: 100%; background: #fffdf7; }
 .finn-fox main { min-height: calc(100vh - 110px); width: 100%; }
 .ff-quiz-image { display: block; width: min(100%, 460px); height: clamp(150px, 25vh, 230px); margin: 0 auto 22px; object-fit: cover; border-radius: 18px; box-shadow: 0 10px 24px #0002; }
