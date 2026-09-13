@@ -147,6 +147,9 @@ export default function GamePage() {
         window.dispatchEvent(new Event('weather-wizard:main-menu'));
       }
       else setGameSession(session => session + 1);
+    } else if (isTicTacRoll) {
+      setShowRouteWelcome(false);
+      window.dispatchEvent(new Event('tictacroll:main-menu'));
     } else {
       setShowRouteWelcome(true);
       setGameSession(session => session + 1);

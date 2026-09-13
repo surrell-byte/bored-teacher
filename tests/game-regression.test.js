@@ -24,12 +24,20 @@ test('Alphabet Hunt merges incomplete future themes with a complete fallback', (
   assert.match(component, /const theme = resolveTheme\(themeId\)/);
 });
 
-test('What’s Missing protects against undersized or invalid future data', () => {
-  const component = read('games/legacy/LegacyGamePort.jsx');
-  const data = read('games/legacy/whatsMissingData.js');
+test('Migrated games use direct React components without the legacy adapter', () => {
+  const catalog = read('games/catalog.components.tsx');
+  const data = read('games/whats-missing/whatsMissingData.js');
 
+  assert.doesNotMatch(catalog, /games\/legacy\/LegacyGamePort/);
   assert.match(data, /WHATS_MISSING_CATEGORIES/);
-  assert.match(component, /WHATS_MISSING_ITEMS\.filter\(item => typeof item === "string" && item\.trim\(\)\)/);
-  assert.match(component, /const SAFE_MEMORY_ITEMS = MEMORY_ITEMS\.length >= 8 \? MEMORY_ITEMS : DEFAULT_MEMORY_ITEMS/);
-  assert.match(component, /randomNumber\(0, items\.length - 1\)/);
+  for (const componentPath of [
+    'games/super-wings/SuperWings.jsx',
+    'games/treasure-chest/TreasureChest.jsx',
+    'games/unicorn-wings/UnicornWings.jsx',
+    'games/higher-or-lower/HigherOrLower.jsx',
+    'games/picture-race/PictureRace.jsx',
+    'games/red-or-black/RedOrBlack.jsx',
+  ]) {
+    assert.match(read(componentPath), /RoundChallenge/);
+  }
 });

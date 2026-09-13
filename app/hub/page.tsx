@@ -1,9 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { auth, isCreatorUser, loadReviews, loadUserState, onAuthStateChanged, submitReview } from '@/lib/firebase';
+import { isCreatorUser, loadUserState, onAuthStateChanged } from '@/lib/firebase';
 import { useGame, xpForLevel } from '@/providers/GameProvider';
 import { GAME_KEYS, NEW_GAME_KEYS } from '@/constants/index';
 import GameCard from '@/components/cards/GameCard';
@@ -11,7 +11,7 @@ import { getSortedLeaderboard, type LBPlayerWithScore } from '@/features/leaderb
 import { ACHIEVEMENTS } from '@/features/achievements/achievements';
 import { LATEST_SHOP_ITEMS } from '@/features/shop/catalog';
 import { COMING_SOON_GAME_IDS } from '@/config/game-access';
-import ProfileAvatar from '@/components/profile/ProfileAvatar';
+import ReviewPanel from '@/components/reviews/ReviewPanel';
 
 function PreviewHeader({ title, href, action = 'View all' }: { title: string; href: string; action?: string }) { return <div className="hub-preview-header"><h2 className="hub-section-title">{title}</h2><Link href={href} className="pill-btn">{action} →</Link></div>; }
 const FEATURED_RESOURCES = [
@@ -23,61 +23,22 @@ const ADVERTISED_NEW_GAMES = ['riddlebombs', ...NEW_GAME_KEYS.filter(id => id !=
 
 export default function HubPage() {
   const router = useRouter(); const { state: rawState, checkDailyReward } = useGame();
-  const state = { ...rawState, avatar: <ProfileAvatar value={rawState.avatar} size={36} /> };
+  const state = { ...rawState, avatar: '' };
   const [isCreator, setIsCreator] = useState(false);
   const [ready, setReady] = useState(false); const [leaders, setLeaders] = useState<LBPlayerWithScore[]>([]); const [hasTeacherPro, setHasTeacherPro] = useState(false);
-  const [reviews, setReviews] = useState<any[]>([]);
-  const [reviewText, setReviewText] = useState('');
-  const [reviewRating, setReviewRating] = useState(5);
-  const [reviewSaving, setReviewSaving] = useState(false);
-  const [reviewMessage, setReviewMessage] = useState('');
   useEffect(() => { const guest = localStorage.getItem('guestUser') === 'true'; const syncState = async (user?: { uid: string; email?: string | null } | null) => { if (user) { setIsCreator(isCreatorUser(user as any)); const profile = await loadUserState(user.uid); setHasTeacherPro(Boolean(profile?.teacherPro)); } else { setIsCreator(false); setHasTeacherPro(false); } }; if (guest) { setIsCreator(false); setHasTeacherPro(false); setReady(true); checkDailyReward(); return; } const unsubscribe = onAuthStateChanged(async user => { if (!user) { router.replace('/auth'); return; } await syncState(user); setReady(true); checkDailyReward(); }); return unsubscribe; // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
   useEffect(() => { if (ready) setLeaders(getSortedLeaderboard().slice(0, 3)); }, [ready]);
-  useEffect(() => {
-    let cancelled = false;
-    loadReviews().then(items => { if (!cancelled) setReviews(items.slice(0, 6)); });
-    return () => { cancelled = true; };
-  }, []);
   const play = useCallback((gameId: string) => router.push(`/games/${gameId}`), [router]);
   const visibleGameIds = useMemo(() => GAME_KEYS.filter(id => isCreator || !COMING_SOON_GAME_IDS.has(id)), [isCreator]);
   const featuredGames = useMemo(() => { const unplayed = visibleGameIds.filter(id => (state.games[id]?.completions ?? 0) === 0); return (unplayed.length ? unplayed : visibleGameIds).slice(0, 4); }, [state.games, visibleGameIds]);
   const latestTrophies = useMemo(() => ACHIEVEMENTS.filter(item => state.earnedAt[item.id]).sort((a,b) => state.earnedAt[b.id].localeCompare(state.earnedAt[a.id])).slice(0,3), [state.earnedAt]);
   const totalPlayed = GAME_KEYS.filter(id => (state.games[id]?.completions ?? 0) > 0).length; const xpPct = Math.min(100, Math.round((state.xp / xpForLevel(state.level)) * 100));
 
-  async function handleReviewSubmit(event: FormEvent) {
-    event.preventDefault();
-    const text = reviewText.trim();
-    if (!text) {
-      setReviewMessage('Add a comment before you send a review.');
-      return;
-    }
-    setReviewSaving(true);
-    setReviewMessage('');
-    try {
-      await submitReview({
-        userId: auth?.currentUser?.uid ?? null,
-        userName: state.name || auth?.currentUser?.displayName || 'Explorer',
-        userEmail: auth?.currentUser?.email ?? null,
-        rating: reviewRating,
-        comment: text,
-        page: '/hub',
-      });
-      setReviewText('');
-      setReviewRating(5);
-      const next = await loadReviews();
-      setReviews(next.slice(0, 6));
-      setReviewMessage('Thanks — your review was added.');
-    } catch (error) {
-      setReviewMessage(error instanceof Error ? error.message : 'The review could not be saved.');
-    } finally {
-      setReviewSaving(false);
-    }
-  }
-
   if (!ready) return null;
   return <div className="hub-page hub-dashboard"><section className="hub-hero-grid"><div className="shell-card hub-welcome-card"><div className="hero-kicker">🎮 Your learning dashboard</div><h1 className="hub-welcome-title">Welcome back, {state.name.split(' ')[0]} {state.avatar}</h1><p className="hub-welcome-sub">A quick look at new games, classroom activity, resources, rewards, and the shop.</p>{!hasTeacherPro && <div style={{ marginTop: 16, padding: '12px 14px', borderRadius: 14, background: 'rgba(216, 173, 69, 0.08)', border: '1px solid rgba(216, 173, 69, 0.25)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}><div><strong style={{ display: 'block', marginBottom: 2 }}>Teacher Pro upgrade</strong><small style={{ color: 'var(--muted)' }}>Unlock premium classroom resources and worksheets.</small></div><button className="pill-btn" onClick={() => router.push('/subscription')}>Upgrade</button></div>}<div className="hub-xp-row"><span className="hub-xp-level">Lv {state.level}</span><div className="hub-xp-bar" style={{ flex:1 }}><div className="hub-xp-fill progress-fill" style={{ width:`${xpPct}%` }} /></div><span className="hub-xp-count">{state.xp} / {xpForLevel(state.level)} XP</span></div></div><div className="shell-card hub-stats-card">{[{label:'Games played',value:totalPlayed,icon:'🎮',color:'var(--teal)'},{label:'Coins',value:state.coins,icon:'🪙',color:'var(--gold)'},{label:'Trophies',value:Object.keys(state.earnedAt).length,icon:'🏆',color:'var(--purple)'},{label:'Day streak',value:state.loginStreak || 0,icon:'🔥',color:'var(--coral)'}].map(stat => <div className="hero-stat" key={stat.label}><div className="hero-stat-inner"><span className="hero-stat-icon">{stat.icon}</span><div><div className="hero-stat-val" style={{ color:stat.color }}>{stat.value}</div><div className="hero-stat-lbl">{stat.label}</div></div></div></div>)}</div></section>
     <section className="hub-section"><PreviewHeader title="🆕 New Games" href="/games" /><div className="hub-featured-grid">{ADVERTISED_NEW_GAMES.filter(id => isCreator || !COMING_SOON_GAME_IDS.has(id)).map(id => <GameCard key={id} gameId={id} onClick={play} />)}</div></section><section className="hub-section"><PreviewHeader title="⭐ Featured Games" href="/games" /><div className="hub-featured-grid">{featuredGames.map(id => <GameCard key={id} gameId={id} onClick={play} />)}</div></section>
     <div className="hub-preview-grid"><section className="shell-card hub-preview-card"><PreviewHeader title="🏆 Top scorers this week" href="/leaderboard" action="Leaderboard" />{leaders.length ? <ol className="hub-leader-list">{leaders.map((player,index) => <li key={player.id}><span className="hub-rank">{index + 1}</span><span className="hub-leader-avatar">{['🥇','🥈','🥉'][index]}</span><strong>{player.name}</strong><span>{player.score.total} pts</span></li>)}</ol> : <div className="hub-preview-empty"><span>🏆</span><div>No leaderboard scores yet this week.</div><small>Add players or finish a game to start the board.</small></div>}</section><section className="shell-card hub-preview-card"><PreviewHeader title="📚 Featured resources" href="/resources" action="Resources" /><div className="hub-mini-list">{FEATURED_RESOURCES.map(resource => <Link href="/resources" key={resource.id} className="hub-mini-row"><span>{resource.icon}</span><div><strong>{resource.title}</strong><small>{resource.type} · {resource.subject}</small></div><b>›</b></Link>)}</div></section><section className="shell-card hub-preview-card"><PreviewHeader title="🏅 Latest trophies" href="/trophy" action="Trophy room" />{latestTrophies.length ? <div className="hub-mini-list">{latestTrophies.map(trophy => <Link href="/trophy" key={trophy.id} className="hub-mini-row"><span>{trophy.icon}</span><div><strong>{trophy.name}</strong><small>{new Date(state.earnedAt[trophy.id]).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</small></div><b>›</b></Link>)}</div> : <div className="hub-preview-empty"><span>⭐</span><div>Your latest trophies will appear here.</div><small>Play games to start your collection.</small></div>}</section><section className="shell-card hub-preview-card"><PreviewHeader title="🛍️ New in the shop" href="/payment" action="Shop" /><div className="hub-mini-list">{LATEST_SHOP_ITEMS.map(item => <Link href="/payment" key={item.id} className="hub-mini-row"><span>{item.icon}</span><div><strong>{item.name}</strong><small>🪙 {item.cost} · {item.type}</small></div><b>›</b></Link>)}</div></section></div>
+    <ReviewPanel isCreator={isCreator} />
   </div>;
 }

@@ -56,6 +56,9 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
   const O_COLOR = theme.oColor;
   const winLines = computeWinLines(gridSize, winLen(gridSize));
   const totalCells = gridSize * gridSize;
+  const canContinue = playerCount === 1
+    ? profile.name.trim().length > 0
+    : playerCount === 2 && profile.name.trim().length > 0 && player2.name.trim().length > 0;
 
   function getCtx() {
     if (!soundOn) return null;
@@ -83,8 +86,13 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
 
   useEffect(() => {
     const handleNewGame = () => { if (screen === "game") startNewGame(); };
+    const handleMainMenu = () => setScreen("menu");
     window.addEventListener("tictacroll:new-game", handleNewGame);
-    return () => window.removeEventListener("tictacroll:new-game", handleNewGame);
+    window.addEventListener("tictacroll:main-menu", handleMainMenu);
+    return () => {
+      window.removeEventListener("tictacroll:new-game", handleNewGame);
+      window.removeEventListener("tictacroll:main-menu", handleMainMenu);
+    };
   }, [screen, gameMode, aiDiff, playerSymbol]);
 
   const getName = (p: string) => gameMode === "ai" && p === (playerSymbol === "X" ? "O" : "X") ? "AI" : p === "X" ? profile.name : player2.name;
@@ -305,6 +313,12 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
     setTimeout(() => { resetGame(); }, 50);
   }
 
+  function playAgain() {
+    if (rollTimer.current) { clearInterval(rollTimer.current); rollTimer.current = null; }
+    setRolling(false);
+    setTimeout(() => resetGame(), 0);
+  }
+
   const boardDisplay = board.map((v, i) => {
     const isWin = wonLine ? wonLine.includes(i) : false;
     return { idx: i, val: v, isWin, num: i + 1 };
@@ -336,21 +350,21 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
     padding: "clamp(1.2rem, 2vw, 2.5rem)",
   };
 
-  const welcomeBackground = "url('/assets/images/tic-tac-roll-welcome-bg.webp') center/cover no-repeat";
+  const welcomeBackground = "url('/assets/images/tic-tac-roll-welcome-page-bg.webp') center/cover no-repeat";
   const inputBackground = "url('/assets/images/tic-tac-roll-user-input-screen-bg.webp') center/cover no-repeat";
 
   return (
-    <div style={{ minHeight: "100vh", background: "transparent", color: theme.text, fontFamily: "'DM Sans', 'Segoe UI', sans-serif", transition: "background 0.4s, color 0.4s" }}>
+    <div style={{ height: "100%", minHeight: "100%", background: "transparent", color: theme.text, fontFamily: "'DM Sans', 'Segoe UI', sans-serif", transition: "background 0.4s, color 0.4s" }}>
 
       {/* WELCOME SCREEN */}
       {screen === "welcome" && (
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "100vh", padding: "2rem", textAlign: "center", background: welcomeBackground }}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", minHeight: "100%", padding: "2rem", textAlign: "center", background: welcomeBackground }}>
           <div style={{ fontSize: "clamp(3rem, 8vw, 5rem)", marginBottom: "0.5rem" }}>🎲</div>
           <h1 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2.5rem, 7vw, 4.5rem)", fontWeight: 700, margin: "0 0 0.5rem", lineHeight: 1.1 }}>Tic·Tac·<em style={{ color: theme.accent }}>Roll</em></h1>
           <p style={{ color: theme.muted, fontSize: "clamp(0.9rem, 2vw, 1.1rem)", marginBottom: "2rem", letterSpacing: "0.05em" }}>Roll. Claim. Conquer.</p>
           <button onClick={() => { tone(500, 0.08, 0.07); setScreen("setup"); }} style={{ padding: "1rem 3rem", fontSize: "clamp(1rem, 2.5vw, 1.2rem)", fontWeight: 600, borderRadius: 50, border: "none", background: `linear-gradient(160deg, ${theme.accent}, ${theme.accent}dd)`, color: "#fff", cursor: "pointer", boxShadow: `0 4px 15px ${theme.glow}`, marginBottom: "1rem" }}>✦ Play Now</button>
           <br />
-          <button onClick={() => { tone(500, 0.08, 0.07); setHtpTab("classic"); setScreen("howtoplay"); }} style={{ padding: "0.8rem 2.5rem", fontSize: "clamp(0.9rem, 2vw, 1rem)", fontWeight: 600, borderRadius: 50, border: `1px solid ${theme.border}`, background: theme.card, color: theme.text, cursor: "pointer" }}>◈ How to Play</button>
+          <button onClick={() => { tone(500, 0.08, 0.07); setScreen("menu"); }} style={{ padding: "0.8rem 2.5rem", fontSize: "clamp(0.9rem, 2vw, 1rem)", fontWeight: 600, borderRadius: 50, border: `1px solid ${theme.border}`, background: theme.card, color: theme.text, cursor: "pointer" }}>◈ How to Play</button>
         </div>
       )}
 
@@ -364,14 +378,14 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
           <div style={{ display: "flex", gap: "0.75rem", marginBottom: "1.5rem" }}>
             {([1, 2] as const).map(count => <button key={count} onClick={() => setPlayerCount(count)} style={{ flex: 1, padding: "0.8rem", borderRadius: 12, border: playerCount === count ? `2px solid ${theme.accent}` : `1px solid ${theme.border}`, background: playerCount === count ? theme.glow : theme.card, color: theme.text, cursor: "pointer", fontWeight: 600 }}>{count} Player{count === 2 ? "s" : ""}</button>)}
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: playerCount === 2 ? "repeat(2, 1fr)" : "1fr", gap: "1rem", marginBottom: "1.5rem" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "1rem", marginBottom: "1.5rem" }}>
             <div style={{ padding: "1rem", borderRadius: 12, border: `1px solid ${theme.border}`, background: theme.card }}>
               <label style={{ fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: theme.muted, display: "block", marginBottom: "0.5rem" }}>Player 1</label>
               <input disabled={playerCount === null} value={profile.name} onChange={e => setProfile({ ...profile, name: e.target.value })} placeholder="Enter your name..." maxLength={18} style={{ width: "100%", padding: "0.8rem 1rem", borderRadius: 12, border: `1px solid ${theme.border}`, background: theme.bg, color: theme.text, fontSize: "1rem", outline: "none" }} />
             </div>
-            <div style={{ padding: "1rem", borderRadius: 12, border: `1px solid ${theme.border}`, background: playerCount === 1 ? `${theme.muted}33` : theme.card, opacity: playerCount === 1 || playerCount === null ? 0.55 : 1 }}>
+            <div style={{ padding: "1rem", borderRadius: 12, border: `1px solid ${theme.border}`, background: theme.card, opacity: playerCount === 1 || playerCount === null ? 0.62 : 1 }}>
               <label style={{ fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: theme.muted, display: "block", marginBottom: "0.5rem" }}>Player 2</label>
-              <input disabled={playerCount !== 2} value={player2.name} onChange={e => setPlayer2({ ...player2, name: e.target.value })} placeholder="Enter player 2 name..." maxLength={18} style={{ width: "100%", padding: "0.8rem 1rem", borderRadius: 12, border: `1px solid ${theme.border}`, background: theme.bg, color: theme.text, fontSize: "1rem", outline: "none" }} />
+              <input disabled={playerCount !== 2} value={player2.name} onChange={e => setPlayer2({ ...player2, name: e.target.value })} placeholder={playerCount === 1 ? "AI opponent" : "Enter player 2 name..."} maxLength={18} style={{ width: "100%", padding: "0.8rem 1rem", borderRadius: 12, border: `1px solid ${theme.border}`, background: theme.bg, color: theme.text, fontSize: "1rem", outline: "none" }} />
             </div>
           </div>
           <label style={{ fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: theme.muted, display: "block", marginBottom: "0.5rem" }}>Choose Avatar</label>
@@ -380,7 +394,7 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
               <button key={av} disabled={playerCount === null} onClick={() => setProfile({ ...profile, avatar: av })} style={{ fontSize: "1.5rem", padding: "0.6rem", borderRadius: 12, border: profile.avatar === av ? `2px solid ${theme.accent}` : `1px solid ${theme.border}`, background: profile.avatar === av ? theme.glow : theme.card, cursor: playerCount === null ? "not-allowed" : "pointer", opacity: playerCount === null ? 0.5 : 1, boxShadow: profile.avatar === av ? `0 0 0 3px ${theme.glow}` : "none" }}>{av}</button>
             ))}
           </div>
-          <button disabled={playerCount === null} onClick={() => { tone(500, 0.08, 0.07); setScreen("menu"); }} style={{ width: "100%", padding: "1rem", fontSize: "1rem", fontWeight: 600, borderRadius: 50, border: "none", background: `linear-gradient(160deg, ${theme.accent}, ${theme.accent}dd)`, color: "#fff", cursor: playerCount === null ? "not-allowed" : "pointer", opacity: playerCount === null ? 0.5 : 1, boxShadow: `0 4px 15px ${theme.glow}` }}>Continue →</button>
+          <button disabled={!canContinue} onClick={() => { tone(500, 0.08, 0.07); setScreen("menu"); }} style={{ width: "100%", padding: "1rem", fontSize: "1rem", fontWeight: 600, borderRadius: 50, border: "none", background: `linear-gradient(160deg, ${theme.accent}, ${theme.accent}dd)`, color: "#fff", cursor: canContinue ? "pointer" : "not-allowed", opacity: canContinue ? 1 : 0.5, boxShadow: `0 4px 15px ${theme.glow}` }}>Continue →</button>
         </div>
       )}
 
@@ -435,7 +449,7 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
       )}
 
       {/* HOW TO PLAY */}
-      {screen === "howtoplay" && (
+      {false && screen === "howtoplay" && (
         <div style={{ maxWidth: "clamp(400px, 60vw, 700px)", margin: "2rem auto", padding: "clamp(1.5rem, 3vw, 2.5rem)", background: `${theme.surface}ee`, borderRadius: "clamp(16px, 3vw, 24px)", border: `1px solid ${theme.border}`, boxShadow: theme.shadow, overflowY: "auto", maxHeight: "100vh", backgroundImage: inputBackground, backgroundSize: "cover", backgroundPosition: "center" }}>
           <button onClick={() => { tone(500, 0.08, 0.07); setScreen(screen === "howtoplay" ? "welcome" : "menu"); }} style={{ background: "none", border: "none", color: theme.muted, cursor: "pointer", fontSize: "0.9rem", marginBottom: "1rem" }}>← Back</button>
           <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.5rem, 4vw, 2.5rem)", margin: "0 0 1rem" }}>How to Play</h2>
@@ -454,13 +468,13 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
       )}
 
       {/* GAME SCREEN */}
-      {(screen === "game" || screen === "howtoplay") && (
+      {screen === "game" && (
         <div style={gameLayoutStyle}>
 
           {/* SIDEBAR */}
           <div style={{ display: "flex", flexDirection: "column", gap: "clamp(0.75rem, 1.5vw, 1.2rem)", alignSelf: "start", position: "sticky", top: "clamp(1rem, 2vw, 2rem)" }}>
             {/* Player X Card */}
-            <div style={{ padding: "clamp(1rem, 2vw, 1.5rem)", background: theme.card, borderRadius: "clamp(12px, 2vw, 16px)", border: `1px solid ${theme.border}`, boxShadow: theme.shadow, borderLeft: `4px solid ${currentPlayer === "X" && gameActive ? theme.accent : "transparent"}` }}>
+            <div style={{ padding: "clamp(1rem, 2vw, 1.5rem)", background: theme.card, borderRadius: "clamp(12px, 2vw, 16px)", border: `1px solid ${theme.border}`, boxShadow: currentPlayer === "X" && gameActive ? `inset 4px 0 0 ${theme.accent}, ${theme.shadow}` : theme.shadow }}>
               <div style={{ fontSize: "0.65rem", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", color: theme.muted, marginBottom: "0.3rem" }}>Player X</div>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
                 <span style={{ fontSize: "1.5rem" }}>{profile.avatar}</span>
@@ -470,7 +484,7 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
               <div style={{ fontSize: "0.7rem", color: theme.muted }}>wins</div>
             </div>
             {/* Player O Card */}
-            <div style={{ padding: "clamp(1rem, 2vw, 1.5rem)", background: theme.card, borderRadius: "clamp(12px, 2vw, 16px)", border: `1px solid ${theme.border}`, boxShadow: theme.shadow, borderLeft: `4px solid ${currentPlayer === "O" && gameActive ? theme.accent : "transparent"}` }}>
+            <div style={{ padding: "clamp(1rem, 2vw, 1.5rem)", background: theme.card, borderRadius: "clamp(12px, 2vw, 16px)", border: `1px solid ${theme.border}`, boxShadow: currentPlayer === "O" && gameActive ? `inset 4px 0 0 ${theme.accent}, ${theme.shadow}` : theme.shadow }}>
               <div style={{ fontSize: "0.65rem", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", color: theme.muted, marginBottom: "0.3rem" }}>Player O</div>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
                 <span style={{ fontSize: "1.5rem" }}>{player2.avatar}</span>
@@ -519,8 +533,8 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
                   {cell.val === "X" && (
                     <span style={{
                       position: "relative",
-                      width: "clamp(1.4rem, 5vw, 2.6rem)",
-                      height: "clamp(1.4rem, 5vw, 2.6rem)",
+                      width: "clamp(2rem, 7vw, 4rem)",
+                      height: "clamp(2rem, 7vw, 4rem)",
                       display: "inline-block",
                       animation: "pieceIn 0.25s ease-out",
                     }}>
@@ -529,17 +543,17 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
                   )}
                   {cell.val === "O" && (
                     <span style={{
-                      width: "clamp(1.3rem, 4.6vw, 2.4rem)",
-                      height: "clamp(1.3rem, 4.6vw, 2.4rem)",
+                      width: "clamp(1.9rem, 6.5vw, 3.7rem)",
+                      height: "clamp(1.9rem, 6.5vw, 3.7rem)",
                       borderRadius: "50%",
                       display: "inline-block",
-                      border: `clamp(4px, 1vw, 7px) solid ${O_COLOR}`,
+                      border: `clamp(5px, 1.2vw, 9px) solid ${O_COLOR}`,
                       background: `radial-gradient(circle, ${O_COLOR}22 40%, transparent 70%)`,
                       boxShadow: `0 0 14px ${O_COLOR}, 0 0 26px ${O_COLOR}77`,
                       animation: "pieceIn 0.25s ease-out",
                     }} />
                   )}
-                  {!cell.val && <span style={{ opacity: 0.35, fontSize: "clamp(0.55rem, 2vw, 0.85rem)", color: theme.text }}>{cell.num}</span>}
+                  {!cell.val && <span style={{ opacity: 0.92, fontSize: "clamp(1rem, 3vw, 1.65rem)", fontWeight: 800, color: theme.text, textShadow: `0 1px 0 ${theme.card}, 0 0 8px ${theme.card}` }}>{cell.num}</span>}
                 </button>
               ))}
 
@@ -568,12 +582,12 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
                 </div>
               ))}
             </div>
+            {phase === "over" && <button type="button" onClick={playAgain} style={{ position: "relative", zIndex: 10, alignSelf: "center", padding: "0.85rem 2rem", border: "none", borderRadius: 999, background: `linear-gradient(160deg, ${theme.accent}, ${theme.accent2 || theme.accent})`, color: "#fff", fontWeight: 700, cursor: "pointer", boxShadow: `0 4px 15px ${theme.glow}` }}>↻ Play Again</button>}
           </div>
         </div>
       )}
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
         @keyframes winPulse { 0%,100% { box-shadow: 0 0 0 3px ${theme.glow}, inset 0 2px 4px rgba(0,0,0,0.05); } 50% { box-shadow: 0 0 0 8px ${theme.glow.replace("0.15","0.08")}, 0 0 20px ${theme.glow}; } }
         @keyframes diceRoll { 0% { transform: rotate(0deg) scale(1); } 25% { transform: rotate(6deg) scale(1.04); } 75% { transform: rotate(-6deg) scale(1.04); } 100% { transform: rotate(0deg) scale(1); } }
         @keyframes pieceIn { 0% { transform: scale(0.3); opacity: 0; } 60% { transform: scale(1.15); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }

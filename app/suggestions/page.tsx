@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { auth, onAuthStateChanged, submitFeedback } from '@/lib/firebase';
+import { auth, onAuthStateChanged, submitFeedback, submitReview } from '@/lib/firebase';
 import { useGame } from '@/providers/GameProvider';
 
-type FeedbackType = 'suggestion' | 'grievance';
+type FeedbackType = 'suggestion' | 'grievance' | 'review';
 
 export default function SuggestionsPage() {
   const router = useRouter();
@@ -14,6 +14,7 @@ export default function SuggestionsPage() {
   const [feedbackType, setFeedbackType] = useState<FeedbackType>('suggestion');
   const [message, setMessage] = useState('');
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error' | 'permission'>('idle');
+  const [rating, setRating] = useState(5);
 
   useEffect(() => {
     if (localStorage.getItem('guestUser') === 'true') {
@@ -35,13 +36,11 @@ export default function SuggestionsPage() {
     if (!message.trim()) return;
     setStatus('sending');
     try {
-      await submitFeedback({
-        message,
-        type: feedbackType,
-        page: '/suggestions',
-        userId: auth?.currentUser?.uid,
-        userName: state.name,
-      });
+      if (feedbackType === 'review') {
+        await submitReview({ userId: auth?.currentUser?.uid ?? null, userName: auth?.currentUser?.displayName || state.name || 'Guest', userEmail: auth?.currentUser?.email ?? null, rating, comment: message, page: '/suggestions' });
+      } else {
+        await submitFeedback({ message, type: feedbackType, page: '/suggestions', userId: auth?.currentUser?.uid, userName: state.name });
+      }
       setMessage('');
       setStatus('sent');
     } catch (error: any) {
@@ -76,9 +75,11 @@ export default function SuggestionsPage() {
           <div className="feedback-type-row" role="group" aria-label="Feedback type">
             <button type="button" className={feedbackType === 'suggestion' ? 'selected' : ''} onClick={() => setFeedbackType('suggestion')}>💡 Suggestion</button>
             <button type="button" className={feedbackType === 'grievance' ? 'selected' : ''} onClick={() => setFeedbackType('grievance')}>🐛 Problem or bug</button>
+            <button type="button" className={feedbackType === 'review' ? 'selected' : ''} onClick={() => setFeedbackType('review')}>⭐ Leave a review</button>
           </div>
           <label htmlFor="suggestion-message">Your message</label>
           <textarea id="suggestion-message" value={message} onChange={event => { setMessage(event.target.value); setStatus('idle'); }} placeholder="Tell me what you think..." maxLength={2000} required rows={9} />
+          {feedbackType === 'review' && <label htmlFor="review-rating">Rating <select id="review-rating" value={rating} onChange={event => setRating(Number(event.target.value))}>{[5, 4, 3, 2, 1].map(value => <option key={value} value={value}>{value} stars</option>)}</select></label>}
           <div className="feedback-form-footer">
             <span>{message.length}/2000</span>
             <button className="game-shell-primary-action" type="submit" disabled={status === 'sending' || !message.trim()}>
