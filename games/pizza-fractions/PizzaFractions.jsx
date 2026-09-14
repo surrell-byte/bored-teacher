@@ -127,7 +127,6 @@ export default function PizzaFractions({ onComplete }) {
                 })}
               </div>
             </div>
-            <div className="pizza-fractions-info-panel">Selected: <strong>{orders.length ? orders.map((_, index) => assignments.filter((value) => value === index).length).join(' + ') : 0}</strong> / {slices} slices</div>
           </div>
 
           <div className="pizza-fractions-toppings-panel">
@@ -137,13 +136,12 @@ export default function PizzaFractions({ onComplete }) {
                 {order.topping.emoji} {order.topping.name}
               </button>
             ))}
+            <div className="pizza-fractions-info-panel">Selected: <strong>{orders.length ? orders.map((_, index) => assignments.filter((value) => value === index).length).join(' + ') : 0}</strong> / {slices} slices</div>
+            <button type="button" className="pizza-fractions-check" onClick={checkAnswer}>Check Pizza ✅</button>
+            <div className={`pizza-fractions-feedback ${feedback.ok ? 'pizza-fractions-ok' : ''}`}>{feedback.text}</div>
+            {showNext && <button type="button" className="pizza-fractions-next" onClick={nextOrder}>Next Order! 🍕</button>}
           </div>
         </div>
-
-        <button type="button" className="pizza-fractions-check" onClick={checkAnswer}>Check Pizza ✅</button>
-        <div className={`pizza-fractions-feedback ${feedback.ok ? 'pizza-fractions-ok' : ''}`}>{feedback.text}</div>
-        <div className="pizza-fractions-score-row">⭐ Score: <span>{score}</span></div>
-        {showNext && <button type="button" className="pizza-fractions-next" onClick={nextOrder}>Next Order! 🍕</button>}
       </div>
     </main>
   );
@@ -221,7 +219,8 @@ const STYLES = `
   padding: 10px 14px;
   font-size: 1rem;
   color: #ffc;
-  width: min(100%, 280px);
+  width: 100%;
+  box-sizing: border-box;
 }
 .pizza-fractions-info-panel strong {
   color: #ffd700;
@@ -269,6 +268,7 @@ const STYLES = `
   font-size: 1.3rem;
   cursor: pointer;
   margin-top: 0;
+  align-self: center;
 }
 .pizza-fractions-check {
   background: linear-gradient(135deg,#ffd700,#ff8c00);
@@ -284,12 +284,6 @@ const STYLES = `
   min-height: 2rem;
   margin-top: -6px;
   text-align: center;
-}
-.pizza-fractions-score-row {
-  font-family: 'Fredoka One', 'Trebuchet MS', sans-serif;
-  font-size: 1.2rem;
-  color: #ffd700;
-  margin-top: -6px;
 }
 .pizza-fractions-game { background: linear-gradient(rgba(35,14,5,.16),rgba(35,14,5,.16)), url('/games/pizza-fractions/game-bg.png') center / cover fixed; overflow: auto; }
 .pizza-fractions-wooden-board { box-sizing: border-box; width: min(100%, 620px); aspect-ratio: 1.18; position: relative; display: grid; place-items: center; padding: 35px; overflow: hidden; border: 7px solid #6d3215; border-radius: 28px; background: linear-gradient(135deg,#a65b25,#d4873c 25%,#8c451c 55%,#c8752d); box-shadow: 0 15px 0 #3c190a,0 25px 45px rgba(0,0,0,.55),inset 0 0 0 3px rgba(255,210,130,.25),inset 0 0 35px rgba(60,20,5,.35); }
@@ -324,12 +318,12 @@ const STYLES = `
   .pizza-fractions-pizza { width: min(100%, 430px); border-width: 10px; }
   .pizza-fractions-pizza::before { inset: 13px; }
   .pizza-fractions-toppings-panel { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
-  .pizza-fractions-label { grid-column: 1 / -1; margin: 0; }
+  .pizza-fractions-label, .pizza-fractions-info-panel, .pizza-fractions-check, .pizza-fractions-feedback, .pizza-fractions-next { grid-column: 1 / -1; }
+  .pizza-fractions-label { margin: 0; }
   .pizza-fractions-button { min-width: 0; min-height: 46px; justify-content: center; padding: 9px 8px; font-size: 1rem; }
   .pizza-fractions-button.active { transform: none; outline-width: 3px; }
   .pizza-fractions-check, .pizza-fractions-next { min-height: 48px; padding-inline: 24px; font-size: 1.15rem; }
   .pizza-fractions-feedback { font-size: 1.1rem; min-height: 1.45rem; }
-  .pizza-fractions-score-row { font-size: 1.05rem; }
   .pizza-fractions-flour { transform: scale(.65); }
   .pizza-fractions-flour-one { top: 12px; left: 12px; }.pizza-fractions-flour-two { right: 12px; bottom: 12px; }.pizza-fractions-flour-three { left: 28px; bottom: 34px; }
 }
