@@ -27,6 +27,7 @@ const GAMES_WITH_WELCOME = new Set([
   'turbodash',
   'numberclouds',
   'countadd',
+  'emojisportsquiz',
 ]);
 
 // ── Page ──────────────────────────────────────────────────────
@@ -232,7 +233,7 @@ export default function GamePage() {
               </>
             )}
             {isEmojiSports && emojiSportsHud && (
-              <span className="game-shell-topbar-stats" aria-label="Emoji Sports Quiz progress">
+              <span className="game-shell-topbar-stats" aria-label="Sports Quiz progress">
                 <span className="game-shell-topbar-stat"><b>⭐ {emojiSportsHud.score}</b><span>Score</span></span>
                 <span className="game-shell-topbar-stat"><b>🔥 {emojiSportsHud.streak}</b><span>Streak</span></span>
               </span>

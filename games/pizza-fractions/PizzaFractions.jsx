@@ -155,7 +155,7 @@ const STYLES = `
   font-family: 'Nunito', var(--font-body), sans-serif;
 }
 .pizza-fractions-shell {
-  width: min(100%, 1240px);
+  width: min(100%, 1280px);
   min-height: 100%;
   display: flex;
   flex-direction: column;
@@ -178,7 +178,7 @@ const STYLES = `
   border-radius: 20px;
   padding: 12px 18px;
   margin: 0;
-  width: min(100%, 900px);
+  width: min(900px, 65vw);
 }
 .pizza-fractions-order-text {
   font-family: 'Fredoka One', 'Trebuchet MS', sans-serif;
@@ -193,11 +193,12 @@ const STYLES = `
 }
 .pizza-fractions-main {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(220px, .56fr);
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 390px);
   gap: clamp(18px, 3vw, 42px);
   align-items: center;
   justify-content: center;
-  width: min(100%, 1080px);
+  width: min(100%, 1200px);
+  transform: translateY(clamp(8px, 2vh, 18px));
 }
 .pizza-fractions-pizza-container {
   display: flex;
@@ -228,7 +229,7 @@ const STYLES = `
   flex-direction: column;
   gap: 10px;
   min-width: 0;
-  width: 100%;
+  width: min(100%, 390px);
   align-self: center;
 }
 .pizza-fractions-label {
@@ -283,8 +284,8 @@ const STYLES = `
   text-align: center;
 }
 .pizza-fractions-game { background: linear-gradient(rgba(35,14,5,.16),rgba(35,14,5,.16)), url('/games/pizza-fractions/game-bg.png') center / cover fixed; overflow: auto; }
-.pizza-fractions-pizza-stage { width: min(100%, 620px); display: grid; place-items: center; }
-.pizza-fractions-pizza { position: relative; z-index: 1; width: min(100%, 450px); aspect-ratio: 1; overflow: hidden; border: 13px solid #e7a53b; border-radius: 50%; background: radial-gradient(circle at 50% 45%,#e84519 0,#c92710 55%,#a7190b 100%); box-shadow: 0 10px 15px rgba(0,0,0,.45),0 3px 0 #7a3d0e,inset 0 0 0 5px #f5c45c,inset 0 0 30px rgba(80,15,0,.35); }
+.pizza-fractions-pizza-stage { width: 100%; display: grid; place-items: center; }
+.pizza-fractions-pizza { position: relative; z-index: 1; width: min(460px, 32vw); aspect-ratio: 1; overflow: hidden; border: 13px solid #e7a53b; border-radius: 50%; background: radial-gradient(circle at 50% 45%,#e84519 0,#c92710 55%,#a7190b 100%); box-shadow: 0 10px 15px rgba(0,0,0,.45),0 3px 0 #7a3d0e,inset 0 0 0 5px #f5c45c,inset 0 0 30px rgba(80,15,0,.35); }
 .pizza-fractions-pizza::before { content: ''; position: absolute; inset: 18px; z-index: 0; border-radius: 50%; background: radial-gradient(circle at 30% 30%,#ffd75c 0 3%,transparent 4%),radial-gradient(circle at 70% 25%,#f6c83f 0 4%,transparent 5%),radial-gradient(circle at 50% 70%,#ffdf68 0 3%,transparent 4%),linear-gradient(135deg,#ffd85b,#efaa28); }
 .pizza-fractions-slice { position: absolute; z-index: 2; width: 50%; height: 50%; padding: 0; border: 0; cursor: pointer; background: radial-gradient(circle at 50% 50%,#f8cf50,#df9f27); transition: transform .18s ease,filter .18s ease,box-shadow .18s ease; overflow: hidden; }
 .pizza-fractions-slice::after { content: ''; position: absolute; inset: 0; border: 2px solid rgba(110,50,10,.65); pointer-events: none; }
@@ -301,17 +302,23 @@ const STYLES = `
 .pizza-fractions-slice-2 .pizza-fractions-slice-number,.pizza-fractions-slice-4 .pizza-fractions-slice-number { left: 30%; }
 .pizza-fractions-slice-1 .pizza-fractions-slice-number,.pizza-fractions-slice-2 .pizza-fractions-slice-number { top: 28%; }
 .pizza-fractions-slice-3 .pizza-fractions-slice-number,.pizza-fractions-slice-4 .pizza-fractions-slice-number { bottom: 28%; }
+@media (max-width: 1100px) and (min-width: 900px) {
+  .pizza-fractions-shell { width: 100%; padding-inline: 24px; }
+  .pizza-fractions-main { grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; width: min(100%, 960px); }
+  .pizza-fractions-pizza { width: min(380px, 39vw); }
+  .pizza-fractions-toppings-panel { width: 300px; }
+}
 @media (max-width: 899px) {
   .pizza-fractions-game { background-attachment: scroll; }
   .pizza-fractions-shell { justify-content: flex-start; gap: 12px; padding: 14px 12px 24px; }
-  .pizza-fractions-order-box { padding: 10px 12px; border-radius: 16px; }
+  .pizza-fractions-order-box { width: 100%; padding: 10px 12px; border-radius: 16px; box-sizing: border-box; }
   .pizza-fractions-order-text { font-size: clamp(1.05rem, 5.2vw, 1.35rem); line-height: 1.25; }
   .pizza-fractions-order-sub { font-size: .88rem; }
-  .pizza-fractions-main { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .pizza-fractions-main { grid-template-columns: minmax(0, 1fr); gap: 16px; transform: none; }
   .pizza-fractions-pizza-stage { width: min(100%, 520px); }
   .pizza-fractions-pizza { width: min(100%, 430px); border-width: 10px; }
   .pizza-fractions-pizza::before { inset: 13px; }
-  .pizza-fractions-toppings-panel { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+  .pizza-fractions-toppings-panel { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; width: 100%; }
   .pizza-fractions-label, .pizza-fractions-info-panel, .pizza-fractions-check, .pizza-fractions-feedback, .pizza-fractions-next { grid-column: 1 / -1; }
   .pizza-fractions-label { margin: 0; }
   .pizza-fractions-button { min-width: 0; min-height: 46px; justify-content: center; padding: 9px 8px; font-size: 1rem; }

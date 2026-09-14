@@ -4,7 +4,7 @@
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 import { useGame, logOut } from '@/providers/GameProvider';
-import { THEMES } from '@/constants/index';
+import { GAME_CATALOG, THEMES } from '@/constants/index';
 import { usePathname, useRouter } from 'next/navigation';
 import ProfileModal from '@/features/profiles/components/ProfileModal';
 import { useResponsive } from '@/hooks/useResponsive';
@@ -35,11 +35,14 @@ export default function Navbar() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [gameSearchOpen, setGameSearchOpen] = useState(false);
+  const [gameSearch, setGameSearch] = useState('');
   const [soundOn, setSoundOn] = useState(true);
   const [creator, setCreator] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const moreRef = useRef<HTMLDivElement>(null);
+  const gameSearchInputRef = useRef<HTMLInputElement>(null);
   const { isMobile, presentationMode, setPresentationMode } = useResponsive();
 
   // Presentation mode is only offered on screens big enough to matter for a
@@ -87,6 +90,37 @@ export default function Navbar() {
   }, [soundOn]);
 
   useEffect(() => { setMobileOpen(false); }, [pathname]);
+
+  useEffect(() => {
+    if (!gameSearchOpen) return undefined;
+    gameSearchInputRef.current?.focus();
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setGameSearchOpen(false);
+    };
+    document.addEventListener('keydown', closeOnEscape);
+    return () => document.removeEventListener('keydown', closeOnEscape);
+  }, [gameSearchOpen]);
+
+  const searchTerm = gameSearch.trim().toLowerCase();
+  const gameResults = Object.entries(GAME_CATALOG).filter(([gameId, game]) => {
+    const searchable = `${gameId} ${game.name} ${game.desc} ${game.tag.label} ${game.badge}`.toLowerCase();
+    return !searchTerm || searchable.includes(searchTerm);
+  }).slice(0, 12);
+
+  function openGameSearch() {
+    setMobileOpen(false);
+    setGameSearchOpen(true);
+  }
+
+  function closeGameSearch() {
+    setGameSearchOpen(false);
+    setGameSearch('');
+  }
+
+  function chooseGame(gameId: string) {
+    closeGameSearch();
+    router.push(`/games/${gameId}`);
+  }
 
   async function handleLogout() {
     try {
