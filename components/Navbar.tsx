@@ -173,6 +173,15 @@ export default function Navbar() {
             <button className={`nav-link nav-more-button${showMoreMenu || MORE_ITEMS.some(item => isActive(item.href)) ? ' active' : ''}`} onClick={() => setShowMoreMenu(value => !value)} aria-expanded={showMoreMenu} type="button">⋯ More</button>
             {showMoreMenu && <div className="nav-more-menu" role="menu">{MORE_ITEMS.map(item => <Link key={item.href} href={item.href} className="dropdown-item" role="menuitem" onClick={() => setShowMoreMenu(false)}>{item.icon} {item.label}</Link>)}</div>}
           </div>
+          <button
+            className="nav-game-search-toggle nav-desktop-game-search"
+            type="button"
+            onClick={openGameSearch}
+            aria-label="Search games"
+            title="Search games"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4.5 4.5" /></svg>
+          </button>
         </nav>
 
         {/* Right side — sound, profile dropdown, hamburger */}
@@ -283,7 +292,7 @@ export default function Navbar() {
           </div>
 
           <button
-            className="nav-game-search-toggle"
+            className="nav-game-search-toggle nav-mobile-game-search"
             type="button"
             onClick={openGameSearch}
             aria-label="Search games"
