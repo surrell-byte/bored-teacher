@@ -355,6 +355,16 @@
   animation: ah-slotPop 0.25s ease;
 }
 
+.ah-hud-player.ah-p1 .ah-hud-slot.filled {
+  background: var(--p1);
+  color: var(--panel);
+}
+
+.ah-hud-player.ah-p2 .ah-hud-slot.filled {
+  background: var(--p2);
+  color: var(--panel);
+}
+
 @keyframes ah-slotPop {
   0% {
     transform: scale(0.5) rotate(-10deg);

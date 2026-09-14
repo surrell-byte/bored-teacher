@@ -28,6 +28,7 @@ const GAMES_WITH_WELCOME = new Set([
   'numberclouds',
   'countadd',
   'emojisportsquiz',
+  'alphabethunt',
 ]);
 
 // ── Page ──────────────────────────────────────────────────────
