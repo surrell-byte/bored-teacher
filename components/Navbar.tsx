@@ -282,6 +282,16 @@ export default function Navbar() {
             )}
           </div>
 
+          <button
+            className="nav-game-search-toggle"
+            type="button"
+            onClick={openGameSearch}
+            aria-label="Search games"
+            title="Search games"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4.5 4.5" /></svg>
+          </button>
+
           {/* Hamburger for mobile */}
           <button
             className="hamburger"
@@ -343,6 +353,31 @@ export default function Navbar() {
             {isGuest ? '🔓 Leave Guest Mode' : '🚪 Sign Out'}
           </button>
         </nav>
+      )}
+
+      {gameSearchOpen && (
+        <div className="game-search-backdrop" role="presentation" onMouseDown={closeGameSearch}>
+          <section className="game-search-dialog" role="dialog" aria-modal="true" aria-labelledby="game-search-title" onMouseDown={(event) => event.stopPropagation()}>
+            <div className="game-search-header">
+              <h2 id="game-search-title">Find a game</h2>
+              <button className="game-search-close" type="button" onClick={closeGameSearch} aria-label="Close game search">×</button>
+            </div>
+            <label className="sr-only" htmlFor="game-search-input">Search games</label>
+            <div className="game-search-field">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4.5 4.5" /></svg>
+              <input ref={gameSearchInputRef} id="game-search-input" value={gameSearch} onChange={(event) => setGameSearch(event.target.value)} placeholder="Search games, skills, or topics" autoComplete="off" />
+            </div>
+            <div className="game-search-results" aria-live="polite">
+              {gameResults.length ? gameResults.map(([gameId, game]) => (
+                <button key={gameId} type="button" className="game-search-result" onClick={() => chooseGame(gameId)}>
+                  <span className="game-search-result-icon" aria-hidden="true">{game.icon}</span>
+                  <span><strong>{game.name}</strong><small>{game.tag.label} · {game.badge}</small></span>
+                  <span className="game-search-result-arrow" aria-hidden="true">→</span>
+                </button>
+              )) : <p className="game-search-empty">No games match “{gameSearch}”.</p>}
+            </div>
+          </section>
+        </div>
       )}
 
       {showProfile && <ProfileModal onClose={() => setShowProfile(false)} />}

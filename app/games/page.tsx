@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { isCreatorUser, onAuthStateChanged } from '@/lib/firebase';
 import { useGame } from '@/providers/GameProvider';
 import {
-  GAME_KEYS, NEW_GAME_KEYS, GAME_NAMES, GAME_TAGS,
+  FEATURED_GAME_IDS, GAME_KEYS, NEW_GAME_KEYS, GAME_NAMES, GAME_TAGS,
   GAME_DIFFICULTY, GAME_DESC,
 } from '@/constants/index';
 import GameCard from '@/components/cards/GameCard';
@@ -182,7 +182,7 @@ export default function GamesPage() {
             <h2 className="hub-section-title" style={{ marginBottom: 0 }}>⭐ Featured Games</h2>
           </div>
           <div className="hub-featured-grid">
-            {NEW_GAME_KEYS.filter(gameId => !COMING_SOON_GAME_IDS.has(gameId)).map(gameId => (
+            {FEATURED_GAME_IDS.filter(gameId => !COMING_SOON_GAME_IDS.has(gameId)).map(gameId => (
               <GameCard key={gameId} gameId={gameId} onClick={handlePlay} />
             ))}
           </div>

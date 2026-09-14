@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { isCreatorUser, loadUserState, onAuthStateChanged } from '@/lib/firebase';
 import { useGame, xpForLevel } from '@/providers/GameProvider';
-import { GAME_KEYS, NEW_GAME_KEYS } from '@/constants/index';
+import { FEATURED_GAME_IDS, GAME_KEYS, NEW_GAME_KEYS } from '@/constants/index';
 import GameCard from '@/components/cards/GameCard';
 import { getSortedLeaderboard, type LBPlayerWithScore } from '@/features/leaderboard/api';
 import { ACHIEVEMENTS } from '@/features/achievements/achievements';
@@ -21,7 +21,6 @@ const FEATURED_RESOURCES = [
   { id:'w3', icon:'📄', title:'Flags of the World — Reference Card', type:'Worksheet', subject:'Social Studies' },
 ];
 const ADVERTISED_NEW_GAMES = ['riddlebombs', ...NEW_GAME_KEYS.filter(id => id !== 'riddlebombs').slice(-3)];
-const FEATURED_GAME_IDS = ['alphabethunt', 'tilebattle', 'emojisportsquiz', 'snowyslopes', 'countadd', 'moneyblocks', 'findmyfood', 'flagmaster'];
 
 export default function HubPage() {
   const router = useRouter(); const { state: rawState, checkDailyReward } = useGame();
