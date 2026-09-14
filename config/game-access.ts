@@ -33,6 +33,19 @@ export const COMING_SOON_GAME_IDS = new Set([
   'shapebuilder',
 ]);
 
+export const TEACHER_PRO_GAME_IDS = new Set([
+  'compound',
+  'descriptiondetective',
+  'findtheword',
+  'higherorlower',
+  'redorblack',
+  'wordmatch',
+  'oceanquest',
+  'parachutedrop',
+  'tornado',
+  'vocabvalley',
+]);
+
 export function canAccessGame(gameId: string) {
   return !COMING_SOON_GAME_IDS.has(gameId);
 }

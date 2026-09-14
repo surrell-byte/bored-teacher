@@ -85,14 +85,14 @@ const FarmGameV1_HTML = `<!-- WELCOME POSTER -->
   </div>
 </div>`;
 
-const FarmGameV1_CSS = `* {
+const FarmGameV1_CSS = `.farmgamev1-root, .farmgamev1-root * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
       user-select: none;
     }
 
-    body {
+    .farmgamev1-root {
       background: linear-gradient(135deg, #8ec63f, #3f8a2e);
       font-family: 'Segoe UI', 'Poppins', 'Comic Neue', system-ui, sans-serif;
       min-height: 100vh;
@@ -100,9 +100,10 @@ const FarmGameV1_CSS = `* {
       justify-content: center;
       align-items: center;
       padding: 10px;
+      width: 100%;
     }
 
-    .screen {
+    .farmgamev1-root .screen {
       display: none;
       width: 100%;
       max-width: min(550px, 95vw);
@@ -110,7 +111,7 @@ const FarmGameV1_CSS = `* {
       animation: fadeIn 0.3s ease;
     }
 
-    .active {
+    .farmgamev1-root .active {
       display: block;
     }
 
@@ -298,17 +299,17 @@ const FarmGameV1_CSS = `* {
       height: 100%;
     }
 
-    h1, h2 { margin-bottom: 10px; }
-    h1 {
+    .farmgamev1-root h1, .farmgamev1-root h2 { margin-bottom: 10px; }
+    .farmgamev1-root h1 {
       font-size: clamp(1.8rem, 8vw, 3rem);
       background: linear-gradient(135deg, #f5b042, #c97e2a);
       background-clip: text;
       -webkit-background-clip: text;
       color: transparent;
     }
-    h2 { color: #4b2f14; }
+    .farmgamev1-root h2 { color: #4b2f14; }
 
-    input, .option, .sound-btn {
+    .farmgamev1-root input, .farmgamev1-root .option, .farmgamev1-root .sound-btn {
       width: 100%;
       max-width: 400px;
       padding: 12px;
@@ -345,12 +346,12 @@ const FarmGameV1_CSS = `* {
       font-weight: bold; font-size: 0.9rem;
     }
     .score-box, .q-counter { background: #fff2df; padding: 4px 14px; border-radius: 40px; color: #b45f1b; }
-    button {
+    .farmgamev1-root button {
       background: #ffb347; border: none; font-weight: bold; font-size: 1rem;
       padding: 10px 18px; border-radius: 60px; cursor: pointer; transition: 0.15s;
       color: #2c2b26; box-shadow: 0 5px 0 #a45d2e; margin: 5px;
     }
-    button:active { transform: translateY(2px); box-shadow: 0 2px 0 #a45d2e; }
+    .farmgamev1-root button:active { transform: translateY(2px); box-shadow: 0 2px 0 #a45d2e; }
     #hintBtn { background: #ffd27f; font-size: 0.9rem; padding: 8px 14px; box-shadow: 0 3px 0 #b97f2e; }
     .sound-btn { background: #ffe0a3; display: flex; align-items: center; justify-content: center; gap: 8px; }
     .option { background: #f3f0e7; border: 2px solid #e9dbc9; cursor: pointer; }
@@ -367,23 +368,23 @@ const FarmGameV1_CSS = `* {
     .message { background: #fff0cf; border-radius: 40px; padding: 10px; margin: 12px 0; font-weight: bold; font-size: 0.9rem; }
     .menu-buttons { display: flex; justify-content: center; gap: 10px; margin-top: 10px; }
     .menu-buttons button { background: #e0aa6e; flex: 1; }
-    footer { font-size: 0.7rem; margin-top: 15px; color: #4b2a10; }
-    #levels button { display: block; width: 100%; margin: 12px 0; background: #ffdd99; font-size: 1.1rem; padding: 12px; }
+    .farmgamev1-root footer { font-size: 0.7rem; margin-top: 15px; color: #4b2a10; }
+    .farmgamev1-root #levels button { display: block; width: 100%; margin: 12px 0; background: #ffdd99; font-size: 1.1rem; padding: 12px; }
     .locked { background: #b0aa99 !important; box-shadow: 0 5px 0 #6b5a44 !important; cursor: not-allowed; opacity: 0.7; pointer-events: none; filter: grayscale(0.1); }
-    @media (min-height: 600px) { .emoji { margin: 20px auto; } .options-grid { gap: 15px; } }
-    @media (max-width: 350px) { h1 { font-size: 1.5rem; } .farm-card { padding: 15px; } }
+    @media (min-height: 600px) { .farmgamev1-root .emoji { margin: 20px auto; } .farmgamev1-root .options-grid { gap: 15px; } }
+    @media (max-width: 350px) { .farmgamev1-root h1 { font-size: 1.5rem; } .farmgamev1-root .farm-card { padding: 15px; } }
     @media (orientation: landscape) and (max-height: 500px) {
-      .farm-card { display: flex; flex-direction: row; align-items: center; justify-content: space-around; gap: 20px; padding: 15px; border-radius: 30px; }
-      .left-side { flex: 1; display: flex; flex-direction: column; align-items: center; }
-      h1 { font-size: 1.5rem; margin-bottom: 5px; }
-      .emoji { font-size: 80px; margin: 5px 0; }
-      .right-side { flex: 1.5; display: flex; flex-direction: column; gap: 8px; }
-      .stats { padding: 5px 12px; margin-bottom: 5px; font-size: 0.8rem; }
-      .options-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
-      .option { padding: 8px; margin: 0; font-size: 0.85rem; }
-      .sound-btn { padding: 8px; margin: 5px 0; font-size: 0.85rem; }
-      footer { display: none; }
-      .message { font-size: 0.8rem; padding: 6px; }
+      .farmgamev1-root .farm-card { display: flex; flex-direction: row; align-items: center; justify-content: space-around; gap: 20px; padding: 15px; border-radius: 30px; }
+      .farmgamev1-root .left-side { flex: 1; display: flex; flex-direction: column; align-items: center; }
+      .farmgamev1-root h1 { font-size: 1.5rem; margin-bottom: 5px; }
+      .farmgamev1-root .emoji { font-size: 80px; margin: 5px 0; }
+      .farmgamev1-root .right-side { flex: 1.5; display: flex; flex-direction: column; gap: 8px; }
+      .farmgamev1-root .stats { padding: 5px 12px; margin-bottom: 5px; font-size: 0.8rem; }
+      .farmgamev1-root .options-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+      .farmgamev1-root .option { padding: 8px; margin: 0; font-size: 0.85rem; }
+      .farmgamev1-root .sound-btn { padding: 8px; margin: 5px 0; font-size: 0.85rem; }
+      .farmgamev1-root footer { display: none; }
+      .farmgamev1-root .message { font-size: 0.8rem; padding: 6px; }
     }`;
 
 export default function FarmGameV1() {
@@ -461,7 +462,7 @@ export default function FarmGameV1() {
   function clearLevelTimeout() { if (levelTimeout) clearTimeout(levelTimeout); levelTimeout = null; }
   function stopCurrentAudio() { if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; currentAudio = null; } }
   function clearPeekBlur() { if (emojiEl.style.filter === "blur(4px)") emojiEl.style.filter = ""; }
-  function showScreen(id) { document.querySelectorAll(".screen").forEach(s => s.classList.remove("active")); document.getElementById(id).classList.add("active"); }
+  function showScreen(id) { document.querySelectorAll(".farmgamev1-root .screen").forEach(s => s.classList.remove("active")); document.getElementById(id).classList.add("active"); }
 
   function renderLevels() {
     levelsContainer.replaceChildren();

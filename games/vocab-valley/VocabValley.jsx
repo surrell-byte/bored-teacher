@@ -128,6 +128,7 @@ export default function VocabValley({ onComplete }) {
   function startLevel(nextLevel) {
     setLevel(nextLevel);
     const nextItems = prepareItems();
+    if (!nextItems.length) return;
     setItems(nextItems);
     setIndex(0);
     setRevealed(false);

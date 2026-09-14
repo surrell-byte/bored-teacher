@@ -11,7 +11,7 @@ import { GAME_COMPONENTS } from '@/games/catalog.components';
 import { GameShell } from '@/engine';
 import Connect4HeaderActions from '@/components/ui/controls/Connect4HeaderActions';
 import { TIC_TAC_ROLL_THEMES, type TicTacRollTheme } from '@/games/tictacroll/themes';
-import { canAccessGame, COMING_SOON_GAME_IDS } from '@/config/game-access';
+import { canAccessGame, COMING_SOON_GAME_IDS, TEACHER_PRO_GAME_IDS } from '@/config/game-access';
 
 // ── Types ─────────────────────────────────────────────────────
 interface GameResult {
@@ -30,7 +30,6 @@ const GAMES_WITH_WELCOME = new Set([
   'emojisportsquiz',
   'alphabethunt', 'buildtower', 'whatsmissing',
 ]);
-const TEACHER_PRO_GAMES = new Set(['compound', 'descriptiondetective']);
 
 // ── Page ──────────────────────────────────────────────────────
 export default function GamePage() {
@@ -78,7 +77,7 @@ export default function GamePage() {
     void loadUserState(user.uid).then(profile => {
       const teacherPro = Boolean(profile?.teacherPro);
       setHasTeacherPro(teacherPro);
-      setCanPlay((creator || canAccessGame(gameId)) && (!TEACHER_PRO_GAMES.has(gameId) || creator || teacherPro));
+      setCanPlay((creator || canAccessGame(gameId)) && (!TEACHER_PRO_GAME_IDS.has(gameId) || creator || teacherPro));
       setAccessReady(true);
     });
   }), [gameId]);
@@ -185,7 +184,7 @@ export default function GamePage() {
 
   if (!accessReady) return null;
 
-  if (TEACHER_PRO_GAMES.has(gameId) && !isCreator && !hasTeacherPro) {
+  if (TEACHER_PRO_GAME_IDS.has(gameId) && !isCreator && !hasTeacherPro) {
     return (
       <div className="route-game-welcome">
         <div className="route-game-welcome-card">

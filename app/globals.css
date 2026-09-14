@@ -4256,6 +4256,16 @@ a { color: inherit; }
 .game-shell .game-header-actions {
   display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: var(--space-xs);
 }
+@media (min-width: 900px) {
+  .game-shell--farmgame .game-header-default { flex-wrap: nowrap; }
+  .game-shell--farmgame .game-header-title { flex: 1 1 auto; width: auto; }
+  .game-shell--farmgame .game-header-actions { width: auto; flex-wrap: nowrap; }
+}
+@media (min-width: 600px) {
+  .game-shell--farmgame .game-header-default { flex-wrap: nowrap !important; align-items: center !important; }
+  .game-shell--farmgame .game-header-title { flex: 1 1 auto !important; width: auto !important; max-width: none !important; }
+  .game-shell--farmgame .game-header-actions { width: auto !important; flex-wrap: nowrap !important; }
+}
 .game-shell-header-action {
   display: inline-flex; align-items: center; min-height: 42px; padding: 8px 14px;
   border: 1px solid rgb(255 255 255 / 0.28); border-radius: 10px; background: rgb(255 255 255 / 0.12);
