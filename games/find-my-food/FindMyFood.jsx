@@ -394,6 +394,19 @@ export default function FindMyFood({ onComplete, themeId }) {
     setScreen("game");
   }, []);
 
+  useEffect(() => {
+    const menu = () => setScreen("welcome");
+    const newGame = () => startGame(pairCount);
+    window.addEventListener("find-my-food:main-menu", menu);
+    window.addEventListener("find-my-food:new-game", newGame);
+    window.addEventListener("find-my-food:play-again", newGame);
+    return () => {
+      window.removeEventListener("find-my-food:main-menu", menu);
+      window.removeEventListener("find-my-food:new-game", newGame);
+      window.removeEventListener("find-my-food:play-again", newGame);
+    };
+  }, [pairCount, startGame]);
+
   const flip = (idx) => {
     const card = cards[idx];
     if (locked || flipped.includes(idx) || matched.has(idx)) return;
@@ -470,8 +483,20 @@ export default function FindMyFood({ onComplete, themeId }) {
             <div className="ff-pair-chip">🐵<span className="ff-connector">×</span>🍌</div>
           </div>
 
-          <div className="ff-divider" />
+          <button className="ff-btn ff-btn-gold" onClick={() => setScreen("player-info")}>Start Game →</button>
+        </div>
+      </div>
+    </div>
+  );
 
+  if (screen === "player-info") return (
+    <div className="ff-root" data-ff-theme={isDark ? "dark" : "light"} style={cssVarOverrides}>
+      <style>{STYLES}</style>
+      <div className="ff-noise" /><div className="ff-ambient ff-ambient-1" /><div className="ff-ambient ff-ambient-2" />
+      <div className="ff-screen ff-setup-screen"><div className="ff-card ff-setup-card" style={{ textAlign:"center" }}>
+          <div className="ff-logo-badge">👥 Player information</div>
+          <h1 className="ff-hero-title" style={{ fontSize:"clamp(2.2rem, 5vw, 3.1rem)" }}>Who&apos;s playing?</h1>
+          <p className="ff-hero-sub">Enter names and choose an avatar for each player.</p>
           <div className="ff-player-setup" style={{ flexDirection:"row", flexWrap:"wrap", gap:16, justifyContent:"center", marginBottom:8 }}>
             {[p1, p2].map((p, pi) => (
               <div key={pi} style={{ background:"var(--surface2)", border:"1px solid var(--border)", borderRadius:"var(--radius-md)", padding:"16px 18px", minWidth:190, textAlign:"left" }}>
@@ -492,16 +517,7 @@ export default function FindMyFood({ onComplete, themeId }) {
             ))}
           </div>
 
-          <div className="ff-divider" />
-          <div className="ff-section-label">Choose pairs</div>
-          <div className="ff-btn-row">
-            <button className="ff-btn ff-btn-outline" onClick={() => setScreen("how-to-play")}>How to Play</button>
-            {[4,6,8].map(n => (
-              <button key={n} className="ff-btn ff-btn-gold" onClick={() => { setPairCount(n); startGame(n); }}>
-                {n} Pairs →
-              </button>
-            ))}
-          </div>
+          <div className="ff-btn-row"><button className="ff-btn ff-btn-outline" onClick={() => setScreen("welcome")}>← Back</button><button className="ff-btn ff-btn-gold" onClick={() => setScreen("how-to-play")}>How to Play →</button></div>
         </div>
       </div>
     </div>
@@ -528,9 +544,21 @@ export default function FindMyFood({ onComplete, themeId }) {
               <div className="ff-howto-step"><span className="ff-howto-num">3</span><span><strong>Switch turns.</strong> After every turn, the other player chooses next.</span></div>
             </div>
           </div>
-          <button className="ff-btn ff-btn-gold" onClick={() => setScreen("welcome")}>Choose Players →</button>
+          <button className="ff-btn ff-btn-gold" onClick={() => setScreen("mode")}>Choose pairs →</button>
         </div>
       </div>
+    </div>
+  );
+
+  if (screen === "mode") return (
+    <div className="ff-root" data-ff-theme={isDark ? "dark" : "light"} style={cssVarOverrides}>
+      <style>{STYLES}</style><div className="ff-noise" /><div className="ff-ambient ff-ambient-1" /><div className="ff-ambient ff-ambient-2" />
+      <div className="ff-screen"><div className="ff-card" style={{ textAlign:"center" }}>
+        <div className="ff-logo-badge">🎯 Choose pairs</div><h1 className="ff-hero-title" style={{ fontSize:"clamp(2.2rem, 5vw, 3.1rem)" }}>Set the challenge</h1>
+        <p className="ff-hero-sub">More pairs means a bigger memory challenge.</p>
+        <div className="ff-btn-row">{[4,6,8].map(n => <button key={n} className={`ff-btn ${pairCount===n?"ff-btn-gold":"ff-btn-outline"}`} onClick={() => { setPairCount(n); startGame(n); }}>{n} Pairs →</button>)}</div>
+        <button className="ff-btn ff-btn-ghost" onClick={() => setScreen("how-to-play")}>← Back</button>
+      </div></div>
     </div>
   );
 
@@ -617,10 +645,6 @@ export default function FindMyFood({ onComplete, themeId }) {
                 })}
               </div>
 
-              <div className="ff-game-actions">
-                <button className="ff-btn ff-btn-ghost" onClick={() => startGame(pairCount)}>↺ New Game</button>
-                <button className="ff-btn ff-btn-ghost" onClick={() => setScreen("welcome")}>← Back to Home</button>
-              </div>
             </section>
 
             <aside className="ff-game-sidebar" aria-label="Player status">

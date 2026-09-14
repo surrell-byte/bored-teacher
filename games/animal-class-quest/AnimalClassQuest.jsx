@@ -96,7 +96,8 @@ export default function AnimalClassQuest({ onComplete, onHudUpdate }) {
       const nxt = level==="easy"?"medium":level==="medium"?"hard":null;
       if(nxt) setUnlocked(u=>({...u,[nxt]:true}));
 
-      const accuracy = Math.round((correctCount / questions.length) * 100);
+      const completedCorrectCount = correctCount + (!wrongAns ? 1 : 0);
+      const accuracy = Math.round((completedCorrectCount / questions.length) * 100);
       completeGame(
         'animal-quest',
         accuracy,
@@ -166,16 +167,6 @@ export default function AnimalClassQuest({ onComplete, onHudUpdate }) {
       justifyContent:"center",background:"linear-gradient(135deg,#064e3b,#065f46,#047857)",
       fontFamily:"'Segoe UI',sans-serif",color:"#ecfdf5",padding:24}}>
       <div style={{width:"100%",maxWidth:"min(760px, calc(100vw - 56px))"}}>
-        {/* Header */}
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
-          <span style={{background:COLS[level],padding:"4px 14px",borderRadius:999,fontWeight:700,fontSize:"0.85rem",textTransform:"capitalize"}}>{level}</span>
-          <span style={{color:"#fbbf24",fontWeight:800}}>⭐ {score} {streak>=2&&`🔥×${streak}`}</span>
-          <span style={{color:"#a7f3d0"}}>{idx+1}/{questions.length}</span>
-        </div>
-        <div style={{height:5,background:"rgba(255,255,255,0.1)",borderRadius:999,marginBottom:20,overflow:"hidden"}}>
-          <div style={{height:"100%",width:`${(idx/questions.length)*100}%`,background:"#34d399",borderRadius:999,transition:"width 0.3s"}}/>
-        </div>
-
         {/* Animal card */}
         <div style={{
           background:"rgba(255,255,255,0.08)",borderRadius:24,padding:28,textAlign:"center",marginBottom:20,

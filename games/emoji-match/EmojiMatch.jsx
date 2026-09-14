@@ -36,14 +36,14 @@ const EmojiMatch_HTML = `<div id="emojiLanding" class="emoji-landing">
   </div>
 </div>`;
 
-const EmojiMatch_CSS = `* {
+const EmojiMatch_CSS = `.emojimatch-root, .emojimatch-root * {
       box-sizing: border-box;
       user-select: none;
     }
 
     .emojimatch-root { min-height: 100%; width: 100%; }
     .emojimatch-root { --ff-bg: #0d0d0f; --ff-surface: #141416; --ff-surface2: #1c1c20; --ff-accent: #e8c97a; --ff-green: #6fcf97; min-height: 100vh; background: radial-gradient(circle at 80% 0%, rgba(232,201,122,.12), transparent 34%), var(--ff-bg); color: #f0ede8; }
-    body {
+    .emojimatch-root {
       background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
       min-height: 100vh;
       display: flex;
@@ -54,7 +54,7 @@ const EmojiMatch_CSS = `* {
       padding: 20px;
     }
 
-    .game-container {
+    .emojimatch-root .game-container {
       width: min(100%, 1180px);
       min-height: calc(100vh - 40px);
       background: var(--ff-surface);
@@ -77,7 +77,7 @@ const EmojiMatch_CSS = `* {
     .emoji-landing input { width: min(360px, 90vw); padding: 16px 20px; border: 2px solid #75cbd0; border-radius: 14px; background: #ffffff12; color: #fff; text-align: center; font-size: 1.1rem; }
     .emoji-landing button { padding: 14px 28px; border: 0; border-radius: 14px; background: #ffca4f; color: #17212b; font-weight: 900; cursor: pointer; }
 
-    h2 {
+    .emojimatch-root h2 {
       text-align: center;
       font-size: 2rem;
       margin: 0 0 8px 0;
@@ -89,7 +89,7 @@ const EmojiMatch_CSS = `* {
       text-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
 
-    .stats-panel {
+    .emojimatch-root .stats-panel {
       display: flex;
       justify-content: space-between;
       align-items: baseline;
@@ -152,7 +152,7 @@ const EmojiMatch_CSS = `* {
       padding: 6px;
     }
 
-    .card {
+    .emojimatch-root .card {
       position: relative;   /* for absolute positioning of card number */
       aspect-ratio: 1 / 1;
       width: 100%;
@@ -171,7 +171,7 @@ const EmojiMatch_CSS = `* {
     }
 
     /* BIGGER CARD NUMBER BADGE */
-    .card-number {
+    .emojimatch-root .card-number {
       position: absolute;
       top: 8px;
       left: 12px;
@@ -196,7 +196,7 @@ const EmojiMatch_CSS = `* {
       display: none;
     }
 
-    .card.flipped {
+    .emojimatch-root .card.flipped {
       background: white;
       color: #1e293b;
       border: 2px solid #facc15;
@@ -205,7 +205,7 @@ const EmojiMatch_CSS = `* {
     }
 
     /* matched cards: visible but "locked" with friendly green style */
-    .card.matched {
+    .emojimatch-root .card.matched {
       background: #4caf7f;
       background: linear-gradient(135deg, #4caf7f, #2e7d5e);
       color: white;
@@ -217,17 +217,17 @@ const EmojiMatch_CSS = `* {
       transform: scale(0.96);
     }
 
-    .card.matched.flipped {
+    .emojimatch-root .card.matched.flipped {
       background: #4caf7f;
       color: #f9f7f3;
     }
 
-    .card:active:not(.matched):not(.flipped) {
+    .emojimatch-root .card:active:not(.matched):not(.flipped) {
       transform: scale(0.94);
       transition: 0.05s linear;
     }
 
-    footer {
+    .emojimatch-root footer {
       text-align: center;
       font-size: 0.75rem;
       color: #94a3b8;
@@ -235,7 +235,7 @@ const EmojiMatch_CSS = `* {
     }
 
     /* ========== WIN MODAL STYLES ========== */
-    .modal {
+    .emojimatch-root .modal {
       display: none;
       position: fixed;
       top: 0;
@@ -249,11 +249,11 @@ const EmojiMatch_CSS = `* {
       backdrop-filter: blur(6px);
     }
 
-    .modal.show {
+    .emojimatch-root .modal.show {
       display: flex;
     }
 
-    .modal-content {
+    .emojimatch-root .modal-content {
       background: #1e293b;
       padding: 32px 28px;
       border-radius: 48px;

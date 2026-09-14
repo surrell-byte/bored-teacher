@@ -31,7 +31,7 @@ function makeQuestion(difficulty, theme) {
   const second = random(min, max);
   const answer = first + second;
   const choices = new Set([answer]);
-  while (choices.size < 3) {
+  while (choices.size < (difficulty === 'easy' ? 3 : 4)) {
     const option = answer + random(-3, 3);
     if (option > 0) choices.add(option);
   }
@@ -44,6 +44,8 @@ export default function CountAndAdd({ onComplete }) {
   const [round, setRound] = useState(1);
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
+  const [lives, setLives] = useState(3);
+  const [attempts, setAttempts] = useState(0);
   const [locked, setLocked] = useState(false);
   const [answerState, setAnswerState] = useState('');
   const [selectedAnswer, setSelectedAnswer] = useState('?');
@@ -65,8 +67,8 @@ export default function CountAndAdd({ onComplete }) {
       window.dispatchEvent(new CustomEvent('count-add:hud', { detail: null }));
       return;
     }
-    window.dispatchEvent(new CustomEvent('count-add:hud', { detail: { difficulty, level, levelStars, score, streak } }));
-  }, [screen, difficulty, level, levelStars, score, streak]);
+    window.dispatchEvent(new CustomEvent('count-add:hud', { detail: { difficulty, level, levelStars, score, streak, lives } }));
+  }, [screen, difficulty, level, levelStars, score, streak, lives]);
   useEffect(() => {
     const returnToMenu = () => setScreen('menu');
     window.addEventListener('count-add:main-menu', returnToMenu);
@@ -84,6 +86,7 @@ export default function CountAndAdd({ onComplete }) {
   const nextQuestion = () => {
     setAnswerState('');
     setSelectedAnswer('?');
+    setAttempts(0);
     setFeedback("What's the answer?");
     setMascot(pick(MASCOTS_OK));
     setMascotBouncing(false);
@@ -97,6 +100,8 @@ export default function CountAndAdd({ onComplete }) {
     setRound(1);
     setScore(0);
     setStreak(0);
+    setLives(3);
+    setAttempts(0);
     setShowLevelUp(false);
     nextQuestion();
   };
@@ -109,11 +114,25 @@ export default function CountAndAdd({ onComplete }) {
     setLocked(true);
     if (value !== question.answer) {
       setAnswerState('wrong');
-      setSelectedAnswer('?');
+      setSelectedAnswer(question.answer);
       setStreak(0);
+      const nextAttempts = attempts + 1;
+      setAttempts(nextAttempts);
+      setLives(value => Math.max(0, value - 1));
       setFeedback(pick(ENCOURAGEMENT));
       setMascot(pick(MASCOTS_NO));
-      later(() => nextQuestion(), 950);
+      later(() => {
+        if (lives <= 1) {
+          setScreen('game-over');
+          onComplete?.(score, Math.round((score / TOTAL_QUESTIONS) * 100));
+        } else if (nextAttempts >= 3) {
+          nextQuestion();
+        } else {
+          setLocked(false);
+          setAnswerState('');
+          setSelectedAnswer('?');
+        }
+      }, 2000);
       return;
     }
 
@@ -125,21 +144,22 @@ export default function CountAndAdd({ onComplete }) {
     setFeedback(pick(PRAISE));
     setMascot(pick(MASCOTS_OK));
     setMascotBouncing(true);
+    setAttempts(0);
 
     if (round === TOTAL_QUESTIONS) {
-      later(() => onComplete?.(nextScore, Math.round((nextScore / TOTAL_QUESTIONS) * 100)), 1050);
+      later(() => onComplete?.(nextScore, Math.round((nextScore / TOTAL_QUESTIONS) * 100)), 2000);
     } else if (round % LEVEL_SIZE === 0) {
       later(() => setShowLevelUp(true), 600);
       later(() => {
         setShowLevelUp(false);
         setRound(value => value + 1);
         nextQuestion();
-      }, 2450);
+      }, 2500);
     } else {
       later(() => {
         setRound(value => value + 1);
         nextQuestion();
-      }, 1150);
+      }, 2000);
     }
   };
 
@@ -147,8 +167,6 @@ export default function CountAndAdd({ onComplete }) {
     return <main className="count-add-game count-add-game--menu">
       <style>{COUNT_ADD_STYLES}</style>
       <div className="count-add-game__menu-card">
-        <div className="count-add-game__menu-icon">➕</div>
-        <p className="count-add-game__menu-kicker">Count &amp; Add</p>
         <h1>Choose your challenge</h1>
         <p>Pick a level or mix all three for a surprise round.</p>
         <div className="count-add-game__mode-grid">
@@ -157,6 +175,19 @@ export default function CountAndAdd({ onComplete }) {
           <button type="button" onClick={() => chooseMode('hard')}><strong>🦅 Hard</strong><small>Numbers up to 20</small></button>
           <button type="button" onClick={() => chooseMode('mixed')}><strong>🎲 Mixed</strong><small>All three difficulties</small></button>
         </div>
+      </div>
+    </main>;
+  }
+
+  if (screen === 'game-over') {
+    return <main className="count-add-game count-add-game--menu">
+      <style>{COUNT_ADD_STYLES}</style>
+      <div className="count-add-game__menu-card">
+        <div className="count-add-game__menu-icon">💪</div>
+        <p className="count-add-game__menu-kicker">Keep practising</p>
+        <h1>Out of lives</h1>
+        <p>You scored {score} points. Try again and count carefully.</p>
+        <button type="button" className="count-add-game__retry" onClick={() => chooseMode(difficulty)}>Play again</button>
       </div>
     </main>;
   }
@@ -175,6 +206,7 @@ export default function CountAndAdd({ onComplete }) {
             <b>=</b>
             <span className={`count-add-game__answer ${answerState}`}>{selectedAnswer}</span>
           </div>
+          <div className="count-add-game__lives" aria-label={`${lives} lives remaining`}>{'❤️'.repeat(lives)}{'🖤'.repeat(3 - lives)}</div>
           <div className="count-add-game__choices">
             {question.choices.map(choice => <button key={choice} type="button" disabled={locked} className={answerState && choice === selectedAnswer ? answerState : ''} onClick={() => answer(choice)}>{choice}</button>)}
           </div>
@@ -197,4 +229,6 @@ const COUNT_ADD_STYLES = `
 .count-add-game__topbar,.count-add-game__card-wrap{width:min(100%,1120px)}
 .count-add-game__group{min-width:clamp(150px,22vw,260px)}
 .count-add-game__group span{font-size:clamp(28px,3.4vw,48px)}
+.count-add-game__lives{min-height:1.5em;margin:12px 0;text-align:center;font-size:1.35rem;letter-spacing:.12em}
+.count-add-game__retry{padding:12px 22px;border:0;border-radius:999px;background:#0f6e56;color:#fff;font:800 1rem Nunito,var(--font-body),sans-serif;cursor:pointer}
 `;

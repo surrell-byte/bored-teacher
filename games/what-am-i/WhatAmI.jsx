@@ -100,7 +100,7 @@ const WhatAmI_HTML = `<div class="app">
 
 </div>`;
 
-const WhatAmI_CSS = `:root{
+const WhatAmI_CSS = `.whatami-root{
     --paper:#F3EAD3;
     --paper-dark:#E7D9AE;
     --ink:#1F3D2B;
@@ -115,9 +115,8 @@ const WhatAmI_CSS = `:root{
     --font-body:'Nunito', sans-serif;
     --font-mono:'Space Mono', monospace;
   }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
-  body{
+  .whatami-root, .whatami-root *{box-sizing:border-box;}
+  .whatami-root{
     font-family:var(--font-body);
     background:
       radial-gradient(circle at 15% 10%, rgba(217,164,65,0.10), transparent 40%),
@@ -129,7 +128,7 @@ const WhatAmI_CSS = `:root{
     justify-content:center;
     padding: clamp(10px, 2vw, 28px);
   }
-  .app{
+  .whatami-root .app{
     width:min(96vw,1500px);
     max-width:none;
     background: var(--cream-card);
@@ -140,17 +139,17 @@ const WhatAmI_CSS = `:root{
     position:relative;
   }
   /* torn paper texture strip */
-  .app::before{
+  .whatami-root .app::before{
     content:"";
     position:absolute; inset:0;
     background-image:
       repeating-linear-gradient(0deg, rgba(139,94,60,0.035) 0px, rgba(139,94,60,0.035) 1px, transparent 1px, transparent 26px);
     pointer-events:none;
   }
-  .screen{ display:none; padding: clamp(16px,3vw,34px); position:relative; z-index:1;}
-  .screen.active{ display:block; }
+  .whatami-root .screen{ display:none; padding: clamp(16px,3vw,34px); position:relative; z-index:1;}
+  .whatami-root .screen.active{ display:block; }
 
-  h1,h2,h3{ font-family:var(--font-display); margin:0; color:var(--ink); }
+  .whatami-root h1,.whatami-root h2,.whatami-root h3{ font-family:var(--font-display); margin:0; color:var(--ink); }
   .eyebrow{
     font-family:var(--font-mono);
     letter-spacing:.18em;

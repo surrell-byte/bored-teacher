@@ -33,6 +33,7 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
   const [confetti, setConfetti] = useState([]);
   const [hardRules, setHardRules] = useState(false);
   const [scores, setScores] = useState({ 1: 0, 2: 0 });
+  const [wins, setWins] = useState({ 1: 0, 2: 0 });
   const [streaks, setStreaks] = useState({ 1: 0, 2: 0 });
   const [lastCorrectPlayer, setLastCorrectPlayer] = useState(null);
   const theme = resolveTheme(themeId);
@@ -198,6 +199,7 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
       });
     }
     setConfetti(pieces);
+    setWins(value => ({ ...value, [current]: value[current] + 1 }));
 
     setTimeout(() => {
       setConfetti([]);
@@ -362,6 +364,7 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
                   </div>
                 ))}
               </div>
+              <div className="ah-hud-score"><span>Points</span><strong>{scores[1]}</strong><small>Wins {wins[1]}</small></div>
             </div>
 
             <div className={`ah-hud-player ah-p2 ${current === 2 ? 'active' : ''}`}>
@@ -377,6 +380,7 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
                   </div>
                 ))}
               </div>
+              <div className="ah-hud-score"><span>Points</span><strong>{scores[2]}</strong><small>Wins {wins[2]}</small></div>
             </div>
           </div>
 
@@ -401,22 +405,8 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
           <div className="ah-status-line">{statusLine}</div>
 
           <div className="ah-game-stats">
-            <div>
-              <span className="ah-stat-label">TURN</span>
-              <strong>{turnNumber}</strong>
-            </div>
-            <div>
-              <span className="ah-stat-label">P1 MISSES</span>
-              <strong>{misses1}</strong>
-            </div>
-            <div>
-              <span className="ah-stat-label">P2 MISSES</span>
-              <strong>{misses2}</strong>
-            </div>
-            <div>
-              <span className="ah-stat-label">SCORES</span>
-              <strong>{scores[1]} - {scores[2]}</strong>
-            </div>
+            <div><span className="ah-stat-label">P1 WINS</span><strong>{wins[1]}</strong></div>
+            <div><span className="ah-stat-label">P2 WINS</span><strong>{wins[2]}</strong></div>
             <button className="ah-mini-btn" onClick={handleRestart}>↻ Restart</button>
           </div>
         </div>

@@ -336,6 +336,11 @@
   margin-top: 10px;
 }
 
+.ah-hud-player { position: relative; padding-right: 120px; }
+.ah-hud-score { position: absolute; top: 14px; right: 16px; display: grid; gap: 1px; text-align: right; color: var(--ink); }
+.ah-hud-score span, .ah-hud-score small { font-size: .65rem; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.ah-hud-score strong { font: 800 1.25rem 'Trebuchet MS', sans-serif; color: currentColor; }
+
 .ah-hud-slot {
   width: 28px;
   height: 28px;
@@ -388,7 +393,7 @@
 .ah-grid .ah-tile:nth-child(11) { grid-column: 2 / 3; }
 .ah-grid .ah-tile:nth-child(20) { grid-column: 3 / 4; }
 
-.ah-tile-back { padding: 4px; text-align: center; font-size: clamp(.72rem, 1.7vw, 1.1rem); }
+.ah-tile-back { padding: 5px; text-align: center; font-size: clamp(.62rem, 1.7vw, 1.1rem); line-height: 1.05; overflow-wrap: anywhere; word-break: break-word; }
 .ah-mode-toggle { display: block; margin: 0 0 20px; font-family: 'Trebuchet MS', sans-serif; font-weight: 700; }
 .ah-mode-toggle input { margin-right: 8px; accent-color: var(--gold); }
 
@@ -415,11 +420,11 @@
   transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.ah-tile:hover:not(:disabled) .ah-tile-inner {
+.ah-tile:not(.flipped):hover:not(:disabled) .ah-tile-inner {
   transform: translateY(-3px);
 }
 
-.ah-tile:active:not(:disabled) .ah-tile-inner {
+.ah-tile:not(.flipped):active:not(:disabled) .ah-tile-inner {
   transform: scale(0.96);
 }
 
@@ -457,7 +462,12 @@
 .ah-tile-back {
   background: var(--panel);
   transform: rotateY(180deg);
-  font-size: 1.7rem;
+  font-size: clamp(.62rem, 1.7vw, 1.1rem);
+  line-height: 1.05;
+  padding: 5px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: normal;
 }
 
 .ah-tile.matched .ah-tile-back {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const COLORS = [
   ['#f72585', '#b5179e'],
@@ -23,11 +23,20 @@ function makeRound() {
 }
 
 export default function BuildTower({ onComplete }) {
+  const [screen, setScreen] = useState('welcome');
+  const [playerName, setPlayerName] = useState('');
+  const [level, setLevel] = useState(1);
   const [round, setRound] = useState(1);
   const [numbers, setNumbers] = useState(() => makeRound().numbers);
   const [towerOrder, setTowerOrder] = useState([]);
   const [score, setScore] = useState(0);
   const [feedback, setFeedback] = useState('');
+
+  useEffect(() => {
+    const menu = () => setScreen('welcome');
+    window.addEventListener('build-tower:main-menu', menu);
+    return () => window.removeEventListener('build-tower:main-menu', menu);
+  }, []);
 
   const restartRound = () => {
     const nextRound = makeRound();
@@ -71,14 +80,16 @@ export default function BuildTower({ onComplete }) {
     setFeedback('🤔 Not quite! Try smallest first!');
   };
 
+  if (screen === 'welcome') return <main className="build-tower-game"><style>{STYLES}</style><div className="build-tower-menu"><div className="build-tower-menu-icon">🏗️</div><h2>Ready to build?</h2><p>Stack every block from smallest to biggest.</p><button type="button" onClick={() => setScreen('player-info')}>Start</button></div></main>;
+  if (screen === 'player-info') return <main className="build-tower-game"><style>{STYLES}</style><div className="build-tower-menu"><div className="build-tower-menu-icon">👷</div><h2>Builder info</h2><label><span>Your name</span><input value={playerName} onChange={event => setPlayerName(event.target.value)} placeholder="Enter your name" /></label><button type="button" disabled={!playerName.trim()} onClick={() => setScreen('levels')}>Continue</button></div></main>;
+  if (screen === 'levels') return <main className="build-tower-game"><style>{STYLES}</style><div className="build-tower-menu"><div className="build-tower-menu-icon">🎯</div><h2>Choose a level</h2><div className="build-tower-levels"><button type="button" onClick={() => { setLevel(1); setScreen('game'); restartRound(); }}>Level 1<small>Available now</small></button><button type="button" disabled>Level 2<small>Coming soon</small></button><button type="button" disabled>Level 3<small>Coming soon</small></button></div></div></main>;
+
   return (
     <main className="build-tower-game">
       <style>{STYLES}</style>
 
       <div className="build-tower-shell">
-        <h1>🏗️ Build the Tower</h1>
         <div className="build-tower-instruction">Click blocks to stack them from <strong>smallest → biggest</strong>!</div>
-        <div className="build-tower-score">⭐ Score: {score}</div>
 
         <div className="build-tower-layout">
           <div className="build-tower-pool-panel">
@@ -112,7 +123,6 @@ export default function BuildTower({ onComplete }) {
           <button type="button" className="build-tower-new" onClick={() => { setRound((value) => value + 1); restartRound(); }}>New Blocks 🎲</button>
         </div>
 
-        <div className="build-tower-round">Round {round}</div>
       </div>
     </main>
   );
@@ -136,6 +146,17 @@ const STYLES = `
   align-items: center;
   text-align: center;
 }
+.build-tower-menu { width:min(100%,560px); padding:36px 28px; border-radius:24px; background:rgba(255,255,255,.12); text-align:center; box-shadow:0 18px 50px rgba(0,0,0,.25); }
+.build-tower-menu-icon { font-size:4rem; }
+.build-tower-menu h2 { margin:8px 0; color:#ffe66d; font-size:2rem; }
+.build-tower-menu p { color:#eadfff; }
+.build-tower-menu label { display:grid; gap:8px; margin:20px 0; color:#fff; font-weight:700; text-align:left; }
+.build-tower-menu input { padding:12px 14px; border:0; border-radius:10px; font:inherit; }
+.build-tower-menu button { padding:12px 22px; border:0; border-radius:999px; background:#6be585; color:#174b27; font-weight:800; cursor:pointer; }
+.build-tower-menu button:disabled { opacity:.45; cursor:not-allowed; }
+.build-tower-levels { display:grid; gap:10px; margin:20px 0; }
+.build-tower-levels button { display:grid; gap:3px; width:100%; }
+.build-tower-levels small { font-weight:600; opacity:.75; }
 .build-tower-shell h1 {
   margin: 0 0 8px;
   font-family: 'Fredoka One', 'Trebuchet MS', sans-serif;
