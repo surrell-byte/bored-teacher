@@ -93,7 +93,7 @@ const FarmGameV1_CSS = `.farmgamev1-root, .farmgamev1-root * {
     }
 
     .farmgamev1-root {
-      background: linear-gradient(135deg, #8ec63f, #3f8a2e);
+      background: linear-gradient(rgba(12, 50, 30, .18), rgba(12, 50, 30, .18)), url('/assets/games/farm/farm-bg.png') center / cover fixed;
       font-family: 'Segoe UI', 'Poppins', 'Comic Neue', system-ui, sans-serif;
       min-height: 100vh;
       display: flex;
@@ -387,12 +387,13 @@ const FarmGameV1_CSS = `.farmgamev1-root, .farmgamev1-root * {
       .farmgamev1-root .message { font-size: 0.8rem; padding: 6px; }
     }`;
 
-export default function FarmGameV1() {
+export default function FarmGameV1({ onComplete }) {
   const containerRef = useRef(null);
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
+    window.__farmGameComplete = onComplete;
 
     // Run the original game script in this component's DOM scope.
     // Wrapped in a function so its top-level `const`/`let` declarations
@@ -621,6 +622,7 @@ export default function FarmGameV1() {
       // All 3 levels completed → show victory screen
       const msg = '🏆 You scored ' + currentScore + '/' + currentQuestions.length + ' in the final level!';
       document.getElementById("victoryMessage").textContent = msg;
+      if (window.__farmGameComplete) window.__farmGameComplete(currentScore, Math.round((currentScore / Math.max(currentQuestions.length, 1)) * 100));
       showScreen("victoryScreen");
     }
   }
@@ -714,6 +716,7 @@ export default function FarmGameV1() {
 
   // Shake animation style
   const style = document.createElement("style");
+  style.setAttribute("data-farmgamev1-shake", "true");
   style.textContent = \`.shake-bad { animation: gameShake 0.32s cubic-bezier(0.36,0.07,0.19,0.97) both; }
     @keyframes gameShake { 0% { transform: translateX(0); } 20% { transform: translateX(-7px); } 40% { transform: translateX(7px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(3px); } 100% { transform: translateX(0); } }
     .option:active { transform: scale(0.96); }\`;
@@ -724,10 +727,12 @@ export default function FarmGameV1() {
     container.appendChild(script);
 
     return () => {
-      // Clean up injected script tag on unmount
+      // Clean up injected script tag and any dynamic styles on unmount
       if (script.parentNode) script.parentNode.removeChild(script);
+      document.head.querySelectorAll('style[data-farmgamev1-shake="true"]').forEach(el => el.remove());
+      delete window.__farmGameComplete;
     };
-  }, []);
+  }, [onComplete]);
 
   return (
     <>

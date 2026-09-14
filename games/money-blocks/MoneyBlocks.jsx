@@ -121,10 +121,10 @@ function luminance(hex) {
   ) / 255;
 }
 
-export default function MoneyBlocks() {
+export default function MoneyBlocks({ themeId }) {
   const [screen, setScreen] = useState("welcome");
 
-  const [theme, setTheme] = useState("black");
+  const [theme, setTheme] = useState(themeId || "black");
 
   const [p1Name, setP1Name] = useState("");
   const [p2Name, setP2Name] = useState("");
@@ -647,7 +647,7 @@ export default function MoneyBlocks() {
   }
 
   return (
-    <div className={`money-blocks theme-${theme}`}>
+    <div className={`money-blocks theme-${theme}`} style={{ backgroundImage: "linear-gradient(rgba(5, 12, 10, .38), rgba(5, 12, 10, .38)), url('/assets/games/money-blocks-default-game-bg.png')" }}>
       {screen === "welcome" && (
         <div className="screen-overlay">
           <div className="welcome-box">

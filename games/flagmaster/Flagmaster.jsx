@@ -512,7 +512,7 @@ export default function Flagmaster({ onComplete, darkMode = false }) {
         <h1 className="fm-display-title">FLAGMASTER</h1>
         <p className="fm-body-text">A journey across nations. A test of cartographic mastery. Every flag is a territory to conquer.</p>
         <div className="fm-ornament-divider">✦</div>
-        <div className="fm-welcome-flags">🇫🇷 🇯🇵 🇧🇷 🇳🇬 🇦🇺<br />🇮🇳 🇩🇪 🇲🇽 🇿🇦 🇨🇦</div>
+        <div className="fm-welcome-flags">🇫🇷 🇯🇵 🇧🇷 🇳🇬 🇦🇺<br />🇿🇼 🇩🇪 🇲🇽 🇿🇦 🇨🇦</div>
         <div className="fm-ornament-divider">✦</div>
         <button className="fm-btn-expedition" style={{ maxWidth: 280, margin: "0 auto" }} onClick={() => setScreen("title")}>Begin Expedition →</button>
         <p className="fm-mono" style={{ marginTop: 16 }}>Press Enter to continue</p>

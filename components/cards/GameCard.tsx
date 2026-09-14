@@ -10,6 +10,7 @@ import {
   GAME_COVERS,
 } from '@/constants/index';
 import { preloadGame } from '@/games/catalog.components';
+import { TEACHER_PRO_GAME_IDS } from '@/config/game-access';
 
 interface GameCardProps {
   gameId: string;
@@ -26,10 +27,11 @@ function GameCard({
   const tag = GAME_TAGS[gameId];
   const accent = GAME_BAR_COLOR[gameId] ?? 'var(--teal)';
   const coverStyle = { '--cover-accent': accent } as React.CSSProperties;
+  const premium = TEACHER_PRO_GAME_IDS.has(gameId);
 
   return (
     <button
-      className="game-card"
+      className={`game-card${premium ? ' game-card-premium' : ''}`}
       onClick={() => {
         preloadGame(gameId);
         onClick(gameId);
@@ -49,11 +51,13 @@ function GameCard({
         <div className="card-cover-icon">
           {GAME_ICONS[gameId] ?? '🎮'}
         </div>
+        {premium && <span className="game-card-lock" aria-label="Teacher Pro game">🔒</span>}
       </div>
 
       <h3 className="card-name">
         {GAME_NAMES[gameId] ?? gameId}
       </h3>
+      {premium && <span className="game-card-premium-label">Teacher Pro</span>}
 
       {comingSoon && <span className="game-card-coming-soon">Coming soon</span>}
 

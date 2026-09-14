@@ -1066,6 +1066,12 @@ a { color: inherit; }
   .game-search-dialog { max-height: calc(100dvh - 100px); padding: 14px; border-radius: 16px; }
 }
 
+@media (max-width: 639px) {
+  .game-route-wrap,
+  .game-route-wrap #main-content { padding: 0; }
+  .game-route-wrap .game-shell { margin: 0; min-height: 100dvh; border-radius: 0; }
+}
+
 .player-chip {
   max-width: 140px;
   overflow: hidden;
@@ -2416,6 +2422,19 @@ a { color: inherit; }
   overflow-wrap: anywhere;
   word-break: normal;
 }
+
+.resource-detail-page { min-height: calc(100vh - 60px); padding: clamp(24px, 6vw, 72px) 16px 90px; background: radial-gradient(circle at 15% 10%, rgba(77,217,196,.12), transparent 32%), var(--bg); }
+.resource-detail-card { width: min(760px, 100%); margin: 0 auto; padding: clamp(24px, 5vw, 52px); border: 1px solid var(--border-bright); border-radius: 24px; background: var(--surface-strong); color: var(--text); box-shadow: 0 24px 70px rgba(0,0,0,.24); }
+.resource-detail-back { display: inline-block; margin-bottom: 32px; color: var(--muted); text-decoration: none; font-weight: 700; }
+.resource-detail-icon { font-size: 3.5rem; }
+.resource-detail-type { margin: 10px 0 4px; color: var(--gold); font-size: .75rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.resource-detail-card h1 { margin: 0 0 14px; font-family: var(--font-display, Syne); font-size: clamp(1.8rem, 5vw, 3rem); }
+.resource-detail-intro { color: var(--muted); line-height: 1.7; font-size: 1rem; }
+.resource-detail-sections { display: grid; gap: 22px; margin: 30px 0; }
+.resource-detail-sections section { padding-top: 20px; border-top: 1px solid var(--border); }
+.resource-detail-sections h2 { margin: 0 0 8px; color: var(--teal); font-size: 1.1rem; }
+.resource-detail-sections p { margin: 6px 0; color: var(--muted); line-height: 1.65; }
+.resource-detail-download { text-decoration: none; }
 
 .resource-card {
   display: flex;
@@ -4369,6 +4388,9 @@ a { color: inherit; }
 .shop-item-copy p { min-height: 2.6em; color: var(--muted); }
 .shop-feedback { color: var(--gold); font-weight: 700; }
 .game-card-coming-soon { display: block; margin: 0 14px 8px; color: var(--gold); font-size: .7rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.game-card-premium .card-cover-img { filter: saturate(.65) blur(1px); }
+.game-card-lock { position: absolute; top: 10px; right: 10px; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: rgba(10,15,13,.82); font-size: .9rem; }
+.game-card-premium-label { display: block; margin: -3px 14px 7px; color: var(--gold); font-size: .65rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
 .player-chip-avatar img { width: 28px; height: 28px; display: block; object-fit: contain; }
 @media (max-width: 760px) { .shop-items-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .shop-hero { align-items: flex-start; flex-direction: column; } }
 @media (max-width: 480px) { .shop-items-grid { grid-template-columns: 1fr; } }

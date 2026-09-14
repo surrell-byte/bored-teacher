@@ -364,6 +364,7 @@ export default function TileBattle({ onComplete, themeId }) {
   // ── shared styling helpers (glass look — translucent surfaces over a themed gradient backdrop) ──
   const pageBg = {
     background:
+      `linear-gradient(rgba(245,245,247,.25), rgba(245,245,247,.25)), url('/assets/games/tile-battle/tile-battle-general-bg.png') center / cover fixed,` +
       `radial-gradient(circle at top left, ${t.accent}33, transparent 40%),` +
       `radial-gradient(circle at bottom right, ${t.accent2}33, transparent 35%),` +
       `${t.bg}`,
@@ -402,8 +403,8 @@ export default function TileBattle({ onComplete, themeId }) {
   const fx = (
     <>
       <style>{FX_STYLE}</style>
-      <button onClick={toggleMute} style={{
-        position: "fixed", top: 18, right: 18, width: 46, height: 46, borderRadius: "50%",
+      <button className="tile-battle-local-mute" onClick={toggleMute} style={{
+        display: "none", position: "fixed", top: 18, right: 18, width: 46, height: 46, borderRadius: "50%",
         border: "none", cursor: "pointer", fontSize: 19, zIndex: 9999,
         background: `${t.surface}cc`, backdropFilter: "blur(12px)", color: t.text,
         boxShadow: "0 8px 20px rgba(0,0,0,.2)",
@@ -437,7 +438,7 @@ export default function TileBattle({ onComplete, themeId }) {
   if (screen === "setup") return (
     <div style={screenWrap}>
       {fx}
-      <h1 style={{ fontSize: "2.2rem", fontWeight: 500 }}>⚔️ Tile Battle</h1>
+      <h1 style={{ display: "none" }}>⚔️ Tile Battle</h1>
 
       <div style={{ display: "flex", gap: "2rem", flexWrap: "wrap", justifyContent: "center", width: "100%", maxWidth: 1200 }}>
         {[0, 1].map((pi) => (
@@ -447,7 +448,7 @@ export default function TileBattle({ onComplete, themeId }) {
               maxLength={16}
               placeholder={`Player ${pi + 1}`}
               onChange={(e) => setNames((prev) => { const n = [...prev]; n[pi] = e.target.value.trim() || `Player ${pi + 1}`; return n; })}
-              style={{ fontSize: 16, fontWeight: 500, color: t.text, textAlign: "center", background: "transparent", border: "none", borderBottom: `2px solid ${t.border2}`, padding: "2px 4px 4px", width: "100%", maxWidth: 200, fontFamily: "inherit" }}
+              style={{ fontSize: 16, fontWeight: 500, color: t.text, textAlign: "center", background: "transparent", border: "none", borderBottom: `2px solid ${t.border2}`, padding: "2px 4px 4px", width: "100%", maxWidth: 320, minWidth: 280, fontFamily: "inherit" }}
             />
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
               {AVATARS.map((av) => (
@@ -531,8 +532,6 @@ export default function TileBattle({ onComplete, themeId }) {
         position: "relative", overflow: "hidden",
       }}>
         {fx}
-        <div style={{ fontSize: 17, color: t.text2 }}>{names[turn]}&rsquo;s turn — pick a tile</div>
-
         <div style={{ display: "flex", gap: "3rem", alignItems: "center", flexWrap: "wrap", justifyContent: "center", width: "100%", maxWidth: 1500 }}>
           {panel(0)}
 
@@ -566,7 +565,7 @@ export default function TileBattle({ onComplete, themeId }) {
                     inset: 0,
                     borderRadius: 18,
                     background: "white",
-                    opacity: isFlipped ? 1 : 0,
+                    opacity: 0,
                     pointerEvents: "none",
                     zIndex: 50,
                     animation: isFlipped ? "tb-flipFlash .35s ease" : "none",
@@ -636,7 +635,7 @@ export default function TileBattle({ onComplete, themeId }) {
               color: banner.color, filter: banner.color ? `drop-shadow(0 0 8px ${banner.color})` : undefined,
             }}>{banner.icon}</span>
           )}
-          <span>{banner.text}</span>
+          <span>{banner.text === "Choose a tile to begin!" ? `${names[turn]}&rsquo;s turn — choose a tile` : banner.text}</span>
         </div>
       </div>
     );

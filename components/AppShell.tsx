@@ -44,7 +44,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
   }, [pathname, router]);
 
   return (
-    <div className={`app-shell-wrap${showShell ? '' : ' no-shell'}`}>
+    <div className={`app-shell-wrap${showShell ? '' : ' no-shell'}${isGameRoute ? ' game-route-wrap' : ''}`}>
       <a href="#main-content" className="skip-to-content">
         Skip to content
       </a>

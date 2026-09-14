@@ -52,9 +52,13 @@ service cloud.firestore {
     }
 
     match /notifications/{notificationId} {
-      allow create: if request.resource.data.type == 'review-comment'
+      allow create: if signedIn()
+        && request.resource.data.type == 'review-comment'
         && request.resource.data.recipientEmail == 'boredteacherapp@gmail.com'
-        && request.resource.data.message is string;
+        && request.resource.data.message is string
+        && request.resource.data.message.size() > 0
+        && request.resource.data.message.size() <= 2000
+        && (request.resource.data.userId == null || request.resource.data.userId == request.auth.uid);
       allow read, update, delete: if signedIn()
         && request.auth.token.email == 'boredteacherapp@gmail.com';
     }

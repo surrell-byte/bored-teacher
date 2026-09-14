@@ -28,7 +28,7 @@ const SUBJECT_ICONS: Record<Resource['subject'], string> = {
 const SUBJECTS: Resource['subject'][] = ['English', 'Math', 'Science', 'Social Studies', 'Art & Music', 'Life Skills'];
 
 const RESOURCES: Resource[] = [
-  { id: 'r1', icon: '📖', title: 'ESL Game Hub — Teacher Guide',       desc: 'Overview of every game, suggested age groups, and classroom integration tips.',                    type: 'guide',     subject: 'English',        dateAdded: '2025-04-20' },
+  { id: 'r1', icon: '📖', title: 'ESL Game Hub — Teacher Guide',       desc: 'Overview of every game, suggested age groups, and classroom integration tips.',                    type: 'guide',     subject: 'English',        dateAdded: '2025-04-20', link: '/resources/r1' },
   { id: 'r2', icon: '🗂️', title: 'Vocabulary Game Strategies',          desc: 'How to use Unicorn Trophy Run, Word Match, and Emoji Match to build core vocabulary.',          type: 'guide',     subject: 'English',        dateAdded: '2025-04-22' },
   { id: 'r3', icon: '✏️', title: 'Grammar Games in the Classroom',      desc: 'Pair Warriors Grammar Slam and Neon Bridge of Destiny with grammar lessons for maximum impact.', type: 'guide',     subject: 'English',        dateAdded: '2025-04-24' },
   { id: 'r4', icon: '🔬', title: 'Science + ESL Cross-Curricular Pack', desc: 'Lesson plans linking Animal Kingdom Quest, Ocean Quest and Animal Class Quest to science units.', type: 'guide',     subject: 'Science',        dateAdded: '2025-04-26' },
@@ -36,13 +36,13 @@ const RESOURCES: Resource[] = [
   { id: 'r6', icon: '🔤', title: 'A Beginner\'s Guide to Teaching ESL',    desc: '36 practical tips for new English teachers—from classroom management and grammar teaching to motivation, scaffolding, and building confidence.', type: 'guide', subject: 'English', dateAdded: '2026-08-18', link: '/blog/beginners-guide-teaching-esl' },
   { id: 'r7', icon: '🎓', title: 'Classroom Management and Conflict Resolution', desc: '40 practical strategies for ESL teachers—from establishing expectations and building relationships to handling conflicts, bullying, and maintaining authority.', type: 'guide', subject: 'English', dateAdded: '2026-08-18', link: '/blog/classroom-management-conflict-resolution' },
   { id: 't1', icon: '💡', title: 'Setting Up the Leaderboard',          desc: 'Import your class list, assign students to accounts, and sync scores automatically.',          type: 'tip',       subject: 'Life Skills',    dateAdded: '2025-04-30' },
-  { id: 't2', icon: '🏆', title: 'Running a Games Tournament',          desc: 'Step-by-step guide to hosting a 30-minute in-class games tournament using the Hub.',          type: 'tip',       subject: 'Life Skills',    dateAdded: '2025-05-01' },
+  { id: 't2', icon: '🏆', title: 'Running a Games Tournament',          desc: 'Step-by-step guide to hosting a 30-minute in-class games tournament using the Hub.',          type: 'tip',       subject: 'Life Skills',    dateAdded: '2025-05-01', link: '/resources/t2' },
   { id: 't3', icon: '📊', title: 'Reading Trophy Room Data',            desc: 'How to interpret badge progress to identify struggling vs. advanced learners.',               type: 'tip',       subject: 'Life Skills',    dateAdded: '2025-05-02' },
   { id: 't4', icon: '🎯', title: 'Differentiation with Games',          desc: 'Assign Starter games to beginners and Competitive games to advanced students at once.',        type: 'tip',       subject: 'Life Skills',    dateAdded: '2025-05-03' },
-  { id: 'w1', icon: '📄', title: 'Compound Word Worksheet (Printable)', desc: 'Supports Compound Word Quest — 20 compound word pairs for student practice.',                 type: 'worksheet', subject: 'English',        dateAdded: '2025-05-04' },
-  { id: 'w2', icon: '📄', title: 'Farm Animal Vocabulary Sheet',        desc: 'Pre-teach animal vocabulary before students play Farm Game.',                                  type: 'worksheet', subject: 'Science',        dateAdded: '2025-05-05' },
-  { id: 'w3', icon: '📄', title: 'Flags of the World — Reference Card',desc: 'A printable cheat-sheet to scaffold students before Flagmaster.',                              type: 'worksheet', subject: 'Social Studies', dateAdded: '2025-05-06' },
-  { id: 'w4', icon: '📄', title: 'Ocean Creature Classification Grid',  desc: 'Supports Ocean Quest and Deep Sea Reveal — classify 24 sea creatures by type.',                type: 'worksheet', subject: 'Science',        dateAdded: '2025-05-07' },
+  { id: 'w1', icon: '📄', title: 'Compound Word Worksheet (Printable)', desc: 'Supports Compound Word Quest — 20 compound word pairs for student practice.', type: 'worksheet', subject: 'English', dateAdded: '2025-05-04', link: '/resources/clean-up-worksheet-for-kids.png' },
+  { id: 'w2', icon: '📄', title: 'Farm Animal Vocabulary Sheet', desc: 'Pre-teach animal vocabulary before students play Farm Game.', type: 'worksheet', subject: 'Science', dateAdded: '2025-05-05', link: '/resources/clean-up-worksheet-for-kids.png' },
+  { id: 'w3', icon: '📄', title: 'Flags of the World — Reference Card', desc: 'A printable cheat-sheet to scaffold students before Flagmaster.', type: 'worksheet', subject: 'Social Studies', dateAdded: '2025-05-06', link: '/resources/w3' },
+  { id: 'w4', icon: '📄', title: 'Ocean Creature Classification Grid', desc: 'Supports Ocean Quest and Deep Sea Reveal — classify 24 sea creatures by type.', type: 'worksheet', subject: 'Science', dateAdded: '2025-05-07', link: '/resources/w4' },
   { id: 'c1', icon: '🛠️', title: 'Custom Word List Builder',            desc: 'A practical guide to turning your own vocabulary list into a focused Word Match activity.', type: 'tool',      subject: 'English',        dateAdded: '2025-05-08', link: '/blog/custom-word-list-builder' },
   { id: 'c2', icon: '📥', title: 'Export Leaderboard to CSV',           desc: 'Download your class leaderboard as a spreadsheet to share with parents or admin.',           type: 'tool',      subject: 'Life Skills',    dateAdded: '2025-05-09' },
 ];
@@ -123,7 +123,7 @@ export default function ResourcesPage() {
   );
   const newestForSidebar = recentlyAdded.slice(0, 3);
   const featured = FEATURED_IDS.map(id => RESOURCES.find(r => r.id === id)!).filter(Boolean);
-  const premiumResourceIds = new Set(['r6', 'r7', 'w1', 'w2', 'w3', 'w4']);
+  const premiumResourceIds = new Set(['r6', 'r7']);
 
   function formatDate(iso: string) {
     return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -233,7 +233,7 @@ export default function ResourcesPage() {
                           router.push('/subscription');
                           return;
                         }
-                        if (r.link) router.push(r.link);
+                        if (r.link) window.open(r.link, '_blank', 'noopener,noreferrer');
                       }}
                     >
                       {(!hasTeacherPro && premiumResourceIds.has(r.id)) ? 'Unlock Teacher Pro' : TYPE_META[r.type].action}
@@ -307,7 +307,7 @@ export default function ResourcesPage() {
                             router.push('/subscription');
                             return;
                           }
-                          if (r.link) router.push(r.link);
+                          if (r.link) window.open(r.link, '_blank', 'noopener,noreferrer');
                         }}
                       >
                         {(!hasTeacherPro && premiumResourceIds.has(r.id)) ? 'Unlock Teacher Pro' : TYPE_META[r.type].action}
