@@ -1,6 +1,7 @@
 import { defineConfig, globalIgnores } from "eslint/config";
-import nextVitals from "eslint-config-next/core-web-vitals.js";
-import nextTs from "eslint-config-next/typescript.js";
+import { FlatCompat } from "@eslint/eslintrc";
+
+const compat = new FlatCompat({ baseDirectory: import.meta.dirname });
 
 // Dependency direction: Engine -> SDK -> Games -> App, never the reverse.
 // `hooks/`, `config/`, `types/`, `lib/`, `constants/` are a shared foundation
@@ -23,8 +24,7 @@ const upwardFromGames = [
 ];
 
 const eslintConfig = defineConfig([
-  ...nextVitals,
-  ...nextTs,
+  ...compat.extends("next/core-web-vitals", "next/typescript"),
   {
     files: ["engine/**/*.{ts,tsx}"],
     rules: {

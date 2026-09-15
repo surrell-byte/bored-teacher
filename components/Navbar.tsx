@@ -40,6 +40,8 @@ export default function Navbar() {
   const [soundOn, setSoundOn] = useState(true);
   const [creator, setCreator] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [logoutError, setLogoutError] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
   const moreRef = useRef<HTMLDivElement>(null);
   const gameSearchInputRef = useRef<HTMLInputElement>(null);
@@ -79,7 +81,6 @@ export default function Navbar() {
   useEffect(() => {
     // This state change intentionally happens after hydration so responsive
     // controls cannot change the server-rendered navbar structure.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setHydrated(true);
   }, []);
 
@@ -123,12 +124,20 @@ export default function Navbar() {
   }
 
   async function handleLogout() {
+    if (loggingOut) return;
+    setLoggingOut(true);
+    setLogoutError('');
     try {
       if (!isGuest) await logOut();
       localStorage.removeItem('guestUser');
       localStorage.removeItem('currentUser');
-    } catch (_) {}
-    router.replace('/auth');
+      setShowProfileMenu(false);
+      setMobileOpen(false);
+      router.replace('/auth');
+    } catch {
+      setLogoutError('Sign out failed. Please try again.');
+      setLoggingOut(false);
+    }
   }
 
   return (
@@ -284,9 +293,11 @@ export default function Navbar() {
                   className="dropdown-item dropdown-signout"
                   role="menuitem"
                   onClick={handleLogout}
+                  disabled={loggingOut}
                 >
-                  {isGuest ? '🔓 Leave Guest Mode' : '🚪 Sign Out'}
+                  {loggingOut ? '⏳ Signing Out…' : isGuest ? '🔓 Leave Guest Mode' : '🚪 Sign Out'}
                 </button>
+                {logoutError && <div className="auth-error" role="alert">{logoutError}</div>}
               </div>
             )}
           </div>
@@ -358,9 +369,10 @@ export default function Navbar() {
             </button>
           )}
 
-          <button className="mobile-nav-item mobile-signout" onClick={handleLogout}>
-            {isGuest ? '🔓 Leave Guest Mode' : '🚪 Sign Out'}
+          <button className="mobile-nav-item mobile-signout" onClick={handleLogout} disabled={loggingOut}>
+            {loggingOut ? '⏳ Signing Out…' : isGuest ? '🔓 Leave Guest Mode' : '🚪 Sign Out'}
           </button>
+          {logoutError && <div className="auth-error" role="alert">{logoutError}</div>}
         </nav>
       )}
 
