@@ -11,6 +11,16 @@ const PAIRS = [
   { animal:"🐰", animalWord:"RABBIT", food:"🥕", foodWord:"CARROT" },
   { animal:"🐵", animalWord:"MONKEY", food:"🍌", foodWord:"BANANA" },
 ];
+const EMOJI_PAIRS = [
+  { animal:"🐶", animalWord:"DOG", food:"🐶", foodWord:"DOG" },
+  { animal:"🍕", animalWord:"PIZZA", food:"🍕", foodWord:"PIZZA" },
+  { animal:"🚗", animalWord:"CAR", food:"🚗", foodWord:"CAR" },
+  { animal:"⚽", animalWord:"SPORT", food:"⚽", foodWord:"SPORT" },
+  { animal:"🧙", animalWord:"WIZARD", food:"🧙", foodWord:"WIZARD" },
+  { animal:"🌈", animalWord:"RAINBOW", food:"🌈", foodWord:"RAINBOW" },
+  { animal:"🚀", animalWord:"ROCKET", food:"🚀", foodWord:"ROCKET" },
+  { animal:"🐉", animalWord:"DRAGON", food:"🐉", foodWord:"DRAGON" },
+];
 
 export const THEMES = [
   { name:"Gold",     key:"gold",     front:"linear-gradient(135deg,#c4a45a,#e8c97a)", border:"rgba(232,201,122,0.55)", accent:"#e8c97a", accent2:"#c4a45a", glow:"rgba(232,201,122,0.18)", glow2:"rgba(232,201,122,0.08)", bg:"#0d0d0f", surface:"#141416", surface2:"#1c1c20", surface3:"#252529", emoji:"✨" },
@@ -264,7 +274,6 @@ const STYLES = `
   .ff-setup-card .ff-fancy-input { padding:10px 14px; }
   .ff-setup-card .ff-btn { padding:11px 26px; }
 }
-
 @media (min-width: 960px) {
   .ff-root { align-items:center; }
   .ff-screen.ff-setup-screen { max-width: 1320px; }
@@ -347,7 +356,7 @@ const STYLES = `
 }
 `;
 
-export default function FindMyFood({ onComplete, themeId }) {
+export default function FindMyFood({ onComplete, themeId, variant = "food" }) {
   const { completeGame } = useGame();
   const [screen, setScreen] = useState("welcome");
   const theme = Math.max(0, THEMES.findIndex(item => item.key === themeId));
@@ -367,6 +376,8 @@ export default function FindMyFood({ onComplete, themeId }) {
   const [popup, setPopup] = useState({ msg:"", mismatch:false });
   const [celebratingPair, setCelebratingPair] = useState([]);
   const popupTimeout = useRef(null);
+  const pairSet = variant === "emoji" ? EMOJI_PAIRS : PAIRS;
+  const howToCards = variant === "emoji" ? EMOJI_PAIRS.flatMap(pair => [pair.animal, pair.food]) : HOW_TO_PLAY_CARDS;
 
   useEffect(() => () => clearTimeout(popupTimeout.current), []);
 
@@ -377,7 +388,7 @@ export default function FindMyFood({ onComplete, themeId }) {
   };
 
   const startGame = useCallback((numPairs) => {
-    const chosen = shuffle(PAIRS).slice(0, numPairs);
+    const chosen = shuffle(pairSet).slice(0, numPairs);
     const deck = shuffle([
       ...chosen.map((p, i) => ({ id: i*2, pairId:i, emoji:p.animal, label:p.animalWord })),
       ...chosen.map((p, i) => ({ id: i*2+1, pairId:i, emoji:p.food,  label:p.foodWord })),
@@ -438,7 +449,7 @@ export default function FindMyFood({ onComplete, themeId }) {
           if (newMatched.size === cards.length) {
             const finalScores = { ...scores, [currentPlayer]: nextScore };
             const accuracy = finalScores[1] > finalScores[2] ? 100 : finalScores[1] === finalScores[2] ? 50 : 0;
-            completeGame('find-my-food', accuracy, nextMoves);
+            completeGame(variant === "emoji" ? 'emoji-match' : 'find-my-food', accuracy, nextMoves);
             onComplete?.(accuracy, nextMoves);
             setScreen("end");
           } else {
@@ -474,9 +485,9 @@ export default function FindMyFood({ onComplete, themeId }) {
 
       <div className="ff-screen ff-setup-screen">
         <div className="ff-card ff-setup-card" style={{ textAlign:"center" }}>
-          <div className="ff-logo-badge">🌿 Two-Player Edition</div>
-          <h1 className="ff-hero-title">Find My<br/>Food</h1>
-          <p className="ff-hero-sub">Match each animal with the food it loves.<br/>Compete with a friend to see who knows best.</p>
+          <div className="ff-logo-badge">{variant === "emoji" ? "✨ Two-Player Emoji Edition" : "🌿 Two-Player Edition"}</div>
+          <h1 className="ff-hero-title">{variant === "emoji" ? <>Emoji<br/>Match</> : <>Find My<br/>Food</>}</h1>
+          <p className="ff-hero-sub">{variant === "emoji" ? <>Match identical emojis.<br/>Compete with a friend to see who remembers best.</> : <>Match each animal with the food it loves.<br/>Compete with a friend to see who knows best.</>}</p>
 
           <div className="ff-pair-preview">
             <div className="ff-pair-chip">🐕<span className="ff-connector">×</span>🦴</div>
@@ -534,11 +545,11 @@ export default function FindMyFood({ onComplete, themeId }) {
       <div className="ff-screen ff-howto-screen">
         <div className="ff-card ff-howto-card" style={{ textAlign:"center" }}>
           <div className="ff-logo-badge">📖 How to Play</div>
-          <h1 className="ff-hero-title" style={{ fontSize:"clamp(2.2rem, 5vw, 3.1rem)" }}>Find My Food</h1>
-          <p className="ff-hero-sub">Find every animal&apos;s favourite food in the 4 × 4 memory grid.</p>
+          <h1 className="ff-hero-title" style={{ fontSize:"clamp(2.2rem, 5vw, 3.1rem)" }}>{variant === "emoji" ? "Emoji Match" : "Find My Food"}</h1>
+          <p className="ff-hero-sub">{variant === "emoji" ? "Find two matching emojis in the 4 × 4 memory grid." : "Find every animal&apos;s favourite food in the 4 × 4 memory grid."}</p>
           <div className="ff-howto-content">
             <div className="ff-howto-grid" aria-label="Example 4 by 4 game grid">
-              {HOW_TO_PLAY_CARDS.map((card, index) => <div className="ff-howto-tile" key={`${card}-${index}`}>{card}</div>)}
+              {howToCards.map((card, index) => <div className="ff-howto-tile" key={`${card}-${index}`}>{card}</div>)}
             </div>
             <div className="ff-howto-steps">
               <div className="ff-howto-step"><span className="ff-howto-num">1</span><span><strong>Take turns.</strong> Choose any two cards to reveal.</span></div>

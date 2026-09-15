@@ -29,7 +29,7 @@ export const FEATURED_GAME_IDS = [
   'flagmaster',
   'moneyblocks',
   'emojisportsquiz',
-  'tilebattle',
+  'zoogame',
   'snowyslopes',
 ] as const;
 

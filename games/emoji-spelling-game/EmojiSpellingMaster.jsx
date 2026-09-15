@@ -47,6 +47,13 @@ export default function EmojiSpellingMaster({ onComplete }) {
   const [feedback, setFeedback] = useState("");
   const [won, setWon] = useState(false);
   const [missing, setMissing] = useState(null);
+  const [timeLeft, setTimeLeft] = useState(30);
+
+  useEffect(() => {
+    if (screen !== "game") return undefined;
+    const timer = window.setInterval(() => setTimeLeft(value => value > 0 ? value - 1 : 30), 1000);
+    return () => window.clearInterval(timer);
+  }, [screen, qIdx]);
 
   const startGame = useCallback((lvl) => {
     const qs = shuffle(DATA[lvl]);
@@ -57,6 +64,7 @@ export default function EmojiSpellingMaster({ onComplete }) {
     setScore(0);
     setCorrectCount(0);
     setLives(5);
+    setTimeLeft(30);
     setFeedback("");
     setWon(false);
     const pool = getLetterPool(qs[0].word);
@@ -75,6 +83,7 @@ export default function EmojiSpellingMaster({ onComplete }) {
     setScore(0);
     setCorrectCount(0);
     setLives(5);
+    setTimeLeft(30);
     setFeedback("");
     setWon(false);
     setMissing({ index: Math.floor(Math.random() * qs[0].word.length), choice: null });
@@ -224,7 +233,7 @@ export default function EmojiSpellingMaster({ onComplete }) {
   if (mode === "missing") return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg,#1e1b4b,#312e81,#1e1b4b)", fontFamily: "'Segoe UI', sans-serif", color: "#e0e7ff", padding: 24 }}>
       <div style={{ width: "100%", maxWidth: 760, textAlign: "center" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}><span>{level.toUpperCase()}</span><span style={{ color: "#fbbf24" }}>Score: {score}</span><span>{Array.from({ length: 5 }, (_, i) => i < lives ? "❤️" : "🖤").join("")}</span></div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}><span>{level.toUpperCase()}</span><span style={{ color: "#fbbf24", fontSize: "1.2rem" }}>{Array.from({ length: 5 }, (_, i) => i < lives ? "❤️" : "🖤").join("")}</span><span>⏱ {timeLeft}s</span></div>
         <div style={{ background: "rgba(255,255,255,.08)", borderRadius: 24, padding: 32, border: feedback === "correct" ? "2px solid #22c55e" : feedback === "wrong" ? "2px solid #ef4444" : "2px solid rgba(255,255,255,.1)" }}>
           <div style={{ fontSize: "clamp(4rem, 12vw, 8rem)" }}>{current.emoji}</div>
           <h2 style={{ fontSize: "clamp(2rem, 6vw, 4rem)", letterSpacing: 8 }}>{current.word.split("").map((letter, index) => index === missing.index ? (missing.choice || "_") : letter).join("")}</h2>
@@ -244,10 +253,10 @@ export default function EmojiSpellingMaster({ onComplete }) {
       fontFamily: "'Segoe UI', sans-serif", color: "#e0e7ff", padding: 24,
     }}>
       <div style={{ width: "100%", maxWidth: "min(760px, calc(100vw - 56px))" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <span style={{ background: LEVEL_COLORS[level], padding: "4px 14px", borderRadius: 999, fontWeight: 700, fontSize: "0.85rem" }}>{level.toUpperCase()}</span>
-          <span style={{ color: "#fbbf24", fontWeight: 700 }}>Score: {score}</span>
-          <span>{Array.from({ length: 5 }, (_, i) => i < lives ? "❤️" : "🖤").join("")}</span>
+          <span style={{ color: "#fbbf24", fontWeight: 700, fontSize: "1.2rem" }}>{Array.from({ length: 5 }, (_, i) => i < lives ? "❤️" : "🖤").join("")}</span>
+          <span>⏱ {timeLeft}s</span>
         </div>
 
         <div style={{

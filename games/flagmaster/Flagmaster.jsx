@@ -60,6 +60,10 @@ function getPopularity(code) { return popularityCodes[code] || 3; }
 
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
 
+function orderByFamiliarity(countries) {
+  return [...countries].sort((a, b) => getPopularity(b.code) - getPopularity(a.code));
+}
+
 // Keep the level-pool factory deterministic so the imported component stays
 // server-safe and client-safe instead of reordering from Math.random() at load time.
 // Include an extra world-map pool so the new map-driven Level can share the
@@ -419,7 +423,7 @@ export default function Flagmaster({ onComplete, darkMode = false }) {
 
   const startLevel = (idx) => {
     if (idx > 0 && !levelCompleted[idx - 1]) return;
-    const questions = shuffle(levelPools[idx]);
+    const questions = orderByFamiliarity(levelPools[idx]);
     setCurrentLevelIdx(idx);
     setLevelQuestions(questions);
     setCurrentQIndex(0);

@@ -102,6 +102,12 @@ function applyOutcome(type, actor, target, hp, names) {
 
 // one-time global stylesheet for keyframe animations (can't express these as inline style objects)
 const FX_STYLE = `
+@media (max-width: 639px) {
+  .tile-battle-screen { min-height: 100%; height: auto; justify-content: flex-start; overflow: auto; padding: 12px; }
+  .tile-battle-screen .tile-battle-players { gap: 12px; }
+  .tile-battle-screen .tile-battle-board { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; grid-auto-rows: auto !important; gap: 8px !important; padding: 10px !important; width: 100%; }
+  .tile-battle-screen .tile-battle-board > div { min-width: 0; }
+}
 @keyframes tb-particleFly { 0% { opacity:1; transform:translate(0,0) scale(1); } 100% { opacity:0; transform:translate(var(--tb-x),var(--tb-y)) scale(0); } }
 @keyframes tb-bannerShow { 0% { opacity:0; transform:translateY(25px) scale(.85); } 70% { opacity:1; transform:translateY(-4px) scale(1.04); } 100% { opacity:1; transform:translateY(0) scale(1); } }
 @keyframes tb-bannerHide { to { opacity:0; transform:translateY(-12px) scale(.95); } }
@@ -510,7 +516,7 @@ export default function TileBattle({ onComplete, themeId }) {
   // ── GAME ──
   if (screen === "game") {
     const panel = (pi) => (
-      <div style={{
+      <div className="tile-battle-screen" style={{
         display: "flex", flexDirection: "column", alignItems: "center", gap: 12,
         ...glass, border: `1.5px solid ${turn === pi ? t.accent : t.border2}66`,
         boxShadow: turn === pi ? `0 0 35px ${t.accent}66, 0 18px 45px rgba(0,0,0,.18)` : glass.boxShadow,
@@ -532,10 +538,10 @@ export default function TileBattle({ onComplete, themeId }) {
         position: "relative", overflow: "hidden",
       }}>
         {fx}
-        <div style={{ display: "flex", gap: "3rem", alignItems: "center", flexWrap: "wrap", justifyContent: "center", width: "100%", maxWidth: 1500 }}>
+        <div className="tile-battle-players" style={{ display: "flex", gap: "3rem", alignItems: "center", flexWrap: "wrap", justifyContent: "center", width: "100%", maxWidth: 1500 }}>
           {panel(0)}
 
-          <div style={{
+          <div className="tile-battle-board" style={{
             display: "grid", gridTemplateColumns: "repeat(6, clamp(70px, 13vw, 130px))",
             gridAutoRows: "clamp(70px, 13vw, 130px)", gap: 14, justifyContent: "center", flex: "1 1 auto",
             padding: 20, borderRadius: 24, ...glass,

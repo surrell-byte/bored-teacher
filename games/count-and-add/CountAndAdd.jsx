@@ -231,4 +231,6 @@ const COUNT_ADD_STYLES = `
 .count-add-game__group span{font-size:clamp(28px,3.4vw,48px)}
 .count-add-game__lives{min-height:1.5em;margin:12px 0;text-align:center;font-size:1.35rem;letter-spacing:.12em}
 .count-add-game__retry{padding:12px 22px;border:0;border-radius:999px;background:#0f6e56;color:#fff;font:800 1rem Nunito,var(--font-body),sans-serif;cursor:pointer}
+.count-add-game__frame,.count-add-game__topbar,.count-add-game__card-wrap{width:100%;max-width:1280px}
+.count-add-game__menu-card{width:min(100%,760px)}
 `;

@@ -10,7 +10,7 @@ const THEMES = {
   arcade: { name: 'Arcade', paper: '#24183d', panel: '#352354', ink: '#fff7e6', p1: '#5de2a7', p2: '#ff71ce', gold: '#ffd166', p1Soft: '#1f5b4c', p2Soft: '#6f2d62', muted: '#f6d9ef', tileHover: '#453064' },
 };
 const resolveTheme = (themeId) => ({ ...DEFAULT_THEME, ...(THEMES[themeId] || {}) });
-const EFFECTS = ['-300 points', '+500 points', 'Steal 100 points'];
+const EFFECTS = ['💥 -300 points', '💰 +500 points', '🥷 Steal 100 points'];
 const QWERTY_KEYS = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'].join('').split('');
 
 export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
@@ -37,6 +37,20 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
   const [streaks, setStreaks] = useState({ 1: 0, 2: 0 });
   const [lastCorrectPlayer, setLastCorrectPlayer] = useState(null);
   const theme = resolveTheme(themeId);
+
+  const skipTurn = () => {
+    if (lock) return;
+    const nextCurrent = current === 1 ? 2 : 1;
+    const nextName = nextCurrent === 1 ? name1 : name2;
+    setLock(true);
+    setTurnNumber(value => value + 1);
+    setCurrent(nextCurrent);
+    setStatusLine(`${current === 1 ? name1 : name2} skipped. ${nextName}'s turn in 3 seconds.`);
+    setTimeout(() => {
+      setStatusLine(`${nextName}'s turn!`);
+      setTimeout(() => { setStatusLine(''); setLock(false); }, 900);
+    }, 3000);
+  };
 
   const chooseAvatar = (playerNum, avatar) => {
     const other = playerNum === 1 ? av2 : av1;
@@ -156,13 +170,13 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
       if (wasOpponentAvatar) {
         setStatusLine(`${name} found ${opponentAv} — that's ${opponentName}'s tile!`);
       } else {
-        if (tile.content === '+500 points') setScores(value => ({ ...value, [current]: value[current] + 500 }));
-        if (tile.content === '-300 points') setScores(value => ({ ...value, [current]: value[current] - 300 }));
-        if (tile.content === 'Steal 100 points') setScores(value => ({ ...value, [current]: value[current] + 100, [current === 1 ? 2 : 1]: value[current === 1 ? 2 : 1] - 100 }));
+        if (tile.content.includes('+500 points')) setScores(value => ({ ...value, [current]: value[current] + 500 }));
+        if (tile.content.includes('-300 points')) setScores(value => ({ ...value, [current]: value[current] - 300 }));
+        if (tile.content.includes('Steal 100 points')) setScores(value => ({ ...value, [current]: value[current] + 100, [current === 1 ? 2 : 1]: value[current === 1 ? 2 : 1] - 100 }));
         setStatusLine(`${name} found ${tile.content}.`);
       }
 
-      setTimeout(() => {
+        setTimeout(() => {
         const nextCurrent = current === 1 ? 2 : 1;
         setCurrent(nextCurrent);
         setTurnNumber(turnNumber + 1);
@@ -174,7 +188,7 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
           setStatusLine('');
           setLock(false);
         }, 650);
-      }, 700);
+      }, 3000);
     }
 
     if (mine && !hardRules) {
@@ -246,6 +260,19 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
             the turn passes. <b className="two">Whoever uncovers all five of their own avatar first wins.</b>
           </p>
           <label className="ah-mode-toggle"><input type="checkbox" checked={hardRules} onChange={(event) => setHardRules(event.target.checked)} /> Hard rules: correct picks earn another turn</label>
+          <button className="ah-btn" onClick={() => setScreen('howto')}>How to play</button>
+        </div>
+      </div>
+    );
+  }
+
+  if (screen === 'howto') {
+    return (
+      <div className="alphabet-hunt ah-screen ah-welcome-screen" style={{ '--paper': theme.paper, '--panel': theme.panel, '--ink': theme.ink, '--p1': theme.p1, '--p2': theme.p2, '--p1-soft': theme.p1Soft, '--p2-soft': theme.p2Soft, '--muted': theme.muted, '--tile-hover': theme.tileHover, '--gold': theme.gold }}>
+        <div className="ah-card">
+          <h1>How to play</h1>
+          <p className="ah-tag">Find your five hidden avatar tiles before your opponent.</p>
+          <p className="ah-rules">Take turns choosing a key. Your own avatar earns points and another turn. An opponent tile or event tile passes play to the other player. Use Skip when you want to give up the turn.</p>
           <button className="ah-btn" onClick={() => setScreen('setup')}>Set up players</button>
         </div>
       </div>
@@ -350,6 +377,8 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
             </div>
           )}
 
+          <div className="ah-status-line ah-status-panel" role="status" aria-live="polite">{statusLine}</div>
+
           <div className="ah-hud">
             <div className={`ah-hud-player ah-p1 ${current === 1 ? 'active' : ''}`}>
               <div className="ah-hud-name">
@@ -402,12 +431,11 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
             ))}
           </div>
 
-          <div className="ah-status-line">{statusLine}</div>
-
           <div className="ah-game-stats">
             <div><span className="ah-stat-label">P1 WINS</span><strong>{wins[1]}</strong></div>
             <div><span className="ah-stat-label">P2 WINS</span><strong>{wins[2]}</strong></div>
             <button className="ah-mini-btn" onClick={handleRestart}>↻ Restart</button>
+            <button className="ah-mini-btn" onClick={skipTurn} disabled={lock}>Skip turn</button>
           </div>
         </div>
 

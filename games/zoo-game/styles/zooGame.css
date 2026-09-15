@@ -384,6 +384,11 @@
   margin-right: auto;
 }
 
+@media (max-width: 639px) {
+  .zoogame-root #panel-guess .animal-display { min-height: 360px; padding-top: 42px; }
+  .zoogame-root #panel-guess .options-grid { margin-top: 18px; }
+}
+
 .option-btn {
   background: #fcf6e8;
   border: 4px solid #d9c9a8;

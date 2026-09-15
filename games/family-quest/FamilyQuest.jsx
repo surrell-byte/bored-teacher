@@ -191,9 +191,12 @@ body::after {
 .wrap {
   position: relative; z-index: 1;
   width: 100%; max-width: 560px;
-  padding: 16px 12px 40px;
+  min-height: 100%;
+  padding: 16px 12px 16px;
   display: flex; flex-direction: column; align-items: center;
 }
+
+.familyquestpremium-root .game-header, .familyquestpremium-root .acc-row { display: none; }
 
 /* ── CARD ────────────────────────────────────── */
 .card {

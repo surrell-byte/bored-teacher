@@ -92,7 +92,7 @@ export default function BuildTower({ onComplete }) {
         <div className="build-tower-instruction">Click blocks to stack them from <strong>smallest → biggest</strong>!</div>
 
         <div className="build-tower-layout">
-          <div className="build-tower-pool-panel">
+          <div className={`build-tower-pool-panel${numbers.length === 0 ? ' is-empty' : ''}`}>
             <div className="build-tower-label">🧱 Pick a block:</div>
             <div className="build-tower-pool">
               {numbers.map((number) => (
@@ -217,7 +217,10 @@ const STYLES = `
   align-items: center;
   gap: 4px;
   min-height: 200px;
+  width: 260px;
+  justify-content: flex-start;
 }
+.build-tower-pool-panel.is-empty { display: none; }
 .build-tower-block {
   appearance: none;
   border: none;

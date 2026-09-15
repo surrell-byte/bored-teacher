@@ -503,6 +503,16 @@
   margin-top: 6px;
   color: var(--muted);
 }
+.ah-status-panel {
+  min-height: 48px;
+  display: grid;
+  place-items: center;
+  margin: 0 0 14px;
+  padding: 10px 14px;
+  border: 2px solid var(--ink);
+  background: var(--paper);
+  border-radius: 4px;
+}
 
 /* Game stats */
 .ah-game-stats {

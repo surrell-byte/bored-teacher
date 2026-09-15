@@ -27,6 +27,7 @@ const GAMES_WITH_WELCOME = new Set([
   'turbodash',
   'numberclouds',
   'countadd',
+  'moneyblocks',
   'emojisportsquiz',
   'alphabethunt', 'buildtower', 'whatsmissing',
 ]);
@@ -158,6 +159,9 @@ export default function GamePage() {
       window.dispatchEvent(new Event('build-tower:main-menu'));
     } else if (isFindMyFood) {
       window.dispatchEvent(new Event('find-my-food:main-menu'));
+    } else if (isEmojiSports) {
+      setShowRouteWelcome(false);
+      window.dispatchEvent(new Event('emoji-sports:main-menu'));
     } else if (isFlagmaster) {
       setShowRouteWelcome(false);
       window.dispatchEvent(new Event('flagmaster:main-menu'));

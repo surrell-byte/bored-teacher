@@ -87,6 +87,12 @@ export default function EmojiSportsQuiz({ onHudUpdate, onComplete }) {
     onHudUpdate?.(screen === "quiz" ? { score, streak } : null);
   }, [onHudUpdate, screen, score, streak]);
 
+  useEffect(() => {
+    const returnToModes = () => setScreen("modes");
+    window.addEventListener("emoji-sports:main-menu", returnToModes);
+    return () => window.removeEventListener("emoji-sports:main-menu", returnToModes);
+  }, []);
+
   const startGame = (modeId) => {
     const nextRound = modeId === "emoji" ? balancedRound(EMOJI_QUESTIONS)
       : modeId === "sentence" ? balancedRound(SENTENCE_QUESTIONS)
