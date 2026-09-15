@@ -381,23 +381,23 @@ body {
 /* On phones, respect device safe-areas and add comfortable top/bottom padding */
 @media (max-width: 639px) {
   body {
-    padding-top: max(24px, var(--safe-inset-top));
-    padding-bottom: max(24px, var(--safe-inset-bottom));
-    padding-left: var(--safe-inset-left);
-    padding-right: var(--safe-inset-right);
+    padding-top: 0;
+    padding-bottom: 0;
+    padding-left: 0;
+    padding-right: 0;
   }
 
-  /* Make main content and shell honor side safe insets (keeps UI away from rounded corners) */
+  /* Keep the main content and shell aligned without creating a bulky mobile nav gutter. */
   #main-content,
   .app-shell-wrap {
-    padding-left: max(12px, var(--safe-inset-left));
-    padding-right: max(12px, var(--safe-inset-right));
+    padding-left: max(8px, var(--safe-inset-left));
+    padding-right: max(8px, var(--safe-inset-right));
   }
 
-  /* Keep important UI away from screen edges */
+  /* A flush mobile nav keeps the header edge-to-edge without the extra top/side gap. */
   .topbar {
-    padding-left: max(12px, var(--safe-inset-left));
-    padding-right: max(12px, var(--safe-inset-right));
+    padding-left: max(8px, var(--safe-inset-left));
+    padding-right: max(8px, var(--safe-inset-right));
   }
 
   .toast,
@@ -409,7 +409,7 @@ body {
   /* Mobile: optimise for 390 x 844 portrait, avoid stretched layouts and oversized cards */
   .topbar {
     height: 56px;
-    padding: 0 12px;
+    padding: 0 max(8px, var(--safe-inset-left));
   }
 
   .brand-logo {
@@ -503,7 +503,201 @@ body {
 .creator-note-icon { font-size: 1.5rem; }
 .creator-note h2 { margin-bottom: 5px; color: var(--text); font: 800 1rem var(--font-display); }
 .creator-note p { color: var(--muted); font-size: .82rem; line-height: 1.55; }
+
+.about-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: clamp(14px, 3vw, 28px) clamp(14px, 3vw, 24px) 80px;
+}
+
+.about-hero {
+  padding: clamp(24px, 5vw, 52px);
+  border-radius: 32px;
+  margin-bottom: 24px;
+  background: linear-gradient(135deg, rgba(255, 197, 57, 0.14), rgba(72, 201, 176, 0.08), rgba(125, 131, 255, 0.12));
+}
+
+.about-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(260px, 0.9fr);
+  gap: clamp(20px, 4vw, 40px);
+  align-items: center;
+}
+
+.about-hero-copy {
+  min-width: 0;
+}
+
+.about-kicker {
+  font-size: 0.74rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+
+.about-hero-title {
+  font-size: clamp(2rem, 5vw, 4rem);
+  line-height: 1.05;
+  margin: 0 0 16px;
+  letter-spacing: -0.05em;
+  font-family: var(--font-display, Syne);
+}
+
+.about-hero-text {
+  max-width: 60ch;
+  margin: 0;
+  color: var(--muted);
+  font-size: 1.02rem;
+  line-height: 1.8;
+}
+
+.about-hero-text-strong {
+  margin-top: 18px;
+  color: var(--text);
+  font-size: .94rem;
+  line-height: 1.7;
+  font-weight: 700;
+}
+
+.about-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.about-hero-visual {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 28px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 18px 40px rgba(15,23,42,0.18);
+  background: #0f172a;
+}
+
+.about-hero-visual img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.about-start-card {
+  padding: clamp(24px, 5vw, 52px);
+  border-radius: 28px;
+  margin-bottom: 24px;
+}
+
+.about-start-title {
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  line-height: 1.1;
+  margin: 0 0 16px;
+  font-family: var(--font-display, Syne);
+}
+
+.about-start-copy {
+  max-width: 70ch;
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.8;
+}
+
+.about-creator {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 18px;
+  padding: 14px 16px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 18px;
+  background: rgba(255,255,255,0.02);
+}
+
+.about-creator-avatar {
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(245,200,66,0.7);
+  background: var(--surface-soft);
+}
+
+.about-creator-copy {
+  display: grid;
+  gap: 2px;
+}
+
+.about-creator-label {
+  color: var(--gold);
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 800;
+}
+
+.about-creator-copy strong {
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.about-creator-copy small {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
 .games-letter-group { margin-top: 26px; }
+
+@media (max-width: 700px) {
+  .about-page {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .about-hero,
+  .about-start-card {
+    padding: 20px 18px;
+    border-radius: 22px;
+  }
+
+  .about-hero-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .about-hero-title {
+    font-size: clamp(1.9rem, 9vw, 2.8rem);
+  }
+
+  .about-hero-text,
+  .about-hero-text-strong,
+  .about-start-copy {
+    max-width: none;
+  }
+
+  .about-hero-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .about-hero-actions .pill-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .about-hero-visual {
+    min-height: 220px;
+    aspect-ratio: auto;
+    height: 220px;
+  }
+
+  .about-creator {
+    align-items: flex-start;
+    padding: 12px 14px;
+  }
+}
 .games-letter-heading { display: flex; align-items: center; gap: 12px; margin: 0 0 12px; color: var(--gold); font: 800 1.45rem/1 var(--font-display); letter-spacing: 0; }
 .games-letter-heading::after { content: ''; height: 1px; flex: 1; background: var(--border); }
 

@@ -27,48 +27,27 @@ const VALUES = [
 
 export default function AboutPage() {
   return (
-    <div style={{ maxWidth: 1200, margin: '0 auto', padding: 'clamp(14px, 3vw, 28px) clamp(14px, 3vw, 24px) 80px' }}>
-      <section
-        className="shell-card"
-        style={{
-          padding: 'clamp(24px, 5vw, 52px)',
-          borderRadius: 32,
-          marginBottom: 24,
-          background: 'linear-gradient(135deg, rgba(255, 197, 57, 0.14), rgba(72, 201, 176, 0.08), rgba(125, 131, 255, 0.12))',
-        }}
-      >
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'minmax(0, 1.25fr) minmax(260px, 0.9fr)',
-            gap: 'clamp(20px, 4vw, 40px)',
-            alignItems: 'center',
-          }}
-        >
-          <div>
-            <div style={{ fontSize: '0.74rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--gold)', fontWeight: 800, marginBottom: 12 }}>
+    <div className="about-page">
+      <section className="shell-card about-hero">
+        <div className="about-hero-grid">
+          <div className="about-hero-copy">
+            <div className="about-kicker">
               About the platform
             </div>
 
-            <h1 style={{
-              fontSize: 'clamp(2rem, 5vw, 4rem)',
-              lineHeight: 1.05,
-              margin: '0 0 16px',
-              letterSpacing: '-0.05em',
-              fontFamily: 'var(--font-display, Syne)',
-            }}>
+            <h1 className="about-hero-title">
               We Learn. We Grow. We Belong.
             </h1>
 
-            <p style={{ maxWidth: '60ch', margin: 0, color: 'var(--muted)', fontSize: '1.02rem', lineHeight: 1.8 }}>
+            <p className="about-hero-text">
               Bored Teacher is based on the ideology of "ubuntu". "We" are powerful because we are "one".
             </p>
 
-            <p style={{ maxWidth: '60ch', margin: '18px 0 0', color: 'var(--text)', fontSize: '.94rem', lineHeight: 1.7, fontWeight: 700 }}>
+            <p className="about-hero-text about-hero-text-strong">
               Bored Teacher believes learning is stronger when it is shared, supported, and rooted in belonging.
             </p>
 
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 24 }}>
+            <div className="about-hero-actions">
               <Link href="/hub" className="pill-btn" style={{ textDecoration: 'none' }}>
                 Explore the hub
               </Link>
@@ -78,44 +57,38 @@ export default function AboutPage() {
             </div>
           </div>
 
-          <div
-            style={{
-              width: '100%',
-              aspectRatio: '16 / 9',
-              borderRadius: 28,
-              overflow: 'hidden',
-              border: '1px solid rgba(255,255,255,0.12)',
-              boxShadow: '0 18px 40px rgba(15,23,42,0.18)',
-              background: '#0f172a',
-            }}
-          >
+          <div className="about-hero-visual">
             <img
               src="/images/ubuntu.png"
               alt="Ubuntu community image"
-              style={{
-                display: 'block',
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-              }}
             />
           </div>
         </div>
       </section>
 
-      <section className="shell-card" style={{ padding: 'clamp(24px, 5vw, 52px)', borderRadius: 28, marginBottom: 24 }}>
-        <div style={{ fontSize: '0.74rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--gold)', fontWeight: 800, marginBottom: 12 }}>
+      <section className="shell-card about-start-card">
+        <div className="about-kicker">
           Our starting point
         </div>
-        <h2 style={{ fontSize: 'clamp(1.8rem, 4vw, 3rem)', lineHeight: 1.1, margin: '0 0 16px', fontFamily: 'var(--font-display, Syne)' }}>
+        <h2 className="about-start-title">
           Making learning feel less like work and more like play.
         </h2>
-        <p style={{ maxWidth: '70ch', margin: 0, color: 'var(--muted)', lineHeight: 1.8 }}>
+        <p className="about-start-copy">
           Bored Teacher is a game-based classroom hub for learning, practice, and motivation. It brings together short-form educational games, progress tracking, teacher resources, and rewarding milestones so students stay focused while teachers keep momentum high.
         </p>
-        <p style={{ margin: '18px 0 0', color: 'var(--text)', lineHeight: 1.7, fontWeight: 700 }}>
-          Created by Russell Mkahanana, a Zimbabwean educator and software developer.
-        </p>
+
+        <div className="about-creator">
+          <img
+            src="/surrell-ai-pic.png"
+            alt="Russell Mkahanana"
+            className="about-creator-avatar"
+          />
+          <div className="about-creator-copy">
+            <span className="about-creator-label">Created by</span>
+            <strong>Russell Mkahanana</strong>
+            <small>Zimbabwean educator and software developer</small>
+          </div>
+        </div>
       </section>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 18 }}>
