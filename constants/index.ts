@@ -24,14 +24,13 @@ export {
 export type { GameKey, GameCatalogEntry } from '@/games/catalog.data';
 
 export const FEATURED_GAME_IDS = [
-  'alphabethunt',
-  'tilebattle',
-  'emojisportsquiz',
-  'snowyslopes',
   'countadd',
-  'moneyblocks',
   'findmyfood',
   'flagmaster',
+  'moneyblocks',
+  'emojisportsquiz',
+  'tilebattle',
+  'snowyslopes',
 ] as const;
 
 // ── Non-game constants (unrelated to the registry, stay here) ──
