@@ -121,7 +121,7 @@ const STYLES = `
 .ff-theme-toggle:hover { transform: scale(1.1); border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
 .ff-theme-toggle:active { transform: scale(0.95); }
 
-.ff-screen { width: 100%; max-width: 560px; position: relative; z-index: 10; animation: ffScreenIn 0.5s cubic-bezier(0.23,1,0.32,1) both; }
+.ff-screen { width: 100%; max-width: 680px; position: relative; z-index: 10; animation: ffScreenIn 0.5s cubic-bezier(0.23,1,0.32,1) both; }
 @keyframes ffScreenIn { from { opacity:0; transform:translateY(24px) scale(0.97); } to { opacity:1; transform:translateY(0) scale(1); } }
 
 .ff-card {
@@ -249,9 +249,9 @@ const STYLES = `
 /* On larger screens, the board and the game information each get a dedicated
    column. This keeps the board prominent without making its cards oversized. */
 @media (min-width: 760px) {
-  .ff-root { padding: clamp(28px, 4vw, 64px); }
-  .ff-screen.ff-setup-screen { max-width: 1200px; }
-  .ff-setup-card { padding: 32px 40px 36px; }
+  .ff-root { padding: clamp(28px, 2vw, 36px); }
+  .ff-screen.ff-setup-screen { max-width: 1320px; }
+  .ff-setup-card { padding: 48px 56px 52px; }
   .ff-setup-card .ff-logo-badge { margin-bottom:8px; }
   .ff-setup-card .ff-hero-title { font-size:2.45rem; margin-bottom:4px; }
   .ff-setup-card .ff-hero-sub { margin-bottom:12px; font-size:.9rem; }
@@ -267,7 +267,7 @@ const STYLES = `
 
 @media (min-width: 960px) {
   .ff-root { align-items:center; }
-  .ff-screen.ff-setup-screen { max-width: 1220px; }
+  .ff-screen.ff-setup-screen { max-width: 1320px; }
   .ff-screen.ff-howto-screen { max-width: 1240px; }
   .ff-screen.ff-game-screen { max-width: 1320px; }
   .ff-game-card { padding: clamp(28px, 3vw, 44px); }
@@ -315,8 +315,8 @@ const STYLES = `
 }
 
 @media (min-width: 760px) {
-  .ff-screen.ff-howto-screen { max-width:1040px; }
-  .ff-howto-card { padding:26px 32px; }
+  .ff-screen.ff-howto-screen { max-width:1180px; }
+  .ff-howto-card { padding:42px 52px; }
   .ff-howto-card .ff-logo-badge { margin-bottom:10px; }
   .ff-howto-card .ff-hero-title { font-size:2.55rem !important; margin-bottom:4px; }
   .ff-howto-card .ff-hero-sub { margin-bottom:16px; }

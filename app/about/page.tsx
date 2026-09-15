@@ -79,7 +79,7 @@ export default function AboutPage() {
 
         <div className="about-creator">
           <img
-            src="/surrell-ai-pic.png"
+            src="/about-creator.png"
             alt="Russell Mkahanana"
             className="about-creator-avatar"
           />

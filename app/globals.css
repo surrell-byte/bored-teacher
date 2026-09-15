@@ -621,7 +621,9 @@ body {
   height: 64px;
   flex-shrink: 0;
   border-radius: 50%;
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center;
+  padding: 2px;
   border: 2px solid rgba(245,200,66,0.7);
   background: var(--surface-soft);
 }
@@ -1258,6 +1260,21 @@ a { color: inherit; }
   .nav-right { gap: 6px; }
   .game-search-backdrop { padding-top: 78px; }
   .game-search-dialog { max-height: calc(100dvh - 100px); padding: 14px; border-radius: 16px; }
+}
+
+/* Short landscape phones and small tablets need the compact navbar even when
+   their CSS width is wider than the portrait phone breakpoint. */
+@media (max-width: 900px) and (max-height: 600px) {
+  .nav-links { display: none; }
+  .topbar .brand-word { display: none; }
+  .hamburger { display: inline-flex; }
+  .nav-desktop-game-search { display: none; }
+  .nav-mobile-game-search { display: inline-flex; }
+  .mobile-menu { display: flex; max-height: calc(100dvh - 60px); overflow-y: auto; }
+  .topbar { padding-inline: 12px; gap: 8px; }
+  .nav-right { gap: 5px; }
+  .player-chip-btn { max-width: 92px; padding-inline: 7px; }
+  .nav-right .player-chip-info { display: none; }
 }
 
 @media (max-width: 639px) {
@@ -4519,6 +4536,8 @@ a { color: inherit; }
 .game-shell--turbodash { --completion-border: #e8a800; --completion-surface: linear-gradient(160deg, #252e1c, #172016); --completion-text: #f0f2ec; --completion-accent: #ffc93c; --completion-action: #ffc93c; --completion-action-text: #141a0d; }
 .game-shell--archersduel { --completion-border: #d8ad45; --completion-surface: linear-gradient(160deg, #192f20, #101d16); --completion-text: #fff7df; --completion-accent: #ffe49a; --completion-action: #d8ad45; --completion-action-text: #07130d; }
 .game-shell--findmyfood { --completion-border: #f5c842; --completion-surface: linear-gradient(160deg, #293747, #202b3a); --completion-text: #f4f7fb; --completion-accent: #ffd166; --completion-action: #63d7ba; --completion-action-text: #10221e; }
+.game-shell--findmyfood,
+.game-shell--findmyfood .game-shell-play-area { background: #0d0d0f; }
 .game-shell--finnthefox .game-shell-play-area { background: #fffdf7; }
 .game-shell--pizzafractions .route-game-welcome { background: linear-gradient(rgba(35,14,5,.16),rgba(35,14,5,.16)), url('/games/pizza-fractions/welcome-screen-bg.png') center / cover fixed; }
 .finn-fox { min-height: 100%; background: #fffdf7; }
