@@ -621,7 +621,8 @@ body {
   height: 64px;
   flex-shrink: 0;
   border-radius: 50%;
-  object-fit: contain;
+  object-fit: cover;
+  object-position: center 32%;
   object-position: center;
   padding: 2px;
   border: 2px solid rgba(245,200,66,0.7);

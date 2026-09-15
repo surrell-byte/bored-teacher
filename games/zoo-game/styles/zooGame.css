@@ -767,6 +767,10 @@
   color: #173b2b;
   background: linear-gradient(180deg, #f2ffe9 0%, #c9e6af 55%, #9fc27b 100%);
 }
+.zoogame-root.zoo-theme-ocean .game-wrapper,
+.zoogame-root.zoo-theme-jungle .game-wrapper { color: #173b2b; }
+.zoogame-root.zoo-theme-ocean .game-wrapper button,
+.zoogame-root.zoo-theme-jungle .game-wrapper button { color: #173b2b; }
 
 .zoogame-root.zoo-theme-ocean .zoo-main-menu h1,
 .zoogame-root.zoo-theme-ocean .zoo-menu-section h2,

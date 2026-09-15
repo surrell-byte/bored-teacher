@@ -55,7 +55,7 @@ export default function ReviewPanel({ isCreator = false }: { isCreator?: boolean
 
   return (
     <section className="shell-card hub-reviews-panel" aria-labelledby="hub-reviews-title">
-      <div className="hub-preview-header"><h2 id="hub-reviews-title" className="hub-section-title">💬 What people say</h2><span className="hub-review-count">{reviews.length} reviews</span></div>
+      <div className="hub-preview-header"><h2 id="hub-reviews-title" className="hub-section-title">💬 What people say</h2></div>
       <div className="hub-review-grid">
         {reviews.length ? reviews.map(review => <article className="hub-review-item" key={review.id || `${review.userName}-${review.comment}`}><div className="hub-review-stars" aria-label={`${review.rating} out of 5 stars`}>{'★'.repeat(Math.max(1, Math.min(5, Number(review.rating) || 5)))}</div><p>{review.comment}</p><div className="hub-review-author"><span className="hub-review-avatar" aria-hidden="true">{review.avatar || '🙂'}</span><span className="hub-review-author-copy"><strong>{review.userName || 'Guest'}</strong><small>{review.age ? `${review.age} · ` : 'Age not shared · '}{countryFlag(review.countryCode)}</small></span></div></article>) : <p className="hub-review-empty">Be the first to review Bored Teacher.</p>}
       </div>

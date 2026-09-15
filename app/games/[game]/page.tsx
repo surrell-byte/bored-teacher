@@ -60,6 +60,7 @@ export default function GamePage() {
   const [numberCloudsHud, setNumberCloudsHud] = useState<any>(null);
   const [snowySlopesHud, setSnowySlopesHud] = useState<any>(null);
   const [animalClassHud, setAnimalClassHud] = useState<any>(null);
+  const [whatsMissingHud, setWhatsMissingHud] = useState<any>(null);
   const [whatsMissingTheme, setWhatsMissingTheme] = useState('green');
   const [moneyBlocksTheme, setMoneyBlocksTheme] = useState('black');
 
@@ -297,6 +298,13 @@ export default function GamePage() {
                 <span className="game-shell-topbar-stat"><b>🏆 {numberCloudsHud.best}</b><span>Best</span></span>
               </span>
             )}
+            {isWhatsMissing && whatsMissingHud && (
+              <span className="game-shell-topbar-stats" aria-label="What's Missing progress">
+                <span className="game-shell-topbar-stat"><b>⭐ {whatsMissingHud.score}</b><span>Score</span></span>
+                <span className="game-shell-topbar-stat"><b>🔥 {whatsMissingHud.streak}</b><span>Streak</span></span>
+                <span className="game-shell-topbar-stat"><b>Round {whatsMissingHud.round}/10</b></span>
+              </span>
+            )}
             {isSnowySlopes && snowySlopesHud && (
               <span className="game-shell-topbar-stats" aria-label="Snowy Slopes progress">
                 <span className="game-shell-topbar-stat"><b>❤️ {snowySlopesHud.lives}</b></span>
@@ -368,11 +376,12 @@ export default function GamePage() {
               {...(isWeatherWizard ? { onHudUpdate: setWeatherWizardHud } : {})}
               {...(isSnowySlopes ? { onHudUpdate: setSnowySlopesHud } : {})}
               {...(isAnimalClass ? { onHudUpdate: setAnimalClassHud } : {})}
-              {...(isFlagmaster ? { darkMode: flagDarkMode } : {})}
+              {...(isFlagmaster ? { darkMode: flagDarkMode, isCreator } : {})}
               {...(isZooGame ? { themeId: zooTheme } : {})}
               {...(isAlphabetHunt ? { themeId: alphabetTheme } : {})}
               {...(isWhatsMissing ? { themeId: whatsMissingTheme } : {})}
               {...(isMoneyBlocks ? { themeId: moneyBlocksTheme } : {})}
+              {...(isWhatsMissing ? { onHudUpdate: setWhatsMissingHud } : {})}
             />
           )}
         </div>

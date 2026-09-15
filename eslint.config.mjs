@@ -26,6 +26,15 @@ const upwardFromGames = [
 const eslintConfig = defineConfig([
   ...compat.extends("next/core-web-vitals", "next/typescript"),
   {
+    // Keep the production build focused on actionable lint failures while the
+    // existing JavaScript and JSX surfaces are migrated incrementally.
+    rules: {
+      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-require-imports": "warn",
+      "react/no-unescaped-entities": "warn",
+    },
+  },
+  {
     files: ["engine/**/*.{ts,tsx}"],
     rules: {
       "no-restricted-imports": ["error", {

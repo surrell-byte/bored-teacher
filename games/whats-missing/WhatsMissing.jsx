@@ -18,7 +18,7 @@ const DIFFICULTIES = [
 const categories = Object.entries(WHATS_MISSING_CATEGORIES);
 const shuffle = values => [...values].sort(() => Math.random() - 0.5);
 
-export default function WhatsMissing({ onComplete, themeId: externalThemeId = 'green' }) {
+export default function WhatsMissing({ onComplete, onHudUpdate, themeId: externalThemeId = 'green' }) {
   const [category, setCategory] = useState('Fruit');
   const themeId = externalThemeId;
   const [difficulty, setDifficulty] = useState(0);
@@ -31,6 +31,9 @@ export default function WhatsMissing({ onComplete, themeId: externalThemeId = 'g
   const [status, setStatus] = useState('👀 Remember the pictures!');
   const timerRef = useRef(null);
   const theme = THEMES[themeId] || THEMES.green;
+  useEffect(() => {
+    onHudUpdate?.(gameStarted ? { score, streak, round } : null);
+  }, [gameStarted, onHudUpdate, round, score, streak]);
   const challenge = useMemo(() => {
     const pool = WHATS_MISSING_CATEGORIES[category] || WHATS_MISSING_CATEGORIES.Fruit;
     const count = Math.min(DIFFICULTIES[difficulty].cards, Math.max(4, pool.length - 3));
@@ -101,7 +104,7 @@ export default function WhatsMissing({ onComplete, themeId: externalThemeId = 'g
       <div className="wm-top-row"><span>⭐ Score: {score}</span><span>🔥 Streak: {streak}</span><span>Round {round} / 10</span></div>
       <div className="wm-progress"><i style={{ width: `${progress}%` }} /></div>
       <section className="wm-board" aria-live="polite">
-        {challenge.chosen.map(([name, emoji], index) => <div className="wm-card" key={`${name}-${index}`}><span>{phase === 'preview' && !challenge.missingIndices.includes(index) || phase === 'answered' ? emoji : '❓'}</span></div>)}
+        {challenge.chosen.map(([name, emoji], index) => <div className="wm-card" key={`${name}-${index}`}><span>{phase === 'answered' || !challenge.missingIndices.includes(index) ? emoji : '❓'}</span></div>)}
       </section>
       <p className="wm-status">{status}</p>
       {phase !== 'preview' && <div className="wm-options">{challenge.options.map(([name, emoji]) => <button type="button" key={name} className={answer && challenge.missingItems.some(item => item[0] === name) ? 'correct' : answer === name ? 'wrong' : ''} onClick={() => choose([name, emoji])} disabled={phase !== 'question'}><span>{emoji}</span><small>{name}</small></button>)}</div>}

@@ -73,6 +73,7 @@ const levelPools = [
   [...allCountries],
   ...Object.values(REGION_CODES).map(codes => codes.map(code => allCountries.find(country => country.code === code)).filter(Boolean)),
 ];
+const SECTION_SIZE = 12;
 
 function buildOptions(country) {
   const wrong = shuffle(allCountries.filter(c => c.name !== country.name)).slice(0, 3);
@@ -329,7 +330,7 @@ select.fm-field-input { cursor:pointer; }
 
 const Style = () => <style>{THEME_CSS}</style>;
 
-export default function Flagmaster({ onComplete, darkMode = false }) {
+export default function Flagmaster({ onComplete, darkMode = false, isCreator = false }) {
   const [screen, setScreen] = useState("welcome"); // welcome | title | worldMap | levelSelect | game
 
   // Passport
@@ -346,6 +347,9 @@ export default function Flagmaster({ onComplete, darkMode = false }) {
   // Active level/game
   const [currentLevelIdx, setCurrentLevelIdx] = useState(0);
   const [levelQuestions, setLevelQuestions] = useState([]);
+  const [sectionIndex, setSectionIndex] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("flagmaster-sections") || "{}"); } catch { return {}; }
+  });
   const [currentQIndex, setCurrentQIndex] = useState(0);
   const [currentCountry, setCurrentCountry] = useState(null);
   const [options, setOptions] = useState([]);
@@ -422,9 +426,13 @@ export default function Flagmaster({ onComplete, darkMode = false }) {
   }, []);
 
   const startLevel = (idx) => {
-    if (idx > 0 && !levelCompleted[idx - 1]) return;
-    const questions = orderByFamiliarity(levelPools[idx]);
+    if (idx > 0 && !isCreator && !levelCompleted[idx - 1] && sectionIndex[idx] === undefined) return;
+    const fullQuestions = orderByFamiliarity(levelPools[idx]);
+    const nextSection = sectionIndex[idx] || 0;
+    const questions = fullQuestions.slice(nextSection * SECTION_SIZE, (nextSection + 1) * SECTION_SIZE);
     setCurrentLevelIdx(idx);
+    setSectionIndex(sectionIndex);
+    setCurrentQIndex(0);
     setLevelQuestions(questions);
     setCurrentQIndex(0);
     setScreen("game");
@@ -432,6 +440,15 @@ export default function Flagmaster({ onComplete, darkMode = false }) {
   };
 
   const finishLevel = useCallback((finalScore) => {
+    const nextSection = (sectionIndex[currentLevelIdx] || 0) + 1;
+    const hasMoreSections = nextSection * SECTION_SIZE < levelPools[currentLevelIdx].length;
+    if (hasMoreSections) {
+      const nextProgress = { ...sectionIndex, [currentLevelIdx]: nextSection };
+      setSectionIndex(nextProgress);
+      localStorage.setItem("flagmaster-sections", JSON.stringify(nextProgress));
+      setScreen("worldMap");
+      return;
+    }
     setLevelCompleted(prev => {
       const next = [...prev];
       next[currentLevelIdx] = true;
@@ -606,7 +623,7 @@ export default function Flagmaster({ onComplete, darkMode = false }) {
           </svg>
           {LEVELS.map((level, i) => {
             const completed = !!levelCompleted[i];
-            const locked = i > 0 && !levelCompleted[i - 1];
+            const locked = !isCreator && i > 0 && !levelCompleted[i - 1];
             const isCurrent = !completed && !locked && i === furthest;
             const pos = NODE_POSITIONS[i];
             return (
@@ -649,7 +666,7 @@ export default function Flagmaster({ onComplete, darkMode = false }) {
         )}
         <div className="fm-region-list">
           {LEVELS.map((level, i) => {
-            const unlocked = i === 0 || levelCompleted[i - 1];
+            const unlocked = isCreator || i === 0 || levelCompleted[i - 1];
             return (
               <button
                 key={i}
