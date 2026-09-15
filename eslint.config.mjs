@@ -1,6 +1,6 @@
 import { defineConfig, globalIgnores } from "eslint/config";
-import nextVitals from "eslint-config-next/core-web-vitals";
-import nextTs from "eslint-config-next/typescript";
+import nextVitals from "eslint-config-next/core-web-vitals.js";
+import nextTs from "eslint-config-next/typescript.js";
 
 // Dependency direction: Engine -> SDK -> Games -> App, never the reverse.
 // `hooks/`, `config/`, `types/`, `lib/`, `constants/` are a shared foundation

@@ -51,7 +51,11 @@ function GameCard({
         <div className="card-cover-icon">
           {GAME_ICONS[gameId] ?? '🎮'}
         </div>
-        {premium && <span className="game-card-lock" aria-label="Teacher Pro game">🔒</span>}
+        {premium && (
+          <span className="game-card-lock-wrap" aria-label="Teacher Pro game">
+            <span className="game-card-lock">🔒</span>
+          </span>
+        )}
       </div>
 
       <h3 className="card-name">

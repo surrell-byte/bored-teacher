@@ -428,6 +428,7 @@ export default function FarmGameV1({ onComplete }) {
   let currentQuestions = [];
   let currentQuestionIndex = 0;
   let currentScore = 0;
+  let totalScore = 0;
   let answered = false;
   let gameActive = false;
   let levelTimeout = null;
@@ -598,6 +599,8 @@ export default function FarmGameV1({ onComplete }) {
     stopCurrentAudio();
     clearPeekBlur();
 
+    totalScore += currentScore;
+
     // Unlock next level
     const nextLevel = levels[currentLevelIndex + 1];
     if (nextLevel && !nextLevel.unlocked) {
@@ -620,9 +623,14 @@ export default function FarmGameV1({ onComplete }) {
       }, 1800);
     } else {
       // All 3 levels completed → show victory screen
-      const msg = '🏆 You scored ' + currentScore + '/' + currentQuestions.length + ' in the final level!';
+      const finalScore = totalScore;
+      const totalPossible = levels.reduce((sum, level) => {
+        const levelAnimals = animalPool.filter(animal => level.animals.includes(animal.name));
+        return sum + levelAnimals.length;
+      }, 0);
+      const msg = '🏆 You scored ' + finalScore + '/' + totalPossible + ' across all levels!';
       document.getElementById("victoryMessage").textContent = msg;
-      if (window.__farmGameComplete) window.__farmGameComplete(currentScore, Math.round((currentScore / Math.max(currentQuestions.length, 1)) * 100));
+      if (window.__farmGameComplete) window.__farmGameComplete(finalScore, Math.round((finalScore / Math.max(totalPossible, 1)) * 100));
       showScreen("victoryScreen");
     }
   }
@@ -681,6 +689,7 @@ export default function FarmGameV1({ onComplete }) {
     const name = inputName.value.trim();
     if (name === "") { alert("🐄 Please enter your name to start farming!"); return; }
     playerName = name;
+    totalScore = 0;
     displayNameSpan.textContent = playerName;
     levels[0].unlocked = true;
     levels[1].unlocked = false;

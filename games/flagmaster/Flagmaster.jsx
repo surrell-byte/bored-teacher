@@ -354,6 +354,12 @@ export default function Flagmaster({ onComplete, darkMode = false }) {
 
   const advanceTimeoutRef = useRef(null);
 
+  useEffect(() => {
+    const menu = () => setScreen("worldMap");
+    window.addEventListener("flagmaster:main-menu", menu);
+    return () => window.removeEventListener("flagmaster:main-menu", menu);
+  }, []);
+
   // Hydrate the passport form once the saved profile loads from storage.
   useEffect(() => {
     if (profile) {

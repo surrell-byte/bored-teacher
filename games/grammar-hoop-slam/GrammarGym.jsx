@@ -97,7 +97,7 @@ function getRank(score) {
 }
 
 export default function GrammarGym({ onComplete }) {
-  const [screen, setScreen] = useState('title');
+  const [screen, setScreen] = useState('map');
   const [level, setLevel] = useState(0);
   const [unlocked, setUnlocked] = useState([true, false, false, false, false]);
   const [questions, setQuestions] = useState([]);
@@ -114,6 +114,12 @@ export default function GrammarGym({ onComplete }) {
 
   const currentLevel = LEVELS[level];
   const current = questions[questionIndex];
+
+  useEffect(() => {
+    const menu = () => setScreen('map');
+    window.addEventListener('grammar-gym:main-menu', menu);
+    return () => window.removeEventListener('grammar-gym:main-menu', menu);
+  }, []);
 
   function startLevel(nextLevel) {
     setLevel(nextLevel);

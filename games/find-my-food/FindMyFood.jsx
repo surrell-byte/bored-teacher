@@ -250,8 +250,8 @@ const STYLES = `
    column. This keeps the board prominent without making its cards oversized. */
 @media (min-width: 760px) {
   .ff-root { padding: clamp(28px, 4vw, 64px); }
-  .ff-screen.ff-setup-screen { max-width: 1100px; }
-  .ff-setup-card { padding: 26px 32px 28px; }
+  .ff-screen.ff-setup-screen { max-width: 1200px; }
+  .ff-setup-card { padding: 32px 40px 36px; }
   .ff-setup-card .ff-logo-badge { margin-bottom:8px; }
   .ff-setup-card .ff-hero-title { font-size:2.45rem; margin-bottom:4px; }
   .ff-setup-card .ff-hero-sub { margin-bottom:12px; font-size:.9rem; }
@@ -267,11 +267,13 @@ const STYLES = `
 
 @media (min-width: 960px) {
   .ff-root { align-items:center; }
-  .ff-screen.ff-game-screen { max-width: 1240px; }
+  .ff-screen.ff-setup-screen { max-width: 1220px; }
+  .ff-screen.ff-howto-screen { max-width: 1240px; }
+  .ff-screen.ff-game-screen { max-width: 1320px; }
   .ff-game-card { padding: clamp(28px, 3vw, 44px); }
   .ff-game-layout {
     display:grid;
-    grid-template-columns: minmax(460px, 1fr) minmax(290px, 360px);
+    grid-template-columns: minmax(620px, 1.45fr) minmax(300px, 360px);
     align-items:start;
     gap: clamp(28px, 4vw, 64px);
   }
@@ -395,7 +397,7 @@ export default function FindMyFood({ onComplete, themeId }) {
   }, []);
 
   useEffect(() => {
-    const menu = () => setScreen("welcome");
+    const menu = () => setScreen("mode");
     const newGame = () => startGame(pairCount);
     window.addEventListener("find-my-food:main-menu", menu);
     window.addEventListener("find-my-food:new-game", newGame);
