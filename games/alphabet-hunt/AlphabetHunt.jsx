@@ -75,11 +75,11 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
     for (let a = 0; a < 5; a++) contents.push('p1');
     for (let b = 0; b < 5; b++) contents.push('p2');
     for (let c = 0; c < 16; c++) contents.push(EFFECTS[c % EFFECTS.length]);
-    shuffle(contents);
+    const shuffledContents = shuffle(contents);
 
     const newTiles = letters.map((letter, idx) => ({
       letter,
-      content: contents[idx],
+      content: shuffledContents[idx],
       revealed: false,
       matched: false,
     }));
@@ -420,10 +420,11 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
                 className={`ah-tile ${tile.revealed ? 'flipped' : ''} ${tile.matched ? 'matched' : ''}`}
                 onClick={() => handleTileClick(idx)}
                 disabled={lock || tile.matched}
+                aria-label={tile.revealed ? `${tile.letter}: ${tile.content === 'p1' ? av1 : tile.content === 'p2' ? av2 : tile.content}` : `Choose ${tile.letter}`}
               >
                 <div className="ah-tile-inner">
-                  <div className="ah-tile-face ah-tile-front">{tile.letter}</div>
-                  <div className="ah-tile-face ah-tile-back">
+                  <div className="ah-tile-face ah-tile-front" aria-hidden={tile.revealed}>{tile.letter}</div>
+                  <div className="ah-tile-face ah-tile-back" aria-hidden={!tile.revealed}>
                     {tile.content === 'p1' ? av1 : tile.content === 'p2' ? av2 : tile.content}
                   </div>
                 </div>
