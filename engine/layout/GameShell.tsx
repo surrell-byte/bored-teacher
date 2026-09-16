@@ -67,6 +67,7 @@ export default function GameShell({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [soundOn, setSoundOn] = useState(true);
   const [showExitNotice, setShowExitNotice] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const shellRef = useRef<HTMLDivElement>(null);
 
   const emit = useCallback((event: GameSessionEvent) => {
@@ -90,6 +91,15 @@ export default function GameShell({
   useEffect(() => {
     setSoundEnabled(soundOn);
   }, [soundOn]);
+
+  useEffect(() => {
+    if (!mobileMenuOpen) return undefined;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMobileMenuOpen(false);
+    };
+    window.addEventListener('keydown', closeOnEscape);
+    return () => window.removeEventListener('keydown', closeOnEscape);
+  }, [mobileMenuOpen]);
 
   useEffect(() => {
     const syncFullscreen = () => setIsFullscreen(document.fullscreenElement === shellRef.current);
@@ -174,7 +184,7 @@ export default function GameShell({
                     </div>
                   )}
                   {themeOptions && themeValue && onThemeChange && (
-                    <label className="game-shell-header-action" style={{ gap: 6 }}>
+                    <label className="game-shell-header-action game-shell-mobile-secondary" style={{ gap: 6 }}>
                       <span aria-hidden="true">🎨</span>
                       <select
                         value={themeValue}
@@ -189,7 +199,7 @@ export default function GameShell({
                   {headerExtra}
                   <button
                     type="button"
-                    className="game-shell-header-action"
+                    className="game-shell-header-action game-shell-mobile-secondary"
                     onClick={() => setSoundOn(value => !value)}
                     aria-label={soundOn ? 'Mute sound' : 'Enable sound'}
                     title={soundOn ? 'Mute sound' : 'Enable sound'}
@@ -197,16 +207,16 @@ export default function GameShell({
                     <span aria-hidden="true">{soundOn ? '🔊' : '🔇'}</span>
                     <span className="game-shell-action-label">{soundOn ? 'Sound' : 'Sound off'}</span>
                   </button>
-                  {!hidePauseControl && <button type="button" className="game-shell-header-action" onClick={paused ? resume : pause} aria-pressed={paused} aria-label={paused ? 'Resume game' : 'Pause game'} title={paused ? 'Resume game' : 'Pause game'}>
+                  {!hidePauseControl && <button type="button" className="game-shell-header-action game-shell-mobile-secondary" onClick={paused ? resume : pause} aria-pressed={paused} aria-label={paused ? 'Resume game' : 'Pause game'} title={paused ? 'Resume game' : 'Pause game'}>
                     <span aria-hidden="true">{paused ? '▶' : '⏸'}</span>
                     <span className="game-shell-action-label">{paused ? 'Resume' : 'Pause'}</span>
                   </button>}
-                  <button type="button" className="game-shell-header-action" onClick={toggleFullscreen} aria-label={isFullscreen ? 'Exit full screen' : 'Enter full screen'} title={isFullscreen ? 'Exit full screen' : 'Enter full screen'}>
+                  <button type="button" className="game-shell-header-action game-shell-mobile-secondary" onClick={toggleFullscreen} aria-label={isFullscreen ? 'Exit full screen' : 'Enter full screen'} title={isFullscreen ? 'Exit full screen' : 'Enter full screen'}>
                     <span aria-hidden="true">⛶</span>
                     <span className="game-shell-action-label">{isFullscreen ? 'Exit full screen' : 'Full screen'}</span>
                   </button>
                   {!hideMainMenuButton && onMainMenu && (
-                    <button type="button" className="game-shell-header-action" onClick={onMainMenu} aria-label="Main menu" title="Main menu">
+                    <button type="button" className="game-shell-header-action game-shell-mobile-secondary" onClick={onMainMenu} aria-label="Main menu" title="Main menu">
                       <span aria-hidden="true">⌂</span>
                       <span className="game-shell-action-label">Main menu</span>
                     </button>
@@ -214,7 +224,7 @@ export default function GameShell({
                   {!hideExitControl && (
                     <button
                       type="button"
-                      className="game-shell-header-action"
+                      className="game-shell-header-action game-shell-mobile-secondary"
                       onClick={() => setShowExitNotice(true)}
                       aria-label="Exit game"
                       title="Exit game"
@@ -223,6 +233,50 @@ export default function GameShell({
                       <span className="game-shell-action-label">Exit</span>
                     </button>
                   )}
+                  <div className="game-shell-mobile-menu-wrap">
+                    <button
+                      type="button"
+                      className="game-shell-header-action game-shell-mobile-menu-toggle"
+                      onClick={() => setMobileMenuOpen(open => !open)}
+                      aria-label="Game menu"
+                      aria-expanded={mobileMenuOpen}
+                      title="Game menu"
+                    >
+                      <span aria-hidden="true">⋮</span>
+                    </button>
+                    {mobileMenuOpen && (
+                      <div className="game-shell-mobile-menu" role="menu">
+                        {themeOptions && themeValue && onThemeChange && <label className="game-shell-mobile-menu-theme">
+                          <span aria-hidden="true">🎨</span>
+                          <span>Theme</span>
+                          <select value={themeValue} onChange={event => onThemeChange(event.target.value)} aria-label={`Choose ${title} theme`}>
+                            {themeOptions.map(theme => <option key={theme.id} value={theme.id}>{theme.name}</option>)}
+                          </select>
+                        </label>}
+                        <button type="button" role="menuitem" onClick={() => setSoundOn(value => !value)}>
+                          <span aria-hidden="true">{soundOn ? '🔊' : '🔇'}</span>
+                          <span>Sound</span>
+                          <small>{soundOn ? 'On' : 'Off'}</small>
+                        </button>
+                        {!hidePauseControl && <button type="button" role="menuitem" onClick={() => { setMobileMenuOpen(false); paused ? resume() : pause(); }}>
+                          <span aria-hidden="true">{paused ? '▶' : '⏸'}</span>
+                          <span>{paused ? 'Resume' : 'Pause'}</span>
+                        </button>}
+                        <button type="button" role="menuitem" onClick={() => { setMobileMenuOpen(false); void toggleFullscreen(); }}>
+                          <span aria-hidden="true">⛶</span>
+                          <span>{isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}</span>
+                        </button>
+                        {onMainMenu && !hideMainMenuButton && <button type="button" role="menuitem" onClick={() => { setMobileMenuOpen(false); onMainMenu(); }}>
+                          <span aria-hidden="true">⌂</span>
+                          <span>Main menu</span>
+                        </button>}
+                        {!hideExitControl && <button type="button" role="menuitem" className="danger" onClick={() => { setMobileMenuOpen(false); setShowExitNotice(true); }}>
+                          <span aria-hidden="true">✕</span>
+                          <span>Exit game</span>
+                        </button>}
+                      </div>
+                    )}
+                  </div>
                 </>
               }
             />
