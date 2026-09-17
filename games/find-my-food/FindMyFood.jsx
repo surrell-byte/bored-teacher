@@ -226,9 +226,9 @@ const STYLES = `
 .ff-howto-step strong { color:var(--text); }
 .ff-howto-num { flex:0 0 26px; height:26px; display:flex; align-items:center; justify-content:center; border-radius:50%; background:var(--accent-glow); color:var(--accent); font-family:'DM Mono',monospace; font-weight:700; }
 
-.ff-grid { display:grid; gap:10px; width:100%; margin:0 auto; grid-template-columns: repeat(4, 1fr); }
+.ff-grid { display:grid; gap:12px; width:100%; margin:0 auto; grid-template-columns: repeat(4, minmax(78px, 1fr)); }
 
-.ff-tile { width:100%; aspect-ratio:1; cursor:pointer; position:relative; transform-style:preserve-3d; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.ff-tile { width:100%; aspect-ratio:1; min-height: 92px; cursor:pointer; position:relative; transform-style:preserve-3d; transition: transform 0.2s ease, box-shadow 0.2s ease; }
 .ff-tile:not(.flipped):not(.matched):hover { transform: translateY(-4px); box-shadow: 0 10px 25px rgba(0,0,0,0.35); }
 .ff-tile-inner { position:absolute; inset:0; border-radius:14px; transform-style:preserve-3d; transition: transform 0.5s cubic-bezier(0.23,1,0.32,1); }
 .ff-tile.flipped .ff-tile-inner { transform: rotateY(180deg); }
@@ -278,8 +278,8 @@ const STYLES = `
   .ff-root { align-items:center; }
   .ff-screen.ff-setup-screen { max-width: 1320px; }
   .ff-screen.ff-howto-screen { max-width: 1240px; }
-  .ff-screen.ff-game-screen { max-width: 1320px; }
-  .ff-game-card { padding: clamp(28px, 3vw, 44px); }
+  .ff-screen.ff-game-screen { max-width: 1380px; }
+  .ff-game-card { padding: clamp(30px, 2.5vw, 52px); }
   .ff-game-layout {
     display:grid;
     grid-template-columns: minmax(620px, 1.45fr) minmax(300px, 360px);
@@ -320,7 +320,8 @@ const STYLES = `
   .ff-game-actions { text-align:left; }
   .ff-game-board .ff-progress-row { margin-bottom:18px; }
   .ff-game-board .ff-match-popup { min-height:32px; margin-bottom:18px; }
-  .ff-game-board .ff-grid { gap:14px; max-width:760px; margin-left:0; }
+  .ff-game-board .ff-grid { gap:18px; max-width:860px; margin-left:0; }
+  .ff-tile { min-height: 118px; }
 }
 
 @media (min-width: 760px) {

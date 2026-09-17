@@ -44,6 +44,7 @@ export const TEACHER_PRO_GAME_IDS = new Set([
   'parachutedrop',
   'tornado',
   'vocabvalley',
+  'tilelanes',
 ]);
 
 export function canAccessGame(gameId: string) {

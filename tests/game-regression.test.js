@@ -41,3 +41,23 @@ test('Migrated games use direct React components without the legacy adapter', ()
     assert.match(read(componentPath), /RoundChallenge/);
   }
 });
+
+test('PowerPoint Slide adds a castle-door quiz game with a question screen and back button', () => {
+  const catalog = read('games/catalog.components.tsx');
+  const component = read('games/powerpoint-slide/PowerPointSlide.jsx');
+
+  assert.match(catalog, /powerpointslide/);
+  assert.match(component, /QUESTION/);
+  assert.match(component, /BACK/);
+  assert.match(component, /castle|door|wizard/i);
+});
+
+test('Tile Lanes is registered as a Teacher Pro game', () => {
+  const catalog = read('games/catalog.data.ts');
+  const access = read('config/game-access.ts');
+  const component = read('games/catalog.components.tsx');
+
+  assert.match(catalog, /tilelanes/);
+  assert.match(access, /tilelanes/);
+  assert.match(component, /tilelanes/);
+});

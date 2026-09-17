@@ -219,6 +219,18 @@ export default function Navbar() {
           )}
 
           {/* Profile dropdown — position:relative is the anchor */}
+          {hydrated && (
+            <button
+              className="topbar-signout"
+              type="button"
+              onClick={handleLogout}
+              disabled={loggingOut}
+              title={isGuest ? 'Leave guest mode' : 'Sign out'}
+            >
+              {loggingOut ? '⏳' : isGuest ? '🔓' : '🚪'} {loggingOut ? 'Signing out…' : isGuest ? 'Leave guest mode' : 'Sign out'}
+            </button>
+          )}
+
           <div
             className="profile-dropdown-wrap"
             ref={dropdownRef}
@@ -226,8 +238,8 @@ export default function Navbar() {
           >
             <button
               className="player-chip-btn"
-              onClick={() => router.push('/profile')}
-              aria-expanded={false}
+              onClick={() => setShowProfileMenu(value => !value)}
+              aria-expanded={showProfileMenu}
               aria-haspopup="true"
               aria-label={`Profile menu for ${state.name}`}
               type="button"
