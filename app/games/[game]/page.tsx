@@ -52,6 +52,7 @@ export default function GamePage() {
   const [showRouteWelcome, setShowRouteWelcome] = useState(!GAMES_WITH_WELCOME.has(gameId));
   const [accessReady, setAccessReady] = useState(false);
   const [canPlay, setCanPlay] = useState(false);
+  const [routeError, setRouteError] = useState<string | null>(null);
   const [isCreator, setIsCreator] = useState(false);
   const [hasTeacherPro, setHasTeacherPro] = useState(false);
   const [countAddHud, setCountAddHud] = useState<any>(null);
@@ -66,7 +67,31 @@ export default function GamePage() {
 
   useEffect(() => {
     setShowRouteWelcome(!GAMES_WITH_WELCOME.has(gameId));
+    setRouteError(null);
   }, [gameId]);
+
+  useEffect(() => {
+    const handleChunkError = () => {
+      setRouteError('The game bundle was stale. Clearing the cached build and reloading…');
+      if (typeof window !== 'undefined') {
+        window.sessionStorage.setItem('stale-game-bundle', 'true');
+      }
+    };
+
+    window.addEventListener('error', handleChunkError);
+    return () => window.removeEventListener('error', handleChunkError);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const staleFlag = window.sessionStorage.getItem('stale-game-bundle');
+    if (staleFlag === 'true') {
+      window.sessionStorage.removeItem('stale-game-bundle');
+      setTimeout(() => {
+        window.location.reload();
+      }, 250);
+    }
+  }, []);
 
   useEffect(() => onAuthStateChanged(user => {
     const creator = isCreatorUser(user);
@@ -232,6 +257,18 @@ export default function GamePage() {
         <h1 style={{ fontFamily: 'var(--font-display, Syne)', fontWeight: 800, fontSize: '1.4rem' }}>Game not found</h1>
         <p style={{ color: 'var(--muted)' }}>"{gameId}" doesn't match any game in the library.</p>
         <Link href="/hub" className="pill-btn" style={{ textDecoration: 'none' }}>← Back to Hub</Link>
+      </div>
+    );
+  }
+
+  if (routeError) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: 24 }}>
+        <div style={{ maxWidth: 520, width: '100%', padding: 28, borderRadius: 20, border: '1px solid var(--border-bright)', background: 'var(--surface-strong)', textAlign: 'center' }}>
+          <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>🔄</div>
+          <h1 style={{ margin: '0 0 10px', fontSize: '1.7rem', fontFamily: 'var(--font-display, Syne)' }}>Refreshing the game</h1>
+          <p style={{ margin: 0, color: 'var(--muted)', lineHeight: 1.6 }}>{routeError}</p>
+        </div>
       </div>
     );
   }

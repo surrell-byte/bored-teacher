@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "node scripts/clear-next-cache.mjs && next dev",
     "build": "npm run check-env && npm run check-games && npm test && next build",
     "check-env": "node scripts/check-env.mjs",
     "test": "node --test tests/*.test.js",
