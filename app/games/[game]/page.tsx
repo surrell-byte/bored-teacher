@@ -25,6 +25,7 @@ const GAMES_WITH_WELCOME = new Set([
   'finnthefox', 'hiddencolours', 'oceanquest', 'parachutedrop', 'weatherwizard',
   'phonicsadventure', 'riddlebombs', 'tictacroll', 'tornado', 'wordfusion', 'weatherwizard', 'victoryvet',
   'turbodash',
+  'lookandsay',
   'numberclouds',
   'countadd',
   'moneyblocks',
@@ -64,6 +65,7 @@ export default function GamePage() {
   const [whatsMissingHud, setWhatsMissingHud] = useState<any>(null);
   const [whatsMissingTheme, setWhatsMissingTheme] = useState('green');
   const [moneyBlocksTheme, setMoneyBlocksTheme] = useState('black');
+  const [findMyFoodTheme, setFindMyFoodTheme] = useState('dark');
 
   useEffect(() => {
     setShowRouteWelcome(!GAMES_WITH_WELCOME.has(gameId));
@@ -136,6 +138,17 @@ export default function GamePage() {
   const isFindMyFood = gameId === 'findmyfood';
   const isWhatsMissing = gameId === 'whatsmissing';
   const isMoneyBlocks = gameId === 'moneyblocks';
+  const findMyFoodShellTheme = {
+    dark: { nav: '#111215', navRaised: '#252529', navText: '#f0ede8', navMuted: '#b9b3aa', background: '#0d0d0f' },
+    light: { nav: '#f4f1eb', navRaised: '#ffffff', navText: '#1a1814', navMuted: '#6b6258', background: '#f4f1eb' },
+    gold: { nav: '#141416', navRaised: '#2a2520', navText: '#f0ede8', navMuted: '#c7b27d', background: '#0d0d0f' },
+  }[findMyFoodTheme] ?? { nav: '#111215', navRaised: '#252529', navText: '#f0ede8', navMuted: '#b9b3aa', background: '#0d0d0f' };
+  const moneyBlocksShellTheme = {
+    black: { nav: '#080809', navRaised: '#202127', navText: '#f0ece2', navMuted: '#aaa49b', background: '#080809' },
+    gold: { nav: '#171109', navRaised: '#3a2912', navText: '#fff7df', navMuted: '#dfc681', background: '#171109' },
+    white: { nav: '#f5f3ee', navRaised: '#ffffff', navText: '#1c1a17', navMuted: '#6b6560', background: '#f5f3ee' },
+  }[moneyBlocksTheme] ?? { nav: '#080809', navRaised: '#202127', navText: '#f0ece2', navMuted: '#aaa49b', background: '#080809' };
+  const isPlantVegetableQuiz = gameId === 'plantvegetablequiz';
   const zooShellTheme = {
     savanna: { nav: '#4a3728', navRaised: '#b8863a', navText: '#fff8e7', navMuted: '#fce9c8', background: '#d9c9a8' },
     ocean: { nav: '#16445a', navRaised: '#2f8da3', navText: '#effcff', navMuted: '#bde8ec', background: '#8ed1d5' },
@@ -288,10 +301,10 @@ export default function GamePage() {
         hidePauseControl={isFlagmaster}
         hideExitControl={false}
         controls={null}
-        themeVars={isTicTacRoll ? { nav: ticTheme.surface, navRaised: ticTheme.bg, navText: ticTheme.text, navMuted: ticTheme.muted, background: ticTheme.bg } : isAlphabetHunt ? { nav: alphabetTheme === 'ocean' ? '#087f8c' : alphabetTheme === 'arcade' ? '#352354' : '#1b1b1f', navRaised: alphabetTheme === 'ocean' ? '#e5a83b' : alphabetTheme === 'arcade' ? '#ff71ce' : '#c98a2c', navText: '#fffaf0', navMuted: '#eee8da', background: alphabetTheme === 'ocean' ? '#dff4f2' : alphabetTheme === 'arcade' ? '#24183d' : '#eee8da' } : isWordFusion ? { nav: wordFusionTheme === 'forest' ? '#214c3c' : wordFusionTheme === 'sunset' ? '#7b3f2e' : '#245b6c', navRaised: wordFusionTheme === 'forest' ? '#75b798' : wordFusionTheme === 'sunset' ? '#e29b52' : '#8ed1d5', navText: '#fffaf0', navMuted: '#d6eeee', background: wordFusionTheme === 'forest' ? '#dcefe2' : wordFusionTheme === 'sunset' ? '#f4d4b5' : '#d9eef0' } : isZooGame ? zooShellTheme : isFruitWordHunt ? { nav: '#a5662a', navRaised: '#f7b05e', navText: '#fffbee', navMuted: '#fff0cf', background: '#ffe0b5' } : isFlagmaster ? { nav: flagDarkMode ? '#05070d' : '#0b1628', navRaised: flagDarkMode ? '#121a2c' : '#1a3358', navText: flagDarkMode ? '#d4daf0' : '#f9f3e3', navMuted: flagDarkMode ? '#aebbd2' : '#f0e6c8', background: flagDarkMode ? '#05070d' : '#f9f3e3' } : undefined}
-        themeOptions={isTicTacRoll ? TIC_TAC_ROLL_THEMES.map(theme => ({ id: theme.id, name: theme.name })) : isAlphabetHunt ? [{ id: 'classroom', name: 'Classroom' }, { id: 'ocean', name: 'Ocean' }, { id: 'arcade', name: 'Arcade' }] : isWordFusion ? [{ id: 'ocean', name: 'Ocean' }, { id: 'forest', name: 'Forest' }, { id: 'sunset', name: 'Sunset' }] : isZooGame ? [{ id: 'savanna', name: 'Savanna' }, { id: 'ocean', name: 'Ocean' }, { id: 'jungle', name: 'Jungle' }] : isWhatsMissing ? [{ id: 'green', name: 'Green' }, { id: 'blue', name: 'Blue' }, { id: 'red', name: 'Red' }, { id: 'yellow', name: 'Yellow' }, { id: 'white', name: 'White' }, { id: 'black', name: 'Black' }] : isMoneyBlocks ? [{ id: 'black', name: 'Black' }, { id: 'white', name: 'White' }, { id: 'red', name: 'Red' }, { id: 'blue', name: 'Blue' }, { id: 'green', name: 'Green' }, { id: 'yellow', name: 'Yellow' }] : undefined}
-        themeValue={isTicTacRoll ? ticTheme.id : isAlphabetHunt ? alphabetTheme : isWordFusion ? wordFusionTheme : isZooGame ? zooTheme : isWhatsMissing ? whatsMissingTheme : isMoneyBlocks ? moneyBlocksTheme : undefined}
-        onThemeChange={isTicTacRoll ? themeId => setTicTheme(TIC_TAC_ROLL_THEMES.find(theme => theme.id === themeId) ?? TIC_TAC_ROLL_THEMES[0]) : isAlphabetHunt ? setAlphabetTheme : isWordFusion ? setWordFusionTheme : isZooGame ? setZooTheme : isWhatsMissing ? setWhatsMissingTheme : isMoneyBlocks ? setMoneyBlocksTheme : undefined}
+        themeVars={isTicTacRoll ? { nav: ticTheme.surface, navRaised: ticTheme.bg, navText: ticTheme.text, navMuted: ticTheme.muted, background: ticTheme.bg } : isAlphabetHunt ? { nav: alphabetTheme === 'ocean' ? '#087f8c' : alphabetTheme === 'arcade' ? '#352354' : '#1b1b1f', navRaised: alphabetTheme === 'ocean' ? '#e5a83b' : alphabetTheme === 'arcade' ? '#ff71ce' : '#c98a2c', navText: '#fffaf0', navMuted: '#eee8da', background: alphabetTheme === 'ocean' ? '#dff4f2' : alphabetTheme === 'arcade' ? '#24183d' : '#eee8da' } : isWordFusion ? { nav: wordFusionTheme === 'forest' ? '#214c3c' : wordFusionTheme === 'sunset' ? '#7b3f2e' : '#245b6c', navRaised: wordFusionTheme === 'forest' ? '#75b798' : wordFusionTheme === 'sunset' ? '#e29b52' : '#8ed1d5', navText: '#fffaf0', navMuted: '#d6eeee', background: wordFusionTheme === 'forest' ? '#dcefe2' : wordFusionTheme === 'sunset' ? '#f4d4b5' : '#d9eef0' } : isZooGame ? zooShellTheme : isFruitWordHunt ? { nav: '#a5662a', navRaised: '#f7b05e', navText: '#fffbee', navMuted: '#fff0cf', background: '#ffe0b5' } : isFlagmaster ? { nav: flagDarkMode ? '#05070d' : '#0b1628', navRaised: flagDarkMode ? '#121a2c' : '#1a3358', navText: flagDarkMode ? '#d4daf0' : '#f9f3e3', navMuted: flagDarkMode ? '#aebbd2' : '#f0e6c8', background: flagDarkMode ? '#05070d' : '#f9f3e3' } : isFindMyFood ? findMyFoodShellTheme : isMoneyBlocks ? moneyBlocksShellTheme : undefined}
+        themeOptions={isTicTacRoll ? TIC_TAC_ROLL_THEMES.map(theme => ({ id: theme.id, name: theme.name })) : isAlphabetHunt ? [{ id: 'classroom', name: 'Classroom' }, { id: 'ocean', name: 'Ocean' }, { id: 'arcade', name: 'Arcade' }] : isWordFusion ? [{ id: 'ocean', name: 'Ocean' }, { id: 'forest', name: 'Forest' }, { id: 'sunset', name: 'Sunset' }] : isZooGame ? [{ id: 'savanna', name: 'Savanna' }, { id: 'ocean', name: 'Ocean' }, { id: 'jungle', name: 'Jungle' }] : isWhatsMissing ? [{ id: 'green', name: 'Green' }, { id: 'blue', name: 'Blue' }, { id: 'red', name: 'Red' }, { id: 'yellow', name: 'Yellow' }, { id: 'white', name: 'White' }, { id: 'black', name: 'Black' }] : isMoneyBlocks ? [{ id: 'black', name: 'Black' }, { id: 'gold', name: 'Gold' }, { id: 'white', name: 'White' }] : isFindMyFood ? [{ id: 'dark', name: 'Dark' }, { id: 'light', name: 'Light' }, { id: 'gold', name: 'Gold' }] : undefined}
+        themeValue={isTicTacRoll ? ticTheme.id : isAlphabetHunt ? alphabetTheme : isWordFusion ? wordFusionTheme : isZooGame ? zooTheme : isWhatsMissing ? whatsMissingTheme : isMoneyBlocks ? moneyBlocksTheme : isFindMyFood ? findMyFoodTheme : undefined}
+        onThemeChange={isTicTacRoll ? themeId => setTicTheme(TIC_TAC_ROLL_THEMES.find(theme => theme.id === themeId) ?? TIC_TAC_ROLL_THEMES[0]) : isAlphabetHunt ? setAlphabetTheme : isWordFusion ? setWordFusionTheme : isZooGame ? setZooTheme : isWhatsMissing ? setWhatsMissingTheme : isMoneyBlocks ? setMoneyBlocksTheme : isFindMyFood ? setFindMyFoodTheme : undefined}
         headerExtra={
           <>
             {isVocabValley && <button className="game-shell-header-action" type="button" onClick={() => window.dispatchEvent(new Event('vocab-valley:trail-map'))} aria-label="Trail map" title="Trail map"><span aria-hidden="true">←</span><span className="game-shell-action-label">Trail map</span></button>}
@@ -391,17 +404,60 @@ export default function GamePage() {
       }>
         <div style={{ flex: '1 1 0', minHeight: 0, overflow: 'auto' }}>
           {showRouteWelcome ? (
-            <section className="route-game-welcome" aria-labelledby="route-game-welcome-title">
-              <div className="route-game-welcome-card">
-                <div className="route-game-welcome-icon" aria-hidden="true">{gameIcon}</div>
-                <p className="route-game-welcome-kicker">Welcome to</p>
-                <h1 id="route-game-welcome-title">{gameName}</h1>
-                <p>Get ready to play, learn, and build your best score.</p>
-                <button type="button" className="game-shell-primary-action" onClick={() => setShowRouteWelcome(false)}>
-                  Start Game
-                </button>
-              </div>
-            </section>
+            isNumberClouds ? (
+              <section className="number-clouds-welcome" aria-labelledby="number-clouds-welcome-title" style={{ minHeight: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px 16px' }}>
+                <div style={{ width: 'min(860px, 90vw)', padding: '44px 28px 32px', borderRadius: 34, background: 'rgba(255,255,255,0.28)', border: '1px solid rgba(255,255,255,0.7)', boxShadow: '0 22px 60px rgba(19,74,94,0.18)', textAlign: 'center', backdropFilter: 'blur(7px)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, fontSize: 'clamp(42px, 5vw, 62px)', fontWeight: 900, color: '#174f78', marginBottom: 8 }}>
+                    <span aria-hidden="true">☁️</span>
+                    <h1 id="number-clouds-welcome-title" style={{ margin: 0, letterSpacing: '-0.05em' }}>Number Clouds</h1>
+                  </div>
+                  <div style={{ display: 'inline-block', padding: '10px 22px', borderRadius: 999, background: 'rgba(255,255,255,0.7)', color: '#25628c', fontWeight: 900, marginBottom: 18 }}>Hop across the clouds!</div>
+                  <p style={{ margin: '0 0 22px', color: '#2f5d7b', fontSize: 'clamp(18px, 2.2vw, 26px)', fontWeight: 700 }}>Choose your flight path.</p>
+                  <div style={{ display: 'grid', gap: 14, maxWidth: 760, margin: '0 auto' }}>
+                    {['Level 1: Cloud Hopper', 'Level 2: Sky Explorer', 'Level 3: Cloud Master'].map((label, index) => (
+                      <button key={label} type="button" onClick={() => setShowRouteWelcome(false)} style={{ width: '100%', padding: '18px 22px', borderRadius: 20, background: index === 0 ? 'linear-gradient(110deg,#eafff2,#c8f2dc)' : index === 1 ? 'linear-gradient(110deg,#fff8d9,#ffeaa0)' : 'linear-gradient(110deg,#e9f3ff,#c9e2ff)', border: '1px solid rgba(255,255,255,0.75)', color: '#174d75', fontSize: 'clamp(1.1rem, 2vw, 1.8rem)', fontWeight: 800, boxShadow: '0 8px 18px rgba(38,102,137,.12)', cursor: 'pointer' }}>
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            ) : isPlantVegetableQuiz ? (
+              <section aria-labelledby="plant-quiz-welcome-title" style={{ minHeight: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '28px 12px' }}>
+                <div style={{ width: 'min(980px, 92vw)', background: 'rgba(255,255,255,0.16)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 30, boxShadow: '0 20px 50px rgba(11,31,26,0.16)', backdropFilter: 'blur(10px)', padding: '26px 24px 30px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 18, fontWeight: 800, color: '#f7fff4', fontSize: 'clamp(2.2rem, 4vw, 4rem)' }}>
+                    <span aria-hidden="true">🌱</span>
+                    <h1 id="plant-quiz-welcome-title" style={{ margin: 0, fontSize: 'inherit', letterSpacing: '-0.04em' }}>Plant &amp; Vegetable Quiz</h1>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(240px, 1fr))', gap: 18, maxWidth: 820, margin: '0 auto' }}>
+                    {[
+                      { label: 'Learn the Words', icon: '📖', tone: '#dff4e6' },
+                      { label: 'Choose the Answer', icon: '✅', tone: '#e1f0df' },
+                      { label: 'Spell It', icon: '✏️', tone: '#eff7d6' },
+                      { label: 'Plant and Veg Trivia', icon: '🧠', tone: '#e5f0ff' },
+                    ].map((entry, index) => (
+                      <button key={entry.label} type="button" onClick={() => setShowRouteWelcome(false)} style={{ border: '1px solid rgba(255,255,255,0.6)', background: entry.tone, borderRadius: 22, padding: '18px 18px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, color: '#123d2a', fontWeight: 800, cursor: 'pointer', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.5), 0 8px 24px rgba(14,53,37,0.08)' }}>
+                        <span aria-hidden="true" style={{ fontSize: '2.3rem' }}>{entry.icon}</span>
+                        <span style={{ fontSize: 'clamp(1.3rem, 2.5vw, 2rem)', letterSpacing: '-0.04em' }}>{entry.label}</span>
+                        <small style={{ display: 'block', fontSize: '0.75rem', letterSpacing: '0.12em', textTransform: 'uppercase', opacity: 0.7 }}>{index === 0 ? 'Level 1' : index === 1 ? 'Level 2' : index === 2 ? 'Level 3' : 'Level 4'}</small>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            ) : (
+              <section className="route-game-welcome" aria-labelledby="route-game-welcome-title">
+                <div className="route-game-welcome-card">
+                  <div className="route-game-welcome-icon" aria-hidden="true">{gameIcon}</div>
+                  <p className="route-game-welcome-kicker">Welcome to</p>
+                  <h1 id="route-game-welcome-title">{gameName}</h1>
+                  <p>Get ready to play, learn, and build your best score.</p>
+                  <button type="button" className="game-shell-primary-action" onClick={() => setShowRouteWelcome(false)}>
+                    Start Game
+                  </button>
+                </div>
+              </section>
+            )
           ) : (
             <GameComp
               key={gameSession}
@@ -418,6 +474,7 @@ export default function GamePage() {
               {...(isAlphabetHunt ? { themeId: alphabetTheme } : {})}
               {...(isWhatsMissing ? { themeId: whatsMissingTheme } : {})}
               {...(isMoneyBlocks ? { themeId: moneyBlocksTheme } : {})}
+              {...(isFindMyFood ? { themeId: findMyFoodTheme } : {})}
               {...(isWhatsMissing ? { onHudUpdate: setWhatsMissingHud } : {})}
             />
           )}

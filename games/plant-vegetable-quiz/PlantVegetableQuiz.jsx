@@ -78,6 +78,33 @@ function articleFor(name) {
   return /^[aeiou]/i.test(name) ? "an" : "a";
 }
 
+function isPluralNoun(name) {
+  const normalized = normalize(name);
+  if (!normalized) return false;
+  if (normalized.endsWith("s")) return true;
+  return [
+    "peas",
+    "beans",
+    "lettuce",
+    "sunflowers",
+    "roses",
+    "tulips",
+    "hibiscus",
+    "cherry blossoms",
+    "trees",
+    "evergreen trees",
+    "palm trees",
+    "sprouts",
+    "leaves",
+  ].includes(normalized);
+}
+
+function answerPhraseFor(name) {
+  const normalized = normalize(name);
+  if (!normalized) return "It is a plant.";
+  return isPluralNoun(normalized) ? `They're ${normalized}` : `It's ${articleFor(normalized)} ${normalized}`;
+}
+
 function normalize(str) {
   return str.trim().toLowerCase().replace(/\s+/g, " ");
 }
@@ -125,23 +152,6 @@ function ProgressBar({ percent }) {
         style={{ width: `${percent}%` }}
       />
     </div>
-  );
-}
-
-function StatPill({ children }) {
-  return (
-    <div className="bg-green-50 px-3 py-2 rounded-xl font-bold text-sm">{children}</div>
-  );
-}
-
-function MenuButton({ onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className="bg-green-50 hover:bg-green-100 rounded-xl px-3 py-2 font-bold text-sm text-green-950"
-    >
-      🏠 Menu
-    </button>
   );
 }
 
@@ -422,7 +432,7 @@ export default function PlantVegetableQuiz() {
       setChooseFeedback(
         isSpecial
           ? `🌱 Not quite! The correct order is: ${item.name}`
-          : `🌱 Not quite! It's ${articleFor(item.name)} ${item.name}.`
+          : `🌱 Not quite! ${answerPhraseFor(item.name)}.`
       );
     }
   }
@@ -467,7 +477,7 @@ export default function PlantVegetableQuiz() {
       const bonus = spellHintsUsed > 0 ? 0 : 5;
       setSpellStreak(newStreak);
       setSpellScore((score) => score + 10 + (newStreak > 1 ? 5 : 0) + bonus);
-      setSpellFeedback(`✅ Correct! It's ${articleFor(item.name)} ${item.name}!`);
+      setSpellFeedback(`✅ Correct! ${answerPhraseFor(item.name)}!`);
     } else {
       setSpellLives((lives) => lives - 1);
       setSpellStreak(0);
@@ -585,7 +595,7 @@ export default function PlantVegetableQuiz() {
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center p-5 bg-gradient-to-br from-green-950 via-green-800 to-green-900">
-      <div className="w-full max-w-3xl bg-green-50 text-green-950 rounded-[28px] p-6 shadow-2xl">
+      <div className="w-full max-w-5xl bg-green-50 text-green-950 rounded-[32px] p-7 sm:p-8 shadow-2xl">
         {screen === "menu" && (
           <div className="text-center py-6">
             <div className="text-6xl mb-3">🌱🥕🌻🍅</div>
@@ -666,9 +676,8 @@ export default function PlantVegetableQuiz() {
 
         {screen === "learn" && currentLearnItem && (
           <div>
-            <div className="flex justify-between items-center mb-4">
-              <div className="text-xl font-black">📖 Learn the Words</div>
-              <MenuButton onClick={() => setScreen("menu")} />
+            <div className="mb-4">
+              <div className="text-2xl sm:text-3xl font-black">📖 Learn the Words</div>
             </div>
 
             <ProgressBar percent={((learnRoundIndex + 1) / ROUNDS_PER_LEVEL) * 100} />
@@ -676,7 +685,7 @@ export default function PlantVegetableQuiz() {
 
             <div className="text-center py-2 pb-6">
               <div className="text-8xl mb-2">{currentLearnItem.emoji}</div>
-              <div className="text-3xl font-black text-green-700 mb-1">It&apos;s {articleFor(currentLearnItem.name)} {currentLearnItem.name}!</div>
+              <div className="text-5xl sm:text-6xl font-black text-green-700 mb-1">{currentLearnItem.name}</div>
               <div className="text-sm font-extrabold tracking-widest uppercase text-green-600">{currentLearnItem.category}</div>
             </div>
 
@@ -697,14 +706,8 @@ export default function PlantVegetableQuiz() {
 
         {screen === "choose" && currentChooseItem && (
           <div>
-            <div className="flex justify-between items-center mb-4 flex-wrap gap-3">
-              <div className="text-xl font-black">✅ Choose the Answer</div>
-              <div className="flex gap-2 items-center flex-wrap">
-                <StatPill>⭐ {chooseScore}</StatPill>
-                <StatPill>🔥 {chooseStreak}</StatPill>
-                <StatPill>❤️ {chooseLives}</StatPill>
-                <MenuButton onClick={() => setScreen("menu")} />
-              </div>
+            <div className="mb-4">
+              <div className="text-2xl sm:text-3xl font-black">✅ Choose the Answer</div>
             </div>
 
             <ProgressBar percent={((chooseIndex + 1) / Math.max(getCurrentChooseRound().length, 1)) * 100} />
@@ -715,7 +718,9 @@ export default function PlantVegetableQuiz() {
             )}
 
             <h2 className="text-center text-2xl sm:text-3xl font-black mb-3">
-              {currentChooseItem.type === "special" ? currentChooseItem.questionText : "What&apos;s this?"}
+              {currentChooseItem.type === "special"
+                ? currentChooseItem.questionText
+                : `${answerPhraseFor(currentChooseItem.name)}?`}
             </h2>
 
             <AnswerGrid
@@ -733,21 +738,15 @@ export default function PlantVegetableQuiz() {
 
         {screen === "spell" && currentSpellItem && (
           <div>
-            <div className="flex justify-between items-center mb-4 flex-wrap gap-3">
-              <div className="text-xl font-black">✏️ Spell It</div>
-              <div className="flex gap-2 items-center flex-wrap">
-                <StatPill>⭐ {spellScore}</StatPill>
-                <StatPill>🔥 {spellStreak}</StatPill>
-                <StatPill>❤️ {spellLives}</StatPill>
-                <MenuButton onClick={() => setScreen("menu")} />
-              </div>
+            <div className="mb-4">
+              <div className="text-2xl sm:text-3xl font-black">✏️ Spell It</div>
             </div>
 
             <ProgressBar percent={((spellIndex + 1) / Math.max(getCurrentSpellRound().length, 1)) * 100} />
             <div className="text-center text-xs font-black tracking-widest uppercase text-green-700 mb-2">Round {spellRoundIndex + 1} of {ROUNDS_PER_LEVEL}</div>
 
             <div className="text-center text-8xl py-4 pb-6">{currentSpellItem.emoji}</div>
-            <h2 className="text-center text-2xl sm:text-3xl font-black mb-3">What&apos;s this? Type the word!</h2>
+            <h2 className="text-center text-2xl sm:text-3xl font-black mb-3">Type the word.</h2>
 
             <input
               type="text"
@@ -779,14 +778,8 @@ export default function PlantVegetableQuiz() {
 
         {screen === "trivia" && currentTriviaQuestion && (
           <div>
-            <div className="flex justify-between items-center mb-4 flex-wrap gap-3">
-              <div className="text-xl font-black">🧠 Plant and Veg Trivia</div>
-              <div className="flex gap-2 items-center flex-wrap">
-                <StatPill>⭐ {triviaScore}</StatPill>
-                <StatPill>🔥 {triviaStreak}</StatPill>
-                <StatPill>❤️ {triviaLives}</StatPill>
-                <MenuButton onClick={() => setScreen("menu")} />
-              </div>
+            <div className="mb-4">
+              <div className="text-2xl sm:text-3xl font-black">🧠 Plant and Veg Trivia</div>
             </div>
 
             <ProgressBar percent={((triviaIndex + 1) / Math.max(getCurrentTriviaRound().length, 1)) * 100} />

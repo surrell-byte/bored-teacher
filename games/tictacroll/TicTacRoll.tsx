@@ -350,7 +350,7 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
     padding: "clamp(1.2rem, 2vw, 2.5rem)",
   };
 
-  const welcomeBackground = "url('/assets/images/tic-tac-roll-welcome-page-bg.webp') center/cover no-repeat";
+  const welcomeBackground = "url('/assets/images/tic-tac-roll-welcome-bg.webp') center/cover no-repeat";
   const inputBackground = "url('/assets/images/tic-tac-roll-user-input-screen-bg.webp') center/cover no-repeat";
 
   return (
@@ -359,7 +359,6 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
       {/* WELCOME SCREEN */}
       {screen === "welcome" && (
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", minHeight: "100%", padding: "2rem", textAlign: "center", background: welcomeBackground }}>
-          <div style={{ fontSize: "clamp(3rem, 8vw, 5rem)", marginBottom: "0.5rem" }}>🎲</div>
           <h1 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2.5rem, 7vw, 4.5rem)", fontWeight: 700, margin: "0 0 0.5rem", lineHeight: 1.1 }}>Tic·Tac·<em style={{ color: theme.accent }}>Roll</em></h1>
           <p style={{ color: theme.muted, fontSize: "clamp(0.9rem, 2vw, 1.1rem)", marginBottom: "2rem", letterSpacing: "0.05em" }}>Roll. Claim. Conquer.</p>
           <button onClick={() => { tone(500, 0.08, 0.07); setScreen("setup"); }} style={{ padding: "1rem 3rem", fontSize: "clamp(1rem, 2.5vw, 1.2rem)", fontWeight: 600, borderRadius: 50, border: "none", background: `linear-gradient(160deg, ${theme.accent}, ${theme.accent}dd)`, color: "#fff", cursor: "pointer", boxShadow: `0 4px 15px ${theme.glow}`, marginBottom: "1rem" }}>✦ Play Now</button>
@@ -386,6 +385,9 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
             <div style={{ padding: "1rem", borderRadius: 12, border: `1px solid ${theme.border}`, background: theme.card, opacity: playerCount === 1 || playerCount === null ? 0.62 : 1 }}>
               <label style={{ fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: theme.muted, display: "block", marginBottom: "0.5rem" }}>Player 2</label>
               <input disabled={playerCount !== 2} value={player2.name} onChange={e => setPlayer2({ ...player2, name: e.target.value })} placeholder={playerCount === 1 ? "AI opponent" : "Enter player 2 name..."} maxLength={18} style={{ width: "100%", padding: "0.8rem 1rem", borderRadius: 12, border: `1px solid ${theme.border}`, background: theme.bg, color: theme.text, fontSize: "1rem", outline: "none" }} />
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: "0.5rem", marginTop: "0.9rem" }}>
+                {AVATARS.map(av => <button key={av} type="button" disabled={playerCount !== 2} onClick={() => setPlayer2({ ...player2, avatar: av })} style={{ padding: "0.45rem", borderRadius: 10, border: player2.avatar === av ? `2px solid ${theme.accent}` : `1px solid ${theme.border}`, background: player2.avatar === av ? theme.glow : theme.card, color: theme.text, cursor: playerCount === 2 ? "pointer" : "not-allowed", opacity: playerCount === 2 ? 1 : 0.5 }}>{av}</button>)}
+              </div>
             </div>
           </div>
           <label style={{ fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: theme.muted, display: "block", marginBottom: "0.5rem" }}>Choose Avatar</label>

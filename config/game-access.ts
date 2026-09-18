@@ -17,6 +17,7 @@ export const COMING_SOON_GAME_IDS = new Set([
   'pacman',
   'picturerace',
   'tankwars',
+  'powerpointslide',
   'unicorn',
   'turbodash',
   'superwings',

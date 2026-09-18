@@ -57,6 +57,25 @@
   --board-border: rgba(80, 75, 65, 0.16);
 }
 
+.money-blocks.theme-gold {
+  --bg: #171109;
+  --panel: #21180d;
+  --panel-border: rgba(232, 201, 122, 0.26);
+  --gold: #c9a961;
+  --gold-bright: #f0d58b;
+  --gold-deep: #8c6b33;
+  --ivory: #fff7df;
+  --ivory-dim: #c7b27d;
+  --graphite: #2f2415;
+  --graphite-light: #44331c;
+  --bg-top: rgba(232, 201, 122, 0.1);
+  --bg-deep: #21180d;
+  --bg-deep-end: #0c0804;
+  --vignette: rgba(232, 201, 122, 0.12);
+  --board-bg: rgba(232, 201, 122, 0.06);
+  --board-border: rgba(232, 201, 122, 0.24);
+}
+
 .money-blocks.theme-red {
   --bg: #0e0405;
   --panel: #1a0608;
@@ -163,7 +182,7 @@
 .welcome-box, .setup-box, .htp-modal {
   position: relative;
   width: min(840px, 90vw);
-  background: linear-gradient(180deg, rgba(17, 18, 21, 0.96), rgba(11, 12, 16, 0.96));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--panel) 94%, transparent), color-mix(in srgb, var(--bg-deep-end) 94%, transparent));
   border: 1px solid var(--panel-border);
   border-radius: 28px;
   box-shadow: 0 24px 60px rgba(0,0,0,0.35);
@@ -390,7 +409,7 @@
 }
 
 .side-controls, .ledger, .account-card {
-  background: linear-gradient(180deg, rgba(17,18,21,0.94), rgba(12,13,16,0.94));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--panel) 94%, transparent), color-mix(in srgb, var(--bg-deep-end) 94%, transparent));
   border: 1px solid var(--panel-border);
   border-radius: 20px;
 }
@@ -409,41 +428,9 @@
   flex: 1;
   padding: 11px 14px;
   border-radius: 12px;
-  background: rgba(255,255,255,0.02);
+  background: var(--board-bg);
   border: 1px solid var(--panel-border);
   color: var(--ivory);
-}
-
-.theme-picker {
-  margin-top: 18px;
-}
-
-.theme-picker-label {
-  display: block;
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  font-family: "IBM Plex Mono", monospace;
-  color: var(--gold-bright);
-  margin-bottom: 10px;
-}
-
-.theme-swatches {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.theme-swatch {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  border: 2px solid transparent;
-}
-
-.theme-swatch.active {
-  border-color: var(--ivory);
-  box-shadow: 0 0 0 2px rgba(255,255,255,0.22);
 }
 
 .turn-pill {
@@ -454,7 +441,7 @@
   padding: 10px 12px;
   min-width: 170px;
   border-radius: 999px;
-  background: rgba(255,255,255,0.02);
+  background: var(--board-bg);
   border: 1px solid var(--panel-border);
   color: var(--ivory);
   font-weight: 600;
@@ -465,7 +452,7 @@
   height: 11px;
   border-radius: 50%;
   background: var(--gold-bright);
-  box-shadow: 0 0 0 5px rgba(201,169,97,0.12);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--gold-bright) 18%, transparent);
   display: inline-block;
 }
 
@@ -479,8 +466,8 @@
 }
 
 .account-card.active {
-  border-color: rgba(201,169,97,0.5);
-  box-shadow: 0 0 0 1px rgba(201,169,97,0.25);
+  border-color: color-mix(in srgb, var(--gold-bright) 70%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--gold-bright) 35%, transparent);
 }
 
 .account-top {
@@ -495,7 +482,7 @@
   border-radius: 12px;
   display: grid;
   place-items: center;
-  background: rgba(255,255,255,0.04);
+  background: var(--board-bg);
   border: 1px solid var(--panel-border);
   font-size: 1.4rem;
 }

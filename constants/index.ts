@@ -31,6 +31,7 @@ export const FEATURED_GAME_IDS = [
   'emojisportsquiz',
   'zoogame',
   'snowyslopes',
+  'tictacroll',
 ] as const;
 
 // ── Non-game constants (unrelated to the registry, stay here) ──

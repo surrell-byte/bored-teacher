@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import "./MoneyBlocks.css";
 
 const GOAL = 1_000_000;
@@ -8,15 +8,6 @@ const AVATARS = [
   "🐼", "🦅", "🦋", "🐲", "🦄",
   "👑", "💀", "🎩", "🤖", "👾",
   "🎭", "🌟", "⚡", "🔥", "💎"
-];
-
-const themes = [
-  { key: "black", name: "Black", swatch: "#111215", border: "#555" },
-  { key: "white", name: "White", swatch: "#F0EDE6", border: "#bbb" },
-  { key: "red", name: "Red", swatch: "#EF4444", border: "#FF7A7A" },
-  { key: "blue", name: "Blue", swatch: "#3B82F6", border: "#7AAEFF" },
-  { key: "green", name: "Green", swatch: "#22C55E", border: "#4ADE80" },
-  { key: "yellow", name: "Yellow", swatch: "#FACC15", border: "#FDE047" }
 ];
 
 const symbols = {
@@ -125,6 +116,10 @@ export default function MoneyBlocks({ themeId }) {
   const [screen, setScreen] = useState("welcome");
 
   const [theme, setTheme] = useState(themeId || "black");
+
+  useEffect(() => {
+    if (themeId && themeId !== theme) setTheme(themeId);
+  }, [theme, themeId]);
 
   const [p1Name, setP1Name] = useState("");
   const [p2Name, setP2Name] = useState("");
@@ -647,7 +642,7 @@ export default function MoneyBlocks({ themeId }) {
   }
 
   return (
-    <div className={`money-blocks theme-${theme}`} style={{ backgroundImage: "linear-gradient(rgba(5, 12, 10, .38), rgba(5, 12, 10, .38)), url('/assets/games/money-blocks-default-game-bg.png')" }}>
+    <div className={`money-blocks theme-${theme}`} style={{ backgroundImage: `linear-gradient(${theme === "white" ? "rgba(255,255,255,.2)" : "rgba(5,12,10,.38)"}, ${theme === "white" ? "rgba(255,255,255,.2)" : "rgba(5,12,10,.38)"}), url('${screen === "welcome" ? "/assets/images/money-blocks-welcome-bg.webp" : screen === "setup" ? "/assets/images/money-blocks-player%20selection-bg.webp" : "/assets/games/money-blocks-default-game-bg.png"}')` }}>
       {screen === "welcome" && (
         <div className="screen-overlay">
           <div className="welcome-box">
@@ -798,33 +793,6 @@ export default function MoneyBlocks({ themeId }) {
                   >
                     Reset Table
                   </button>
-                </div>
-
-                <div className="theme-picker">
-                  <span className="theme-picker-label">
-                    Theme
-                  </span>
-
-                  <div className="theme-swatches">
-                    {themes.map((item) => (
-                      <button
-                        key={item.key}
-                        className={`theme-swatch ${
-                          theme === item.key
-                            ? "active"
-                            : ""
-                        }`}
-                        title={item.name}
-                        style={{
-                          background: item.swatch,
-                          borderColor: item.border
-                        }}
-                        onClick={() =>
-                          setTheme(item.key)
-                        }
-                      />
-                    ))}
-                  </div>
                 </div>
 
                 <div className="turn-pill">

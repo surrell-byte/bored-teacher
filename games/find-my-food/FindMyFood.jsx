@@ -23,6 +23,8 @@ const EMOJI_PAIRS = [
 ];
 
 export const THEMES = [
+  { name:"Dark",     key:"dark",     front:"linear-gradient(135deg,#5c626d,#30343d)", border:"rgba(255,255,255,0.18)", accent:"#d8dde5", accent2:"#8f98a6", glow:"rgba(216,221,229,0.16)", glow2:"rgba(216,221,229,0.07)", bg:"#0d0d0f", surface:"#141416", surface2:"#1c1c20", surface3:"#252529", emoji:"🌙" },
+  { name:"Light",    key:"light",    front:"linear-gradient(135deg,#d9bf73,#f5dfa0)", border:"rgba(117,92,31,0.28)", accent:"#a47c20", accent2:"#c6a04b", glow:"rgba(164,124,32,0.16)", glow2:"rgba(164,124,32,0.08)", bg:"#f4f1eb", surface:"#ffffff", surface2:"#f0ede6", surface3:"#e4e0d8", emoji:"☀️" },
   { name:"Gold",     key:"gold",     front:"linear-gradient(135deg,#c4a45a,#e8c97a)", border:"rgba(232,201,122,0.55)", accent:"#e8c97a", accent2:"#c4a45a", glow:"rgba(232,201,122,0.18)", glow2:"rgba(232,201,122,0.08)", bg:"#0d0d0f", surface:"#141416", surface2:"#1c1c20", surface3:"#252529", emoji:"✨" },
   { name:"Emerald",  key:"emerald",  front:"linear-gradient(135deg,#22b96b,#45d49a)", border:"rgba(69,212,154,0.6)",  accent:"#62dfa6", accent2:"#22a966", glow:"rgba(69,212,154,0.20)", glow2:"rgba(69,212,154,0.09)", bg:"#09120e", surface:"#101b16", surface2:"#17261f", surface3:"#20342a", emoji:"🌿" },
   { name:"Sapphire", key:"sapphire", front:"linear-gradient(135deg,#287dc5,#4eb2ee)", border:"rgba(78,178,238,0.6)",  accent:"#6bc4f4", accent2:"#318dd0", glow:"rgba(78,178,238,0.20)", glow2:"rgba(78,178,238,0.09)", bg:"#091018", surface:"#101923", surface2:"#182433", surface3:"#213145", emoji:"💎" },
@@ -228,7 +230,7 @@ const STYLES = `
 
 .ff-grid { display:grid; gap:12px; width:100%; margin:0 auto; grid-template-columns: repeat(4, minmax(78px, 1fr)); }
 
-.ff-tile { width:100%; aspect-ratio:1; min-height: 92px; cursor:pointer; position:relative; transform-style:preserve-3d; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.ff-tile { width:100%; aspect-ratio:1; min-height: 128px; cursor:pointer; position:relative; transform-style:preserve-3d; transition: transform 0.2s ease, box-shadow 0.2s ease; }
 .ff-tile:not(.flipped):not(.matched):hover { transform: translateY(-4px); box-shadow: 0 10px 25px rgba(0,0,0,0.35); }
 .ff-tile-inner { position:absolute; inset:0; border-radius:14px; transform-style:preserve-3d; transition: transform 0.5s cubic-bezier(0.23,1,0.32,1); }
 .ff-tile.flipped .ff-tile-inner { transform: rotateY(180deg); }
@@ -321,7 +323,7 @@ const STYLES = `
   .ff-game-board .ff-progress-row { margin-bottom:18px; }
   .ff-game-board .ff-match-popup { min-height:32px; margin-bottom:18px; }
   .ff-game-board .ff-grid { gap:18px; max-width:860px; margin-left:0; }
-  .ff-tile { min-height: 118px; }
+  .ff-tile { min-height: 160px; }
 }
 
 @media (min-width: 760px) {
@@ -360,8 +362,9 @@ const STYLES = `
 export default function FindMyFood({ onComplete, themeId, variant = "food" }) {
   const { completeGame } = useGame();
   const [screen, setScreen] = useState("welcome");
-  const theme = Math.max(0, THEMES.findIndex(item => item.key === themeId));
-  const isDark = true;
+  const selectedTheme = THEMES.find(item => item.key === themeId) || THEMES[0];
+  const theme = Math.max(0, THEMES.indexOf(selectedTheme));
+  const isDark = selectedTheme.key !== "light";
   const [p1, setP1] = useState({ name:"Player 1", avatar:"🐶" });
   const [p2, setP2] = useState({ name:"Player 2", avatar:"🐼" });
   const [cards, setCards] = useState([]);
@@ -474,7 +477,7 @@ export default function FindMyFood({ onComplete, themeId, variant = "food" }) {
   const t = THEMES[theme];
   const cssVarOverrides = {
     "--tile-front": t.front, "--tile-front-border": t.border, "--accent": t.accent, "--accent2": t.accent2, "--accent-glow": t.glow, "--accent-glow2": t.glow2,
-    ...(isDark ? { "--bg":t.bg, "--surface":t.surface, "--surface2":t.surface2, "--surface3":t.surface3 } : {}),
+    "--bg": t.bg, "--surface": t.surface, "--surface2": t.surface2, "--surface3": t.surface3,
   };
 
   if (screen === "welcome") return (
