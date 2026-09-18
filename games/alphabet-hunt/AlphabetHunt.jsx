@@ -131,28 +131,49 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
     tile.revealed = true;
     setTiles(newTiles);
 
-    const mine = (current === 1 && tile.content === 'p1') || (current === 2 && tile.content === 'p2');
+    const owner = tile.content === 'p1' ? 1 : tile.content === 'p2' ? 2 : null;
+    const mine = owner === current;
 
-    if (mine) {
+    if (owner) {
       tile.matched = true;
-      const newFound1 = current === 1 ? found1 + 1 : found1;
-      const newFound2 = current === 2 ? found2 + 1 : found2;
+      const newFound1 = owner === 1 ? found1 + 1 : found1;
+      const newFound2 = owner === 2 ? found2 + 1 : found2;
       setFound1(newFound1);
       setFound2(newFound2);
       setTiles(newTiles);
 
-      const name = current === 1 ? name1 : name2;
-      const nextStreak = lastCorrectPlayer === current ? streaks[current] + 1 : 1;
-      const points = 100 + nextStreak * 100;
-      setStreaks(value => ({ ...value, [current]: nextStreak }));
-      setScores(value => ({ ...value, [current]: value[current] + points }));
-      setLastCorrectPlayer(current);
-      setStatusLine(`${name} found ${current === 1 ? av1 : av2}! +${points} points${nextStreak > 1 ? ` (${nextStreak} streak)` : ''}`);
+      const ownerName = owner === 1 ? name1 : name2;
+      const ownerAvatar = owner === 1 ? av1 : av2;
 
-      if ((current === 1 && newFound1 >= 5) || (current === 2 && newFound2 >= 5)) {
-        const avatar = current === 1 ? av1 : av2;
-        setTimeout(() => showWin(name, avatar), 500);
+      if (mine) {
+        const nextStreak = lastCorrectPlayer === current ? streaks[current] + 1 : 1;
+        const points = 100 + nextStreak * 100;
+        setStreaks(value => ({ ...value, [current]: nextStreak }));
+        setScores(value => ({ ...value, [current]: value[current] + points }));
+        setLastCorrectPlayer(current);
+        setStatusLine(`${ownerName} found ${ownerAvatar}! +${points} points${nextStreak > 1 ? ` (${nextStreak} streak)` : ''}`);
+      } else {
+        setLastCorrectPlayer(null);
+        setStatusLine(`${current === 1 ? name1 : name2} found ${ownerAvatar} — that's ${ownerName}'s tile!`);
+      }
+
+      if ((owner === 1 && newFound1 >= 5) || (owner === 2 && newFound2 >= 5)) {
+        setTimeout(() => showWin(owner, ownerName, ownerAvatar), 500);
         return;
+      }
+
+      if (!mine) {
+        setLock(true);
+        setTimeout(() => {
+          const nextCurrent = current === 1 ? 2 : 1;
+          setCurrent(nextCurrent);
+          setTurnNumber(value => value + 1);
+          setStatusLine(`${nextCurrent === 1 ? name1 : name2}'s turn!`);
+          setTimeout(() => {
+            setStatusLine('');
+            setLock(false);
+          }, 650);
+        }, 3000);
       }
     } else {
       setLock(true);
@@ -197,8 +218,8 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
     }
   };
 
-  const showWin = (name, avatar) => {
-    const misses = current === 1 ? misses1 : misses2;
+  const showWin = (winner, name, avatar) => {
+    const misses = winner === 1 ? misses1 : misses2;
     const accuracy = Math.round((5 / Math.max(turnNumber, 1)) * 100);
 
     // Trigger confetti
@@ -213,7 +234,7 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
       });
     }
     setConfetti(pieces);
-    setWins(value => ({ ...value, [current]: value[current] + 1 }));
+    setWins(value => ({ ...value, [winner]: value[winner] + 1 }));
 
     setTimeout(() => {
       setConfetti([]);
