@@ -34,7 +34,7 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     name: "PowerPoint Slide",
     icon: "🧩",
     desc: "A classroom quiz game styled like a presentation slide with castle doors, a wizard, and a back-to-menu flow.",
-    cover: "/assets/covers/quiz-trail-cover.webp",
+    cover: "/assets/covers/plant-and-veg-quiz-cover.webp",
     tag: { label: "Quiz", color: "tag-grammar" },
     badge: "Slide Show",
     difficulty: "Starter",

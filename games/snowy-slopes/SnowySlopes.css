@@ -4,7 +4,7 @@
 .snowy-slopes {
   min-height: 100vh;
   color: #eaf8ff;
-  background: radial-gradient(circle at 50% 12%, #9bd7f1 0%, #334e76 48%, #172235 100%);
+  background: linear-gradient(rgba(15,45,78,.24), rgba(15,25,48,.48)), url('/assets/games/snowy-slopes/snowy-slopes-welcome-bg.webp') center / cover fixed;
   position: relative;
   overflow: hidden;
   font-family: Inter, 'Trebuchet MS', Arial, sans-serif;
@@ -44,7 +44,7 @@
 .ss-level-card p { color: #cadcea; font-size: .88rem; line-height: 1.5; min-height: 70px; }
 .ss-level-btn { width: 100%; }
 
-.ss-game-screen { min-height: 100vh; position: relative; background: linear-gradient(160deg, #99d2ee, #203b63 70%, #0b1d35); color: #eefaff; overflow: hidden; }
+.ss-game-screen { min-height: 100vh; position: relative; background: linear-gradient(rgba(15,45,78,.22), rgba(15,25,48,.5)), url('/assets/games/snowy-slopes/snowy-slopes-game-screen-bg.webp') center / cover fixed; color: #eefaff; overflow: hidden; }
 .ss-hud { position: relative; z-index: 5; background: rgba(5, 35, 61, 0.8); color: #eefaff; min-height: 72px; display: flex; align-items: center; gap: 14px; padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.12); flex-wrap: wrap; }
 .ss-hud-logo { font-size: 1.2rem; font-weight: 900; color: #bffbff; margin-right: 8px; flex: 0 0 auto; }
 .ss-pill { background: rgba(255,255,255,0.08); border-radius: 999px; padding: 8px 14px; font-weight: 800; border: 1px solid rgba(220,250,255,0.2); flex: 0 0 auto; }
@@ -113,4 +113,9 @@
   .ss-answers { grid-template-columns: 1fr; }
   .ss-question-panel { width: min(560px, 96vw); }
   .ss-progress-wrap { width: 100%; min-width: initial; }
+}
+
+@media (orientation: portrait), (max-width: 640px) {
+  .snowy-slopes { background-image: linear-gradient(rgba(15,45,78,.24), rgba(15,25,48,.48)), url('/assets/games/snowy-slopes/snowy-slopes-welcome-phone-bg.webp'); }
+  .ss-game-screen { background-image: linear-gradient(rgba(15,45,78,.22), rgba(15,25,48,.5)), url('/assets/games/snowy-slopes/snowy-slopes-game-screen-phone-bg.webp'); }
 }

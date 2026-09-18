@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import "./PlantVegetableQuiz.css";
 
 const CHECKPOINT_KEY = "plantVegQuizProgress";
 const ROUNDS_PER_LEVEL = 6;
@@ -146,35 +147,41 @@ function medalFor(percentage) {
 
 function ProgressBar({ percent }) {
   return (
-    <div className="h-2 bg-green-100 rounded-full overflow-hidden mb-6">
-      <div
-        className="h-full bg-green-500 transition-all duration-300"
-        style={{ width: `${percent}%` }}
-      />
+    <div className="mb-6">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-xs font-black uppercase tracking-widest text-green-700">Garden Progress</span>
+        <span className="text-xs font-black text-green-800">{Math.round(percent)}%</span>
+      </div>
+      <div className="quiz-progress">
+        <div className="quiz-progress-fill" style={{ width: `${percent}%` }} />
+      </div>
     </div>
   );
 }
 
 function AnswerGrid({ options, onSelect, disabled, correctAnswer, selected }) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-      {options.map((opt) => {
-        let extra = "bg-white border-green-100 hover:border-green-400 hover:bg-green-50";
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {options.map((opt, index) => {
+        let extra = "bg-white border-green-100 text-green-950";
         if (disabled) {
-          if (opt === correctAnswer) extra = "bg-green-200 border-green-500";
-          else if (opt === selected) extra = "bg-red-200 border-red-500";
-          else extra = "bg-white border-green-100 opacity-70";
+          if (opt === correctAnswer) extra = "bg-green-100 border-green-500 text-green-950";
+          else if (opt === selected) extra = "bg-red-100 border-red-400 text-red-900";
+          else extra = "bg-white border-gray-200 opacity-55";
         }
         return (
           <button
             key={opt}
             disabled={disabled}
             onClick={() => onSelect(opt)}
-            className={`min-h-[65px] border-2 rounded-2xl font-extrabold text-base px-3 py-3 transition-transform ${extra} ${
+            className={`quiz-answer flex items-center gap-4 px-5 py-4 text-left ${extra} ${
               disabled ? "cursor-default" : "cursor-pointer hover:-translate-y-0.5"
             }`}
           >
-            {opt}
+            <span className="w-10 h-10 shrink-0 rounded-xl bg-green-100 text-green-800 flex items-center justify-center font-black">{String.fromCharCode(65 + index)}</span>
+            <span className="flex-1">{opt}</span>
+            {disabled && opt === correctAnswer && <span className="text-2xl">✓</span>}
+            {disabled && opt === selected && opt !== correctAnswer && <span className="text-2xl">✕</span>}
           </button>
         );
       })}
@@ -323,22 +330,22 @@ export default function PlantVegetableQuiz() {
     setSpellHintsUsed(0);
   }
 
-  function startLearn(resumeRoundIndex = 0) {
+  function startLearn(resumeRoundIndex = 0, resumeScore = 0) {
     const rounds = buildProgressiveRounds(vocab);
     setLearnRounds(rounds);
     setLearnRoundIndex(resumeRoundIndex);
     setLearnItemIndex(0);
-    setLearnScore(0);
+    setLearnScore(resumeScore);
     setScreen("learn");
     setLastLevel("learn");
   }
 
-  function startChoose(resumeRoundIndex = 0) {
+  function startChoose(resumeRoundIndex = 0, resumeScore = 0) {
     const rounds = buildProgressiveRounds(vocab, [growthStagesQuestion]);
     setChooseRounds(rounds);
     setChooseRoundIndex(resumeRoundIndex);
     setChooseIndex(0);
-    setChooseScore(0);
+    setChooseScore(resumeScore);
     setChooseStreak(0);
     setChooseLives(3);
     setChooseAnswered(false);
@@ -350,12 +357,12 @@ export default function PlantVegetableQuiz() {
     setLastLevel("choose");
   }
 
-  function startSpell(resumeRoundIndex = 0) {
+  function startSpell(resumeRoundIndex = 0, resumeScore = 0) {
     const rounds = buildProgressiveRounds(vocab);
     setSpellRounds(rounds);
     setSpellRoundIndex(resumeRoundIndex);
     setSpellIndex(0);
-    setSpellScore(0);
+    setSpellScore(resumeScore);
     setSpellStreak(0);
     setSpellLives(3);
     resetSpellQuestion();
@@ -363,12 +370,12 @@ export default function PlantVegetableQuiz() {
     setLastLevel("spell");
   }
 
-  function startTrivia(resumeRoundIndex = 0) {
+  function startTrivia(resumeRoundIndex = 0, resumeScore = 0) {
     const rounds = buildProgressiveRounds(triviaQuestions);
     setTriviaRounds(rounds);
     setTriviaRoundIndex(resumeRoundIndex);
     setTriviaIndex(0);
-    setTriviaScore(0);
+    setTriviaScore(resumeScore);
     setTriviaStreak(0);
     setTriviaLives(3);
     setTriviaAnswered(false);
@@ -395,10 +402,11 @@ export default function PlantVegetableQuiz() {
 
   function resumeCheckpoint() {
     if (!savedCheckpoint) return;
-    if (savedCheckpoint.levelKey === "learn") startLearn(savedCheckpoint.roundIndex);
-    if (savedCheckpoint.levelKey === "choose") startChoose(savedCheckpoint.roundIndex);
-    if (savedCheckpoint.levelKey === "spell") startSpell(savedCheckpoint.roundIndex);
-    if (savedCheckpoint.levelKey === "trivia") startTrivia(savedCheckpoint.roundIndex);
+    const { levelKey, roundIndex, score } = savedCheckpoint;
+    if (levelKey === "learn") startLearn(roundIndex, score);
+    if (levelKey === "choose") startChoose(roundIndex, score);
+    if (levelKey === "spell") startSpell(roundIndex, score);
+    if (levelKey === "trivia") startTrivia(roundIndex, score);
   }
 
   function selectChooseAnswer(selected) {
@@ -594,13 +602,13 @@ export default function PlantVegetableQuiz() {
   const currentTriviaQuestion = getCurrentTriviaRound()[triviaIndex];
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-5 bg-gradient-to-br from-green-950 via-green-800 to-green-900">
-      <div className="w-full max-w-5xl bg-green-50 text-green-950 rounded-[32px] p-7 sm:p-8 shadow-2xl">
+    <div className="quiz-page min-h-screen w-full flex items-center justify-center p-4 sm:p-6" style={{ backgroundImage: 'linear-gradient(rgba(4,55,34,.48),rgba(4,55,34,.58)), url("/assets/games/plant-vegetable-quiz/fruit-and-veg-game-bg.webp")' }}>
+      <div className="quiz-shell w-full max-w-6xl text-green-950 rounded-4xl overflow-hidden p-7 sm:p-8">
         {screen === "menu" && (
           <div className="text-center py-6">
             <div className="text-6xl mb-3">🌱🥕🌻🍅</div>
-            <h1 className="text-3xl font-black mb-2">Plant & Vegetable Quiz</h1>
-            <p className="text-green-700 max-w-md mx-auto mb-6">
+            <h1 className="quiz-title text-4xl sm:text-5xl font-black mb-2">Plant &amp; Vegetable Quiz</h1>
+            <p className="quiz-subtitle max-w-md mx-auto mb-6">
               Every level is split into six short rounds so you can pause, celebrate, and keep your progress.
             </p>
 
@@ -619,33 +627,14 @@ export default function PlantVegetableQuiz() {
               </div>
             )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
-              <button onClick={() => startLearn(0)} className="text-left border-2 border-green-100 hover:border-green-400 hover:bg-green-100 bg-white rounded-2xl p-5 transition">
-                <div className="text-4xl mb-2">📖</div>
-                <div className="text-[11px] font-black tracking-wider uppercase text-green-700 mb-1">Level 1</div>
-                <h3 className="text-lg font-bold mb-1">Learn the Words</h3>
-                <p className="text-sm text-green-700">Start easy, then move into harder plants, fruits and flowers as the rounds grow.</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-2">
+              <button onClick={() => startLearn(0)} className="game-level-card"><div className="game-icon">🌱</div><div className="level-number">LEVEL 1</div><h3>Garden Tour</h3><p>Learn the names of plants, fruits and vegetables.</p><span>START →</span>
               </button>
-
-              <button onClick={() => startChoose(0)} className="text-left border-2 border-green-100 hover:border-green-400 hover:bg-green-100 bg-white rounded-2xl p-5 transition">
-                <div className="text-4xl mb-2">✅</div>
-                <div className="text-[11px] font-black tracking-wider uppercase text-green-700 mb-1">Level 2</div>
-                <h3 className="text-lg font-bold mb-1">Choose the Answer</h3>
-                <p className="text-sm text-green-700">Early rounds use simple items and the later rounds get harder with longer plant names.</p>
+              <button onClick={() => startChoose(0)} className="game-level-card"><div className="game-icon">🥕</div><div className="level-number">LEVEL 2</div><h3>Harvest Hunt</h3><p>Pick the correct answer before the harvest moves on.</p><span>START →</span>
               </button>
-
-              <button onClick={() => startSpell(0)} className="text-left border-2 border-green-100 hover:border-green-400 hover:bg-green-100 bg-white rounded-2xl p-5 transition">
-                <div className="text-4xl mb-2">✏️</div>
-                <div className="text-[11px] font-black tracking-wider uppercase text-green-700 mb-1">Level 3</div>
-                <h3 className="text-lg font-bold mb-1">Spell It</h3>
-                <p className="text-sm text-green-700">Build confidence with easy words first before tackling multi-word plant names.</p>
+              <button onClick={() => startSpell(0)} className="game-level-card"><div className="game-icon">✏️</div><div className="level-number">LEVEL 3</div><h3>Seedling Speller</h3><p>Can you spell every plant correctly?</p><span>START →</span>
               </button>
-
-              <button onClick={() => startTrivia(0)} className="text-left border-2 border-green-100 hover:border-green-400 hover:bg-green-100 bg-white rounded-2xl p-5 transition">
-                <div className="text-4xl mb-2">🧠</div>
-                <div className="text-[11px] font-black tracking-wider uppercase text-green-700 mb-1">Level 4</div>
-                <h3 className="text-lg font-bold mb-1">Plant and Veg Trivia</h3>
-                <p className="text-sm text-green-700">Use six short rounds to grow from easy farm facts into trickier plant questions.</p>
+              <button onClick={() => startTrivia(0)} className="game-level-card"><div className="game-icon">🧠</div><div className="level-number">LEVEL 4</div><h3>Garden Master</h3><p>Test everything you&apos;ve learned.</p><span>START →</span>
               </button>
             </div>
           </div>
@@ -681,23 +670,27 @@ export default function PlantVegetableQuiz() {
             </div>
 
             <ProgressBar percent={((learnRoundIndex + 1) / ROUNDS_PER_LEVEL) * 100} />
-            <div className="text-center font-extrabold text-green-700 mb-2">Round {learnRoundIndex + 1} of {ROUNDS_PER_LEVEL}</div>
-
-            <div className="text-center py-2 pb-6">
-              <div className="text-8xl mb-2">{currentLearnItem.emoji}</div>
-              <div className="text-5xl sm:text-6xl font-black text-green-700 mb-1">{currentLearnItem.name}</div>
-              <div className="text-sm font-extrabold tracking-widest uppercase text-green-600">{currentLearnItem.category}</div>
+            <div className="flex flex-wrap justify-center gap-2 mb-5">
+              <div className="quiz-stat">🌱 Round {learnRoundIndex + 1}/{ROUNDS_PER_LEVEL}</div>
+              <div className="quiz-stat">⭐ {learnScore} XP</div>
+              <div className="quiz-stat">📚 {learnItemIndex + 1}/{getCurrentLearnRound().length}</div>
             </div>
 
-            <div className="flex gap-3 mt-2">
+            <div className="quiz-question-card">
+              <div className="text-center mb-5"><div className="text-xs font-black uppercase tracking-[0.2em] text-green-600">Discover this plant</div></div>
+              <div className="quiz-emoji">{currentLearnItem.emoji}</div>
+              <div className="text-center"><div className="quiz-word">{currentLearnItem.name}</div><div className="quiz-category">🌱 {currentLearnItem.category}</div></div>
+            </div>
+
+            <div className="flex gap-3 mt-5">
               <button
                 disabled={learnItemIndex === 0}
                 onClick={() => setLearnItemIndex((value) => Math.max(value - 1, 0))}
-                className="flex-1 py-4 rounded-2xl font-extrabold bg-green-100 disabled:opacity-40"
+                className="flex-1 py-4 rounded-2xl font-extrabold bg-white border-2 border-green-100 text-green-800 disabled:opacity-30 hover:border-green-300 transition"
               >
                 ← Previous
               </button>
-              <button onClick={nextLearn} className="flex-1 py-4 rounded-2xl font-extrabold bg-green-950 text-white">
+              <button onClick={nextLearn} className="quiz-next flex-1">
                 {learnItemIndex < getCurrentLearnRound().length - 1 ? "Next →" : "Finish Round →"}
               </button>
             </div>
@@ -770,7 +763,7 @@ export default function PlantVegetableQuiz() {
               <button onClick={submitSpell} disabled={spellAnswered} className="flex-1 py-3.5 rounded-2xl font-extrabold bg-green-500 text-green-950 disabled:opacity-50">Submit</button>
             </div>
 
-            <div className="text-center font-extrabold text-yellow-800 mt-2 min-h-[20px]">{spellHintText}</div>
+            <div className="text-center font-extrabold text-yellow-800 mt-2 min-h-5">{spellHintText}</div>
             <Feedback text={spellFeedback} wrong={spellAnswered && !spellCorrect} />
             {spellAnswered && <NextButton onClick={nextSpell} label={spellIndex < getCurrentSpellRound().length - 1 ? "Next Question →" : "Finish Round →"} />}
           </div>
@@ -802,15 +795,16 @@ export default function PlantVegetableQuiz() {
         )}
 
         {screen === "result" && (
-          <div className="text-center py-8 px-2">
-            <div className="text-7xl mb-2">{medalFor(finalPercent).medal}</div>
-            <h1 className="text-3xl font-black mb-2">Level Complete!</h1>
-            <div className="text-6xl font-black my-3">{finalScore}</div>
-            <p className="text-green-700 max-w-md mx-auto mb-6">{medalFor(finalPercent).text}</p>
+          <div className="text-center py-10 px-2">
+            <div className="text-sm font-black uppercase tracking-[0.25em] text-green-600 mb-3">Garden Complete</div>
+            <div className="text-8xl mb-4">{medalFor(finalPercent).medal}</div>
+            <h1 className="text-4xl sm:text-5xl font-black text-green-950">Harvest Complete!</h1>
+            <p className="text-green-700 font-bold mt-2">{medalFor(finalPercent).text}</p>
+            <div className="grid grid-cols-3 gap-3 max-w-lg mx-auto my-8"><div className="rounded-2xl bg-white p-5 border border-green-100"><div className="text-3xl font-black text-green-700">{finalScore}</div><div className="text-xs font-black uppercase text-green-500">XP</div></div><div className="rounded-2xl bg-white p-5 border border-green-100"><div className="text-3xl font-black text-green-700">{finalPercent}%</div><div className="text-xs font-black uppercase text-green-500">Score</div></div><div className="rounded-2xl bg-white p-5 border border-green-100"><div className="text-3xl font-black text-green-700">🌱</div><div className="text-xs font-black uppercase text-green-500">Growth</div></div></div>
 
             <div className="flex gap-3">
-              <button onClick={() => setScreen("menu")} className="flex-1 py-4 rounded-2xl font-extrabold bg-green-100">🏠 Main Menu</button>
-              <button onClick={playAgain} className="flex-1 py-4 rounded-2xl font-extrabold bg-green-950 text-white">🔄 Play Again</button>
+              <button onClick={() => setScreen("menu")} className="flex-1 py-4 rounded-2xl font-black bg-white border-2 border-green-100">🏠 Garden</button>
+              <button onClick={playAgain} className="quiz-next flex-1">🔄 Play Again</button>
             </div>
           </div>
         )}

@@ -26,6 +26,7 @@ const GAMES_WITH_WELCOME = new Set([
   'phonicsadventure', 'riddlebombs', 'tictacroll', 'tornado', 'wordfusion', 'weatherwizard', 'victoryvet',
   'turbodash',
   'lookandsay',
+  'snowyslopes',
   'numberclouds',
   'countadd',
   'moneyblocks',

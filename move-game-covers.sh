@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Moves the *-cover.webp files you dropped in the repo root into
+# Moves image cover files you dropped in the repo root into
 # public/assets/covers, matching the pattern already used for
 # public/assets/{audio,icons,images,sounds}.
 #
@@ -25,6 +25,12 @@ move() {
     echo "skip (not found): $f"
   fi
 }
+
+# Pick up newly dropped covers regardless of the browser image format.
+shopt -s nullglob
+for f in *-cover.png *-cover.jpg *-cover.jpeg *-cover.webp *-cover.avif; do
+  move "$f"
+done
 
 # Matched to an existing game id in constants/games.ts
 move "animal-class-quest-cover.webp"

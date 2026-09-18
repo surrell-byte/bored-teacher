@@ -358,12 +358,9 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
 
       {/* WELCOME SCREEN */}
       {screen === "welcome" && (
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", minHeight: "100%", padding: "2rem", textAlign: "center", background: welcomeBackground }}>
-          <h1 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2.5rem, 7vw, 4.5rem)", fontWeight: 700, margin: "0 0 0.5rem", lineHeight: 1.1 }}>Tic·Tac·<em style={{ color: theme.accent }}>Roll</em></h1>
-          <p style={{ color: theme.muted, fontSize: "clamp(0.9rem, 2vw, 1.1rem)", marginBottom: "2rem", letterSpacing: "0.05em" }}>Roll. Claim. Conquer.</p>
-          <button onClick={() => { tone(500, 0.08, 0.07); setScreen("setup"); }} style={{ padding: "1rem 3rem", fontSize: "clamp(1rem, 2.5vw, 1.2rem)", fontWeight: 600, borderRadius: 50, border: "none", background: `linear-gradient(160deg, ${theme.accent}, ${theme.accent}dd)`, color: "#fff", cursor: "pointer", boxShadow: `0 4px 15px ${theme.glow}`, marginBottom: "1rem" }}>✦ Play Now</button>
-          <br />
-          <button onClick={() => { tone(500, 0.08, 0.07); setScreen("menu"); }} style={{ padding: "0.8rem 2.5rem", fontSize: "clamp(0.9rem, 2vw, 1rem)", fontWeight: 600, borderRadius: 50, border: `1px solid ${theme.border}`, background: theme.card, color: theme.text, cursor: "pointer" }}>◈ How to Play</button>
+        <div style={{ position: "relative", width: "100%", height: "100%", minHeight: "100%", background: welcomeBackground, backgroundSize: "100% 100%" }}>
+          <button aria-label="Play Now" onClick={() => { tone(500, 0.08, 0.07); setScreen("setup"); }} style={{ position: "absolute", left: "37.2%", top: "66.2%", width: "25.8%", height: "13.5%", border: 0, background: "transparent", cursor: "pointer" }} />
+          <button aria-label="How to Play" onClick={() => { tone(500, 0.08, 0.07); setScreen("menu"); }} style={{ position: "absolute", left: "37.8%", top: "82.5%", width: "24.5%", height: "10.5%", border: 0, background: "transparent", cursor: "pointer" }} />
         </div>
       )}
 
@@ -381,6 +378,9 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
             <div style={{ padding: "1rem", borderRadius: 12, border: `1px solid ${theme.border}`, background: theme.card }}>
               <label style={{ fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: theme.muted, display: "block", marginBottom: "0.5rem" }}>Player 1</label>
               <input disabled={playerCount === null} value={profile.name} onChange={e => setProfile({ ...profile, name: e.target.value })} placeholder="Enter your name..." maxLength={18} style={{ width: "100%", padding: "0.8rem 1rem", borderRadius: 12, border: `1px solid ${theme.border}`, background: theme.bg, color: theme.text, fontSize: "1rem", outline: "none" }} />
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: "0.5rem", marginTop: "0.9rem" }}>
+                {AVATARS.map(av => <button key={av} type="button" disabled={playerCount === null} onClick={() => setProfile({ ...profile, avatar: av })} style={{ padding: "0.45rem", borderRadius: 10, border: profile.avatar === av ? `2px solid ${theme.accent}` : `1px solid ${theme.border}`, background: profile.avatar === av ? theme.glow : theme.card, color: theme.text, cursor: playerCount === null ? "not-allowed" : "pointer", opacity: playerCount === null ? 0.5 : 1 }}>{av}</button>)}
+              </div>
             </div>
             <div style={{ padding: "1rem", borderRadius: 12, border: `1px solid ${theme.border}`, background: theme.card, opacity: playerCount === 1 || playerCount === null ? 0.62 : 1 }}>
               <label style={{ fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: theme.muted, display: "block", marginBottom: "0.5rem" }}>Player 2</label>
@@ -389,12 +389,6 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
                 {AVATARS.map(av => <button key={av} type="button" disabled={playerCount !== 2} onClick={() => setPlayer2({ ...player2, avatar: av })} style={{ padding: "0.45rem", borderRadius: 10, border: player2.avatar === av ? `2px solid ${theme.accent}` : `1px solid ${theme.border}`, background: player2.avatar === av ? theme.glow : theme.card, color: theme.text, cursor: playerCount === 2 ? "pointer" : "not-allowed", opacity: playerCount === 2 ? 1 : 0.5 }}>{av}</button>)}
               </div>
             </div>
-          </div>
-          <label style={{ fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: theme.muted, display: "block", marginBottom: "0.5rem" }}>Choose Avatar</label>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: "0.5rem", marginBottom: "1.5rem" }}>
-            {AVATARS.map(av => (
-              <button key={av} disabled={playerCount === null} onClick={() => setProfile({ ...profile, avatar: av })} style={{ fontSize: "1.5rem", padding: "0.6rem", borderRadius: 12, border: profile.avatar === av ? `2px solid ${theme.accent}` : `1px solid ${theme.border}`, background: profile.avatar === av ? theme.glow : theme.card, cursor: playerCount === null ? "not-allowed" : "pointer", opacity: playerCount === null ? 0.5 : 1, boxShadow: profile.avatar === av ? `0 0 0 3px ${theme.glow}` : "none" }}>{av}</button>
-            ))}
           </div>
           <button disabled={!canContinue} onClick={() => { tone(500, 0.08, 0.07); setScreen("menu"); }} style={{ width: "100%", padding: "1rem", fontSize: "1rem", fontWeight: 600, borderRadius: 50, border: "none", background: `linear-gradient(160deg, ${theme.accent}, ${theme.accent}dd)`, color: "#fff", cursor: canContinue ? "pointer" : "not-allowed", opacity: canContinue ? 1 : 0.5, boxShadow: `0 4px 15px ${theme.glow}` }}>Continue →</button>
         </div>

@@ -326,6 +326,11 @@ const STYLES = `
   .ff-tile { min-height: 160px; }
 }
 
+.ff-root.ff-root-game { width: 100%; min-height: 100%; height: 100%; align-items: stretch; padding: clamp(14px, 2vw, 28px); }
+.ff-root.ff-root-game .ff-screen.ff-game-screen { width: 100%; max-width: none; min-height: 100%; }
+.ff-root.ff-root-game .ff-game-card { min-height: 100%; }
+.ff-root.ff-root-game .ff-game-layout { min-height: min(76vh, 900px); }
+
 @media (min-width: 760px) {
   .ff-screen.ff-howto-screen { max-width:1180px; }
   .ff-howto-card { padding:42px 52px; }
@@ -623,7 +628,7 @@ export default function FindMyFood({ onComplete, themeId, variant = "food" }) {
   const matchedPairs = matched.size / 2;
 
   return (
-    <div className="ff-root" data-ff-theme={isDark ? "dark" : "light"} style={cssVarOverrides}>
+    <div className="ff-root ff-root-game" data-ff-theme={isDark ? "dark" : "light"} style={cssVarOverrides}>
       <style>{STYLES}</style>
       <div className="ff-noise" />
       <div className="ff-ambient ff-ambient-1" />
