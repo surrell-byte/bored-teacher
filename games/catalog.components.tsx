@@ -72,6 +72,7 @@ export const GAME_COMPONENTS: Partial<Record<string, React.LazyExoticComponent<R
   emojispelling: lazyGame('emojispelling', () => import('@/games/emoji-spelling-game/EmojiSpellingMaster.jsx')),
   familyquest: lazyGame('familyquest', () => import('@/games/family-quest/FamilyQuest.jsx')),
   farmgame: lazyGame('farmgame', () => import('@/games/farm-game/FarmGame.jsx')),
+  plantvegetablequiz: lazyGame('plantvegetablequiz', () => import('@/games/plant-vegetable-quiz/PlantVegetableQuiz.jsx')),
   findmyfood: lazyGame('findmyfood', () => import('@/games/find-my-food/FindMyFood.jsx')),
   flagmaster: lazyGame('flagmaster', () => import('@/games/flagmaster/Flagmaster.jsx')),
   foodwordhunt: lazyGame('foodwordhunt', () => import('@/games/food-word-hunt/FoodWordHunt.jsx')),

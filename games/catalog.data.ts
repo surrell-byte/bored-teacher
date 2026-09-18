@@ -327,6 +327,18 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     barColor: "var(--gold)",
     hasComponent: true,
   },
+  plantvegetablequiz: {
+    name: "Plant & Vegetable Quiz",
+    icon: "🌱",
+    desc: "Learn plant and vegetable vocabulary through flashcards, multiple choice, spelling, and trivia modes.",
+    cover: "/assets/covers/quiz-trail-cover.webp",
+    tag: { label: "Science", color: "tag-bio" },
+    badge: "4 Modes",
+    difficulty: "Starter",
+    barColor: "var(--green)",
+    isNew: true,
+    hasComponent: true,
+  },
   findmyfood: {
     name: "Find My Food",
     icon: "🍔",
