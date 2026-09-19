@@ -695,6 +695,36 @@
     box-shadow: 4px 4px 0 var(--ink);
   }
 
+  @media (orientation: portrait) {
+    .ah-grid {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .ah-tile-front,
+    .ah-tile-back {
+      border-radius: 8px;
+    }
+
+    .ah-tile-front {
+      font-size: 1.1rem;
+    }
+
+    .ah-tile-back {
+      font-size: 1.15rem;
+      padding: 8px 4px;
+    }
+
+    .ah-game-screen .ah-card {
+      padding: 14px 12px 16px;
+    }
+
+    .ah-status-panel {
+      min-height: 52px;
+      padding: 10px 12px;
+    }
+  }
+
   .alphabet-hunt h1 {
     font-size: 2rem;
   }

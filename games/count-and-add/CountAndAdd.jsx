@@ -31,7 +31,7 @@ function makeQuestion(difficulty, theme) {
   const second = random(min, max);
   const answer = first + second;
   const choices = new Set([answer]);
-  while (choices.size < (difficulty === 'easy' ? 3 : 4)) {
+  while (choices.size < 4) {
     const option = answer + random(-3, 3);
     if (option > 0) choices.add(option);
   }
@@ -49,7 +49,7 @@ export default function CountAndAdd({ onComplete }) {
   const [locked, setLocked] = useState(false);
   const [answerState, setAnswerState] = useState('');
   const [selectedAnswer, setSelectedAnswer] = useState('?');
-  const [feedback, setFeedback] = useState("What's the answer?");
+  const [feedback, setFeedback] = useState('Count carefully!');
   const [mascot, setMascot] = useState('🐻');
   const [mascotBouncing, setMascotBouncing] = useState(false);
   const [showLevelUp, setShowLevelUp] = useState(false);
@@ -87,7 +87,7 @@ export default function CountAndAdd({ onComplete }) {
     setAnswerState('');
     setSelectedAnswer('?');
     setAttempts(0);
-    setFeedback("What's the answer?");
+    setFeedback('Count carefully!');
     setMascot(pick(MASCOTS_OK));
     setMascotBouncing(false);
     setLocked(false);
@@ -233,4 +233,5 @@ const COUNT_ADD_STYLES = `
 .count-add-game__retry{padding:12px 22px;border:0;border-radius:999px;background:#0f6e56;color:#fff;font:800 1rem Nunito,var(--font-body),sans-serif;cursor:pointer}
 .count-add-game__frame,.count-add-game__topbar,.count-add-game__card-wrap{width:100%;max-width:1280px}
 .count-add-game__menu-card{width:min(100%,760px)}
+@media (orientation: portrait) and (max-width: 640px){.count-add-game{padding:10px}.count-add-game__card{padding:16px 12px 18px;border-radius:18px}.count-add-game__equation{width:100%;gap:6px;padding:12px 8px;border-radius:18px}.count-add-game__group{min-width:0;min-height:80px;padding:6px}.count-add-game__group span{font-size:1.7rem}.count-add-game__choices{width:100%;gap:10px}.count-add-game__choices button{min-height:76px;border-radius:16px}}
 `;

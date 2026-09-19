@@ -84,6 +84,9 @@ const STYLES = `
   box-sizing: border-box;
   transition: background 0.3s, color 0.3s;
 }
+
+.ff-screen.ff-setup-screen,
+.ff-screen.ff-mode-screen { margin-inline: auto; }
 .ff-root *, .ff-root *::before, .ff-root *::after { box-sizing: border-box; }
 
 .ff-root[data-ff-theme="light"] {
@@ -248,6 +251,17 @@ const STYLES = `
 .ff-tile.wrong-shake .ff-tile-inner { animation: ffShake 0.5s ease both; }
 @keyframes ffShake { 0%,100% {transform:translateX(0) rotateY(180deg);} 20% {transform:translateX(-6px) rotateY(180deg);} 40% {transform:translateX(6px) rotateY(180deg);} 60% {transform:translateX(-4px) rotateY(180deg);} 80% {transform:translateX(4px) rotateY(180deg);} }
 .ff-tile.locked, .ff-tile.matched { pointer-events:none; }
+
+@media (orientation: portrait) and (max-width: 700px) {
+  .ff-root { align-items: flex-start; padding: 14px 10px 28px; overflow-y: auto; }
+  .ff-screen { max-width: 100%; }
+  .ff-card { padding: 24px 16px; }
+  .ff-player-setup { flex-direction: column !important; }
+  .ff-grid { gap: 8px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .ff-tile { min-height: 0; }
+  .ff-tile-back .ff-emoji { font-size: 1.55rem; }
+  .ff-tile-back .ff-word { font-size: .48rem; }
+}
 
 .ff-match-celebration { position:absolute; inset:0; z-index:30; display:flex; align-items:center; justify-content:center; padding:20px; background:rgba(5,5,7,.55); backdrop-filter:blur(5px); animation:ffCelebrationFade .22s ease both; }
 .ff-match-celebration-panel { width:min(100%, 430px); padding:24px; border:1px solid var(--green); border-radius:var(--radius-lg); background:var(--surface); box-shadow:0 20px 70px rgba(0,0,0,.55), 0 0 50px var(--green-glow); text-align:center; animation:ffCelebrationPop 1.35s cubic-bezier(.23,1,.32,1) both; }

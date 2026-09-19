@@ -248,12 +248,6 @@ function AmbientScene({ flakeCount = 30 }) {
   return (
     <div className="ss-scene" aria-hidden="true">
       <div className="ss-aurora" />
-      <svg className="ss-ridge far" viewBox="0 0 1200 300" preserveAspectRatio="none">
-        <path d="M0,300 L0,180 L160,60 L320,160 L520,30 L720,150 L920,50 L1080,140 L1200,90 L1200,300 Z" fill="#3a6798" />
-      </svg>
-      <svg className="ss-ridge near" viewBox="0 0 1200 260" preserveAspectRatio="none">
-        <path d="M0,260 L0,140 L200,220 L380,90 L560,200 L760,70 L960,190 L1200,110 L1200,260 Z" fill="#f4faff" />
-      </svg>
       <div className="ss-snowfield">
         {flakes.map((f, i) => (
           <span
@@ -270,19 +264,6 @@ function AmbientScene({ flakeCount = 30 }) {
           </span>
         ))}
       </div>
-    </div>
-  );
-}
-
-function Rider({ className = '' }) {
-  return (
-    <div className={`ss-rider ${className}`}> 
-      <div className="ss-rider-hat" />
-      <div className="ss-rider-head" />
-      <div className="ss-rider-body" />
-      <div className="ss-rider-leg l" />
-      <div className="ss-rider-leg r" />
-      <div className="ss-rider-board" />
     </div>
   );
 }
@@ -703,11 +684,6 @@ export default function SnowySlopes({ onHudUpdate } = {}) {
         <div className="ss-screen">
           <AmbientScene flakeCount={22} />
           <div className="ss-start-inner">
-            <h1 className="ss-wordmark">
-              ❄️ Snowy Slopes
-              <span>Master phonics. Race down the mountain. Reach the summit.</span>
-            </h1>
-            <Rider />
             <div className="ss-card">
               <h2>Ready to hit the slopes?</h2>
               <button className="ss-btn-primary" onClick={goToModeScreen}>
@@ -790,7 +766,6 @@ export default function SnowySlopes({ onHudUpdate } = {}) {
         <div className="ss-game-screen">
           {!onHudUpdate && (
             <header className="ss-hud">
-              <div className="ss-hud-logo">❄️ Snowy Slopes</div>
               <div className="ss-pill hearts">❤️ {lives}</div>
               <div className="ss-pill coins">🪙 {coins}</div>
               <div className="ss-pill xp">⭐ {xp}</div>
@@ -820,7 +795,6 @@ export default function SnowySlopes({ onHudUpdate } = {}) {
                 transform: boost ? 'scale(1.15) rotate(-6deg)' : undefined,
               }}
             >
-              <Rider />
             </div>
 
             <div className="ss-question-panel">

@@ -22,7 +22,7 @@ const FamilyQuestPremium_HTML = `<canvas id="confettiCanvas"></canvas>
       <span class="welcome-hero">👨‍👩‍👧‍👦</span>
       <h1 class="welcome-title">Who's in the<br><em>Family?</em></h1>
       <p class="welcome-subtitle">Explore, learn & celebrate every family member</p>
-      <button class="cta-btn" id="btnGoLevels">🌳 Start Family Tree</button>
+      <button class="cta-btn" id="btnGoLevels">🎯 Choose your level</button>
 
       <div class="acc-row">
         <button class="acc-btn" id="togDyslexia">📖 Font</button>
@@ -38,7 +38,6 @@ const FamilyQuestPremium_HTML = `<canvas id="confettiCanvas"></canvas>
       <h2>Choose Your Level</h2>
       <p class="level-sub">Pick a challenge that feels just right</p>
       <div class="level-cards">
-        <div class="level-card" data-level="tree"><span class="lc-icon">🌳</span><span class="lc-title">Family Tree</span><p class="lc-sub">Meet everyone first</p><span class="lc-badge">START HERE</span></div>
         <div class="level-card" data-level="easy"><span class="lc-icon">👀</span><span class="lc-title">Level 1</span><p class="lc-sub">Emoji picture quiz</p></div>
         <div class="level-card" data-level="medium"><span class="lc-icon">🧩</span><span class="lc-title">Level 2</span><p class="lc-sub">Clue & riddle quiz</p></div>
         <div class="level-card" data-level="hard"><span class="lc-icon">🔤</span><span class="lc-title">Level 3</span><p class="lc-sub">Spell it out!</p></div>
@@ -67,14 +66,6 @@ const FamilyQuestPremium_HTML = `<canvas id="confettiCanvas"></canvas>
         <div class="rank-tag" id="rankTag">Beginner</div>
         <div class="rank-xp" id="rankXP">0 XP</div>
       </div>
-    </div>
-
-    <!-- mode tabs -->
-    <div class="mode-tabs">
-      <button class="mode-tab active" data-diff="tree">🌳 Tree</button>
-      <button class="mode-tab" data-diff="easy">🌱 Lv 1</button>
-      <button class="mode-tab" data-diff="medium">🧩 Lv 2</button>
-      <button class="mode-tab" data-diff="hard">🔤 Lv 3</button>
     </div>
 
     <!-- question area -->
@@ -196,6 +187,8 @@ body::after {
   display: flex; flex-direction: column; align-items: center;
 }
 
+.familyquestpremium-root { min-height: 100%; display: flex; justify-content: center; align-items: center; }
+
 .familyquestpremium-root .game-header, .familyquestpremium-root .acc-row { display: none; }
 
 /* ── CARD ────────────────────────────────────── */
@@ -234,7 +227,7 @@ body::after {
 /* ═══════════════════════════════════════════════
    WELCOME PAGE
 ═══════════════════════════════════════════════ */
-.welcome-inner { padding: 36px 28px 40px; text-align: center; }
+.welcome-inner { min-height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 36px 28px 40px; text-align: center; }
 
 .welcome-badge {
   display: inline-flex; align-items: center; gap: 6px;
@@ -294,7 +287,7 @@ body::after {
 }
 .level-inner .level-sub { text-align:center; color:var(--ink2); font-size:.85rem; margin-bottom:24px; }
 .level-cards {
-  display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
 }
 .level-card {
   background: var(--cream); border: 2px solid var(--parchment2);
@@ -648,6 +641,8 @@ body.large .spell-slot { width:58px; height:64px; }
 body.large .spell-tile { width:60px; height:60px; }
 
 @media (max-width:480px) {
+  .familyquestpremium-root { align-items: flex-start; }
+  .level-cards { grid-template-columns: 1fr; }
   .welcome-title { font-size:2rem; }
   .opts-grid { grid-template-columns:repeat(2,1fr); }
   .spell-slot { width:44px; height:52px; font-size:1.5rem; }
@@ -779,7 +774,7 @@ const buildBank=word=>{
   const pool=shuffle("bcdfghjklpqsvwxyz".split("").filter(c=>!letters.includes(c))).slice(0,4);
   return shuffle([...letters,...pool]);
 };
-const optCount=()=>S.diff==="easy"?3:4;
+const optCount=()=>4;
 
 /* ── XP / RANK UI ─────────────────────────────── */
 const updateXP=()=>{
@@ -1276,7 +1271,7 @@ $("nextBtn").onclick=()=>{sfxClick();goNext();};
 $("btnReplay").onclick=()=>{
   sfxClick();Object.assign(S,{score:0,xp:0,combo:0,completed:[]});
   updateScore();updateXP();updateCombo();save();
-  setDiff("tree");showPage($("pageGame"));
+  setDiff("easy");showPage($("pageGame"));
 };
 $("btnVHome").onclick=()=>{sfxClick();showPage($("pageWelcome"));};
 
@@ -1293,7 +1288,7 @@ $("togLarge").onclick=()=>document.body.classList.toggle("large");
 /* ── INIT ─────────────────────────────────────── */
 load();
 updateScore(); updateXP(); updateCombo();
-setDiff("tree");
+setDiff("easy");
 showPage($("pageWelcome"));
 mascot("Welcome! Let's explore your family tree 🌳","p","🐻");
 })();

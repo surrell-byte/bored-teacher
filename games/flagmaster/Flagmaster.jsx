@@ -112,9 +112,9 @@ const THEME_CSS = `
   font-family: 'Cormorant Garamond', Georgia, serif;
   background: var(--theme-body-bg);
   color: var(--cream);
-  min-height: 100vh; height: 100vh; width: 100vw;
+  min-height: 100%; height: 100%; width: 100%;
   display: flex; justify-content: center; align-items: stretch;
-  padding: 0; position: relative; overflow: hidden;
+  padding: 0; position: relative; overflow: auto;
 }
 .fm-root.fm-dark {
   --theme-body-bg:#05070d;
@@ -151,7 +151,7 @@ const THEME_CSS = `
 .fm-theme-toggle:hover { transform: scale(1.1); }
 .fm-theme-toggle:active { transform: scale(0.95); }
 
-.fm-screen { width: 100%; max-width: none; min-height: 100vh; position: relative; z-index: 2; animation: fm-screenIn .4s cubic-bezier(.2,.9,.3,1); margin: 0 auto; background: var(--theme-card-bg); }
+.fm-screen { width: 100%; max-width: none; min-height: 100%; position: relative; z-index: 2; animation: fm-screenIn .4s cubic-bezier(.2,.9,.3,1); margin: 0 auto; background: var(--theme-card-bg); }
 @keyframes fm-screenIn { from { opacity:0; transform:translateY(28px) scale(.98); } to { opacity:1; transform:none; } }
 
 .fm-card {

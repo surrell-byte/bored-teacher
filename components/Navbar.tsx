@@ -219,18 +219,6 @@ export default function Navbar() {
           )}
 
           {/* Profile dropdown — position:relative is the anchor */}
-          {hydrated && (
-            <button
-              className="topbar-signout"
-              type="button"
-              onClick={handleLogout}
-              disabled={loggingOut}
-              title={isGuest ? 'Leave guest mode' : 'Sign out'}
-            >
-              {loggingOut ? '⏳' : isGuest ? '🔓' : '🚪'} {loggingOut ? 'Signing out…' : isGuest ? 'Leave guest mode' : 'Sign out'}
-            </button>
-          )}
-
           <div
             className="profile-dropdown-wrap"
             ref={dropdownRef}

@@ -366,7 +366,7 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
 
       {/* SETUP SCREEN */}
       {screen === "setup" && (
-        <div style={{ maxWidth: "clamp(400px, 60vw, 700px)", margin: "2rem auto", padding: "clamp(1.5rem, 3vw, 2.5rem)", background: `${theme.surface}ee`, borderRadius: "clamp(16px, 3vw, 24px)", border: `1px solid ${theme.border}`, boxShadow: theme.shadow, overflowY: "auto", maxHeight: "100vh", backgroundImage: inputBackground, backgroundSize: "cover", backgroundPosition: "center" }}>
+        <div style={{ maxWidth: "min(100%, 700px)", margin: "2rem auto", padding: "clamp(1.5rem, 3vw, 2.5rem)", background: `${theme.surface}ee`, borderRadius: "clamp(16px, 3vw, 24px)", border: `1px solid ${theme.border}`, boxShadow: theme.shadow, overflowY: "auto", maxHeight: "100vh", backgroundImage: inputBackground, backgroundSize: "cover", backgroundPosition: "center" }}>
           <button onClick={() => { tone(500, 0.08, 0.07); setScreen("welcome"); }} style={{ background: "none", border: "none", color: theme.muted, cursor: "pointer", fontSize: "0.9rem", marginBottom: "1rem" }}>← Back</button>
           <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.5rem, 4vw, 2.5rem)", margin: "0 0 0.3rem" }}>Create Your Profile</h2>
           <p style={{ color: theme.muted, fontSize: "0.9rem", marginBottom: "1.5rem" }}>Personalise your experience</p>
@@ -374,18 +374,18 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
           <div style={{ display: "flex", gap: "0.75rem", marginBottom: "1.5rem" }}>
             {([1, 2] as const).map(count => <button key={count} onClick={() => setPlayerCount(count)} style={{ flex: 1, padding: "0.8rem", borderRadius: 12, border: playerCount === count ? `2px solid ${theme.accent}` : `1px solid ${theme.border}`, background: playerCount === count ? theme.glow : theme.card, color: theme.text, cursor: "pointer", fontWeight: 600 }}>{count} Player{count === 2 ? "s" : ""}</button>)}
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "1rem", marginBottom: "1.5rem" }}>
+          <div style={{ display: "grid", gridTemplateColumns: window.innerWidth <= 600 ? "1fr" : "repeat(2, minmax(0, 1fr))", gap: "1rem", marginBottom: "1.5rem" }}>
             <div style={{ padding: "1rem", borderRadius: 12, border: `1px solid ${theme.border}`, background: theme.card }}>
               <label style={{ fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: theme.muted, display: "block", marginBottom: "0.5rem" }}>Player 1</label>
               <input disabled={playerCount === null} value={profile.name} onChange={e => setProfile({ ...profile, name: e.target.value })} placeholder="Enter your name..." maxLength={18} style={{ width: "100%", padding: "0.8rem 1rem", borderRadius: 12, border: `1px solid ${theme.border}`, background: theme.bg, color: theme.text, fontSize: "1rem", outline: "none" }} />
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: "0.5rem", marginTop: "0.9rem" }}>
+              <div style={{ display: "grid", gridTemplateColumns: window.innerWidth <= 600 ? "repeat(4, 1fr)" : "repeat(6, 1fr)", gap: "0.5rem", marginTop: "0.9rem" }}>
                 {AVATARS.map(av => <button key={av} type="button" disabled={playerCount === null} onClick={() => setProfile({ ...profile, avatar: av })} style={{ padding: "0.45rem", borderRadius: 10, border: profile.avatar === av ? `2px solid ${theme.accent}` : `1px solid ${theme.border}`, background: profile.avatar === av ? theme.glow : theme.card, color: theme.text, cursor: playerCount === null ? "not-allowed" : "pointer", opacity: playerCount === null ? 0.5 : 1 }}>{av}</button>)}
               </div>
             </div>
             <div style={{ padding: "1rem", borderRadius: 12, border: `1px solid ${theme.border}`, background: theme.card, opacity: playerCount === 1 || playerCount === null ? 0.62 : 1 }}>
               <label style={{ fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: theme.muted, display: "block", marginBottom: "0.5rem" }}>Player 2</label>
               <input disabled={playerCount !== 2} value={player2.name} onChange={e => setPlayer2({ ...player2, name: e.target.value })} placeholder={playerCount === 1 ? "AI opponent" : "Enter player 2 name..."} maxLength={18} style={{ width: "100%", padding: "0.8rem 1rem", borderRadius: 12, border: `1px solid ${theme.border}`, background: theme.bg, color: theme.text, fontSize: "1rem", outline: "none" }} />
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: "0.5rem", marginTop: "0.9rem" }}>
+              <div style={{ display: "grid", gridTemplateColumns: window.innerWidth <= 600 ? "repeat(4, 1fr)" : "repeat(6, 1fr)", gap: "0.5rem", marginTop: "0.9rem" }}>
                 {AVATARS.map(av => <button key={av} type="button" disabled={playerCount !== 2} onClick={() => setPlayer2({ ...player2, avatar: av })} style={{ padding: "0.45rem", borderRadius: 10, border: player2.avatar === av ? `2px solid ${theme.accent}` : `1px solid ${theme.border}`, background: player2.avatar === av ? theme.glow : theme.card, color: theme.text, cursor: playerCount === 2 ? "pointer" : "not-allowed", opacity: playerCount === 2 ? 1 : 0.5 }}>{av}</button>)}
               </div>
             </div>
@@ -396,7 +396,7 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
 
       {/* MENU SCREEN */}
       {screen === "menu" && (
-        <div style={{ maxWidth: "clamp(400px, 60vw, 700px)", margin: "2rem auto", padding: "clamp(1.5rem, 3vw, 2.5rem)", background: `${theme.surface}ee`, borderRadius: "clamp(16px, 3vw, 24px)", border: `1px solid ${theme.border}`, boxShadow: theme.shadow, overflowY: "auto", maxHeight: "100vh", backgroundImage: inputBackground, backgroundSize: "cover", backgroundPosition: "center" }}>
+        <div style={{ maxWidth: "min(100%, 700px)", margin: window.innerWidth <= 600 ? "0 auto" : "2rem auto", padding: "clamp(1.5rem, 3vw, 2.5rem)", background: `${theme.surface}ee`, borderRadius: "clamp(16px, 3vw, 24px)", border: `1px solid ${theme.border}`, boxShadow: theme.shadow, overflowY: "auto", maxHeight: "100vh", backgroundImage: inputBackground, backgroundSize: "cover", backgroundPosition: "center" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1.5rem" }}>
             <span style={{ fontSize: "2rem" }}>{profile.avatar}</span>
             <div><div style={{ fontWeight: 600 }}>{profile.name}</div><div style={{ fontSize: "0.8rem", color: theme.muted }}>Player</div></div>
@@ -468,7 +468,7 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
         <div style={gameLayoutStyle}>
 
           {/* SIDEBAR */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "clamp(0.75rem, 1.5vw, 1.2rem)", alignSelf: "start", position: "sticky", top: "clamp(1rem, 2vw, 2rem)" }}>
+          <div style={{ display: "grid", gridTemplateColumns: window.innerWidth < 700 ? "repeat(2, minmax(0, 1fr))" : "1fr", gap: "clamp(0.75rem, 1.5vw, 1.2rem)", alignSelf: "start", position: "sticky", top: "clamp(1rem, 2vw, 2rem)" }}>
             {/* Player X Card */}
             <div style={{ padding: "clamp(1rem, 2vw, 1.5rem)", background: theme.card, borderRadius: "clamp(12px, 2vw, 16px)", border: `1px solid ${theme.border}`, boxShadow: currentPlayer === "X" && gameActive ? `inset 4px 0 0 ${theme.accent}, ${theme.shadow}` : theme.shadow }}>
               <div style={{ fontSize: "0.65rem", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", color: theme.muted, marginBottom: "0.3rem" }}>Player X</div>
@@ -490,7 +490,7 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
               <div style={{ fontSize: "0.7rem", color: theme.muted }}>wins</div>
             </div>
             {/* Status Card */}
-            <div style={{ padding: "clamp(1rem, 2vw, 1.5rem)", background: theme.card, borderRadius: "clamp(12px, 2vw, 16px)", border: `1px solid ${theme.border}`, boxShadow: theme.shadow }}>
+            <div style={{ gridColumn: window.innerWidth < 700 ? "1 / -1" : undefined, padding: "clamp(1rem, 2vw, 1.5rem)", background: theme.card, borderRadius: "clamp(12px, 2vw, 16px)", border: `1px solid ${theme.border}`, boxShadow: theme.shadow }}>
               <div style={{ fontSize: "0.65rem", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", color: theme.muted, marginBottom: "0.5rem" }}>Status</div>
               <div style={{ fontWeight: 600, marginBottom: "0.25rem" }}>{status.main}</div>
               <div style={{ fontSize: "0.85rem", color: theme.muted }}>{status.hint}</div>

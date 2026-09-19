@@ -24,6 +24,15 @@ test('Alphabet Hunt merges incomplete future themes with a complete fallback', (
   assert.match(component, /const theme = resolveTheme\(themeId\)/);
 });
 
+test('Alphabet Hunt announces the actual winning player on the win screen', () => {
+  const component = read('games/alphabet-hunt/AlphabetHunt.jsx');
+
+  assert.match(component, /const \[winningPlayer, setWinningPlayer\] = useState\(null\)/);
+  assert.match(component, /setWinningPlayer\(winner\)/);
+  assert.match(component, /const winnerNumber = winningPlayer \?\? current/);
+  assert.match(component, /const avatar = winnerNumber === 1 \? av1 : av2/);
+});
+
 test('Migrated games use direct React components without the legacy adapter', () => {
   const catalog = read('games/catalog.components.tsx');
   const data = read('games/whats-missing/whatsMissingData.js');

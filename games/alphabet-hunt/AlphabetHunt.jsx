@@ -36,6 +36,7 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
   const [wins, setWins] = useState({ 1: 0, 2: 0 });
   const [streaks, setStreaks] = useState({ 1: 0, 2: 0 });
   const [lastCorrectPlayer, setLastCorrectPlayer] = useState(null);
+  const [winningPlayer, setWinningPlayer] = useState(null);
   const theme = resolveTheme(themeId);
 
   const skipTurn = () => {
@@ -96,6 +97,7 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
     setScores({ 1: 0, 2: 0 });
     setStreaks({ 1: 0, 2: 0 });
     setLastCorrectPlayer(null);
+    setWinningPlayer(null);
     setScreen('game');
 
     setTimeout(() => {
@@ -222,6 +224,8 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
     const misses = winner === 1 ? misses1 : misses2;
     const accuracy = Math.round((5 / Math.max(turnNumber, 1)) * 100);
 
+    setWinningPlayer(winner);
+
     // Trigger confetti
     const pieces = [];
     for (let i = 0; i < 35; i++) {
@@ -252,18 +256,16 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
       setAv1(null);
       setAv2(null);
       setStatusLine('');
+      setWinningPlayer(null);
       startGame();
     }
   };
 
   const handlePlayAgain = () => {
-    setName1('');
-    setName2('');
-    setAv1(null);
-    setAv2(null);
     setStatusLine('');
     setConfetti([]);
-    setScreen('welcome');
+    setWinningPlayer(null);
+    startGame();
   };
 
   // Welcome screen
@@ -482,10 +484,11 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
 
   // Win screen
   if (screen === 'win') {
-    const misses = current === 1 ? misses1 : misses2;
+    const winnerNumber = winningPlayer ?? current;
+    const misses = winnerNumber === 1 ? misses1 : misses2;
     const accuracy = Math.round((5 / Math.max(turnNumber, 1)) * 100);
-    const avatar = current === 1 ? av1 : av2;
-    const name = current === 1 ? name1 : name2;
+    const avatar = winnerNumber === 1 ? av1 : av2;
+    const name = winnerNumber === 1 ? name1 : name2;
 
     return (
       <div className="alphabet-hunt ah-screen ah-win-screen" style={{ '--paper': theme.paper, '--panel': theme.panel, '--ink': theme.ink, '--p1': theme.p1, '--p2': theme.p2, '--p1-soft': theme.p1Soft, '--p2-soft': theme.p2Soft, '--muted': theme.muted, '--tile-hover': theme.tileHover, '--gold': theme.gold }}>
