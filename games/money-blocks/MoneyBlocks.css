@@ -842,8 +842,35 @@
 }
 
 @media (max-width: 640px) {
+  .screen-overlay {
+    align-items: flex-start;
+    overflow-y: auto;
+    padding: 14px 10px 24px;
+  }
+
+  .setup-box {
+    width: min(100%, 520px);
+    padding: 22px 16px 20px;
+  }
+
   .setup-players {
     grid-template-columns: 1fr;
+  }
+
+  .avatar-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .avatar-btn {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+  }
+
+  .setup-start {
+    width: 100%;
+    min-width: 0;
   }
 
   .game {

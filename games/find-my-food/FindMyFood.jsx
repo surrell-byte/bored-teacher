@@ -263,6 +263,20 @@ const STYLES = `
   .ff-tile-back .ff-word { font-size: .48rem; }
 }
 
+@media (orientation: portrait) and (max-width: 700px) {
+  .ff-root-emoji .ff-screen,
+  .ff-root-emoji .ff-card { margin-inline: auto; }
+  .ff-root-emoji .ff-screen { display: flex; align-items: center; justify-content: center; min-height: 100%; }
+  .ff-root-emoji .ff-game-card { padding: 18px 12px 22px; }
+  .ff-root-emoji.ff-pairs-4 .ff-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ff-root-emoji.ff-pairs-6 .ff-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .ff-root-emoji.ff-pairs-8 .ff-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .ff-root-emoji .ff-tile { min-height: 0; aspect-ratio: 1 / 1.12; }
+  .ff-root-emoji.ff-pairs-6 .ff-tile { aspect-ratio: 1 / 1.2; }
+  .ff-root-emoji .ff-tile-back .ff-emoji { font-size: 2rem; }
+  .ff-root-emoji .ff-tile-back .ff-word { font-size: .55rem; }
+}
+
 .ff-match-celebration { position:absolute; inset:0; z-index:30; display:flex; align-items:center; justify-content:center; padding:20px; background:rgba(5,5,7,.55); backdrop-filter:blur(5px); animation:ffCelebrationFade .22s ease both; }
 .ff-match-celebration-panel { width:min(100%, 430px); padding:24px; border:1px solid var(--green); border-radius:var(--radius-lg); background:var(--surface); box-shadow:0 20px 70px rgba(0,0,0,.55), 0 0 50px var(--green-glow); text-align:center; animation:ffCelebrationPop 1.35s cubic-bezier(.23,1,.32,1) both; }
 .ff-match-celebration-label { color:var(--green); font-size:.78rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; margin-bottom:14px; }
@@ -401,6 +415,7 @@ export default function FindMyFood({ onComplete, themeId, variant = "food" }) {
   const popupTimeout = useRef(null);
   const pairSet = variant === "emoji" ? EMOJI_PAIRS : PAIRS;
   const howToCards = variant === "emoji" ? EMOJI_PAIRS.flatMap(pair => [pair.animal, pair.food]) : HOW_TO_PLAY_CARDS;
+  const rootClass = variant === "emoji" ? "ff-root ff-root-emoji" : "ff-root";
 
   useEffect(() => () => clearTimeout(popupTimeout.current), []);
 
@@ -500,7 +515,7 @@ export default function FindMyFood({ onComplete, themeId, variant = "food" }) {
   };
 
   if (screen === "welcome") return (
-    <div className="ff-root" data-ff-theme={isDark ? "dark" : "light"} style={cssVarOverrides}>
+    <div className={rootClass} data-ff-theme={isDark ? "dark" : "light"} style={cssVarOverrides}>
       <style>{STYLES}</style>
       <div className="ff-noise" />
       <div className="ff-ambient ff-ambient-1" />
@@ -526,7 +541,7 @@ export default function FindMyFood({ onComplete, themeId, variant = "food" }) {
   );
 
   if (screen === "player-info") return (
-    <div className="ff-root" data-ff-theme={isDark ? "dark" : "light"} style={cssVarOverrides}>
+    <div className={rootClass} data-ff-theme={isDark ? "dark" : "light"} style={cssVarOverrides}>
       <style>{STYLES}</style>
       <div className="ff-noise" /><div className="ff-ambient ff-ambient-1" /><div className="ff-ambient ff-ambient-2" />
       <div className="ff-screen ff-setup-screen"><div className="ff-card ff-setup-card" style={{ textAlign:"center" }}>
@@ -560,7 +575,7 @@ export default function FindMyFood({ onComplete, themeId, variant = "food" }) {
   );
 
   if (screen === "how-to-play") return (
-    <div className="ff-root" data-ff-theme={isDark ? "dark" : "light"} style={cssVarOverrides}>
+    <div className={rootClass} data-ff-theme={isDark ? "dark" : "light"} style={cssVarOverrides}>
       <style>{STYLES}</style>
       <div className="ff-noise" />
       <div className="ff-ambient ff-ambient-1" />
@@ -587,7 +602,7 @@ export default function FindMyFood({ onComplete, themeId, variant = "food" }) {
   );
 
   if (screen === "mode") return (
-    <div className="ff-root" data-ff-theme={isDark ? "dark" : "light"} style={cssVarOverrides}>
+    <div className={rootClass} data-ff-theme={isDark ? "dark" : "light"} style={cssVarOverrides}>
       <style>{STYLES}</style><div className="ff-noise" /><div className="ff-ambient ff-ambient-1" /><div className="ff-ambient ff-ambient-2" />
       <div className="ff-screen"><div className="ff-card" style={{ textAlign:"center" }}>
         <div className="ff-logo-badge">🎯 Choose pairs</div><h1 className="ff-hero-title" style={{ fontSize:"clamp(2.2rem, 5vw, 3.1rem)" }}>Set the challenge</h1>
@@ -642,7 +657,7 @@ export default function FindMyFood({ onComplete, themeId, variant = "food" }) {
   const matchedPairs = matched.size / 2;
 
   return (
-    <div className="ff-root ff-root-game" data-ff-theme={isDark ? "dark" : "light"} style={cssVarOverrides}>
+    <div className={`${rootClass} ff-root-game ff-pairs-${pairCount}`} data-ff-theme={isDark ? "dark" : "light"} style={cssVarOverrides}>
       <style>{STYLES}</style>
       <div className="ff-noise" />
       <div className="ff-ambient ff-ambient-1" />

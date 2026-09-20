@@ -882,7 +882,7 @@ a { color: inherit; }
 .topbar {
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1132,11 +1132,12 @@ a { color: inherit; }
   top: calc(100% + 8px);
   right: 0;
   min-width: 200px;
-  background: var(--surface-strong);
+  background: var(--surface-strong, #17251f);
+  isolation: isolate;
   border: 1px solid var(--border-bright);
   border-radius: 16px;
   padding: 6px;
-  z-index: 200;
+  z-index: 3000;
   box-shadow: 0 16px 48px rgba(0,0,0,0.4);
   animation: fadeIn 0.15s ease both;
 }

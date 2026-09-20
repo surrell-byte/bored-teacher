@@ -21,7 +21,7 @@ interface GameResult {
 }
 
 const GAMES_WITH_WELCOME = new Set([
-  'animalAdventureRace', 'connect4', 'farmgame', 'findmyfood', 'flagmaster',
+   'animalAdventureRace', 'connect4', 'farmgame', 'findmyfood', 'flagmaster', 'emojimatch',
   'finnthefox', 'hiddencolours', 'oceanquest', 'parachutedrop', 'weatherwizard',
   'phonicsadventure', 'riddlebombs', 'tictacroll', 'tornado', 'wordfusion', 'weatherwizard', 'victoryvet',
   'turbodash',
@@ -137,6 +137,7 @@ export default function GamePage() {
   const isSnowySlopes = gameId === 'snowyslopes';
   const isAnimalClass = gameId === 'animalclass';
   const isFindMyFood = gameId === 'findmyfood';
+  const isEmojiMatch = gameId === 'emojimatch';
   const isWhatsMissing = gameId === 'whatsmissing';
   const isMoneyBlocks = gameId === 'moneyblocks';
   const findMyFoodShellTheme = {
@@ -197,7 +198,7 @@ export default function GamePage() {
       window.dispatchEvent(new Event('whats-missing:main-menu'));
     } else if (gameId === 'buildtower') {
       window.dispatchEvent(new Event('build-tower:main-menu'));
-    } else if (isFindMyFood) {
+    } else if (isFindMyFood || isEmojiMatch) {
       window.dispatchEvent(new Event('find-my-food:main-menu'));
     } else if (isEmojiSports) {
       setShowRouteWelcome(false);
@@ -302,8 +303,8 @@ export default function GamePage() {
         hidePauseControl={isFlagmaster}
         hideExitControl={false}
         controls={null}
-        themeVars={isTicTacRoll ? { nav: ticTheme.surface, navRaised: ticTheme.bg, navText: ticTheme.text, navMuted: ticTheme.muted, background: ticTheme.bg } : isAlphabetHunt ? { nav: alphabetTheme === 'ocean' ? '#087f8c' : alphabetTheme === 'arcade' ? '#352354' : '#1b1b1f', navRaised: alphabetTheme === 'ocean' ? '#e5a83b' : alphabetTheme === 'arcade' ? '#ff71ce' : '#c98a2c', navText: '#fffaf0', navMuted: '#eee8da', background: alphabetTheme === 'ocean' ? '#dff4f2' : alphabetTheme === 'arcade' ? '#24183d' : '#eee8da' } : isWordFusion ? { nav: wordFusionTheme === 'forest' ? '#214c3c' : wordFusionTheme === 'sunset' ? '#7b3f2e' : '#245b6c', navRaised: wordFusionTheme === 'forest' ? '#75b798' : wordFusionTheme === 'sunset' ? '#e29b52' : '#8ed1d5', navText: '#fffaf0', navMuted: '#d6eeee', background: wordFusionTheme === 'forest' ? '#dcefe2' : wordFusionTheme === 'sunset' ? '#f4d4b5' : '#d9eef0' } : isZooGame ? zooShellTheme : isFruitWordHunt ? { nav: '#a5662a', navRaised: '#f7b05e', navText: '#fffbee', navMuted: '#fff0cf', background: '#ffe0b5' } : isFlagmaster ? { nav: flagDarkMode ? '#05070d' : '#0b1628', navRaised: flagDarkMode ? '#121a2c' : '#1a3358', navText: flagDarkMode ? '#d4daf0' : '#f9f3e3', navMuted: flagDarkMode ? '#aebbd2' : '#f0e6c8', background: flagDarkMode ? '#05070d' : '#f9f3e3' } : isFindMyFood ? findMyFoodShellTheme : isMoneyBlocks ? moneyBlocksShellTheme : undefined}
-        themeOptions={isTicTacRoll ? TIC_TAC_ROLL_THEMES.map(theme => ({ id: theme.id, name: theme.name })) : isAlphabetHunt ? [{ id: 'classroom', name: 'Classroom' }, { id: 'ocean', name: 'Ocean' }, { id: 'arcade', name: 'Arcade' }] : isWordFusion ? [{ id: 'ocean', name: 'Ocean' }, { id: 'forest', name: 'Forest' }, { id: 'sunset', name: 'Sunset' }] : isZooGame ? [{ id: 'savanna', name: 'Savanna' }, { id: 'ocean', name: 'Ocean' }, { id: 'jungle', name: 'Jungle' }] : isWhatsMissing ? [{ id: 'green', name: 'Green' }, { id: 'blue', name: 'Blue' }, { id: 'red', name: 'Red' }, { id: 'yellow', name: 'Yellow' }, { id: 'white', name: 'White' }, { id: 'black', name: 'Black' }] : isMoneyBlocks ? [{ id: 'black', name: 'Black' }, { id: 'gold', name: 'Gold' }, { id: 'white', name: 'White' }] : isFindMyFood ? [{ id: 'dark', name: 'Dark' }, { id: 'light', name: 'Light' }, { id: 'gold', name: 'Gold' }] : undefined}
+        themeVars={isTicTacRoll ? { nav: ticTheme.surface, navRaised: ticTheme.bg, navText: ticTheme.text, navMuted: ticTheme.muted, background: ticTheme.bg } : isAlphabetHunt ? { nav: alphabetTheme === 'ocean' ? '#087f8c' : alphabetTheme === 'arcade' ? '#352354' : '#1b1b1f', navRaised: alphabetTheme === 'ocean' ? '#e5a83b' : alphabetTheme === 'arcade' ? '#ff71ce' : '#c98a2c', navText: '#fffaf0', navMuted: '#eee8da', background: alphabetTheme === 'ocean' ? '#dff4f2' : alphabetTheme === 'arcade' ? '#24183d' : '#eee8da' } : isWordFusion ? { nav: wordFusionTheme === 'forest' ? '#214c3c' : wordFusionTheme === 'sunset' ? '#7b3f2e' : '#245b6c', navRaised: wordFusionTheme === 'forest' ? '#75b798' : wordFusionTheme === 'sunset' ? '#e29b52' : '#8ed1d5', navText: '#fffaf0', navMuted: '#d6eeee', background: wordFusionTheme === 'forest' ? '#dcefe2' : wordFusionTheme === 'sunset' ? '#f4d4b5' : '#d9eef0' } : isZooGame ? zooShellTheme : isFruitWordHunt ? { nav: '#a5662a', navRaised: '#f7b05e', navText: '#fffbee', navMuted: '#fff0cf', background: '#ffe0b5' } : isFlagmaster ? { nav: flagDarkMode ? '#05070d' : '#0b1628', navRaised: flagDarkMode ? '#121a2c' : '#1a3358', navText: flagDarkMode ? '#d4daf0' : '#f9f3e3', navMuted: flagDarkMode ? '#aebbd2' : '#f0e6c8', background: flagDarkMode ? '#05070d' : '#f9f3e3' } : (isFindMyFood || isEmojiMatch) ? findMyFoodShellTheme : isMoneyBlocks ? moneyBlocksShellTheme : undefined}
+        themeOptions={isTicTacRoll ? TIC_TAC_ROLL_THEMES.map(theme => ({ id: theme.id, name: theme.name })) : isAlphabetHunt ? [{ id: 'classroom', name: 'Classroom' }, { id: 'ocean', name: 'Ocean' }, { id: 'arcade', name: 'Arcade' }] : isWordFusion ? [{ id: 'ocean', name: 'Ocean' }, { id: 'forest', name: 'Forest' }, { id: 'sunset', name: 'Sunset' }] : isZooGame ? [{ id: 'savanna', name: 'Savanna' }, { id: 'ocean', name: 'Ocean' }, { id: 'jungle', name: 'Jungle' }] : isWhatsMissing ? [{ id: 'green', name: 'Green' }, { id: 'blue', name: 'Blue' }, { id: 'red', name: 'Red' }, { id: 'yellow', name: 'Yellow' }, { id: 'white', name: 'White' }, { id: 'black', name: 'Black' }] : isMoneyBlocks ? [{ id: 'black', name: 'Black' }, { id: 'gold', name: 'Gold' }, { id: 'white', name: 'White' }] : (isFindMyFood || isEmojiMatch) ? [{ id: 'dark', name: 'Dark' }, { id: 'light', name: 'Light' }, { id: 'gold', name: 'Gold' }] : undefined}
         themeValue={isTicTacRoll ? ticTheme.id : isAlphabetHunt ? alphabetTheme : isWordFusion ? wordFusionTheme : isZooGame ? zooTheme : isWhatsMissing ? whatsMissingTheme : isMoneyBlocks ? moneyBlocksTheme : isFindMyFood ? findMyFoodTheme : undefined}
         onThemeChange={isTicTacRoll ? themeId => setTicTheme(TIC_TAC_ROLL_THEMES.find(theme => theme.id === themeId) ?? TIC_TAC_ROLL_THEMES[0]) : isAlphabetHunt ? setAlphabetTheme : isWordFusion ? setWordFusionTheme : isZooGame ? setZooTheme : isWhatsMissing ? setWhatsMissingTheme : isMoneyBlocks ? setMoneyBlocksTheme : isFindMyFood ? setFindMyFoodTheme : undefined}
         headerExtra={
@@ -475,7 +476,7 @@ export default function GamePage() {
               {...(isAlphabetHunt ? { themeId: alphabetTheme } : {})}
               {...(isWhatsMissing ? { themeId: whatsMissingTheme } : {})}
               {...(isMoneyBlocks ? { themeId: moneyBlocksTheme } : {})}
-              {...(isFindMyFood ? { themeId: findMyFoodTheme } : {})}
+              {...(isFindMyFood || isEmojiMatch ? { themeId: findMyFoodTheme } : {})}
               {...(isWhatsMissing ? { onHudUpdate: setWhatsMissingHud } : {})}
             />
           )}

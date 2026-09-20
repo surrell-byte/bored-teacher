@@ -112,8 +112,8 @@ export default function GrammarGym({ onComplete }) {
   const [selected, setSelected] = useState(null);
   const [feedback, setFeedback] = useState(null);
 
-  const currentLevel = LEVELS[level];
-  const current = questions[questionIndex];
+  const currentLevel = LEVELS[level] ?? LEVELS[0];
+  const current = questions[questionIndex] ?? null;
 
   useEffect(() => {
     const menu = () => setScreen('map');
@@ -122,6 +122,10 @@ export default function GrammarGym({ onComplete }) {
   }, []);
 
   function startLevel(nextLevel) {
+    if (!Number.isInteger(nextLevel) || !LEVELS[nextLevel]?.questions?.length) {
+      setScreen('map');
+      return;
+    }
     setLevel(nextLevel);
     setQuestions(shuffle(LEVELS[nextLevel].questions));
     setQuestionIndex(0);
@@ -138,7 +142,7 @@ export default function GrammarGym({ onComplete }) {
   }
 
   function chooseAnswer(index) {
-    if (selected !== null || !current) return;
+    if (selected !== null || !current || !Array.isArray(current[1]) || index < 0 || index >= current[1].length) return;
     setAnswered(value => value + 1);
     if (index === 0) {
       const nextStreak = streak + 1;
@@ -161,6 +165,10 @@ export default function GrammarGym({ onComplete }) {
   }
 
   function nextQuestion() {
+    if (!current || !questions.length) {
+      setScreen('map');
+      return;
+    }
     if (questionIndex + 1 >= questions.length) {
       setUnlocked(value => value.map((item, index) => index === level + 1 ? true : item));
       onComplete?.(score, Math.round((correct / Math.max(answered, 1)) * 100));
@@ -184,7 +192,7 @@ export default function GrammarGym({ onComplete }) {
 
   if (screen === 'complete') return <div className="grammar-gym"><style>{STYLES}</style><main className="gg-app gg-center"><div className="gg-medal">🏆</div><span className="gg-tag">WORKOUT COMPLETE</span><h1>{currentLevel.name} - Cleared!</h1><p className="gg-muted">{score} gains · {correct}/{Math.max(answered, 1)} correct · Best combo {bestStreak}</p><div className="gg-actions"><button className="gg-btn" onClick={() => startLevel(level)}>Retry</button>{level < LEVELS.length - 1 && unlocked[level + 1] && <button className="gg-btn gg-green" onClick={() => startLevel(level + 1)}>Continue →</button>}<button className="gg-ghost" onClick={() => setScreen('map')}>Back to Map</button></div></main></div>;
 
-  if (!current) return null;
+  if (!current) return <div className="grammar-gym"><style>{STYLES}</style><main className="gg-app gg-center"><span className="gg-tag">WORKOUT RECOVERY</span><h1>Question unavailable</h1><p className="gg-muted">This workout could not load its next rep. Return to the gym floor and try again.</p><button className="gg-btn" onClick={() => startLevel(level)}>Retry workout</button><button className="gg-ghost" onClick={() => setScreen('map')}>Back to Gym Floor</button></main></div>;
   const exhausted = selected !== null && feedback?.type === 'bad';
   return <div className="grammar-gym"><style>{STYLES}</style><main className="gg-app"><div className="gg-question-head"><button className="gg-ghost" onClick={() => setScreen('map')}>← Map</button><span className="gg-tag">{currentLevel.name}</span><div className="gg-energy">{Array.from({ length: MAX_ENERGY }, (_, index) => <span key={index}>{index < energy ? '♥' : '♡'}</span>)}</div></div><div className="gg-progress"><i style={{ width: `${(questionIndex / questions.length) * 100}%` }} /></div><div className="gg-question-card"><div className="gg-q-meta"><span>CEFR {currentLevel.cefr}</span><span>{questionIndex + 1}/{questions.length} · {3 - wrongCount} tries left</span></div><h2>{current[0]}</h2><div className="gg-options">{current[1].map((option, index) => <button key={option} className={selected === index ? index === 0 ? 'correct' : 'wrong' : ''} disabled={selected !== null || exhausted} onClick={() => chooseAnswer(index)}><b>{LETTERS[index]}</b>{option}</button>)}</div>{feedback && <div className={`gg-feedback ${feedback.type}`}><b>{feedback.text}</b><small>{feedback.why}</small></div>}</div><div className="gg-actions">{selected === 0 && <button className="gg-btn" onClick={nextQuestion}>{questionIndex + 1 === questions.length ? 'Finish Workout' : 'Next Rep →'}</button>}</div></main></div>;
 }

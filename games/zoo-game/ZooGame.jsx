@@ -102,7 +102,6 @@ export default function ZooGame({ themeId = 'savanna', onComplete }) {
   return (
     <div className={`zoogame-root zoo-theme-${themeId}`}>
       <div className="game-wrapper" role="main" aria-label="Zoo animal guessing game">
-        <div className="question-counter">{questionCounterText}</div>
         <span id="scoreDisplay" hidden>{score}</span>
 
         <VictoryOverlay
@@ -138,6 +137,8 @@ export default function ZooGame({ themeId = 'savanna', onComplete }) {
             onHint={handleLookHint}
           />
         ) : null}
+
+        <div className="question-counter question-counter-bottom">{questionCounterText}</div>
       </div>
     </div>
   );
