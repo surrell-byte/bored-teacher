@@ -48,6 +48,9 @@
 .game-level-card h3 { font-size: 23px; font-weight: 900; color: #064e2c; margin-bottom: 5px; }
 .game-level-card p { font-size: 14px; line-height: 1.5; color: #47705a; max-width: 300px; }
 .game-level-card span { display: inline-block; margin-top: 15px; font-size: 12px; font-weight: 900; color: #07843e; }
+.quiz-match-card { margin: 0 auto 22px; max-width: 520px; padding: 24px; text-align: center; border-radius: 28px; background: linear-gradient(145deg, #f7fff5, #e4f7e5); border: 3px solid #fff; box-shadow: 0 15px 35px rgba(0,50,25,.10); }
+.quiz-match-emoji { width: 150px; height: 150px; margin: 0 auto 16px; display: grid; place-items: center; border-radius: 40px; background: #fff; font-size: 92px; box-shadow: 0 12px 25px rgba(20,80,40,.14); animation: plantFloat 3s ease-in-out infinite; }
+.quiz-match-card h2 { margin: 12px 0 0; color: #064e2c; font-size: clamp(1.3rem, 3vw, 2rem); font-weight: 900; }
 @keyframes plantFloat { 0%,100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-6px) rotate(1deg); } }
 @keyframes feedbackIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 @media (max-width: 640px) { .quiz-page { min-height: 100%; background-attachment: scroll; } .quiz-question-card { padding: 20px 14px; } .quiz-emoji { width: 118px; height: 118px; font-size: 74px; } }

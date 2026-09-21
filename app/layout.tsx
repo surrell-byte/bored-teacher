@@ -9,7 +9,7 @@ import AppBackground from '@/components/AppBackground';
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://boredteacher.online'),
+  metadataBase: new URL('https://www.boredteacher.online'),
   title: {
     default: 'Bored Teacher Online | ESL Learning Games for Classrooms',
     template: '%s | Bored Teacher Online',
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     type: 'website',
-    url: 'https://boredteacher.online',
+    url: 'https://www.boredteacher.online',
     siteName: 'Bored Teacher Online',
     title: 'Bored Teacher Online | ESL Learning Games for Classrooms',
     description: 'Game-based ESL learning, classroom practice, progress tracking, and teacher resources from Bored Teacher Online.',
@@ -64,8 +64,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               '@type': 'EducationalOrganization',
               name: 'Bored Teacher Online',
               alternateName: 'Bored Teacher Online ESL Game Hub',
-              url: 'https://boredteacher.online',
-              logo: 'https://boredteacher.online/assets/.optimized/logo.webp',
+              url: 'https://www.boredteacher.online',
+              logo: 'https://www.boredteacher.online/assets/.optimized/logo.webp',
               description: 'A game-based ESL learning platform with classroom games, progress tracking, and teacher resources.',
             }),
           }}

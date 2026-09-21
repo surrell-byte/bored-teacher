@@ -3,6 +3,14 @@ import "./PlantVegetableQuiz.css";
 
 const CHECKPOINT_KEY = "plantVegQuizProgress";
 const ROUNDS_PER_LEVEL = 6;
+const MATCH_ITEMS = [
+  { emoji: "🍎", name: "Apple", category: "Fruit" },
+  { emoji: "🍌", name: "Banana", category: "Fruit" },
+  { emoji: "🥕", name: "Carrot", category: "Vegetable" },
+  { emoji: "🍅", name: "Tomato", category: "Vegetable" },
+  { emoji: "🥦", name: "Broccoli", category: "Vegetable" },
+  { emoji: "🥭", name: "Mango", category: "Fruit" },
+];
 
 const vocab = [
   { emoji: "🥕", name: "Carrot", category: "Vegetable" },
@@ -263,6 +271,14 @@ export default function PlantVegetableQuiz() {
   const [triviaFeedback, setTriviaFeedback] = useState("");
   const [triviaFeedbackWrong, setTriviaFeedbackWrong] = useState(false);
   const [triviaShowEmoji, setTriviaShowEmoji] = useState(false);
+  const [matchRoundIndex, setMatchRoundIndex] = useState(0);
+  const [matchScore, setMatchScore] = useState(0);
+  const [matchItem, setMatchItem] = useState(null);
+  const [matchOptions, setMatchOptions] = useState([]);
+  const [matchSelected, setMatchSelected] = useState(null);
+  const [matchAnswered, setMatchAnswered] = useState(false);
+  const [matchFeedback, setMatchFeedback] = useState("");
+  const [matchFeedbackWrong, setMatchFeedbackWrong] = useState(false);
 
   function persistCheckpoint(levelKey, roundIndex, score) {
     const checkpoint = { levelKey, roundIndex, score };
@@ -289,6 +305,12 @@ export default function PlantVegetableQuiz() {
 
   function getCurrentTriviaRound() {
     return triviaRounds[triviaRoundIndex] || [];
+  }
+
+  function buildMatchRound(roundIndex = 0) {
+    const item = MATCH_ITEMS[roundIndex % MATCH_ITEMS.length];
+    const wrongs = shuffle(MATCH_ITEMS.filter((value) => value.name !== item.name)).slice(0, 3).map((value) => value.name);
+    return { item, options: shuffle([item.name, ...wrongs]) };
   }
 
   function buildChooseOptions(item) {
@@ -388,6 +410,20 @@ export default function PlantVegetableQuiz() {
     setLastLevel("trivia");
   }
 
+  function startMatch(resumeRoundIndex = 0, resumeScore = 0) {
+    const round = buildMatchRound(resumeRoundIndex);
+    setMatchRoundIndex(resumeRoundIndex);
+    setMatchScore(resumeScore);
+    setMatchItem(round.item);
+    setMatchOptions(round.options);
+    setMatchSelected(null);
+    setMatchAnswered(false);
+    setMatchFeedback("");
+    setMatchFeedbackWrong(false);
+    setScreen("match");
+    setLastLevel("match");
+  }
+
   useEffect(() => {
     if (typeof window === "undefined") return;
     const raw = window.sessionStorage.getItem(CHECKPOINT_KEY);
@@ -407,6 +443,38 @@ export default function PlantVegetableQuiz() {
     if (levelKey === "choose") startChoose(roundIndex, score);
     if (levelKey === "spell") startSpell(roundIndex, score);
     if (levelKey === "trivia") startTrivia(roundIndex, score);
+    if (levelKey === "match") startMatch(roundIndex, score);
+  }
+
+  function selectMatchAnswer(selected) {
+    if (matchAnswered || !matchItem) return;
+    const correct = selected === matchItem.name;
+    setMatchAnswered(true);
+    setMatchSelected(selected);
+    setMatchFeedbackWrong(!correct);
+    if (correct) {
+      setMatchScore((score) => score + 10);
+      setMatchFeedback(`✅ Perfect match! That's a ${matchItem.category.toLowerCase()}.`);
+    } else {
+      setMatchFeedback(`🌱 Not quite! Match it with ${matchItem.name}.`);
+    }
+  }
+
+  function nextMatch() {
+    const nextRoundIndex = matchRoundIndex + 1;
+    if (nextRoundIndex >= ROUNDS_PER_LEVEL) {
+      const completedScore = matchScore + (matchSelected === matchItem.name ? 10 : 0);
+      completeRound("match", nextRoundIndex, completedScore, ROUNDS_PER_LEVEL * 10, `Fruit & Veg Match complete!`);
+      return;
+    }
+    const round = buildMatchRound(nextRoundIndex);
+    setMatchRoundIndex(nextRoundIndex);
+    setMatchItem(round.item);
+    setMatchOptions(round.options);
+    setMatchSelected(null);
+    setMatchAnswered(false);
+    setMatchFeedback("");
+    setMatchFeedbackWrong(false);
   }
 
   function selectChooseAnswer(selected) {
@@ -580,6 +648,7 @@ export default function PlantVegetableQuiz() {
     if (lastLevel === "spell") startSpell();
     if (lastLevel === "trivia") startTrivia();
     if (lastLevel === "learn") startLearn();
+    if (lastLevel === "match") startMatch();
   }
 
   function nextLearn() {
@@ -636,6 +705,8 @@ export default function PlantVegetableQuiz() {
               </button>
               <button onClick={() => startTrivia(0)} className="game-level-card"><div className="game-icon">🧠</div><div className="level-number">LEVEL 4</div><h3>Garden Master</h3><p>Test everything you&apos;ve learned.</p><span>START →</span>
               </button>
+              <button onClick={() => startMatch(0)} className="game-level-card"><div className="game-icon">🍎🥕</div><div className="level-number">LEVEL 5</div><h3>Fruit &amp; Veg Match</h3><p>Match each fruit and vegetable with its name.</p><span>START →</span>
+              </button>
             </div>
           </div>
         )}
@@ -655,6 +726,7 @@ export default function PlantVegetableQuiz() {
                 if (lastLevel === "choose") startChoose(chooseRoundIndex + 1);
                 if (lastLevel === "spell") startSpell(spellRoundIndex + 1);
                 if (lastLevel === "trivia") startTrivia(triviaRoundIndex + 1);
+                if (lastLevel === "match") startMatch(matchRoundIndex + 1);
               }}
               className="w-full rounded-2xl bg-green-950 px-5 py-4 text-lg font-extrabold text-white"
             >
@@ -791,6 +863,24 @@ export default function PlantVegetableQuiz() {
 
             <Feedback text={triviaFeedback} wrong={triviaFeedbackWrong} />
             {triviaAnswered && <NextButton onClick={nextTrivia} label={triviaIndex < getCurrentTriviaRound().length - 1 ? "Next Question →" : "Finish Round →"} />}
+          </div>
+        )}
+
+        {screen === "match" && matchItem && (
+          <div>
+            <div className="mb-4">
+              <div className="text-2xl sm:text-3xl font-black">🍎🥕 Fruit &amp; Veg Match</div>
+            </div>
+            <ProgressBar percent={((matchRoundIndex + 1) / ROUNDS_PER_LEVEL) * 100} />
+            <div className="text-center text-xs font-black tracking-widest uppercase text-green-700 mb-2">Round {matchRoundIndex + 1} of {ROUNDS_PER_LEVEL}</div>
+            <div className="quiz-match-card">
+              <div className="quiz-match-emoji" aria-hidden="true">{matchItem.emoji}</div>
+              <div className="quiz-category">{matchItem.category}</div>
+              <h2>Which name matches this food?</h2>
+            </div>
+            <AnswerGrid options={matchOptions} onSelect={selectMatchAnswer} disabled={matchAnswered} correctAnswer={matchItem.name} selected={matchSelected} />
+            <Feedback text={matchFeedback} wrong={matchFeedbackWrong} />
+            {matchAnswered && <NextButton onClick={nextMatch} label={matchRoundIndex < ROUNDS_PER_LEVEL - 1 ? "Next Match →" : "Finish Level →"} />}
           </div>
         )}
 

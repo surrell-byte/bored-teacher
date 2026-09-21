@@ -67,6 +67,7 @@ export default function GamePage() {
   const [whatsMissingTheme, setWhatsMissingTheme] = useState('green');
   const [moneyBlocksTheme, setMoneyBlocksTheme] = useState('black');
   const [findMyFoodTheme, setFindMyFoodTheme] = useState('dark');
+  const [mathRacingHud, setMathRacingHud] = useState<any>(null);
 
   useEffect(() => {
     setShowRouteWelcome(!GAMES_WITH_WELCOME.has(gameId));
@@ -140,6 +141,7 @@ export default function GamePage() {
   const isEmojiMatch = gameId === 'emojimatch';
   const isWhatsMissing = gameId === 'whatsmissing';
   const isMoneyBlocks = gameId === 'moneyblocks';
+  const isMathRacing = gameId === 'mathracing';
   const findMyFoodShellTheme = {
     dark: { nav: '#111215', navRaised: '#252529', navText: '#f0ede8', navMuted: '#b9b3aa', background: '#0d0d0f' },
     light: { nav: '#f4f1eb', navRaised: '#ffffff', navText: '#1a1814', navMuted: '#6b6258', background: '#f4f1eb' },
@@ -367,6 +369,12 @@ export default function GamePage() {
                 </span>
               </span>
             )}
+            {isMathRacing && mathRacingHud && (
+              <span className="game-shell-topbar-stats" aria-label="Math Racing progress">
+                <span className="game-shell-topbar-stat"><b>⭐ {mathRacingHud.score}</b><span>Score</span></span>
+                <span className="game-shell-topbar-stat"><b>❓ {mathRacingHud.question}</b><span>Question</span></span>
+              </span>
+            )}
             {isAnimalClass && animalClassHud && (
               <span className="game-shell-topbar-stats" aria-label="Animal Class Quest progress">
                 <span className="game-shell-topbar-stat"><b>{animalClassHud.level}</b></span>
@@ -470,6 +478,7 @@ export default function GamePage() {
               {...(isEmojiSports ? { onHudUpdate: setEmojiSportsHud } : {})}
               {...(isWeatherWizard ? { onHudUpdate: setWeatherWizardHud } : {})}
               {...(isSnowySlopes ? { onHudUpdate: setSnowySlopesHud } : {})}
+              {...(isMathRacing ? { onHudUpdate: setMathRacingHud } : {})}
               {...(isAnimalClass ? { onHudUpdate: setAnimalClassHud } : {})}
               {...(isFlagmaster ? { darkMode: flagDarkMode, isCreator } : {})}
               {...(isZooGame ? { themeId: zooTheme } : {})}

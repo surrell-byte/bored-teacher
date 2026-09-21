@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 
-const siteUrl = 'https://boredteacher.online';
+const siteUrl = 'https://www.boredteacher.online';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const routes = ['/', '/about', '/games', '/resources', '/blog'];
