@@ -155,9 +155,13 @@
 
 .money-blocks {
   min-height: 100vh;
-  background: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.02), transparent 32%);
+  background:
+    radial-gradient(ellipse at 50% -8%, var(--bg-top), transparent 52%),
+    radial-gradient(ellipse at center, var(--bg-deep) 0%, var(--bg-deep-end) 100%);
+  color: var(--ivory);
   position: relative;
   overflow: hidden;
+  transition: background 1.2s ease;
 }
 
 .money-blocks::before {
@@ -323,52 +327,61 @@
 }
 
 .game {
-  width: min(1400px, calc(100vw - 24px));
+  width: 96%;
+  max-width: 1440px;
+  height: 99vh;
   margin: 0 auto;
-  padding: 18px 0 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .topbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 12px 8px 18px;
+  justify-content: flex-start;
+  padding: 4px 4px 0;
+  flex-shrink: 0;
 }
 
 .brand .eyebrow {
   font-family: "IBM Plex Mono", monospace;
   text-transform: uppercase;
-  letter-spacing: 0.18em;
-  font-size: 10px;
-  color: var(--gold-bright);
+  letter-spacing: 0.22em;
+  font-size: 14px;
+  color: var(--gold);
 }
 
 .brand h1 {
   margin: 6px 0 0;
   font-family: "Fraunces", serif;
-  font-size: clamp(2rem, 3vw, 3rem);
+  font-weight: 600;
+  font-size: 48px;
+  letter-spacing: 0.01em;
   color: var(--ivory);
 }
 
 .layout {
+  flex: 1;
   display: grid;
-  grid-template-columns: minmax(0, 1.9fr) minmax(320px, 0.95fr);
+  grid-template-columns: 2.4fr 1fr;
   gap: 20px;
-  align-items: start;
+  min-height: 0;
 }
 
 .board {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  grid-template-rows: repeat(12, minmax(0, 1fr));
-  height: min(76vh, 900px);
-  min-height: 500px;
-  padding: 18px;
+  grid-template-columns: repeat(12, 1fr);
+  grid-template-rows: repeat(12, 1fr);
+  height: 100%;
+  min-height: 580px;
+  padding: 22px;
   border-radius: 28px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  background: var(--board-bg);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.07);
   border: 1px solid var(--board-border);
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
+  gap: 9px;
 }
 
 .block {
@@ -377,19 +390,32 @@
   align-items: center;
   justify-content: center;
   border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.18);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), 0 8px 16px rgba(0,0,0,0.25);
-  font-weight: 800;
-  color: white;
-  transition: transform 0.2s ease, opacity 0.2s ease, filter 0.2s ease;
-  min-height: 50px;
+  border: 1px solid rgba(255,255,255,.07);
+  box-shadow: none;
+  font-size: clamp(16px, 2.2vw, 28px);
+  user-select: none;
+  overflow: hidden;
+  background-image: repeating-linear-gradient(135deg, rgba(255,255,255,.032) 0px, rgba(255,255,255,.032) 1px, transparent 1px, transparent 6px);
+  transition: transform .22s, box-shadow .22s, opacity .22s, filter .22s;
 }
 
-.block:hover:not(:disabled) { transform: translateY(-2px); }
+.block::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,.16), rgba(255,255,255,0));
+  pointer-events: none;
+}
+
+.block:hover:not(:disabled) {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 18px 36px rgba(0,0,0,.4), 0 0 28px var(--glow-color, rgba(255,255,255,.35));
+  z-index: 2;
+}
 .block:disabled { cursor: not-allowed; }
 .block.used {
-  opacity: 0.76;
-  filter: saturate(0.9);
+  opacity: .22;
+  filter: grayscale(100%);
 }
 
 .rainbow-tile {
@@ -397,25 +423,31 @@
 }
 
 .tile-letter {
-  font-size: clamp(1.1rem, 1vw + 0.7rem, 1.6rem);
+  font-weight: 700;
+  font-size: clamp(13px, 1.8vw, 22px);
   font-family: "Montserrat", sans-serif;
-  letter-spacing: 0.04em;
+  letter-spacing: 2px;
 }
 
 .side {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 12px;
+  min-height: 0;
+  overflow: hidden;
 }
 
-.side-controls, .ledger, .account-card {
+.ledger, .account-card {
   background: linear-gradient(180deg, color-mix(in srgb, var(--panel) 94%, transparent), color-mix(in srgb, var(--bg-deep-end) 94%, transparent));
   border: 1px solid var(--panel-border);
   border-radius: 20px;
 }
 
 .side-controls {
-  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-shrink: 0;
 }
 
 .side-buttons {
@@ -426,25 +458,29 @@
 
 .side-btn {
   flex: 1;
-  padding: 11px 14px;
-  border-radius: 12px;
-  background: var(--board-bg);
+  padding: 18px 14px;
+  border-radius: 14px;
+  background: none;
   border: 1px solid var(--panel-border);
-  color: var(--ivory);
+  color: var(--ivory-dim);
+  font: 600 14px "Inter";
+  letter-spacing: .1em;
+  text-transform: uppercase;
 }
 
 .turn-pill {
-  display: inline-flex;
+  display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
-  margin-top: 18px;
-  padding: 10px 12px;
-  min-width: 170px;
-  border-radius: 999px;
-  background: var(--board-bg);
+  padding: 18px 14px;
+  border-radius: 14px;
+  background: var(--panel);
   border: 1px solid var(--panel-border);
   color: var(--ivory);
-  font-weight: 600;
+  font: 500 18px "Inter";
+  width: 100%;
+  text-align: center;
 }
 
 .dot {
@@ -457,12 +493,24 @@
 }
 
 .side-panels {
-  display: grid;
-  gap: 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+}
+
+.side-panels .account-card,
+.side-panels .ledger {
+  flex: 1;
+  min-height: 0;
 }
 
 .account-card {
-  padding: 18px 16px 14px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .account-card.active {
@@ -546,7 +594,14 @@
 }
 
 .ledger {
-  padding: 18px 16px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  text-align: center;
+  min-height: 90px;
 }
 
 .ledger-rule {
@@ -830,18 +885,45 @@
   margin: 0 auto;
 }
 
-@media (max-width: 980px) {
+@media (max-width: 900px) {
   .layout {
     grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    gap: 14px;
   }
 
   .board {
-    min-height: 420px;
-    height: 54vh;
+    min-height: 60vw;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    border-radius: 20px;
+    gap: 6px;
+    padding: 14px;
   }
+
+  .side-panels {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    flex: unset;
+  }
+
+  .side-panels .account-card,
+  .side-panels .ledger { flex: unset; }
+
+  .side-controls { flex-direction: row; align-items: stretch; gap: 10px; }
+  .side-buttons { flex: 1; }
+  .turn-pill { font-size: 14px; padding: 12px 10px; }
+  .brand h1 { font-size: 30px; }
+  .brand .eyebrow { font-size: 11px; }
+  .account-balance { font-size: 20px; }
+  .ledger-amount { font-size: 22px; }
+  .progress-ticks { font-size: 8px; }
+  .block { border-radius: 10px; }
+  .tile-letter { font-size: clamp(10px, 1.5vw, 16px); letter-spacing: 1px; }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 600px) {
   .screen-overlay {
     align-items: flex-start;
     overflow-y: auto;
@@ -874,13 +956,34 @@
   }
 
   .game {
-    width: min(100vw - 18px, 100%);
+    width: 100%;
+    padding: 8px;
   }
 
   .board {
+    min-height: 0;
+    aspect-ratio: 1 / 1;
+    width: 100%;
+    gap: 4px;
     padding: 10px;
-    height: 46vh;
+    border-radius: 16px;
   }
+
+  .block { border-radius: 8px; }
+  .tile-letter { font-size: clamp(8px, 2.4vw, 13px); letter-spacing: .5px; }
+  .side-controls { flex-direction: column; gap: 8px; }
+  .side-buttons { gap: 8px; }
+  .side-btn { font-size: 11px; padding: 12px 8px; border-radius: 12px; }
+  .turn-pill { font-size: 13px; padding: 12px 8px; border-radius: 12px; }
+  .side-panels { display: flex; flex-direction: column; gap: 8px; }
+  .account-card { padding: 12px 14px; gap: 8px; border-radius: 14px; }
+  .avatar { width: 36px; height: 36px; font-size: 18px; }
+  .account-name { font-size: 13px; }
+  .account-balance { font-size: 20px; }
+  .progress-ticks { font-size: 8px; }
+  .ledger { padding: 14px 16px; gap: 6px; border-radius: 14px; }
+  .ledger-amount { font-size: 22px; }
+  .ledger-text { font-size: 13px; }
 
   .side-btn, .welcome-btn, .setup-start, .play-again, .htp-start {
     width: 100%;

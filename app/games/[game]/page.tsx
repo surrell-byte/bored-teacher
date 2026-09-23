@@ -231,6 +231,9 @@ export default function GamePage() {
     } else if (isTicTacRoll) {
       setShowRouteWelcome(false);
       window.dispatchEvent(new Event('tictacroll:main-menu'));
+    } else if (gameId === 'finnthefox') {
+      setShowRouteWelcome(false);
+      window.dispatchEvent(new Event('reading-rescue:main-menu'));
     } else {
       setShowRouteWelcome(true);
       setGameSession(session => session + 1);
