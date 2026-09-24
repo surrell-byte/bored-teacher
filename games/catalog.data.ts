@@ -915,7 +915,7 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     name: "Reading Rescue",
     icon: "🦊",
     desc: "Rescue captured animals by reading stories, answering comprehension questions, and rebuilding the adventure.",
-    cover: "/assets/covers/finn-cover.webp",
+    cover: "/assets/covers/reading-rescue-cover.webp",
     tag: { label: "Reading", color: "tag-words" },
     badge: "5 Levels",
     difficulty: "Reading Quest",

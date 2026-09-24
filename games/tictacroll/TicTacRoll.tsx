@@ -351,7 +351,7 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
   };
 
   const welcomeBackground = "url('/assets/images/tic-tac-roll-welcome-bg.webp') center/cover no-repeat";
-  const inputBackground = "url('/assets/images/tic-tac-roll-user-input-screen-bg.webp') center/cover no-repeat";
+  const inputBackground = `url('${window.innerWidth <= 600 ? '/assets/images/tic-tac-roll-general-phone-bg.webp' : '/assets/images/tic-tac-roll-user-input-screen-bg.webp'}') center/cover no-repeat`;
 
   return (
     <div style={{ height: "100%", minHeight: "100%", background: "transparent", color: theme.text, fontFamily: "'DM Sans', 'Segoe UI', sans-serif", transition: "background 0.4s, color 0.4s" }}>

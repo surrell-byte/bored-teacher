@@ -3,7 +3,7 @@
   min-height: 700px;
   margin: 0 auto;
   font-family: Arial, Helvetica, sans-serif;
-  background: linear-gradient(135deg, #bfe4ff 0%, #dff3ff 45%, #a9d5ff 100%);
+  background: #bfe4ff url('/assets/games/look-and-say/look-and-say-welcome-bg.webp') center / cover no-repeat;
   color: #2d3338;
   background: #fff;
   border: 8px solid #e7f7ff;
@@ -38,7 +38,8 @@
 
 .look-and-say-game .feedback { text-align: center; min-height: 30px; font-size: 20px; font-weight: 900; margin-top: 15px; }
 
-.look-and-say-game .start { position: absolute; inset: 0; background: rgba(255,255,255,0.97); z-index: 5; display: flex; align-items: center; justify-content: center; text-align: center; padding: 30px; }
+.look-and-say-game .start { position: absolute; inset: 0; background: rgba(255,255,255,0.74); z-index: 5; display: flex; align-items: center; justify-content: center; text-align: center; padding: 30px; }
+.look-and-say-game:has(.start) { background-image: url('/assets/games/look-and-say/look-and-say-welcome-bg.webp'); }
 .look-and-say-game .start-box { max-width: 650px; }
 .look-and-say-game .start-box h1 { font-size: clamp(42px, 7vw, 72px); margin: 0 0 10px; }
 .look-and-say-game .start-box p { font-size: 22px; color: #5e6b73; line-height: 1.45; }
@@ -52,6 +53,7 @@
 
 @media (max-width: 720px) {
   .look-and-say-game { width: 100%; min-height: 100vh; border-radius: 0; border-width: 0; padding: 20px; }
+  .look-and-say-game:has(.start) { background-image: url('/assets/games/look-and-say/look-and-say-welcome-phone-bg.webp'); }
   .look-and-say-game .choices { grid-template-columns: 1fr; }
   .look-and-say-game .picture-card { height: 250px; }
   .look-and-say-game .top { align-items: flex-start; }

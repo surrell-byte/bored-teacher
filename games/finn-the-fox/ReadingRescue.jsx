@@ -1,80 +1,91 @@
 'use client';
 
-/* eslint-disable react/no-unescaped-entities, @next/next/no-img-element, react-hooks/exhaustive-deps */
+/* eslint-disable react/no-unescaped-entities, @next/next/no-img-element */
 import { useEffect, useMemo, useState } from 'react';
+import { READING_RESCUE_QUIZZES } from './readingRescueData';
+import { readingRescueStories as READING_RESCUE_STORIES } from './readingRescueStories';
 
-const PAGES = [
-  ["Finn's Cozy Home", <>Deep in the <b>Whispering Woods</b> lived a young fox named <b>Finn</b>. He loved his cozy den under the old oak tree.</>],
-  ['The Mysterious Glow', <>One evening Finn saw a strange <b>shimmering glow</b> beyond the hills and followed it through tall grass and over a babbling brook.</>],
-  ['The Starry Meadow', <>Finn discovered a breathtaking <b>meadow</b> filled with twinkling lights. In the center he spotted a tiny, sad <b>firefly</b> named Luna.</>],
-  ['A Friend in Need', <>Luna had lost her <b>family</b>. "Do not worry," said Finn. Together they searched near a sparkling pond.</>],
-  ['Home at Last', <>They found Luna's family. Finn returned home with a <b>warm</b> heart, knowing he had made a wonderful new friend. 🧡</>],
-];
-const TANYA_PAGES = [
-  ['Tanya\'s Amazing Cooking', <>Tanya loved to cook. She didn't just make food. She made <b>amazing</b> food. Her grandmother had taught her all the family recipes, and Tanya had become an incredible cook. Her chicken pies were crispy and golden. Her pasta was creamy and delicious. Her cakes were soft, sweet, and impossible to resist. Soon, Tanya's neighbours began coming over just to taste her cooking. “Just one bite!” they would say. But one bite quickly became a whole plate. Everyone loved Tanya's food. And Tanya loved making people happy. She had no idea that her delicious cooking was about to cause a very unusual problem.</>],
-  ['Everyone Wants More!', <>Tanya's cooking became famous throughout the community. On Monday, she made creamy chicken pasta. On Tuesday, she made crispy chicken pies. On Wednesday, she made cheesy potatoes. And on Friday, she made her legendary chocolate cake. People couldn't get enough. “Can I have another piece?” “Me too!” “Is there any more pasta?” “Please save me a chicken pie!” Soon, people were eating Tanya's delicious food almost every day. They were having bigger portions and fewer healthy meals. Nobody noticed the problem at first. But after several weeks, the community began to change.</>],
-  ['The Community Has a Problem', <>One morning, Mr. Dube tried to put on his favourite trousers. “Hmm...” he grunted. He pulled. He pushed. He jumped. <b>POP!</b> The button flew across the room! Meanwhile, Mrs. Moyo tried to climb the hill near her house. She stopped halfway. “Why is this hill suddenly so long?” Even the school football team was struggling during practice. “I need a rest!” one player groaned. Finally, everyone gathered for a community meeting. “We have a problem,” said Mr. Dube. Everyone nodded. Then someone shouted: “I know what caused it!” Everyone turned around. “Tanya's cooking!” Tanya nearly dropped her spoon. “<b>My cooking?!</b>”</>],
-  ['Tanya Finds a Solution', <>Tanya felt terrible. “I only wanted everyone to enjoy good food,” she said. Mr. Dube shook his head. “We love your food, Tanya. That's the problem!” Everyone laughed. Tanya thought carefully. She didn't want people to stop enjoying delicious food. But she realized that eating rich foods too often and in very large portions wasn't a good idea. So Tanya created a new plan. She started serving smaller portions. She added colourful vegetables and fresh salads to her meals. She taught everyone how to make tasty food using different ingredients. And she started a community cooking club where everyone learned about enjoying treats <b>in moderation</b>. “Food should be delicious,” Tanya said, “but we also need balance!” Everyone agreed.</>],
-  ['The Happiest Community', <>Soon, things changed. People started walking together in the evenings. The children played outside more often. The football team started running again. And everyone still enjoyed Tanya's amazing cooking. One Saturday, Tanya brought out her famous chocolate cake. Everyone stared at it. Mr. Dube slowly reached for a huge slice. Mrs. Moyo grabbed his arm. “Remember the plan!” Mr. Dube sighed. “Fine. I'll have a small piece.” He took one bite. His eyes grew wide. “Tanya...” “Yes?” “This cake is still unbelievably good!” Everyone laughed. Tanya smiled. “That's because you don't need a giant slice to enjoy something delicious.” From then on, the community remembered an important lesson: <b>Good food is wonderful. But enjoying it in balance is even better.</b> And Tanya? She kept cooking. Nobody had solved the problem of Tanya's chocolate cake being <b>far too delicious</b>!</>],
-];
-const TANYA_READING_PAGES = [
-  ['Tanya\'s Amazing Cooking', <>Tanya loved to cook. Her grandmother had taught her family recipes, and Tanya had become an incredible cook. Her chicken pies were crispy, her pasta was creamy, and her cakes were soft and sweet.</>],
-  ['A Favourite in the Community', <>Soon, Tanya\'s neighbours came over just to taste her cooking. “Just one bite!” they would say. But one bite quickly became a whole plate. Tanya loved making people happy and did not notice a problem beginning.</>],
-  ['Everyone Wants More', <>Tanya cooked something special almost every day: chicken pasta, golden pies, cheesy potatoes, and chocolate cake. People kept asking for bigger portions. Nobody wanted to stop eating.</>],
-  ['The Community Changes', <>After several weeks, the community began to change. People were eating fewer healthy meals and moving around less. The delicious food was becoming a little too much.</>],
-  ['A Strange Morning', <>One morning, Mr. Dube tried to put on his favourite trousers. He pulled and pushed, but the button flew across the room. “Hmm,” he said. Something was not right.</>],
-  ['A Community Problem', <>Mrs. Moyo struggled to climb the hill, and the school football team needed extra breaks. Everyone gathered for a meeting. “We have a problem,” said Mr. Dube. Then someone called out, “Tanya\'s cooking!”</>],
-  ['Tanya Finds Balance', <>Tanya felt terrible, but the neighbours explained that they loved her food too much. She created a plan: smaller portions, colourful vegetables, fresh salads, and tasty meals made with different ingredients.</>],
-  ['The Happiest Community', <>Soon, people walked together and played outside again. Everyone still enjoyed Tanya\'s cooking, but in moderation. They learned that good food is wonderful, and balance makes it even better.</>],
-];
-const FINN_QUIZ = [
-  ['What is the name of the fox?', ['Max', 'Finn', 'Leo', 'Oliver'], 1],
-  ['Where did Finn live?', ['Sunny Desert', 'Rocky Mountains', 'Whispering Woods', 'Crystal Cave'], 2],
-  ['What did Finn find in the meadow?', ['A golden key', 'A lost firefly', 'A magic wand', 'A treasure chest'], 1],
-  ['How did Finn feel at the end?', ['Sad and lonely', 'Angry and tired', 'Warm and happy', 'Scared and lost'], 2],
-];
-const FINN_BLANKS = [['Whispering', 'woods'], ['Finn', 'fox'], ['shimmering', 'glow'], ['meadow', 'field']];
-const TANYA_QUIZ = [
-  ['What did Tanya love to do?', ['Cook', 'Paint', 'Run', 'Sing'], 0],
-  ['Why did neighbours visit Tanya?', ['To borrow books', 'To taste her cooking', 'To play football', 'To see her garden'], 1],
-  ['What happened to Mr. Dube\'s trousers?', ['They got wet', 'The button popped off', 'They disappeared', 'They became too long'], 1],
-  ['What was Tanya\'s solution?', ['Stop cooking', 'Serve bigger portions', 'Use smaller portions and add healthy foods', 'Move away'], 2],
-];
-const TANYA_BLANKS = [['chicken', 'pasta'], ['smaller', 'portions'], ['fresh', 'salads'], ['in', 'moderation']];
-const TANYA_IMAGES = [1, 2, 3, 4, 5, 4, 5, 1];
-void TANYA_PAGES;
+const LEGACY_STORIES = {
+  1: {
+    title: 'The Starry Meadow',
+    description: 'Read the first rescue story and find Luna.',
+    pages: [
+      ["Finn's Cozy Home", <>Deep in the <b>Whispering Woods</b> lived a young fox named <b>Finn</b>. He loved his cozy den under the old oak tree.</>],
+      ['The Mysterious Glow', <>One evening Finn saw a strange <b>shimmering glow</b> beyond the hills and followed it through tall grass and over a babbling brook.</>],
+      ['The Starry Meadow', <>Finn discovered a breathtaking <b>meadow</b> filled with twinkling lights. In the center he spotted a tiny, sad <b>firefly</b> named Luna.</>],
+      ['A Friend in Need', <>Luna had lost her <b>family</b>. "Do not worry," said Finn. Together they searched near a sparkling pond.</>],
+      ['Home at Last', <>They found Luna's family. Finn returned home with a <b>warm</b> heart, knowing he had made a wonderful new friend. 🧡</>],
+    ],
+    quiz: [
+      ['What is the name of the fox?', ['Max', 'Finn', 'Leo', 'Oliver'], 1],
+      ['Where did Finn live?', ['Sunny Desert', 'Rocky Mountains', 'Whispering Woods', 'Crystal Cave'], 2],
+      ['What did Finn find in the meadow?', ['A golden key', 'A lost firefly', 'A magic wand', 'A treasure chest'], 1],
+      ['How did Finn feel at the end?', ['Sad and lonely', 'Angry and tired', 'Warm and happy', 'Scared and lost'], 2],
+    ],
+  },
+  6: {
+    title: "Tanya's Tasteful Trouble",
+    description: "Read Tanya's story and discover why balance matters.",
+    pages: [
+      ["Tanya's Amazing Cooking", <>Tanya loved to cook. Her grandmother had taught her family recipes, and Tanya had become an incredible cook. Her chicken pies were crispy, her pasta was creamy, and her cakes were soft and sweet.</>],
+      ['A Favourite in the Community', <>Soon, Tanya's neighbours came over just to taste her cooking. “Just one bite!” they would say. But one bite quickly became a whole plate. Tanya loved making people happy and did not notice a problem beginning.</>],
+      ['Everyone Wants More', <>Tanya cooked something special almost every day: chicken pasta, golden pies, cheesy potatoes, and chocolate cake. People kept asking for bigger portions. Nobody wanted to stop eating.</>],
+      ['The Community Changes', <>After several weeks, the community began to change. People were eating fewer healthy meals and moving around less. The delicious food was becoming a little too much.</>],
+      ['A Community Problem', <>Mrs. Moyo struggled to climb the hill, and the school football team needed extra breaks. Everyone gathered for a meeting. “We have a problem,” said Mr. Dube. Then someone called out, “Tanya's cooking!”</>],
+      ['Tanya Finds Balance', <>Tanya felt terrible, but the neighbours explained that they loved her food too much. She created a plan: smaller portions, colourful vegetables, fresh salads, and tasty meals made with different ingredients.</>],
+      ['The Happiest Community', <>Soon, people walked together and played outside again. Everyone still enjoyed Tanya's cooking, but in moderation. They learned that good food is wonderful, and balance makes it even better.</>],
+    ],
+    quiz: [
+      ['What did Tanya love to do?', ['Cook', 'Paint', 'Run', 'Sing'], 0],
+      ['Why did neighbours visit Tanya?', ['To borrow books', 'To taste her cooking', 'To play football', 'To see her garden'], 1],
+      ["What happened to Mr. Dube's trousers?", ['They got wet', 'The button popped off', 'They disappeared', 'They became too long'], 1],
+      ["What was Tanya's solution?", ['Stop cooking', 'Serve bigger portions', 'Use smaller portions and add healthy foods', 'Move away'], 2],
+    ],
+  },
+};
+
 const LEVELS = [
-  { number: 1, name: 'The Starry Meadow', description: 'Read the first rescue story and find Luna.' },
-  { number: 2, name: 'The Lost Duckling', description: 'Follow clues and answer what happened next.' },
-  { number: 3, name: 'The Trapped Rabbit', description: 'Use details from the story to plan a rescue.' },
-  { number: 4, name: 'The Forest Family', description: 'Connect characters, places, and key events.' },
-  { number: 5, name: 'Rescue Leader', description: 'Master the final comprehension challenge.' },
-  { number: 6, name: "Tanya's Tasteful Trouble", description: 'Read Tanya\'s story and discover why balance matters.' },
+  { number: 1, name: LEGACY_STORIES[1].title, description: LEGACY_STORIES[1].description },
+  ...READING_RESCUE_STORIES.map(({ level, title, description }) => ({ number: level, name: title, description })),
+  { number: 6, name: LEGACY_STORIES[6].title, description: LEGACY_STORIES[6].description },
 ];
+
+const QUIZ_LETTERS = ['A', 'B', 'C', 'D'];
+const FINN_BLANKS = [['Whispering', 'woods'], ['Finn', 'fox'], ['shimmering', 'glow'], ['meadow', 'field']];
+const TANYA_BLANKS = [['smaller', 'portions'], ['fresh', 'salads'], ['in', 'moderation'], ['balance', 'balance']];
+
+function normalizeQuiz(level) {
+  if (READING_RESCUE_QUIZZES[level]) {
+    return READING_RESCUE_QUIZZES[level].map((item) => [item.question, item.options, QUIZ_LETTERS.indexOf(item.answer)]);
+  }
+  return LEGACY_STORIES[level].quiz;
+}
+
+function normalizePage(page) {
+  return Array.isArray(page) ? { title: page[0], text: page[1] } : page;
+}
 
 export default function ReadingRescue({ onComplete }) {
-  const [phase, setPhase] = useState('menu');
+  const [phase, setPhase] = useState('user-info');
   const [level, setLevel] = useState(1);
+  const [userName, setUserName] = useState('');
+  const [userGrade, setUserGrade] = useState('');
   const [page, setPage] = useState(0);
   const [quizIndex, setQuizIndex] = useState(0);
   const [quizAnswers, setQuizAnswers] = useState([]);
   const [selectedBlank, setSelectedBlank] = useState(null);
   const [filled, setFilled] = useState({});
   const [mistakes, setMistakes] = useState(0);
-  const [retellError, setRetellError] = useState(false);
   const [revealed, setRevealed] = useState(false);
-  const storyPages = level === 6 ? TANYA_READING_PAGES : PAGES;
-  const activeStoryPages = level === 6 ? TANYA_READING_PAGES : storyPages;
-  const activeQuiz = level === 6 ? TANYA_QUIZ : FINN_QUIZ;
-  const activeBlanks = level === 6 ? TANYA_BLANKS : FINN_BLANKS;
-  const QUIZ = activeQuiz;
-  const BLANKS = activeBlanks;
-  const quizScore = quizAnswers.filter((answer, index) => answer === activeQuiz[index]?.[2]).length;
-    const retellScore = Object.keys(filled).length;
 
-  // Rebuild the word bank when the player enters a new phase.
-  const words = useMemo(() => [...activeBlanks.map(([word]) => word), ...(level === 6 ? ['healthy', 'balance', 'community', 'tasty'] : ['lonely', 'dark', 'ocean', 'rabbit'])].sort(() => Math.random() - .5), [phase, level]);
-  const completionScore = Math.round(((quizScore + retellScore) / (activeQuiz.length + activeBlanks.length)) * 100);
+  const story = READING_RESCUE_STORIES.find((item) => item.level === level) || LEGACY_STORIES[level];
+  const pages = story.pages;
+  const quiz = normalizeQuiz(level);
+  const blanks = level === 6 ? TANYA_BLANKS : FINN_BLANKS;
+  const quizScore = quizAnswers.filter((answer, index) => answer === quiz[index]?.[2]).length;
+  const completionScore = Math.round(((quizScore + Object.keys(filled).length) / (quiz.length + blanks.length)) * 100);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- reshuffle whenever the game phase changes.
+  const words = useMemo(() => [...blanks.map(([word]) => word), 'healthy', 'community', 'tasty', 'carefully'].sort(() => Math.random() - 0.5), [blanks, phase]);
 
   useEffect(() => {
     const handleMainMenu = () => setPhase('menu');
@@ -82,114 +93,75 @@ export default function ReadingRescue({ onComplete }) {
     return () => window.removeEventListener('reading-rescue:main-menu', handleMainMenu);
   }, []);
 
-  function start(nextLevel = level) { setLevel(nextLevel); setPhase('story'); setPage(0); setQuizIndex(0); setQuizAnswers([]); setSelectedBlank(null); setFilled({}); setMistakes(0); setRetellError(false); setRevealed(false); }
+  function start(nextLevel) {
+    setLevel(nextLevel);
+    setPhase('story');
+    setPage(0);
+    setQuizIndex(0);
+    setQuizAnswers([]);
+    setSelectedBlank(null);
+    setFilled({});
+    setMistakes(0);
+    setRevealed(false);
+  }
+
   function answerQuiz(index) {
     if (quizAnswers[quizIndex] !== undefined) return;
-    setQuizAnswers(answers => [...answers, index]);
+    setQuizAnswers((answers) => [...answers, index]);
   }
+
   function placeWord(word) {
     if (selectedBlank === null || filled[selectedBlank]) return;
-    if (word.toLowerCase() === activeBlanks[selectedBlank][0].toLowerCase()) setFilled(value => ({ ...value, [selectedBlank]: word }));
-    else {
-      setMistakes(value => value + 1);
-      setRetellError(true);
-      window.setTimeout(() => setRetellError(false), 700);
+    if (word.toLowerCase() === blanks[selectedBlank][0].toLowerCase()) {
+      setFilled((value) => ({ ...value, [selectedBlank]: word }));
+    } else {
+      setMistakes((value) => value + 1);
       if (mistakes + 1 >= 3) setRevealed(true);
     }
     setSelectedBlank(null);
   }
-  function finish() { if (revealed) return; setPhase('results'); onComplete?.(completionScore, completionScore); }
-  function restart() { start(level); }
-  const retellCopy = level === 6
-    ? <p className="ff-retell">Tanya learned to serve <button onClick={() => !revealed && setSelectedBlank(0)}>{filled[0] || (revealed ? activeBlanks[0][0] : '_____')} </button> and use <button onClick={() => !revealed && setSelectedBlank(1)}>{filled[1] || (revealed ? activeBlanks[1][0] : '_____')} </button>. She added <button onClick={() => !revealed && setSelectedBlank(2)}>{filled[2] || (revealed ? activeBlanks[2][0] : '_____')} </button> and enjoyed treats <button onClick={() => !revealed && setSelectedBlank(3)}>{filled[3] || (revealed ? activeBlanks[3][0] : '_____')} </button>.</p>
-    : <p className="ff-retell">Deep in the <button onClick={() => !revealed && setSelectedBlank(0)}>{filled[0] || (revealed ? activeBlanks[0][0] : '_____')} </button> Woods lived <button onClick={() => !revealed && setSelectedBlank(1)}>{filled[1] || (revealed ? activeBlanks[1][0] : '_____')} </button>. He followed a <button onClick={() => !revealed && setSelectedBlank(2)}>{filled[2] || (revealed ? activeBlanks[2][0] : '_____')} </button> glow to a beautiful <button onClick={() => !revealed && setSelectedBlank(3)}>{filled[3] || (revealed ? activeBlanks[3][0] : '_____')} </button>.</p>;
+
+  function submitUserInfo(event) {
+    event.preventDefault();
+    if (userName.trim()) setPhase('menu');
+  }
+
+  function finish() {
+    if (revealed) return;
+    setPhase('results');
+    onComplete?.(completionScore, completionScore);
+  }
+
+  function storyText(text) {
+    if (typeof text !== 'string') return text;
+    return text.split('\n\n').map((paragraph) => <p key={paragraph}>{paragraph}</p>);
+  }
+
+  function backgroundClass() {
+    return `finn-fox finn-fox--${phase}${level === 6 ? ' finn-fox--tanya' : ''}`;
+  }
 
   if (phase === 'story') {
-    return <div className={`finn-fox finn-fox--story${level === 6 ? ' finn-fox--tanya' : ''}`}>
-      <style>{CSS}</style>
-      <div className="ff-progress"><i style={{ width: `${((page + 1) / activeStoryPages.length) * 33}%` }} /></div>
-      <main>
-        <section className="ff-story-layout">
-          <img className="ff-scene ff-story-illustration" src={level === 6 ? `/assets/.optimized/games/finn-the-fox/tanya-story-scene-${TANYA_IMAGES[page]}.webp` : `/assets/.optimized/games/finn-the-fox/finn-${page + 1}.webp`} alt={`${level === 6 ? 'Tanya' : 'Finn'} story page ${page + 1}`} />
-          <div>
-            <article className="ff-story"><small>Page {page + 1} - {activeStoryPages[page][0]}</small><p>{activeStoryPages[page][1]}</p></article>
-            <div className="ff-actions"><button className="ff-secondary" disabled={!page} onClick={() => setPage(value => value - 1)}>⬅ Previous</button><button className="ff-primary" onClick={() => page < activeStoryPages.length - 1 ? setPage(value => value + 1) : setPhase('quiz')}>{page < activeStoryPages.length - 1 ? 'Next ➡' : '✅ Take the Quiz'}</button></div>
-          </div>
-        </section>
-      </main>
-    </div>;
+    const currentPage = normalizePage(pages[page]);
+    return <div className={backgroundClass()}><style>{CSS}</style><div className="ff-progress"><i style={{ width: `${((page + 1) / pages.length) * 33}%` }} /></div><main><section className="ff-story-layout"><img className="ff-story-illustration" src={`/assets/games/finn-the-fox/${level === 6 ? `tanya-story-scene-${Math.min(page + 1, 5)}.png` : `finn-${Math.min(page + 1, 5)}.png`}`} alt={`${story.title} page ${page + 1}`} /><div><article className="ff-story"><small>Page {page + 1} - {currentPage.title}</small>{storyText(currentPage.text)}</article><div className="ff-actions"><button className="ff-secondary" disabled={!page} onClick={() => setPage((value) => value - 1)}>Previous</button><button className="ff-primary" onClick={() => page < pages.length - 1 ? setPage((value) => value + 1) : setPhase('quiz')}>{page < pages.length - 1 ? 'Next' : 'Take the Quiz'}</button></div></div></section></main></div>;
   }
 
-  if (phase === 'quiz' && level === 6) {
-    return <div className="finn-fox finn-fox--quiz finn-fox--tanya"><style>{CSS}</style><div className="ff-progress"><i style={{ width: '50%' }} /></div><main><section className="ff-card"><img className="ff-quiz-image" src={`/assets/.optimized/games/finn-the-fox/tanya-story-scene-${TANYA_IMAGES[quizIndex]}.webp`} alt="Tanya story scene" /><h2>{activeQuiz[quizIndex][0]}</h2><div className="ff-options">{activeQuiz[quizIndex][1].map((option, index) => <button key={option} disabled={quizAnswers[quizIndex] !== undefined} className={quizAnswers[quizIndex] === index ? index === activeQuiz[quizIndex][2] ? 'correct' : 'wrong' : ''} onClick={() => answerQuiz(index)}>{option}</button>)}</div>{quizAnswers[quizIndex] !== undefined && <button className="ff-primary" onClick={() => quizIndex < activeQuiz.length - 1 ? setQuizIndex(value => value + 1) : setPhase('retell')}>{quizIndex < activeQuiz.length - 1 ? 'Next Question ➡' : 'Continue to Sentence Match ✍️'}</button>}</section></main></div>;
+  if (phase === 'quiz') {
+    const currentQuestion = quiz[quizIndex];
+    return <div className={backgroundClass()}><style>{CSS}</style><div className="ff-progress"><i style={{ width: '50%' }} /></div><main><section className="ff-card"><img className="ff-quiz-image" src={`/assets/games/finn-the-fox/${level === 6 ? `tanya-story-scene-${Math.min(quizIndex + 1, 5)}.png` : `finn-${Math.min(quizIndex + 1, 5)}.png`}`} alt={`${story.title} quiz`} /><h2>{currentQuestion[0]}</h2><div className="ff-options">{currentQuestion[1].map((option, index) => <button key={option} disabled={quizAnswers[quizIndex] !== undefined} className={quizAnswers[quizIndex] === index ? index === currentQuestion[2] ? 'correct' : 'wrong' : ''} onClick={() => answerQuiz(index)}>{option}</button>)}</div>{quizAnswers[quizIndex] !== undefined && <button className="ff-primary" onClick={() => quizIndex < quiz.length - 1 ? setQuizIndex((value) => value + 1) : setPhase('retell')}>{quizIndex < quiz.length - 1 ? 'Next Question' : 'Continue to Sentence Match'}</button>}</section></main></div>;
   }
 
-  if (phase === 'retell' && level === 6) {
-    return <div className="finn-fox finn-fox--retell finn-fox--tanya"><style>{CSS}</style><div className="ff-progress"><i style={{ width: '75%' }} /></div><main><section className={`ff-retell-layout${retellError ? ' ff-retell-error' : ''}`}><div className="ff-retell-copy"><div className="ff-icon">✍️</div><p>Click a blank, then click its matching word.</p>{retellCopy}{!revealed && <div className="ff-word-bank">{words.filter(word => !Object.values(filled).includes(word)).map(word => <button key={word} onClick={() => placeWord(word)}>{word}</button>)}</div>}{revealed ? <><strong className="ff-game-over">The answers are revealed. Game over.</strong><button className="ff-primary" onClick={restart}>↩ Restart from checkpoint</button></> : <button className="ff-primary" disabled={Object.keys(filled).length < 4} onClick={finish}>✅ Check My Story</button>}<small>{mistakes ? `${mistakes}/3 mistakes — ${3 - mistakes} ${3 - mistakes === 1 ? 'try' : 'tries'} left` : 'Keep going!'}</small></div><img className="ff-retell-image" src={`/assets/.optimized/games/finn-the-fox/tanya-story-scene-${TANYA_IMAGES[3]}.webp`} alt="Tanya cooking with fresh ingredients" /></section></main></div>;
+  if (phase === 'retell') {
+    return <div className={backgroundClass()}><style>{CSS}</style><div className="ff-progress"><i style={{ width: '75%' }} /></div><main><section className="ff-retell-layout"><div className="ff-retell-copy"><div className="ff-icon">✍️</div><p>Click a blank, then click its matching word.</p><p className="ff-retell">Finn followed a <button onClick={() => !revealed && setSelectedBlank(0)}>{filled[0] || (revealed ? blanks[0][0] : '_____')}</button> and found <button onClick={() => !revealed && setSelectedBlank(1)}>{filled[1] || (revealed ? blanks[1][0] : '_____')}</button>. He stayed <button onClick={() => !revealed && setSelectedBlank(2)}>{filled[2] || (revealed ? blanks[2][0] : '_____')}</button> and remembered the importance of <button onClick={() => !revealed && setSelectedBlank(3)}>{filled[3] || (revealed ? blanks[3][0] : '_____')}</button>.</p>{!revealed && <div className="ff-word-bank">{words.filter((word) => !Object.values(filled).includes(word)).map((word) => <button key={word} onClick={() => placeWord(word)}>{word}</button>)}</div>}{revealed ? <><strong>Answers revealed. Game over.</strong><button className="ff-primary" onClick={() => start(level)}>Restart</button></> : <button className="ff-primary" disabled={Object.keys(filled).length < blanks.length} onClick={finish}>Check My Story</button>}<small>{mistakes ? `${mistakes}/3 mistakes` : 'Keep going!'}</small></div></section></main></div>;
   }
 
-  return <div className="finn-fox"><style>{CSS}</style><style>{`.finn-fox main{max-width:1100px;padding:clamp(28px,5vw,64px)}.ff-progress{max-width:1100px}.ff-story-layout{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);align-items:center;gap:clamp(24px,4vw,52px);min-height:520px}.ff-story-layout .ff-story-illustration{width:100%;height:auto;min-height:360px;object-fit:cover}.ff-story-layout .ff-story{margin-top:0;padding:clamp(26px,4vw,42px)}.ff-story-layout .ff-story p{font-size:clamp(1.15rem,2vw,1.55rem);line-height:1.75}.ff-level-menu{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:28px}.ff-level{position:relative;display:flex;min-height:180px;flex-direction:column;justify-content:flex-start;gap:8px;padding:22px 22px 18px 28px;text-align:left;border:2px solid rgba(255,139,74,.35);border-radius:20px;background:linear-gradient(145deg,#fff,#fff9f1);color:#29263a;cursor:pointer;overflow:hidden;box-shadow:0 5px 0 rgba(232,109,50,.08),0 10px 25px rgba(40,25,20,.07);transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}.ff-level::before{content:'';position:absolute;left:0;top:0;width:6px;height:100%;background:linear-gradient(180deg,#ffb066,#ff7542)}.ff-level::after{content:'';position:absolute;width:110px;height:110px;right:-45px;bottom:-50px;border-radius:50%;background:rgba(255,139,74,.07);pointer-events:none}.ff-level:hover{transform:translateY(-6px);border-color:#ff8b4a;box-shadow:0 12px 0 rgba(232,109,50,.08),0 20px 35px rgba(40,25,20,.13)}.ff-level:active{transform:translateY(-2px)}.ff-level strong{display:inline-flex;align-items:center;width:max-content;padding:6px 11px;margin-bottom:10px;border-radius:999px;background:#fff0e7;color:#e86d32;font-size:13px;font-weight:900;letter-spacing:.3px}.ff-level span{display:block;color:#292535;font-size:20px;line-height:1.15;font-weight:850;letter-spacing:-.3px}.ff-level small{display:block;max-width:270px;color:#766d66;font-size:14px;line-height:1.45}.ff-level .ff-level-footer{display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:auto}.ff-level .ff-play-label{font-size:13px;font-weight:800;color:#e86d32}.ff-level .ff-play-arrow{width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:#ff8b4a;color:#fff;font-size:17px;font-weight:900;transition:transform .2s ease}.ff-level:hover .ff-play-arrow{transform:translateX(4px)}@media(max-width:1000px){.ff-level-menu{grid-template-columns:repeat(2,minmax(0,1fr))}.finn-fox main{padding:38px 38px 48px}}@media(max-width:700px){.finn-fox main{padding:30px 20px 40px}.ff-level-menu{grid-template-columns:1fr;gap:14px}.ff-level{min-height:155px}.ff-story-layout{grid-template-columns:1fr;gap:20px;min-height:0}.ff-story-layout .ff-story-illustration{min-height:0}.ff-story-layout .ff-story{padding:22px}.ff-story-layout .ff-story p{font-size:1.15rem}}`}</style><div className="ff-progress"><i style={{ width: `${phase === 'menu' ? 0 : phase === 'story' ? ((page + 1) / PAGES.length) * 33 : phase === 'quiz' ? 50 : phase === 'retell' ? 75 : 100}%` }} /></div><main className={phase === 'menu' ? 'game-container' : undefined}>
-    {phase === 'menu' && <section className="intro"><img className="hero-fox" src="/finn-fox.png" alt="Finn the fox" /><h1>Reading Rescue</h1><p className="subtitle">Finn's comprehension adventure</p><p>Rescue captured animals by reading carefully, answering comprehension questions, and rebuilding their story.</p><div className="ff-level-menu">{LEVELS.map(item => <button className="ff-level" key={item.number} onClick={() => start(item.number)}><strong>Level {item.number}</strong><span>{item.name}</span><small>{item.description}</small><span className="ff-level-footer"><span className="ff-play-label">Play level</span><span className="ff-play-arrow" aria-hidden="true">→</span></span></button>)}</div></section>}
-    {phase === 'story' && <section className="ff-story-layout"><img className="ff-scene ff-story-illustration" src={level === 6 ? `/assets/.optimized/games/finn-the-fox/tanya-story-scene-${page + 1}.webp` : `/assets/games/finn-the-fox/finn-${page + 1}.png`} alt={`${level === 6 ? 'Tanya' : 'Finn'} story page ${page + 1}`} /><div><article className="ff-story"><small>Page {page + 1} - {storyPages[page][0]}</small><p>{storyPages[page][1]}</p></article><div className="ff-actions"><button className="ff-secondary" disabled={!page} onClick={() => setPage(value => value - 1)}>⬅ Previous</button><button className="ff-primary" onClick={() => page < storyPages.length - 1 ? setPage(value => value + 1) : setPhase('quiz')}>{page < storyPages.length - 1 ? 'Next ➡' : '✅ Take the Quiz'}</button></div></div></section>}
-    {phase === 'quiz' && <section className="ff-card"><img className="ff-quiz-image" src={`/finn-${quizIndex + 1}.webp`} alt="Finn story scene" /><h2>{QUIZ[quizIndex][0]}</h2><div className="ff-options">{QUIZ[quizIndex][1].map((option, index) => <button key={option} disabled={quizAnswers[quizIndex] !== undefined} className={quizAnswers[quizIndex] === index ? index === QUIZ[quizIndex][2] ? 'correct' : 'wrong' : ''} onClick={() => answerQuiz(index)}>{option}</button>)}</div>{quizAnswers[quizIndex] !== undefined && <button className="ff-primary" onClick={() => quizIndex < QUIZ.length - 1 ? setQuizIndex(value => value + 1) : setPhase('retell')}>{quizIndex < QUIZ.length - 1 ? 'Next Question ➡' : 'Continue to Retelling ✍️'}</button>}</section>}
-    {phase === 'retell' && <section className={`ff-retell-layout${retellError ? ' ff-retell-error' : ''}`}><div className="ff-retell-copy"><div className="ff-icon">✍️</div><p>Click a blank, then click its matching word.</p><p className="ff-retell">Deep in the <button onClick={() => !revealed && setSelectedBlank(0)}>{filled[0] || (revealed ? BLANKS[0][0] : '_____')} </button> Woods lived <button onClick={() => !revealed && setSelectedBlank(1)}>{filled[1] || (revealed ? BLANKS[1][0] : '_____')} </button>. He followed a <button onClick={() => !revealed && setSelectedBlank(2)}>{filled[2] || (revealed ? BLANKS[2][0] : '_____')} </button> glow to a beautiful <button onClick={() => !revealed && setSelectedBlank(3)}>{filled[3] || (revealed ? BLANKS[3][0] : '_____')} </button>.</p>{!revealed && <div className="ff-word-bank">{words.filter(word => !Object.values(filled).includes(word)).map(word => <button key={word} onClick={() => placeWord(word)}>{word}</button>)}</div>}{revealed ? <><strong className="ff-game-over">The answers are revealed. Game over.</strong><button className="ff-primary" onClick={restart}>↩ Restart from checkpoint</button></> : <button className="ff-primary" disabled={Object.keys(filled).length < 4} onClick={finish}>✅ Check My Story</button>}<small>{mistakes ? `${mistakes}/3 mistakes — ${3 - mistakes} ${3 - mistakes === 1 ? 'try' : 'tries'} left` : 'Keep going!'}</small></div><img className="ff-retell-image" src="/finn-3.webp" alt="Finn in the starry meadow" /></section>}
-    {phase === 'results' && <section className="ff-welcome"><div>🦊</div><h1>Adventure Complete!</h1><div className="ff-stars">{'⭐'.repeat(Math.max(1, Math.ceil(completionScore / 20)))}</div><p>You scored {completionScore}% overall comprehension.</p><button className="ff-primary" onClick={restart}>🔄 Play Again</button></section>}
-  </main></div>;
+  if (phase === 'results') {
+    return <div className={backgroundClass()}><style>{CSS}</style><main><section className="ff-welcome"><div>🦊</div><h1>Adventure Complete!</h1><p>{userName}, you scored {completionScore}% overall comprehension.</p><button className="ff-primary" onClick={() => start(level)}>Play Again</button></section></main></div>;
+  }
+
+  return <div className={backgroundClass()}><style>{CSS}</style><main className="game-container"><header><b>Reading Rescue</b><span>Finn the Fox</span></header><div className="ff-progress"><i style={{ width: phase === 'user-info' ? '0%' : '100%' }} /></div>{phase === 'user-info' && <section className="ff-user-info"><div className="ff-icon">🦊</div><h1>Welcome to Reading Rescue</h1><p>Tell Finn a little about yourself before your adventure begins.</p><form onSubmit={submitUserInfo}><label htmlFor="reading-rescue-name">Your name</label><input id="reading-rescue-name" value={userName} onChange={(event) => setUserName(event.target.value)} placeholder="Enter your name" maxLength={30} required /><label htmlFor="reading-rescue-grade">Reading level or grade <span>(optional)</span></label><input id="reading-rescue-grade" value={userGrade} onChange={(event) => setUserGrade(event.target.value)} placeholder="For example, Grade 3" maxLength={30} /><button className="ff-primary" type="submit">Start Reading Rescue</button></form></section>}{phase === 'menu' && <section className="intro"><div className="ff-icon">🦊</div><h1>Reading Rescue</h1><p className="subtitle">Welcome, {userName}!</p><p>Choose a rescue story, read carefully, and rebuild what happened.</p><div className="ff-level-menu">{LEVELS.map((item) => <button className="ff-level" key={item.number} onClick={() => start(item.number)}><strong>Level {item.number}</strong><span>{item.name}</span><small>{item.description}</small></button>)}</div></section>}</main></div>;
 }
 
 const CSS = `
-.finn-fox { background-image: linear-gradient(rgba(24,13,48,.72), rgba(42,22,73,.84)), url('/assets/.optimized/games/finn-the-fox/finn-1.webp'); background-size: cover; background-position: center; background-attachment: fixed; }
-.finn-fox--tanya { background-image: linear-gradient(rgba(38,22,13,.58), rgba(70,34,19,.78)), url('/assets/.optimized/games/finn-the-fox/tanya-story-scene-1.webp'); }
-.finn-fox--story.finn-fox--tanya { background-position: center 28%; }
-.finn-fox--quiz.finn-fox--tanya { background-position: center 44%; }
-.finn-fox--retell.finn-fox--tanya { background-position: center 62%; }
-.finn-fox{min-height:100%;padding:18px;color:#2e2013;background:radial-gradient(circle at 20% 20%,#3d2a6b,transparent 55%),radial-gradient(circle at 85% 15%,#5a2a6b,transparent 50%),linear-gradient(160deg,#1a1035,#2d1b4e 55%,#3d1a52);font-family:Georgia,serif}.finn-fox header{max-width:760px;margin:auto;padding:16px 20px;display:flex;gap:14px;align-items:center;justify-content:space-between;color:#fff;background:#241540;border-radius:18px 18px 0 0}.finn-fox header button{border:1px solid #ffffff44;border-radius:50%;background:#ffffff1f;color:#fff;width:34px;height:34px;cursor:pointer}.ff-progress{max-width:760px;height:7px;margin:auto;background:#4a2560}.ff-progress i{display:block;height:100%;background:linear-gradient(90deg,#ff7e3d,#ffc857);transition:width .4s}.finn-fox main{max-width:760px;min-height:560px;margin:auto;padding:28px 30px;background:#fffdf7;border-radius:0 0 24px 24px}.ff-welcome{text-align:center;padding:55px 14px}.ff-welcome>div,.ff-icon{font-size:5rem}.ff-welcome h1{margin:10px 0 2px}.ff-welcome h2{margin:0 0 14px;color:#d4531c;font-weight:400;font-style:italic}.ff-welcome p{line-height:1.7;color:#7a6a58}.ff-primary,.ff-secondary,.ff-options button,.ff-word-bank button,.ff-retell button{border-radius:14px;padding:12px 18px;border:0;font:inherit;cursor:pointer}.ff-primary{background:linear-gradient(135deg,#ff7e3d,#d4531c);color:#fff;font-weight:800}.ff-secondary{background:#fff;color:#d4531c;border:2px solid #ff7e3d}.ff-actions{display:flex;justify-content:center;gap:12px;margin-top:16px;flex-wrap:wrap}.ff-scene{height:230px;position:relative;overflow:hidden;border-radius:18px;background:linear-gradient(#7ec9ec 0 52%,#6fb84a 52%);box-shadow:0 10px 25px #0003}.scene-1{background:linear-gradient(#33254f 0 45%,#e8752a 45% 57%,#2a1e12 57%)}.scene-2,.scene-3,.scene-4{background:linear-gradient(#0c0b30 0 52%,#163a1c 52%)}.ff-scene span{position:absolute;font-size:3rem;filter:drop-shadow(2px 3px 3px #0005)}.ff-story{margin-top:16px;padding:18px 22px;border:1px solid #f0e2c8;border-radius:16px;background:#fff6ea}.ff-story small{color:#d4531c;text-transform:uppercase;letter-spacing:.12em}.ff-story p{font-size:1.18rem;line-height:1.75}.ff-card{display:grid;gap:18px;text-align:center;padding:30px 10px}.ff-card h2{line-height:1.3}.ff-options{display:grid;grid-template-columns:1fr 1fr;gap:10px}.ff-options button{background:#fff;border:2px solid #e6d8bd}.ff-options button.correct{background:#d4f0d4;border-color:#4ade80}.ff-options button.wrong{background:#fdd;border-color:#e05555}.ff-retell{font-size:1.2rem;line-height:2}.ff-retell button{border:2px dashed #c0a880;background:#fffef8;color:#a3907a}.ff-word-bank{display:flex;gap:9px;justify-content:center;flex-wrap:wrap}.ff-word-bank button{background:#fff;border:2px solid #c0a880}.ff-stars{font-size:2rem}@media(max-width:600px){.finn-fox{padding:8px}.finn-fox main{padding:20px 14px}.ff-options{grid-template-columns:1fr}.ff-story p{font-size:1rem}}
-/* Reading Rescue level-select theme */
-.finn-fox:has(.game-container) { --navy: #111b30; --navy-2: #18243c; --purple-1: #392467; --purple-2: #61256f; --cream: #fffaf2; --orange: #ff8b4a; --orange-dark: #e86d32; --text: #29263a; --muted: #746b63; --gold: #ffd45c; background: radial-gradient(circle at 50% 15%, rgba(255,174,92,.16), transparent 30%), linear-gradient(135deg, var(--purple-1), var(--purple-2)); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-.finn-fox main.game-container { width: min(1180px, calc(100% - 48px)); min-height: calc(100vh - 126px); margin: 28px auto; padding: 42px 56px 56px; box-sizing: border-box; background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(255,250,242,.98)); border-radius: 28px; border: 1px solid rgba(255,255,255,.7); box-shadow: 0 25px 70px rgba(12,8,35,.28), 0 8px 25px rgba(12,8,35,.12); position: relative; overflow: hidden; }
-.finn-fox main.game-container::before { content: ''; position: absolute; width: 420px; height: 420px; top: -250px; right: -180px; background: rgba(255,139,74,.08); border-radius: 50%; pointer-events: none; }
-.finn-fox .intro { text-align: center; max-width: 900px; margin: 0 auto 34px; position: relative; z-index: 1; }
-.finn-fox .intro img, .finn-fox .hero-fox { width: 88px; height: 88px; object-fit: contain; margin-bottom: 10px; filter: drop-shadow(0 8px 8px rgba(0,0,0,.15)); animation: reading-rescue-fox-float 3s ease-in-out infinite; }
-.finn-fox .intro .hero-fox { display: none; }
-.finn-fox .intro h1 { margin: 0; font-size: clamp(32px, 4vw, 48px); font-weight: 900; letter-spacing: -1.5px; color: #1d2235; }
-.finn-fox .intro .subtitle { margin: 6px 0 16px; font-size: 18px; font-weight: 700; color: var(--orange-dark); }
-.finn-fox .intro p { max-width: 720px; margin: 0 auto; font-size: 15px; line-height: 1.6; color: var(--muted); }
-@keyframes reading-rescue-fox-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-@media (max-width: 1000px) { .finn-fox main.game-container { padding: 38px 38px 48px; } }
-@media (max-width: 650px) { .finn-fox main.game-container { width: calc(100% - 24px); margin: 12px auto; padding: 30px 20px 40px; border-radius: 22px; } .finn-fox .intro img, .finn-fox .hero-fox { width: 70px; height: 70px; } .finn-fox .intro h1 { font-size: 32px; } }
-
-/* Premium story reader */
-.finn-fox main:not(.game-container) { width: min(1240px, calc(100% - 48px)); max-width: 1240px; padding: 34px 40px 50px; }
-.ff-story-layout { width: min(1180px, 100%); margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px; align-items: start; }
-.ff-story-layout .ff-story-illustration { width: 100%; aspect-ratio: 4 / 3; height: auto; min-height: 0; object-fit: cover; display: block; border-radius: 24px; box-shadow: 0 18px 45px rgba(0,0,0,.18), 0 4px 12px rgba(0,0,0,.08); background: #f4eadb; }
-.ff-story-layout > div { min-width: 0; display: flex; flex-direction: column; }
-.ff-story-layout .ff-story { margin: 0; padding: 30px 32px; background: linear-gradient(145deg, #fffaf1, #fff6e9); border: 1px solid #eadcc5; border-radius: 24px; box-shadow: 0 14px 35px rgba(70,45,25,.09), inset 0 1px 0 rgba(255,255,255,.8); }
-.ff-story-layout .ff-story small { display: block; margin-bottom: 14px; font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-size: 12px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; color: #d4531c; }
-.ff-story-layout .ff-story small::after { content: ''; display: block; width: 42px; height: 3px; margin-top: 10px; border-radius: 999px; background: linear-gradient(90deg, #ff8b4a, #ffc857); }
-.ff-story-layout .ff-story p { margin: 0; font-family: Georgia, 'Times New Roman', serif; font-size: clamp(1.05rem, 1.35vw, 1.28rem); line-height: 1.75; color: #35291f; }
-.ff-story-layout .ff-story b { color: #b94d1c; font-weight: 700; }
-.ff-story-layout .ff-actions { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 18px; }
-.ff-story-layout .ff-actions button { min-height: 48px; padding: 12px 20px; border-radius: 14px; font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-size: 14px; font-weight: 800; transition: transform .2s ease, box-shadow .2s ease, background .2s ease; }
-.ff-story-layout .ff-actions button:hover { transform: translateY(-2px); }
-.ff-story-layout .ff-actions .ff-primary { box-shadow: 0 7px 18px rgba(212,83,28,.22); }
-@media (max-width: 900px) { .ff-story-layout { grid-template-columns: 1fr; gap: 20px; } .ff-story-layout .ff-story-illustration { aspect-ratio: 16 / 9; max-height: 430px; } .ff-story-layout .ff-story { padding: 26px 28px; } .ff-story-layout .ff-story p { font-size: 1.12rem; line-height: 1.7; } }
-@media (max-width: 700px) { .finn-fox main:not(.game-container) { width: calc(100% - 24px); padding: 24px 16px 36px; } }
-@media (max-width: 600px) { .ff-story-layout { gap: 14px; } .ff-story-layout .ff-story-illustration { aspect-ratio: 16 / 10; border-radius: 18px; } .ff-story-layout .ff-story { padding: 22px 20px; border-radius: 18px; } .ff-story-layout .ff-story p { font-size: 1.05rem; line-height: 1.65; } .ff-story-layout .ff-actions { flex-direction: column-reverse; } .ff-story-layout .ff-actions button { width: 100%; } }
-
-/* Keep quiz and retelling screens compact inside the shared game shell. */
-.finn-fox main:not(.game-container) { min-height: 0; box-sizing: border-box; }
-.finn-fox .ff-card { width: min(900px, 100%); margin: 0 auto; padding: 18px 0 8px; }
-.finn-fox .ff-quiz-image { width: min(560px, 100%); aspect-ratio: 16 / 9; height: auto; max-height: 320px; object-fit: cover; display: block; margin: 0 auto; border-radius: 22px; box-shadow: 0 14px 32px rgba(70,45,25,.14); }
-.finn-fox .ff-card h2 { max-width: 760px; margin: 4px auto 2px; font-size: clamp(1.3rem, 2.3vw, 1.8rem); color: #35291f; }
-.finn-fox .ff-options { width: min(900px, 100%); margin: 0 auto; gap: 12px; }
-.finn-fox .ff-options button { min-height: 56px; font-size: 1rem; }
-.finn-fox .ff-card .ff-primary { margin: 4px auto 0; }
-.finn-fox .ff-retell-layout { width: min(1060px, 100%); margin: 0 auto; align-items: center; gap: 28px; }
-.finn-fox .ff-retell-image { width: min(480px, 100%); aspect-ratio: 4 / 3; height: auto; object-fit: cover; border-radius: 22px; box-shadow: 0 14px 32px rgba(70,45,25,.14); }
-.finn-fox { background-image: linear-gradient(rgba(24,13,48,.72), rgba(42,22,73,.84)), url('/assets/.optimized/games/finn-the-fox/finn-1.webp'); background-size: cover; background-position: center; background-attachment: fixed; }
-.finn-fox--tanya { background-image: linear-gradient(rgba(38,22,13,.58), rgba(70,34,19,.78)), url('/assets/.optimized/games/finn-the-fox/tanya-story-scene-1.webp'); }
-.finn-fox--story.finn-fox--tanya { background-position: center 28%; }
-.finn-fox--quiz.finn-fox--tanya { background-position: center 44%; }
-.finn-fox--retell.finn-fox--tanya { background-position: center 62%; }
-@media (max-width: 700px) { .finn-fox main:not(.game-container) { min-height: 0; } .finn-fox .ff-card { padding-top: 8px; } .finn-fox .ff-quiz-image { max-height: 240px; border-radius: 18px; } .finn-fox .ff-options { grid-template-columns: 1fr; } .finn-fox .ff-retell-layout { grid-template-columns: 1fr; } }
+.finn-fox{min-height:100vh;padding:18px;color:#2e2013;font-family:Georgia,serif;background-size:cover;background-position:center;background-attachment:fixed;background-image:linear-gradient(rgba(24,13,48,.72),rgba(42,22,73,.84)),url('/assets/games/finn-the-fox/reading-rescue-main-menu-bg.webp')}.finn-fox--user-info{background-image:linear-gradient(rgba(24,13,48,.55),rgba(42,22,73,.72)),url('/assets/games/finn-the-fox/reading-rescue-user-input-bg.webp')}.finn-fox--menu{background-image:linear-gradient(rgba(24,13,48,.55),rgba(42,22,73,.72)),url('/assets/games/finn-the-fox/reading-rescue-main-menu-bg.webp')}.finn-fox--story,.finn-fox--quiz,.finn-fox--retell{background-image:linear-gradient(rgba(38,22,13,.58),rgba(70,34,19,.78)),url('/assets/games/finn-the-fox/reading-rescue-story-pages-bg.webp')}.finn-fox--results{background-image:linear-gradient(rgba(24,13,48,.55),rgba(42,22,73,.72)),url('/assets/games/finn-the-fox/reading-rescue-welcome-bg.webp')}.finn-fox main{max-width:1100px;min-height:560px;margin:18px auto;padding:36px 42px;background:#fffdf7;border-radius:24px;box-shadow:0 25px 70px #0c082344}.finn-fox header{display:flex;justify-content:space-between;max-width:1100px;margin:auto;padding:14px 20px;color:#fff;background:#241540;border-radius:18px 18px 0 0}.ff-progress{max-width:1100px;height:7px;margin:auto;background:#4a2560}.ff-progress i{display:block;height:100%;background:linear-gradient(90deg,#ff7e3d,#ffc857);transition:width .4s}.intro,.ff-welcome{text-align:center}.intro h1,.ff-welcome h1,.ff-user-info h1{margin:10px 0;color:#1d2235;font-size:clamp(32px,4vw,48px)}.intro .subtitle{color:#d4531c;font-weight:700}.ff-icon{font-size:4rem}.ff-level-menu{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:28px}.ff-level{display:flex;min-height:160px;flex-direction:column;gap:8px;padding:22px;text-align:left;border:2px solid #ff8b4a55;border-radius:20px;background:linear-gradient(145deg,#fff,#fff9f1);color:#29263a;cursor:pointer;box-shadow:0 10px 25px #28191412}.ff-level strong{color:#e86d32}.ff-level span{font-size:20px;font-weight:850}.ff-level small{color:#766d66;line-height:1.45}.ff-story-layout,.ff-retell-layout{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start}.ff-story-illustration,.ff-quiz-image{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:22px;box-shadow:0 14px 32px #462d251f}.ff-story{padding:28px 32px;background:#fffaf1;border:1px solid #eadcc5;border-radius:22px}.ff-story small{display:block;margin-bottom:14px;color:#d4531c;font-weight:900;text-transform:uppercase;letter-spacing:.12em}.ff-story p{font-size:1.2rem;line-height:1.75}.ff-actions{display:flex;justify-content:space-between;gap:12px;margin-top:18px}.ff-primary,.ff-secondary,.ff-options button,.ff-word-bank button,.ff-retell button{border-radius:14px;padding:12px 18px;border:0;font:inherit;cursor:pointer}.ff-primary{background:linear-gradient(135deg,#ff7e3d,#d4531c);color:#fff;font-weight:800}.ff-secondary{background:#fff;color:#d4531c;border:2px solid #ff7e3d}.ff-card{max-width:900px;margin:auto}.ff-card h2{color:#35291f}.ff-options{display:grid;gap:12px;margin:18px 0}.ff-options button,.ff-word-bank button{background:#fff;border:2px solid #eadcc5;text-align:left}.ff-options button.correct{background:#d9f4df;border-color:#43a85b}.ff-options button.wrong{background:#ffe1df;border-color:#dc5d53}.ff-retell-layout{align-items:center}.ff-retell-copy{padding:28px;background:#fffaf1;border:1px solid #eadcc5;border-radius:22px}.ff-retell{font-size:1.3rem;line-height:2}.ff-retell button{padding:2px 8px;color:#d4531c;border-bottom:3px solid #ff8b4a;background:#fff0e7}.ff-word-bank{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0}.ff-user-info{max-width:560px;margin:auto;text-align:center}.ff-user-info form{display:grid;gap:10px;text-align:left}.ff-user-info label{font-weight:800;color:#35291f}.ff-user-info label span{font-weight:400;color:#8d7e70}.ff-user-info input{padding:14px;border:1px solid #eadcc5;border-radius:12px;background:#fff;color:#35291f}.ff-user-info .ff-primary{margin-top:8px;text-align:center}@media(max-width:800px){.ff-level-menu,.ff-story-layout,.ff-retell-layout{grid-template-columns:1fr}.ff-level-menu{gap:12px}.finn-fox main{padding:26px 20px}.ff-actions{flex-direction:column}.ff-actions button{width:100%}}
 `;
