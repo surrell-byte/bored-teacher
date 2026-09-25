@@ -89,6 +89,18 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     isNew: true,
     hasComponent: true,
   },
+  generalknowledgequiz: {
+    name: "General Knowledge Quiz",
+    icon: "💰",
+    desc: "Take on three trivia rounds with escalating prizes, multiple-choice questions, and spelling challenges.",
+    cover: "/assets/covers/quiz-trail-cover.webp",
+    tag: { label: "General Knowledge", color: "tag-bio" },
+    badge: "3 Rounds",
+    difficulty: "Mixed Skills",
+    barColor: "var(--gold)",
+    isNew: true,
+    hasComponent: true,
+  },
   findtheword: {
     name: "Find the Word",
     icon: "🧠",

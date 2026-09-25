@@ -51,6 +51,7 @@ export const GAME_COMPONENTS: Partial<Record<string, React.LazyExoticComponent<R
   tilelanes: lazyGame('tilelanes', () => import('@/games/tile-lanes/TileLanes.jsx')),
   tilebattle: lazyGame('tilebattle', () => import('@/games/tile-battle/TileBattle')),
   quiztrail: lazyGame('quiztrail', () => import('@/games/quiz-trail/QuizTrail')),
+  generalknowledgequiz: lazyGame('generalknowledgequiz', () => import('@/games/general-knowledge-quiz/GeneralKnowledgeQuiz.jsx')),
   findtheword: lazyGame('findtheword', () => import('@/games/find-the-word/FindTheWord.jsx')),
   lookandsay: lazyGame('lookandsay', () => import('@/games/look-and-say/LookAndSay.jsx')),
   emojisportsquiz: lazyGame('emojisportsquiz', () => import('@/games/emoji-sports-quiz/EmojiSportsQuiz.jsx')),

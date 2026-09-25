@@ -8,8 +8,6 @@ const PIN_START_Y = 440;
 const BALL_START_Y = 620;
 const BALL_END_Y = 140;
 const BALL_RADIUS = 27;
-const LANE_LEFT = 70;
-const LANE_RIGHT = 430;
 const PLAYER_MODES = [
   { id: "aim", name: "Aim & Power", detail: "Aim your ball and control your power.", icon: "🎯", hint: "← → Aim   ·   SPACE Shoot" },
   { id: "card", name: "Lucky Cards", detail: "Choose a hidden card to reveal your pinfall.", icon: "🃏", hint: "Pick a card to bowl" },
@@ -215,55 +213,6 @@ function beginRoll(game, forcedResult = null) {
 
 function drawLane(ctx, game) {
   ctx.clearRect(0, 0, WIDTH, HEIGHT);
-  ctx.fillStyle = "#111725";
-  ctx.fillRect(0, 0, WIDTH, HEIGHT);
-  // Dark gutters frame a polished, board-by-board maple lane.
-  const gutter = ctx.createLinearGradient(0, 0, 0, HEIGHT);
-  gutter.addColorStop(0, "#39291e"); gutter.addColorStop(0.5, "#5a3b24"); gutter.addColorStop(1, "#2c2019");
-  ctx.fillStyle = gutter;
-  ctx.fillRect(LANE_LEFT - 24, 0, 24, HEIGHT);
-  ctx.fillRect(LANE_RIGHT, 0, 24, HEIGHT);
-  const gutterHighlight = ctx.createLinearGradient(0, 0, 24, 0);
-  gutterHighlight.addColorStop(0, "rgba(0,0,0,.34)"); gutterHighlight.addColorStop(.72, "rgba(255,255,255,.1)"); gutterHighlight.addColorStop(1, "rgba(0,0,0,.26)");
-  ctx.fillStyle = gutterHighlight;
-  ctx.fillRect(LANE_LEFT - 24, 0, 24, HEIGHT);
-  ctx.save(); ctx.translate(LANE_RIGHT + 24, 0); ctx.scale(-1, 1); ctx.fillRect(0, 0, 24, HEIGHT); ctx.restore();
-  const laneGradient = ctx.createLinearGradient(0, 0, 0, HEIGHT);
-  laneGradient.addColorStop(0, "#f9eac9");
-  laneGradient.addColorStop(0.48, "#f2dfb6");
-  laneGradient.addColorStop(1, "#e7ce9d");
-  ctx.fillStyle = laneGradient;
-  ctx.fillRect(LANE_LEFT, 0, LANE_RIGHT - LANE_LEFT, HEIGHT);
-  for (let board = 0; board <= 9; board += 1) {
-    const progress = board / 9;
-    const topX = LANE_LEFT + 24 + progress * (LANE_RIGHT - LANE_LEFT - 48);
-    const bottomX = LANE_LEFT + progress * (LANE_RIGHT - LANE_LEFT);
-    ctx.strokeStyle = board % 2 ? "rgba(148,103,48,.13)" : "rgba(255,255,255,.17)";
-    ctx.lineWidth = board % 3 === 0 ? 2 : 1;
-    ctx.beginPath(); ctx.moveTo(topX, 0); ctx.lineTo(bottomX, HEIGHT); ctx.stroke();
-  }
-  for (let grain = 0; grain < 18; grain += 1) {
-    const y = 24 + grain * 37;
-    ctx.strokeStyle = "rgba(160,113,55,.09)";
-    ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(LANE_LEFT + 4, y); ctx.bezierCurveTo(165, y - 5, 330, y + 6, LANE_RIGHT - 4, y - 2); ctx.stroke();
-  }
-  const sheen = ctx.createLinearGradient(LANE_LEFT, 0, LANE_RIGHT, 0);
-  sheen.addColorStop(0, "rgba(255,255,255,0)"); sheen.addColorStop(.5, "rgba(255,255,255,.15)"); sheen.addColorStop(1, "rgba(255,255,255,0)");
-  ctx.fillStyle = sheen; ctx.fillRect(LANE_LEFT, 0, LANE_RIGHT - LANE_LEFT, HEIGHT);
-  ctx.strokeStyle = "rgba(255,255,255,.16)"; ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(LANE_LEFT + 1, 0); ctx.lineTo(LANE_LEFT + 1, HEIGHT); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(LANE_RIGHT - 1, 0); ctx.lineTo(LANE_RIGHT - 1, HEIGHT); ctx.stroke();
-  ctx.fillStyle = "rgba(100,70,30,.35)";
-  for (let offset = -3; offset <= 3; offset += 1) {
-    const x = CENTER_X + offset * 40;
-    ctx.beginPath(); ctx.moveTo(x, 500); ctx.lineTo(x - 8, 520); ctx.lineTo(x + 8, 520); ctx.closePath(); ctx.fill();
-  }
-  // Foul line and short approach area.
-  ctx.fillStyle = "#9e4d22"; ctx.fillRect(LANE_LEFT, 596, LANE_RIGHT - LANE_LEFT, 7);
-  ctx.fillStyle = "rgba(255,235,196,.45)"; ctx.fillRect(LANE_LEFT, 603, LANE_RIGHT - LANE_LEFT, 3);
-  ctx.fillStyle = "rgba(109,72,34,.12)"; ctx.fillRect(LANE_LEFT, 606, LANE_RIGHT - LANE_LEFT, HEIGHT - 606);
-
   game.pins.forEach((pin) => {
     if (!pin.standing && pin.fallProgress >= 1) return;
     ctx.save();
@@ -370,6 +319,7 @@ export default function BowlingBattle({ onComplete }) {
   const canvasRef = useRef(null);
   const gameRef = useRef(null);
   const keysRef = useRef({ left: false, right: false });
+  const wakeGameRef = useRef(() => {});
   const completedRef = useRef(false);
   const onCompleteRef = useRef(onComplete);
   const [screen, setScreen] = useState("welcome");
@@ -379,6 +329,11 @@ export default function BowlingBattle({ onComplete }) {
   const [, setHudTick] = useState(0);
 
   useEffect(() => { onCompleteRef.current = onComplete; }, [onComplete]);
+  useEffect(() => {
+    const openMainMenu = () => setScreen("menu");
+    window.addEventListener("bowling-battle:main-menu", openMainMenu);
+    return () => window.removeEventListener("bowling-battle:main-menu", openMainMenu);
+  }, []);
   const refresh = useCallback(() => setHudTick((tick) => tick + 1), []);
   const startMatch = useCallback((playerNames = savedNames) => {
     gameRef.current = createGame(playerNames, selectedMode);
@@ -517,16 +472,29 @@ export default function BowlingBattle({ onComplete }) {
       }
     };
 
+    const shouldAnimate = () => game.phase === "power"
+      || game.phase === "rolling"
+      || game.phase === "cardReveal"
+      || game.phase === "result"
+      || (game.phase === "aim" && (keysRef.current.left || keysRef.current.right));
     const loop = (now) => {
+      frameId = 0;
       if (!active) return;
       const delta = previousTime ? now - previousTime : 16;
       previousTime = now;
       update(delta, now);
       drawLane(ctx, game);
-      frameId = requestAnimationFrame(loop);
+      if (active && shouldAnimate()) frameId = requestAnimationFrame(loop);
     };
-    frameId = requestAnimationFrame(loop);
-    return () => { active = false; cancelAnimationFrame(frameId); };
+    wakeGameRef.current = () => {
+      if (active && !frameId) frameId = requestAnimationFrame(loop);
+    };
+    wakeGameRef.current();
+    return () => {
+      active = false;
+      cancelAnimationFrame(frameId);
+      wakeGameRef.current = () => {};
+    };
   }, [screen, refresh]);
 
   useEffect(() => {
@@ -544,10 +512,12 @@ export default function BowlingBattle({ onComplete }) {
         if (game?.phase === "aim") game.phase = "power";
         else if (game?.phase === "power") beginRoll(game);
       }
+      wakeGameRef.current();
     };
     const onKeyUp = (event) => {
       if (event.key === "ArrowLeft") keys.left = false;
       if (event.key === "ArrowRight") keys.right = false;
+      wakeGameRef.current();
     };
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("keyup", onKeyUp);
@@ -564,6 +534,7 @@ export default function BowlingBattle({ onComplete }) {
     if (!game) return;
     if (game.phase === "aim") game.phase = "power";
     else if (game.phase === "power") beginRoll(game);
+    wakeGameRef.current();
     refresh();
   };
   const chooseCard = (card) => {
@@ -574,6 +545,7 @@ export default function BowlingBattle({ onComplete }) {
     game.message = `${card.knocked} PIN${card.knocked === 1 ? "" : "S"}`;
     game.messageColor = "#f7e05e";
     game.messageTimer = 850;
+    wakeGameRef.current();
     refresh();
   };
 
@@ -611,14 +583,14 @@ export default function BowlingBattle({ onComplete }) {
                 <span className="bb-player-label">PLAYER 1</span>
                 <span className="bb-player-icon" aria-hidden="true">🎳</span>
                 <span className="bb-player-prompt">Your name</span>
-                <input value={names[0]} maxLength={14} placeholder="Enter your name" onChange={(event) => setNames((previous) => [event.target.value, previous[1]])} />
+                <input value={names[0]} minLength={3} maxLength={14} placeholder="Enter at least 3 characters" onChange={(event) => setNames((previous) => [event.target.value, previous[1]])} />
               </label>
               <span className="bb-versus" aria-label="versus">VS</span>
               <label className="bb-field bb-player-card bb-p2">
                 <span className="bb-player-label">PLAYER 2</span>
                 <span className="bb-player-icon" aria-hidden="true">🎳</span>
                 <span className="bb-player-prompt">Your name</span>
-                <input value={names[1]} maxLength={14} placeholder="Enter your name" onChange={(event) => setNames((previous) => [previous[0], event.target.value])} />
+                <input value={names[1]} minLength={3} maxLength={14} placeholder="Enter at least 3 characters" onChange={(event) => setNames((previous) => [previous[0], event.target.value])} />
               </label>
             </div>
             <div className="bb-button-row">
@@ -650,16 +622,15 @@ export default function BowlingBattle({ onComplete }) {
         <div className="bb-lane-column">
           <canvas ref={canvasRef} className="bb-canvas" width={WIDTH} height={HEIGHT} aria-label="Bowling lane. Use the left and right arrow keys to aim and Space to set power and roll." />
           <div className="bb-mobile-controls">
-            <button className="bb-btn bb-steer" onPointerDown={(event) => { event.currentTarget.setPointerCapture(event.pointerId); keysRef.current.left = true; }} onPointerUp={() => { keysRef.current.left = false; }} onPointerCancel={() => { keysRef.current.left = false; }} aria-label="Aim left">←</button>
+            <button className="bb-btn bb-steer" onPointerDown={(event) => { event.currentTarget.setPointerCapture(event.pointerId); keysRef.current.left = true; wakeGameRef.current(); }} onPointerUp={() => { keysRef.current.left = false; wakeGameRef.current(); }} onPointerCancel={() => { keysRef.current.left = false; wakeGameRef.current(); }} aria-label="Aim left">←</button>
             <button className="bb-btn bb-primary bb-roll" disabled={!(["aim", "power"].includes(game.phase))} onClick={toggleAction}>{game.phase === "aim" ? "Set Power" : game.phase === "power" ? "Roll!" : game.phase === "rolling" ? "Rolling…" : game.mode === "card" && game.phase === "cardPick" ? "Choose a card" : game.phase === "cardReveal" ? "Revealing…" : "Next"}</button>
-            <button className="bb-btn bb-steer" onPointerDown={(event) => { event.currentTarget.setPointerCapture(event.pointerId); keysRef.current.right = true; }} onPointerUp={() => { keysRef.current.right = false; }} onPointerCancel={() => { keysRef.current.right = false; }} aria-label="Aim right">→</button>
+            <button className="bb-btn bb-steer" onPointerDown={(event) => { event.currentTarget.setPointerCapture(event.pointerId); keysRef.current.right = true; wakeGameRef.current(); }} onPointerUp={() => { keysRef.current.right = false; wakeGameRef.current(); }} onPointerCancel={() => { keysRef.current.right = false; wakeGameRef.current(); }} aria-label="Aim right">→</button>
           </div>
         </div>
         <aside className="bb-side-column">
           <div className="bb-top-info">
             <div className="bb-info-row">
               <div className="bb-frame-status"><span><small>FRAME / 10</small><strong>{Math.min(currentPlayer?.frame || 1, 10)}</strong></span><i aria-hidden="true" /><span><small>ROLL</small><strong>{currentPlayer?.rollInFrame || 1}<small className="bb-roll-total"> / {currentPlayer?.frame === 10 ? 3 : 2}</small></strong></span></div>
-              <button className="bb-btn bb-small bb-game-menu-button" aria-label="Return to main menu" title="Main menu" onClick={showMenu}>⌂</button>
             </div>
             <div className="bb-score-display"><span>CURRENT SCORE</span><strong>{currentScore}</strong><small>POINTS · {game.pins.filter((pin) => !pin.standing).length} PINS DOWN</small></div>
           </div>
@@ -673,18 +644,10 @@ export default function BowlingBattle({ onComplete }) {
               </div>
             </div>)}
           </div>
-          {game.mode === "card" && <div className="bb-card-move"><div className="bb-card-heading"><div><strong>CHOOSE YOUR ROLL</strong><span>Pick a card to reveal your pin challenge.</span></div>{game.chosenCard && <b className="bb-card-result">{game.chosenCard.knocked} PINS</b>}</div><div className="bb-card-grid">{game.cards.map((card) => <button type="button" key={card.id} className={`bb-pick-card${game.chosenCard?.id === card.id ? " flipped" : ""}`} onClick={() => chooseCard(card)} disabled={game.phase !== "cardPick"} aria-label={game.chosenCard?.id === card.id ? `Card ${card.id}, ${card.knocked} pins` : `Choose hidden card ${card.id}`}>
-            {game.chosenCard?.id === card.id ? <><strong>{card.knocked}</strong><small>{card.knocked === 1 ? "PIN" : "PINS"}</small><span className="bb-card-revealed-icon" aria-hidden="true">🎳</span></> : <><span className="bb-card-back-mark" aria-hidden="true">?</span><span className="bb-card-pin" aria-hidden="true">🎳</span></>}
-          </button>)}</div></div>}
         </aside>
-        <div className={`bb-game-prompt is-${game.phase}`} aria-live="polite">
-          {game.phase === "cardPick" && "🃏 Choose a card to determine your roll"}
-          {game.phase === "cardReveal" && `🎳 Card revealed: ${game.chosenCard?.knocked ?? 0} pins`}
-          {game.phase === "aim" && "← → Aim your shot, then press SPACE to set power"}
-          {game.phase === "power" && "⚡ Time your power, then press SPACE to bowl"}
-          {game.phase === "rolling" && "🎳 Rolling…"}
-          {game.phase === "result" && `🎳 ${game.message || "Roll complete"}`}
-        </div>
+        {game.mode === "card" && <div className="bb-card-move"><div className="bb-card-heading"><div><strong>CHOOSE YOUR ROLL</strong><span>Pick a card to reveal your pin challenge.</span></div>{game.chosenCard && <b className="bb-card-result">{game.chosenCard.knocked} PINS</b>}</div><div className="bb-card-grid">{game.cards.map((card) => <button type="button" key={card.id} className={`bb-pick-card${game.chosenCard?.id === card.id ? " flipped" : ""}`} onClick={() => chooseCard(card)} disabled={game.phase !== "cardPick"} aria-label={game.chosenCard?.id === card.id ? `Card ${card.id}, ${card.knocked} pins` : `Choose hidden card ${card.id}`}>
+          {game.chosenCard?.id === card.id ? <><strong>{card.knocked}</strong><small>{card.knocked === 1 ? "PIN" : "PINS"}</small><span className="bb-card-revealed-icon" aria-hidden="true">🎳</span></> : <><span className="bb-card-back-mark" aria-hidden="true">{card.id}</span><small className="bb-card-mystery-label">MYSTERY</small></>}
+        </button>)}</div></div>}
       </section>}
 
       {screen === "results" && game && <section className="bb-screen active bb-victory-screen">
@@ -786,7 +749,7 @@ const STYLES = `
 .bb-name-form .bb-button-row .bb-btn{min-height:56px;border-radius:14px;padding:14px 24px;font-size:.9rem;font-weight:900;letter-spacing:.08em}
 .bb-name-form .bb-back-btn{border:1px solid rgb(190 207 230 / .32);background:rgb(255 255 255 / .045);color:#d4deeb;box-shadow:inset 0 1px 0 rgb(255 255 255 / .06)}
 .bb-name-form .bb-continue-btn{min-width:220px;border-radius:14px;box-shadow:0 6px 22px rgb(36 189 233 / .3),0 0 20px rgb(36 189 233 / .12)}
-.bowling-battle-game.is-wide{width:min(99%,1760px);max-width:1760px;max-height:calc(100dvh - 104px);padding:6px;border:1px solid rgb(80 180 255 / .12);border-radius:24px;background:rgb(8 22 52 / .16);box-shadow:0 18px 55px rgb(0 0 0 / .3)}
+.bowling-battle-game.is-wide{width:100%;max-width:none;height:calc(100dvh - 132px);min-height:calc(100dvh - 132px);max-height:none;margin:0;padding:0;border:0;border-radius:0;overflow:hidden;background:transparent;box-shadow:none}
 .bb-screen.active.bb-game-screen{padding-top:clamp(24px,3vh,36px);gap:clamp(14px,1.7vw,24px)}
 .bb-canvas{height:min(82dvh,940px)}
 @media(max-width:760px){.bowling-battle-game.is-welcome,.bowling-battle-game.is-input{width:100%;min-height:calc(100dvh - 90px);padding:12px;border:0;border-radius:0}.bb-welcome,.bb-input-screen{min-height:calc(100dvh - 114px);padding:24px 16px;border-radius:20px}.bb-logo{font-size:clamp(3.8rem,16vw,6rem)}.bb-player-panel{padding:24px 18px}.bb-player-matchup{grid-template-columns:1fr;gap:12px}.bb-player-card{min-height:240px;padding:18px}.bb-versus{width:52px;height:52px;margin:-2px auto;font-size:1.45rem}.bb-name-form .bb-button-row .bb-btn{min-height:52px;padding:12px 16px}.bb-name-form .bb-continue-btn{min-width:0;flex:1}.bowling-battle-game.is-wide{width:100%;padding:4px;border:0;border-radius:0}.bb-canvas{height:min(46dvh,420px)}}
@@ -880,8 +843,53 @@ const STYLES = `
 .bb-card-number{display:none!important}
 .bb-card-back-mark{display:grid;width:48px;height:48px;place-items:center;border:1px solid rgb(157 211 255 / .28);border-radius:50%;background:rgb(7 26 51 / .5);color:#f4f9ff;font-size:2rem;font-weight:950;text-shadow:0 0 16px rgb(97 234 255 / .35)}
 .bb-card-pin,.bb-card-revealed-icon{display:block;margin-top:7px;font-size:1.15rem;line-height:1;filter:drop-shadow(0 2px 5px rgb(0 0 0 / .25))}
-.bb-pick-card.flipped{gap:2px}
+.bb-pick-card.flipped{gap:2px;transform:rotateY(180deg)}
+.bb-pick-card.flipped>*{transform:rotateY(180deg)}
+.bb-pick-card.flipped:hover{transform:rotateY(180deg)}
 @keyframes bb-prompt-pulse{from{box-shadow:0 0 0 rgb(97 234 255 / 0),inset 0 1px 0 rgb(255 255 255 / .06)}to{box-shadow:0 0 20px rgb(97 234 255 / .13),inset 0 1px 0 rgb(255 255 255 / .06)}}
 @media(max-width:760px){.bb-screen.active.bb-game-screen{display:flex;flex-direction:column;align-items:center}.bb-lane-column{display:flex;width:100%;flex-direction:column;align-items:center}.bb-canvas{grid-row:auto;justify-self:center;height:min(46dvh,420px)}.bb-side-column{grid-column:auto;grid-row:auto;width:100%}.bb-game-prompt{grid-column:auto;grid-row:auto;width:100%;box-sizing:border-box;margin:0}.bb-scorecard-label .bb-turn-chip{flex-basis:auto;width:auto;order:initial}.bb-game-menu-button{width:44px;min-width:44px!important;height:44px;min-height:44px!important}}
 @media(prefers-reduced-motion:reduce){.bb-game-prompt{animation:none!important}}
+.bb-screen.active.bb-game-screen{position:relative;box-sizing:border-box;width:100%;height:100%;min-height:0;max-width:none;margin:0;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:1fr;justify-content:center;align-items:center;gap:0;padding:clamp(14px,1.8vw,22px)}
+.bb-screen.active.bb-game-screen>.bb-side-column{position:absolute;z-index:2;top:50%;right:clamp(8px,1.2vw,20px);width:min(400px,29vw);max-height:calc(100% - 24px);overflow:auto;transform:translateY(-50%);align-self:center;gap:10px;padding:12px}
+.bb-game-screen{background:url('/assets/games/bowling-battle/bowling-battle-game-screen-bg.webp') center / cover no-repeat}
+.bb-screen.active.bb-game-screen>.bb-side-column{background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none}
+.bb-canvas{grid-column:1;grid-row:1;justify-self:center;height:min(80dvh,800px)}
+.bb-game-prompt{width:100%;max-width:none;min-height:46px;margin-top:0;font-size:.8rem}
+.bb-side-column{min-width:0;max-width:400px}
+.bb-score-display{min-height:88px}
+.bb-score-display>strong{font-size:clamp(2.35rem,3.4vw,2.9rem)}
+.bb-scorecards{gap:6px}
+.bb-scorecard{padding:7px}
+.bb-scorecard-label{gap:5px;margin-bottom:5px;font-size:.72rem}
+.bb-scorecard-label strong{font-size:.82rem}
+.bb-scorecard-label span{padding:3px 6px;font-size:.5rem}
+.bb-scorecard-label .bb-turn-chip{order:initial;flex-basis:auto;width:auto;padding:3px 6px;font-size:.48rem;white-space:nowrap}
+.bb-score-grid{gap:3px}
+.bb-frame-row,.bb-roll-row,.bb-frame-score-row{gap:3px!important}
+.bb-frame-row span,.bb-roll-row span,.bb-frame-score-row span{min-height:21px;font-size:.58rem}
+.bb-frame-score-row span{min-height:18px}
+.bb-card-move{gap:7px;padding:10px}
+.bb-card-heading{gap:8px}
+.bb-card-heading strong{font-size:.76rem}
+.bb-card-heading span{font-size:.68rem}
+.bb-card-grid{gap:8px!important}
+.bb-pick-card{height:76px;min-height:76px!important;border-radius:13px}
+.bb-card-back-mark{width:38px;height:38px;border:0;background:transparent;font-size:2.3rem}
+.bb-card-mystery-label{margin-top:2px!important;color:#a9c8e8;font-size:.53rem!important;font-weight:900;letter-spacing:.16em}
+.bb-card-pin{display:none}
+.bb-canvas{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);height:min(80dvh,800px)}
+.bb-canvas{background:transparent;box-shadow:none;border:0}
+.bb-card-move{position:absolute;z-index:3;right:clamp(8px,1.2vw,20px);bottom:clamp(8px,1.2vw,20px);width:min(400px,29vw);transform:none;align-self:center}
+.bb-screen.active.bb-game-screen>.bb-side-column{top:clamp(8px,1.2vw,20px);transform:none}
+@media(max-width:1100px) and (min-width:761px){.bb-screen.active.bb-game-screen{width:100%;grid-template-columns:minmax(0,1fr);gap:0}.bb-screen.active.bb-game-screen>.bb-side-column{right:8px;width:min(360px,33vw)}.bb-card-move{right:8px;bottom:8px;width:min(360px,33vw)}.bb-canvas{left:50%;height:min(72dvh,700px)}}
+@media(max-width:760px){.bb-screen.active.bb-game-screen{width:100%;margin:0;padding:12px;gap:12px}.bb-screen.active.bb-game-screen>.bb-side-column{max-height:none;overflow:visible;padding:12px}.bb-side-column{min-width:0;max-width:100%}.bb-canvas{height:min(46dvh,420px)}.bb-game-prompt{max-width:100%;font-size:.75rem}.bb-scorecard-label{gap:4px}.bb-scorecard-label .bb-turn-chip{font-size:.44rem;padding:2px 5px}}
+@media(max-height:760px) and (min-width:761px){.bb-canvas{height:min(64dvh,560px)}.bb-screen.active.bb-game-screen>.bb-side-column{max-height:calc(100dvh - 150px);gap:7px;padding:9px}}
+.bb-welcome{background-image:url('/assets/games/bowling-battle/bowling-battle-welcome-bg.webp')}
+.bb-input-screen{background-image:url('/assets/games/bowling-battle/bowling-battle-user-input-bg.webp')}
+.bb-menu-screen{background-image:url('/assets/games/bowling-battle/bowling-battle-main-menu-bg.webp')}
+.bb-welcome,.bb-input-screen,.bb-menu-screen{background-position:center;background-size:cover}
+.bowling-battle-game.is-welcome,.bowling-battle-game.is-input,.bowling-battle-game.is-menu{box-sizing:border-box;width:min(99%,1760px);max-width:1760px;min-height:calc(100dvh - 104px);max-height:calc(100dvh - 104px);padding:6px;border:1px solid rgb(80 180 255 / .12);border-radius:24px;background:rgb(8 22 52 / .16);box-shadow:0 18px 55px rgb(0 0 0 / .3)}
+.bb-screen.active.bb-welcome,.bb-screen.active.bb-input-screen,.bb-screen.active.bb-menu-screen{box-sizing:border-box;width:100%;max-width:none;min-height:calc(100dvh - 118px);max-height:calc(100dvh - 118px);flex:1 1 auto;justify-content:center;border-radius:20px;background-position:center;background-size:cover}
+@media(max-width:760px){.bowling-battle-game.is-wide{height:calc(100dvh - 90px);min-height:calc(100dvh - 90px);max-height:none;padding:0;overflow:auto}.bb-screen.active.bb-game-screen{display:flex;position:relative;min-height:0;align-items:center}.bb-card-move{position:static;transform:none;width:100%;max-width:none}.bb-screen.active.bb-game-screen>.bb-side-column{position:static;transform:none;width:100%;max-width:100%;max-height:none;overflow:visible;align-self:stretch}.bb-canvas{position:relative;top:auto;left:auto;transform:none;align-self:center}}
+@media(max-width:760px){.bowling-battle-game.is-welcome,.bowling-battle-game.is-input,.bowling-battle-game.is-menu{width:100%;min-height:calc(100dvh - 90px);max-height:calc(100dvh - 90px);padding:8px;border:0;border-radius:0}.bb-screen.active.bb-welcome,.bb-screen.active.bb-input-screen,.bb-screen.active.bb-menu-screen{width:100%;min-height:calc(100dvh - 106px);max-height:calc(100dvh - 106px);padding:clamp(20px,5vw,44px);border-radius:16px}}
 `;

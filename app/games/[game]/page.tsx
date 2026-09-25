@@ -31,6 +31,7 @@ const GAMES_WITH_WELCOME = new Set([
   'countadd',
   'moneyblocks',
   'emojisportsquiz',
+  'generalknowledgequiz',
   'alphabethunt', 'buildtower', 'whatsmissing',
 ]);
 
@@ -196,7 +197,9 @@ export default function GamePage() {
   function handleMainMenu() {
     setResult(null);
     setC4Hud(null);
-    if (isWhatsMissing) {
+    if (gameId === 'bowlingbattle') {
+      window.dispatchEvent(new Event('bowling-battle:main-menu'));
+    } else if (isWhatsMissing) {
       window.dispatchEvent(new Event('whats-missing:main-menu'));
     } else if (gameId === 'buildtower') {
       window.dispatchEvent(new Event('build-tower:main-menu'));
