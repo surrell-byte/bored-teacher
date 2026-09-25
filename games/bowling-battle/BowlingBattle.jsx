@@ -7,12 +7,12 @@ const PIN_SPACING = 100;
 const PIN_START_Y = 440;
 const BALL_START_Y = 620;
 const BALL_END_Y = 140;
-const BALL_RADIUS = 32;
+const BALL_RADIUS = 27;
 const LANE_LEFT = 70;
 const LANE_RIGHT = 430;
 const PLAYER_MODES = [
-  { id: "aim", name: "Aim Mode", detail: "Aim with ← →, then time your power." },
-  { id: "card", name: "Card Move", detail: "Pick a hidden card to reveal your pinfall." },
+  { id: "aim", name: "Aim & Power", detail: "Aim your ball and control your power.", icon: "🎯", hint: "← → Aim   ·   SPACE Shoot" },
+  { id: "card", name: "Lucky Cards", detail: "Choose a hidden card to reveal your pinfall.", icon: "🃏", hint: "Pick a card to bowl" },
 ];
 const PIN_LAYOUT = [
   [0, 0], [-0.5, -0.866], [0.5, -0.866], [-1, -1.732], [0, -1.732], [1, -1.732],
@@ -322,6 +322,7 @@ function drawAim(ctx, game) {
 function drawPin(ctx) {
   // One connected hourglass silhouette: head, narrow neck, shoulders, body, rounded base.
   ctx.save();
+  ctx.scale(0.78, 0.78);
   ctx.fillStyle = "rgba(48,34,19,.26)";
   ctx.shadowColor = "rgba(39,27,13,.24)";
   ctx.shadowBlur = 5;
@@ -578,7 +579,7 @@ export default function BowlingBattle({ onComplete }) {
 
   const finishPlayerNames = (event) => {
     event.preventDefault();
-    const safeNames = names.map((name, index) => name.trim().slice(0, 14) || `Player ${index + 1}`);
+    const safeNames = names.map((name, index) => name.trim().slice(0, 14) || (index === 0 ? "You" : "Opponent"));
     setSavedNames(safeNames);
     setScreen("menu");
   };
@@ -587,6 +588,8 @@ export default function BowlingBattle({ onComplete }) {
   const currentFrames = currentPlayer ? scoreFrames(currentPlayer.rolls) : [];
   const currentScore = currentPlayer ? scoreTotal(currentPlayer.rolls) : 0;
   const bestScore = game ? Math.max(...game.players.map((player) => player.finalScore)) : 0;
+  const winnerPlayer = game ? game.players.reduce((leader, player) => player.finalScore > leader.finalScore ? player : leader, game.players[0]) : null;
+  const isTie = Boolean(game && game.players[0].finalScore === game.players[1].finalScore);
 
   return (
     <main className={`bowling-battle-game is-${screen}${screen === "game" ? " is-wide" : ""}`}>
@@ -604,13 +607,19 @@ export default function BowlingBattle({ onComplete }) {
           <p className="bb-player-subtitle">Choose your players</p>
           <form className="bb-name-form" onSubmit={finishPlayerNames}>
             <div className="bb-player-matchup">
-              {names.map((name, index) => <label className={`bb-field bb-player-card bb-p${index + 1}`} key={index}>
-                <span className="bb-player-label">PLAYER {index + 1}</span>
+              <label className="bb-field bb-player-card bb-p1">
+                <span className="bb-player-label">PLAYER 1</span>
                 <span className="bb-player-icon" aria-hidden="true">🎳</span>
-                <span className="bb-player-prompt">Enter your name</span>
-                <input value={name} maxLength={14} placeholder={`Player ${index + 1}`} onChange={(event) => setNames((previous) => previous.map((value, item) => item === index ? event.target.value : value))} />
-              </label>)}
+                <span className="bb-player-prompt">Your name</span>
+                <input value={names[0]} maxLength={14} placeholder="Enter your name" onChange={(event) => setNames((previous) => [event.target.value, previous[1]])} />
+              </label>
               <span className="bb-versus" aria-label="versus">VS</span>
+              <label className="bb-field bb-player-card bb-p2">
+                <span className="bb-player-label">PLAYER 2</span>
+                <span className="bb-player-icon" aria-hidden="true">🎳</span>
+                <span className="bb-player-prompt">Your name</span>
+                <input value={names[1]} maxLength={14} placeholder="Enter your name" onChange={(event) => setNames((previous) => [previous[0], event.target.value])} />
+              </label>
             </div>
             <div className="bb-button-row">
               <button type="button" className="bb-btn bb-back-btn" onClick={() => setScreen("welcome")}>← BACK</button>
@@ -621,12 +630,19 @@ export default function BowlingBattle({ onComplete }) {
       </section>}
 
       {screen === "menu" && <section className="bb-screen active bb-menu-screen">
-        <h2 className="bb-heading">Main Menu</h2>
-        <div className="bb-mode-picker" role="group" aria-label="Choose a game mode">{PLAYER_MODES.map((mode) => <button type="button" key={mode.id} className={`bb-mode-card${selectedMode === mode.id ? " selected" : ""}`} aria-pressed={selectedMode === mode.id} onClick={() => setSelectedMode(mode.id)}><strong>{mode.name}</strong><span>{mode.detail}</span></button>)}</div>
-        <div className="bb-menu-names">{savedNames.map((name, index) => <div className={`bb-menu-card bb-p${index + 1}`} key={name + index}><span>Player {index + 1}</span><strong>{name}</strong></div>)}</div>
+        <span className="bb-eyebrow">CHOOSE YOUR GAME MODE</span>
+        <h2 className="bb-heading">🎳 BOWLING BATTLE</h2>
+        <p className="bb-menu-subtitle">Choose how you want to play</p>
+        <div className="bb-mode-picker" role="group" aria-label="Choose a game mode">{PLAYER_MODES.map((mode) => <button type="button" key={mode.id} className={`bb-mode-card${selectedMode === mode.id ? " selected" : ""}`} aria-pressed={selectedMode === mode.id} onClick={() => setSelectedMode(mode.id)}><span className="bb-mode-icon" aria-hidden="true">{mode.icon}</span><span className="bb-mode-title-row"><strong>{mode.name}</strong><b>{selectedMode === mode.id ? "✓ SELECTED" : ""}</b></span><span className="bb-mode-description">{mode.detail}</span><span className="bb-mode-hint">{mode.hint}</span></button>)}</div>
+        <div className="bb-menu-player-heading">YOUR BOWLERS</div>
+        <div className="bb-menu-matchup">
+          <div className="bb-menu-card bb-p1"><span className="bb-menu-avatar" aria-hidden="true">🎳</span><span className="bb-menu-player-label">PLAYER 1</span><strong>{savedNames[0]}</strong></div>
+          <span className="bb-menu-versus" aria-hidden="true">VS</span>
+          <div className="bb-menu-card bb-p2"><span className="bb-menu-avatar" aria-hidden="true">🎳</span><span className="bb-menu-player-label">PLAYER 2</span><strong>{savedNames[1]}</strong></div>
+        </div>
         <div className="bb-button-row">
-          <button className="bb-btn bb-small" onClick={() => setScreen("input")}>✎ Edit names</button>
-          <button className="bb-btn bb-primary" onClick={() => startMatch()}>Start Game</button>
+          <button className="bb-btn bb-small" onClick={() => setScreen("input")}>✎ EDIT PLAYERS</button>
+          <button className="bb-btn bb-primary bb-start-battle" onClick={() => startMatch()}>🎳 START BATTLE</button>
         </div>
       </section>}
 
@@ -638,19 +654,18 @@ export default function BowlingBattle({ onComplete }) {
             <button className="bb-btn bb-primary bb-roll" disabled={!(["aim", "power"].includes(game.phase))} onClick={toggleAction}>{game.phase === "aim" ? "Set Power" : game.phase === "power" ? "Roll!" : game.phase === "rolling" ? "Rolling…" : game.mode === "card" && game.phase === "cardPick" ? "Choose a card" : game.phase === "cardReveal" ? "Revealing…" : "Next"}</button>
             <button className="bb-btn bb-steer" onPointerDown={(event) => { event.currentTarget.setPointerCapture(event.pointerId); keysRef.current.right = true; }} onPointerUp={() => { keysRef.current.right = false; }} onPointerCancel={() => { keysRef.current.right = false; }} aria-label="Aim right">→</button>
           </div>
-          <div className="bb-controls-hint">{game.mode === "card" ? <span>Choose a card to roll</span> : <><span><kbd>←</kbd> <kbd>→</kbd> Aim</span><span><kbd>Space</kbd> Set power / roll</span></>}<span><kbd>R</kbd> Menu</span></div>
         </div>
         <aside className="bb-side-column">
           <div className="bb-top-info">
             <div className="bb-info-row">
-              <div className="bb-frame-status"><span><small>FRAME</small><strong>{Math.min(currentPlayer?.frame || 1, 10)}</strong></span><i aria-hidden="true" /><span><small>ROLL</small><strong>{currentPlayer?.rollInFrame || 1}</strong></span></div>
-              <button className="bb-btn bb-small" onClick={showMenu}>↻ Menu</button>
+              <div className="bb-frame-status"><span><small>FRAME / 10</small><strong>{Math.min(currentPlayer?.frame || 1, 10)}</strong></span><i aria-hidden="true" /><span><small>ROLL</small><strong>{currentPlayer?.rollInFrame || 1}<small className="bb-roll-total"> / {currentPlayer?.frame === 10 ? 3 : 2}</small></strong></span></div>
+              <button className="bb-btn bb-small bb-game-menu-button" aria-label="Return to main menu" title="Main menu" onClick={showMenu}>⌂</button>
             </div>
-            <div className="bb-score-display"><span>SCORE</span><strong>{currentScore}</strong></div>
+            <div className="bb-score-display"><span>CURRENT SCORE</span><strong>{currentScore}</strong><small>POINTS · {game.pins.filter((pin) => !pin.standing).length} PINS DOWN</small></div>
           </div>
           <div className="bb-scorecards">
             {game.players.map((player, playerIndex) => <div className={`bb-scorecard${game.currentPlayerIdx === playerIndex ? " active" : ""}`} key={player.name + playerIndex}>
-              <div className="bb-scorecard-label"><strong>{player.name}</strong><span>PLAYER {playerIndex + 1}</span></div>
+              <div className="bb-scorecard-label"><strong>{player.name}</strong><span>PLAYER {playerIndex + 1}</span>{game.currentPlayerIdx === playerIndex && <b className="bb-turn-chip">YOUR TURN</b>}</div>
               <div className="bb-score-grid">
                 <div className="bb-frame-row">{FRAME_LABELS.map((frame) => <span key={frame}>{frame}</span>)}</div>
                 <div className="bb-roll-row">{currentFrames.length && playerIndex === game.currentPlayerIdx ? currentFrames.map((frame, index) => <span key={index}>{frame.display}</span>) : scoreFrames(player.rolls).map((frame, index) => <span key={index}>{frame.display}</span>)}</div>
@@ -658,26 +673,45 @@ export default function BowlingBattle({ onComplete }) {
               </div>
             </div>)}
           </div>
-          {game.mode === "card" && <div className="bb-card-move"><div className="bb-card-heading"><div><strong>CHOOSE YOUR ROLL</strong><span>Pick a card to reveal your pin challenge.</span></div>{game.chosenCard && <b className="bb-card-result">{game.chosenCard.knocked} PINS</b>}</div><div className="bb-card-grid">{game.cards.map((card) => <button type="button" key={card.id} className={`bb-pick-card${game.chosenCard?.id === card.id ? " flipped" : ""}`} onClick={() => chooseCard(card)} disabled={game.phase !== "cardPick"} aria-label={game.chosenCard?.id === card.id ? `Card ${card.id}, ${card.knocked} pins` : `Choose hidden card ${card.id}`}><span className="bb-card-number">{card.id}</span>{game.chosenCard?.id === card.id ? <><strong>{card.knocked}</strong><small>{card.knocked === 1 ? "PIN" : "PINS"}</small></> : <span className="bb-card-back-mark" aria-hidden="true" />}</button>)}</div></div>}
+          {game.mode === "card" && <div className="bb-card-move"><div className="bb-card-heading"><div><strong>CHOOSE YOUR ROLL</strong><span>Pick a card to reveal your pin challenge.</span></div>{game.chosenCard && <b className="bb-card-result">{game.chosenCard.knocked} PINS</b>}</div><div className="bb-card-grid">{game.cards.map((card) => <button type="button" key={card.id} className={`bb-pick-card${game.chosenCard?.id === card.id ? " flipped" : ""}`} onClick={() => chooseCard(card)} disabled={game.phase !== "cardPick"} aria-label={game.chosenCard?.id === card.id ? `Card ${card.id}, ${card.knocked} pins` : `Choose hidden card ${card.id}`}>
+            {game.chosenCard?.id === card.id ? <><strong>{card.knocked}</strong><small>{card.knocked === 1 ? "PIN" : "PINS"}</small><span className="bb-card-revealed-icon" aria-hidden="true">🎳</span></> : <><span className="bb-card-back-mark" aria-hidden="true">?</span><span className="bb-card-pin" aria-hidden="true">🎳</span></>}
+          </button>)}</div></div>}
         </aside>
+        <div className={`bb-game-prompt is-${game.phase}`} aria-live="polite">
+          {game.phase === "cardPick" && "🃏 Choose a card to determine your roll"}
+          {game.phase === "cardReveal" && `🎳 Card revealed: ${game.chosenCard?.knocked ?? 0} pins`}
+          {game.phase === "aim" && "← → Aim your shot, then press SPACE to set power"}
+          {game.phase === "power" && "⚡ Time your power, then press SPACE to bowl"}
+          {game.phase === "rolling" && "🎳 Rolling…"}
+          {game.phase === "result" && `🎳 ${game.message || "Roll complete"}`}
+        </div>
       </section>}
 
-      {screen === "results" && game && <section className="bb-screen active">
-        <h2 className="bb-results-title">🏆 Final Results</h2>
-        <div className="bb-results-row">{game.players.map((player, index) => {
-          const other = game.players[1 - index];
-          const winner = player.finalScore > other.finalScore;
-          return <article className={`bb-result-card${winner ? " winner" : ""}`} key={player.name + index}>
-            <span>{winner ? "👑 Winner" : game.players[0].finalScore === game.players[1].finalScore ? "Tie game" : `Player ${index + 1}`}</span>
-            <strong>{player.name}</strong><b>{player.finalScore}</b>
-            <small>🔥 {player.strikes} strikes · 🎯 {player.spares} spares</small>
-          </article>;
-        })}</div>
-        <div className="bb-button-row">
-          <button className="bb-btn bb-small" onClick={showMenu}>Main Menu</button>
-          <button className="bb-btn bb-primary" onClick={() => startMatch()}>Rematch</button>
+      {screen === "results" && game && <section className="bb-screen active bb-victory-screen">
+        <div className="bb-victory-glow" aria-hidden="true" />
+        <div className="bb-confetti" aria-hidden="true">{Array.from({ length: 14 }, (_, index) => <span key={index} />)}</div>
+        <div className="bb-victory-content">
+          <div className="bb-victory-trophy" aria-hidden="true">🏆</div>
+          <span className="bb-victory-kicker">FINAL RESULTS</span>
+          <h2 className="bb-victory-title">{isTie ? "TIE GAME!" : "VICTORY!"}</h2>
+          <div className="bb-winner-card">
+            <span className="bb-winner-label">{isTie ? "🏆 TOP SCORE" : "👑 WINNER"}</span>
+            <strong className="bb-winner-name">{winnerPlayer.name}</strong>
+            <span className="bb-winner-score">{bestScore}</span>
+            <span className="bb-winner-caption">WINNING SCORE</span>
+          </div>
+          <div className="bb-result-stats">
+            <div className="bb-result-stat"><span>🔥</span><strong>{winnerPlayer.strikes}</strong><small>STRIKES</small></div>
+            <div className="bb-result-stat"><span>🎯</span><strong>{winnerPlayer.spares}</strong><small>SPARES</small></div>
+            <div className="bb-result-stat"><span>⭐</span><strong>{bestScore}</strong><small>SCORE</small></div>
+          </div>
+          <div className="bb-player-results">{game.players.map((player, index) => <div className={`bb-player-result${player === winnerPlayer && !isTie ? " is-winner" : ""}`} key={player.name + index}><span><b>{player === winnerPlayer && !isTie ? "👑" : "🎳"}</b>{player.name}</span><strong>{player.finalScore}</strong></div>)}</div>
+          <div className="bb-victory-actions">
+            <button className="bb-btn bb-primary bb-rematch-btn" onClick={() => startMatch()}>↻ REMATCH</button>
+            <button className="bb-btn bb-menu-btn" onClick={showMenu}>⌂ MAIN MENU</button>
+          </div>
+          <span className="bb-sr-only">Winning score {bestScore}</span>
         </div>
-        <span className="bb-sr-only">Winning score {bestScore}</span>
       </section>}
     </main>
   );
@@ -708,7 +742,7 @@ const STYLES = `
 .bb-screen.active.bb-game-screen{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(320px,.9fr);grid-template-rows:auto auto auto;align-items:start;gap:clamp(14px,2vw,24px);padding:clamp(16px,2vw,28px)}.bb-lane-column{display:contents}.bb-canvas{grid-column:1;grid-row:1 / 4;align-self:start}.bb-side-column{grid-column:2;grid-row:1 / 3;align-self:start;width:100%;min-width:0;max-width:none;gap:12px}.bb-mobile-controls{grid-column:2;grid-row:2;display:none;width:100%;align-items:center;justify-content:stretch;gap:10px;padding:10px;border:1px solid #303c52;border-radius:15px;background:linear-gradient(145deg,#171f2e,#101722)}.bb-controls-hint{grid-column:2;grid-row:3;justify-content:flex-start;gap:8px;padding:13px;border:1px solid #2b3547;border-radius:15px;background:linear-gradient(145deg,#151d2b,#0f1520);font-size:.68rem}.bb-controls-hint span{border-color:#35445e;border-radius:10px;padding:8px 10px;background:#1c2738}.bb-controls-hint kbd{padding:3px 6px;font-size:.68rem}.bb-steer{min-width:54px;min-height:50px;border-radius:13px;padding:10px;font-size:1.25rem}.bb-roll{min-height:50px;border-radius:13px;font-size:.92rem}.bb-game-screen .bb-card-move{padding:12px;border:1px solid #34445d;border-radius:15px;background:linear-gradient(145deg,#151e2e,#0d1522)}.bb-game-screen .bb-card-heading strong{font-size:.92rem}.bb-game-screen .bb-card-heading span{font-size:.72rem}.bb-game-screen .bb-pick-card{min-height:84px;border-radius:14px}
 .bb-screen.active.bb-game-screen{padding-top:clamp(28px,4vh,44px)}
 .bowling-battle-game.is-wide{width:min(96%,1320px);max-width:1320px;max-height:calc(100dvh - 90px);padding:clamp(14px,2vw,26px);overflow:auto;border-color:#2b3243;border-radius:30px;background:linear-gradient(145deg,#111726,#0b0f18 68%,#101726);box-shadow:0 24px 70px rgb(0 0 0 / .5),inset 0 1px 4px rgb(255 255 255 / .05)}
-.bb-game-screen{align-items:stretch;gap:clamp(16px,2vw,28px);padding:clamp(12px,2vw,24px);border-color:#292f3e;border-radius:24px;background:radial-gradient(ellipse at 30% 25%,#182131 0,#0b0e17 66%);box-shadow:none}
+.bb-game-screen{align-items:stretch;gap:clamp(16px,2vw,28px);padding:clamp(12px,2vw,24px);border-color:#292f3e;border-radius:24px;background:radial-gradient(ellipse at 30% 25%,rgb(18 29 48 / .58) 0%,rgb(7 13 23 / .84) 76%),url('/assets/games/bowling-battle/bowling-battle-game-screen-bg.webp') center / cover no-repeat;box-shadow:none}
 .bb-lane-column{flex:1 1 62%}.bb-side-column{width:35%;min-width:320px;max-width:440px;flex:1 1 35%;align-self:flex-start;border-color:#2b3344;background:linear-gradient(160deg,#141a27,#0c1019);backdrop-filter:none}
 .bb-canvas{height:min(84dvh,980px);border-radius:20px;background:#090d16;box-shadow:0 0 0 2px #2b3242,0 18px 30px rgb(0 0 0 / .38)}
 @media(max-width:640px){.bowling-battle-game.is-wide{width:100%;max-width:680px;padding:12px}.bb-screen.active.bb-game-screen{display:flex;flex-direction:column;align-items:center;overflow:auto}.bb-lane-column{display:flex;width:100%;max-width:100%;flex:none}.bb-side-column{width:100%;max-width:100%;min-width:0;flex:none;align-self:stretch}.bb-canvas{height:min(46dvh,420px);max-width:100%}.bb-mobile-controls{display:flex}.bb-controls-hint{grid-column:auto;grid-row:auto;width:100%;flex-wrap:wrap;justify-content:center}.bb-welcome,.bb-input-screen,.bb-menu-screen{min-height:min(66dvh,650px)}.bowling-battle-game.is-welcome,.bowling-battle-game.is-menu,.bowling-battle-game.is-results{width:min(96%,860px);padding:clamp(20px,5vw,44px)}.bowling-battle-game.is-input{width:min(96%,760px);padding:clamp(20px,5vw,42px)}}
@@ -757,4 +791,97 @@ const STYLES = `
 .bb-canvas{height:min(82dvh,940px)}
 @media(max-width:760px){.bowling-battle-game.is-welcome,.bowling-battle-game.is-input{width:100%;min-height:calc(100dvh - 90px);padding:12px;border:0;border-radius:0}.bb-welcome,.bb-input-screen{min-height:calc(100dvh - 114px);padding:24px 16px;border-radius:20px}.bb-logo{font-size:clamp(3.8rem,16vw,6rem)}.bb-player-panel{padding:24px 18px}.bb-player-matchup{grid-template-columns:1fr;gap:12px}.bb-player-card{min-height:240px;padding:18px}.bb-versus{width:52px;height:52px;margin:-2px auto;font-size:1.45rem}.bb-name-form .bb-button-row .bb-btn{min-height:52px;padding:12px 16px}.bb-name-form .bb-continue-btn{min-width:0;flex:1}.bowling-battle-game.is-wide{width:100%;padding:4px;border:0;border-radius:0}.bb-canvas{height:min(46dvh,420px)}}
 @media(max-width:420px){.bb-player-panel{padding:20px 14px}.bb-player-card{min-height:215px}.bb-name-form .bb-button-row{gap:10px}.bb-name-form .bb-button-row .bb-btn{font-size:.78rem}.bb-name-form .bb-continue-btn{min-width:0}}
+.bb-player-matchup{grid-template-columns:minmax(0,1fr) 74px minmax(0,1fr);gap:clamp(12px,2vw,24px)}
+.bb-player-card{box-sizing:border-box;width:100%;min-width:0;flex-direction:column;gap:10px}
+.bb-player-card>span{width:auto;margin:0;text-align:center}
+.bb-player-card>.bb-player-icon{display:grid;width:100px;height:100px;place-items:center;margin:2px auto!important;font-size:4rem}
+.bb-player-card>input{box-sizing:border-box;width:100%;margin:0}
+.bb-player-prompt{font-weight:700}
+.bb-player-panel{padding:clamp(24px,3vw,38px)}
+.bb-player-subtitle{margin:7px 0 24px}
+.bb-name-form{gap:24px}
+.bb-menu-screen{width:min(100%,1480px);min-height:min(82dvh,920px);justify-content:center;gap:clamp(12px,1.8vh,22px);padding:clamp(24px,4vw,56px);border-radius:30px;background-image:linear-gradient(180deg,rgb(5 15 40 / .48),rgb(5 15 40 / .82)),url('/assets/games/bowling-battle/bowling-battle-main-menu-bg.webp');box-shadow:inset 0 0 0 1px rgb(255 255 255 / .1),0 26px 65px rgb(0 0 0 / .34)}
+.bowling-battle-game.is-menu{width:min(98%,1680px);max-width:1680px;min-height:calc(100dvh - 112px);padding:clamp(18px,3vw,42px);border-color:rgb(80 180 255 / .16);background:rgb(8 22 52 / .24);box-shadow:0 20px 60px rgb(0 0 0 / .32),inset 0 1px 0 rgb(255 255 255 / .04)}
+.bb-menu-screen>.bb-eyebrow{margin-bottom:0}
+.bb-menu-screen>.bb-heading{margin:0;color:#fff;text-align:center;font-size:clamp(2.2rem,5vw,4rem);font-weight:950;letter-spacing:-.04em;text-shadow:0 5px 24px rgb(0 0 0 / .6)}
+.bb-menu-subtitle{margin:0 0 6px;color:#c4d5eb;text-align:center;font-size:1.05rem;letter-spacing:.03em}
+.bb-menu-screen .bb-mode-picker{display:grid;width:min(100%,940px);grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin:0 auto}
+.bb-menu-screen .bb-mode-card{box-sizing:border-box;display:flex;min-width:0;min-height:208px;flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:12px;padding:22px 24px;border:1px solid rgb(137 181 235 / .25);border-radius:20px;background:linear-gradient(145deg,rgb(8 25 52 / .9),rgb(5 17 38 / .92));text-align:left;box-shadow:0 14px 30px rgb(0 0 0 / .22);transition:transform .18s,border-color .18s,box-shadow .18s}
+.bb-menu-screen .bb-mode-card:hover{transform:translateY(-3px);border-color:rgb(97 234 255 / .7)}
+.bb-menu-screen .bb-mode-card.selected{border:2px solid #61eaff;background:linear-gradient(145deg,rgb(16 57 91 / .96),rgb(5 25 52 / .96));box-shadow:0 0 0 3px rgb(97 234 255 / .12),0 16px 36px rgb(0 0 0 / .3),0 0 32px rgb(97 234 255 / .12)}
+.bb-mode-icon{display:block;font-size:1.8rem;line-height:1}
+.bb-menu-screen .bb-mode-title-row{display:flex;width:100%;align-items:center;justify-content:space-between;gap:10px}
+.bb-menu-screen .bb-mode-title-row strong{font-size:1.3rem;line-height:1.15;color:#f5f9ff}
+.bb-menu-screen .bb-mode-title-row b{color:#70eaff;font-size:.61rem;letter-spacing:.12em;white-space:nowrap}
+.bb-menu-screen .bb-mode-description{display:block;max-width:34ch;color:#c0cee1;font-size:.92rem;line-height:1.45}
+.bb-menu-screen .bb-mode-hint{display:block;margin-top:auto;padding-top:8px;border-top:1px solid rgb(255 255 255 / .1);color:#83dff3;font-size:.75rem;font-weight:800;letter-spacing:.04em}
+.bb-menu-player-heading{color:#b5c8df;text-align:center;font-size:.7rem;font-weight:900;letter-spacing:.2em}
+.bb-menu-matchup{display:grid;width:min(100%,740px);grid-template-columns:minmax(0,1fr) 56px minmax(0,1fr);align-items:center;gap:14px;margin:0 auto}
+.bb-menu-screen .bb-menu-card{box-sizing:border-box;display:grid;min-width:0;min-height:106px;grid-template-columns:48px 1fr;grid-template-rows:auto auto;align-items:center;column-gap:12px;padding:13px 16px;border:1px solid rgb(143 190 244 / .24);border-radius:16px;background:linear-gradient(145deg,rgb(14 35 66 / .94),rgb(5 19 42 / .94));text-align:left}
+.bb-menu-screen .bb-menu-card.bb-p2{border-color:rgb(255 160 125 / .3)}
+.bb-menu-avatar{grid-column:1;grid-row:1 / 3;display:grid;width:46px;height:46px;place-items:center;border-radius:14px;background:rgb(255 255 255 / .07);font-size:1.8rem}
+.bb-menu-player-label{align-self:end;color:#91a8c7;font-size:.6rem;font-weight:900;letter-spacing:.14em}
+.bb-menu-screen .bb-menu-card strong{min-width:0;align-self:start;margin:2px 0 0;overflow:hidden;color:#fff;text-overflow:ellipsis;white-space:nowrap;font-size:1.05rem}
+.bb-menu-versus{color:#72e8ff;text-align:center;font-size:1rem;font-weight:950;font-style:italic;letter-spacing:.06em;text-shadow:0 0 14px rgb(97 234 255 / .4)}
+.bb-menu-screen>.bb-button-row{display:flex;width:min(100%,740px);max-width:none;align-items:center;justify-content:space-between;gap:16px;margin:0 auto}
+.bb-menu-screen>.bb-button-row .bb-btn{box-sizing:border-box;min-height:56px;border-radius:15px;padding:14px 22px;font-size:.86rem;font-weight:900;letter-spacing:.08em}
+.bb-menu-screen>.bb-button-row .bb-start-battle{min-width:260px;font-size:1rem;box-shadow:0 8px 26px rgb(36 189 233 / .32),0 0 22px rgb(36 189 233 / .12);transition:transform .18s,box-shadow .18s}
+.bb-menu-screen>.bb-button-row .bb-start-battle:hover{transform:translateY(-2px) scale(1.02);box-shadow:0 12px 32px rgb(36 189 233 / .4)}
+.bowling-battle-game.is-results{width:min(98%,1680px);max-width:1680px;min-height:calc(100dvh - 112px);padding:clamp(16px,3vw,40px);border-color:rgb(80 180 255 / .14);background:radial-gradient(ellipse at 50% 25%,rgb(32 75 130 / .18),transparent 54%),rgb(8 22 52 / .22);box-shadow:0 20px 60px rgb(0 0 0 / .3)}
+.bb-victory-screen{position:relative;isolation:isolate;box-sizing:border-box;display:flex;width:min(100%,900px);max-height:calc(100dvh - 150px);flex-direction:column;align-items:center;justify-content:center;overflow:auto;padding:clamp(20px,3vh,34px);border:1px solid rgb(100 170 255 / .28);border-radius:28px;background:radial-gradient(ellipse at 50% 0%,rgb(58 111 190 / .2),transparent 52%),linear-gradient(180deg,rgb(8 26 58 / .96),rgb(5 19 43 / .98));box-shadow:0 28px 75px rgb(0 0 0 / .42),inset 0 1px 0 rgb(255 255 255 / .08)}
+.bb-victory-glow{position:absolute;z-index:-1;top:-180px;left:calc(50% - 240px);width:480px;height:480px;border-radius:50%;background:rgb(38 111 255 / .13);filter:blur(65px);pointer-events:none}
+.bb-victory-content{position:relative;z-index:1;width:min(100%,650px);text-align:center}
+.bb-victory-trophy{margin-bottom:4px;font-size:clamp(3rem,6vh,4.2rem);line-height:1;filter:drop-shadow(0 0 18px rgb(255 190 40 / .55));animation:bb-trophy-float 2.5s ease-in-out infinite}
+.bb-victory-kicker{color:#9bb0cf;font-size:.68rem;font-weight:900;letter-spacing:.22em}
+.bb-victory-title{margin:3px 0 16px;color:#fff;font-size:clamp(2.3rem,5vh,3.6rem);font-weight:1000;letter-spacing:-.035em;line-height:1;text-shadow:0 4px 24px rgb(60 150 255 / .34)}
+.bb-winner-card{display:grid;justify-items:center;padding:16px 22px;border:1px solid rgb(255 193 7 / .35);border-radius:20px;background:linear-gradient(135deg,rgb(255 193 7 / .16),rgb(255 255 255 / .035));box-shadow:0 12px 35px rgb(0 0 0 / .2)}
+.bb-winner-label{color:#ffd45a;font-size:.65rem;font-weight:900;letter-spacing:.16em}
+.bb-winner-name{max-width:100%;margin-top:4px;overflow:hidden;color:#fff;text-overflow:ellipsis;white-space:nowrap;font-size:1.35rem;font-weight:950}
+.bb-winner-score{margin-top:4px;color:#ffd34f;font-size:clamp(2.7rem,6vh,4rem);font-weight:1000;line-height:.95;text-shadow:0 0 24px rgb(255 190 40 / .15)}
+.bb-winner-caption{margin-top:5px;color:#a6b8d2;font-size:.58rem;font-weight:900;letter-spacing:.16em}
+.bb-result-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0}
+.bb-result-stat{display:flex;min-width:0;flex-direction:column;align-items:center;padding:10px 8px;border:1px solid rgb(255 255 255 / .09);border-radius:14px;background:rgb(255 255 255 / .045)}
+.bb-result-stat>span{font-size:1.2rem;line-height:1}
+.bb-result-stat>strong{margin-top:4px;color:#fff;font-size:1.3rem;font-weight:950}
+.bb-result-stat>small{margin-top:2px;color:#93a7c4;font-size:.55rem;font-weight:900;letter-spacing:.12em}
+.bb-player-results{overflow:hidden;border:1px solid rgb(255 255 255 / .09);border-radius:14px;margin-bottom:14px}
+.bb-player-result{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 14px;background:rgb(255 255 255 / .025);color:#bfccdf;font-size:.88rem;font-weight:800}
+.bb-player-result+.bb-player-result{border-top:1px solid rgb(255 255 255 / .07)}
+.bb-player-result>span{display:flex;min-width:0;align-items:center;gap:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bb-player-result>span>b{font-size:1rem}
+.bb-player-result>strong{color:#fff;font-size:1.08rem}
+.bb-player-result.is-winner{background:linear-gradient(90deg,rgb(255 193 7 / .11),transparent);color:#fff}
+.bb-victory-actions{display:flex;justify-content:center;gap:12px}
+.bb-victory-actions .bb-btn{min-width:170px;min-height:48px;border-radius:13px;padding:12px 20px;font-size:.82rem;font-weight:900;letter-spacing:.08em;transition:transform .18s,box-shadow .18s}
+.bb-victory-actions .bb-btn:hover{transform:translateY(-2px)}
+.bb-victory-actions .bb-rematch-btn{border-color:#ffd65d;background:linear-gradient(135deg,#ffdf68,#ffb51b);color:#201500;box-shadow:0 8px 25px rgb(255 183 27 / .25)}
+.bb-victory-actions .bb-menu-btn{border:1px solid rgb(255 255 255 / .16);background:rgb(255 255 255 / .07);color:#f3f7ff}
+.bb-confetti{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.bb-confetti>span{position:absolute;top:-15px;left:var(--confetti-left);width:7px;height:12px;border-radius:2px;background:var(--confetti-color);opacity:0;animation:bb-confetti-fall 2.6s ease-in var(--confetti-delay) forwards}
+.bb-confetti>span:nth-child(1){--confetti-left:8%;--confetti-color:#61eaff;--confetti-delay:.1s}.bb-confetti>span:nth-child(2){--confetti-left:16%;--confetti-color:#ffd34f;--confetti-delay:.8s}.bb-confetti>span:nth-child(3){--confetti-left:24%;--confetti-color:#ff7b75;--confetti-delay:1.4s}.bb-confetti>span:nth-child(4){--confetti-left:32%;--confetti-color:#a88bff;--confetti-delay:.5s}.bb-confetti>span:nth-child(5){--confetti-left:40%;--confetti-color:#68e6a4;--confetti-delay:1.1s}.bb-confetti>span:nth-child(6){--confetti-left:48%;--confetti-color:#61eaff;--confetti-delay:1.8s}.bb-confetti>span:nth-child(7){--confetti-left:56%;--confetti-color:#ffd34f;--confetti-delay:.3s}.bb-confetti>span:nth-child(8){--confetti-left:64%;--confetti-color:#ff7b75;--confetti-delay:1.5s}.bb-confetti>span:nth-child(9){--confetti-left:72%;--confetti-color:#a88bff;--confetti-delay:.9s}.bb-confetti>span:nth-child(10){--confetti-left:80%;--confetti-color:#68e6a4;--confetti-delay:2s}.bb-confetti>span:nth-child(11){--confetti-left:88%;--confetti-color:#61eaff;--confetti-delay:.6s}.bb-confetti>span:nth-child(12){--confetti-left:95%;--confetti-color:#ffd34f;--confetti-delay:1.2s}.bb-confetti>span:nth-child(13){--confetti-left:4%;--confetti-color:#ff7b75;--confetti-delay:2.2s}.bb-confetti>span:nth-child(14){--confetti-left:92%;--confetti-color:#a88bff;--confetti-delay:2.5s}
+@keyframes bb-trophy-float{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-7px) rotate(2deg)}}
+@keyframes bb-confetti-fall{0%{transform:translateY(-10px) rotate(0);opacity:0}12%{opacity:.85}100%{transform:translateY(100vh) rotate(520deg);opacity:0}}
+@media(max-width:760px){.bb-player-matchup{grid-template-columns:1fr;gap:10px}.bb-player-card{min-height:210px}.bb-player-card>.bb-player-icon{width:76px;height:76px;font-size:3.3rem}.bb-versus{width:50px;height:50px;margin:0 auto;font-size:1.4rem}.bb-menu-screen{min-height:calc(100dvh - 114px);padding:24px 18px}.bb-menu-screen .bb-mode-picker{grid-template-columns:1fr;gap:10px}.bb-menu-screen .bb-mode-card{min-height:150px;padding:17px}.bb-menu-matchup{grid-template-columns:minmax(0,1fr) 38px minmax(0,1fr);gap:8px}.bb-menu-screen .bb-menu-card{min-height:94px;grid-template-columns:1fr;justify-items:center;gap:4px;padding:10px 6px;text-align:center}.bb-menu-avatar{grid-column:1;grid-row:auto;width:35px;height:35px;font-size:1.3rem}.bb-menu-player-label{align-self:auto;font-size:.52rem}.bb-menu-screen .bb-menu-card strong{max-width:100%;font-size:.82rem}.bb-menu-screen>.bb-button-row{gap:10px}.bb-menu-screen>.bb-button-row .bb-btn{min-width:0;padding:12px 13px;font-size:.7rem}.bb-menu-screen>.bb-button-row .bb-start-battle{flex:1;font-size:.82rem}.bowling-battle-game.is-menu{width:100%;min-height:calc(100dvh - 90px);padding:12px;border:0}.bowling-battle-game.is-results{width:100%;min-height:calc(100dvh - 90px);padding:8px;border:0}.bb-victory-screen{max-height:calc(100dvh - 108px);padding:18px 14px;border-radius:20px}.bb-victory-title{margin-bottom:11px}.bb-winner-card{padding:12px 16px}.bb-result-stats{gap:7px;margin:9px 0}.bb-result-stat{padding:9px 4px}.bb-player-result{padding:8px 10px;font-size:.78rem}.bb-victory-actions{gap:8px}.bb-victory-actions .bb-btn{min-width:0;flex:1;padding:11px 8px;font-size:.72rem}}
+@media(max-width:420px){.bb-player-panel{padding:20px 14px}.bb-player-card{min-height:190px}.bb-name-form .bb-button-row{gap:10px}.bb-name-form .bb-button-row .bb-btn{font-size:.76rem}.bb-menu-screen>.bb-heading{font-size:1.9rem}.bb-menu-matchup{grid-template-columns:minmax(0,1fr) 28px minmax(0,1fr);gap:5px}.bb-menu-screen .bb-menu-card{min-height:84px}.bb-menu-screen>.bb-button-row .bb-btn{font-size:.64rem}.bb-victory-actions{flex-direction:column}.bb-victory-actions .bb-btn{width:100%;flex:auto}}
+@media(prefers-reduced-motion:reduce){.bb-victory-trophy,.bb-confetti>span{animation:none!important}}
+.bb-screen.active.bb-game-screen{grid-template-columns:minmax(0,1.35fr) minmax(390px,.9fr);grid-template-rows:auto auto;align-items:start}
+.bb-screen.active.bb-game-screen>.bb-side-column{grid-row:1}
+.bb-canvas{grid-row:1;justify-self:center}
+.bb-game-menu-button{width:50px;min-width:50px!important;height:50px;min-height:50px!important;padding:0!important;border:1px solid #35445c!important;border-radius:14px!important;background:#171e2b!important;color:#d9e7f7!important;font-size:1.35rem!important}
+.bb-roll-total{display:inline!important;color:#8fa4c0;font-size:.76em;font-weight:700}
+.bb-score-display>small{margin-top:5px;color:#9eafc6;font-size:.55rem;font-weight:800;letter-spacing:.1em}
+.bb-scorecard-label{flex-wrap:wrap}
+.bb-scorecard-label .bb-turn-chip{order:3;flex-basis:100%;width:max-content;border:1px solid rgb(97 234 255 / .28);border-radius:999px;padding:4px 8px;background:rgb(97 234 255 / .09);color:#74eaff;font-size:.54rem;font-weight:900;letter-spacing:.12em}
+.bb-game-prompt{grid-column:1 / -1;grid-row:2;justify-self:center;align-self:start;display:flex;width:min(100%,820px);box-sizing:border-box;min-height:50px;align-items:center;justify-content:center;margin-top:4px;border:1px solid rgb(97 234 255 / .2);border-radius:14px;padding:10px 16px;background:linear-gradient(110deg,rgb(10 31 54 / .94),rgb(9 20 38 / .96));color:#cdeeff;text-align:center;font-size:.84rem;font-weight:850;letter-spacing:.025em;box-shadow:0 8px 24px rgb(0 0 0 / .24),inset 0 1px 0 rgb(255 255 255 / .06)}
+.bb-game-prompt.is-result{border-color:rgb(255 211 79 / .32);color:#ffdf72;background:linear-gradient(110deg,rgb(60 47 22 / .8),rgb(19 25 38 / .96))}
+.bb-game-prompt.is-rolling{border-color:rgb(97 234 255 / .36);color:#82edff;animation:bb-prompt-pulse 1s ease-in-out infinite alternate}
+.bb-game-screen .bb-card-move{background:linear-gradient(155deg,rgb(13 23 38 / .96),rgb(7 14 25 / .97))}
+.bb-pick-card{overflow:hidden;flex-direction:column;background:linear-gradient(145deg,#20538a,#0d2a50 76%);}
+.bb-card-number{display:none!important}
+.bb-card-back-mark{display:grid;width:48px;height:48px;place-items:center;border:1px solid rgb(157 211 255 / .28);border-radius:50%;background:rgb(7 26 51 / .5);color:#f4f9ff;font-size:2rem;font-weight:950;text-shadow:0 0 16px rgb(97 234 255 / .35)}
+.bb-card-pin,.bb-card-revealed-icon{display:block;margin-top:7px;font-size:1.15rem;line-height:1;filter:drop-shadow(0 2px 5px rgb(0 0 0 / .25))}
+.bb-pick-card.flipped{gap:2px}
+@keyframes bb-prompt-pulse{from{box-shadow:0 0 0 rgb(97 234 255 / 0),inset 0 1px 0 rgb(255 255 255 / .06)}to{box-shadow:0 0 20px rgb(97 234 255 / .13),inset 0 1px 0 rgb(255 255 255 / .06)}}
+@media(max-width:760px){.bb-screen.active.bb-game-screen{display:flex;flex-direction:column;align-items:center}.bb-lane-column{display:flex;width:100%;flex-direction:column;align-items:center}.bb-canvas{grid-row:auto;justify-self:center;height:min(46dvh,420px)}.bb-side-column{grid-column:auto;grid-row:auto;width:100%}.bb-game-prompt{grid-column:auto;grid-row:auto;width:100%;box-sizing:border-box;margin:0}.bb-scorecard-label .bb-turn-chip{flex-basis:auto;width:auto;order:initial}.bb-game-menu-button{width:44px;min-width:44px!important;height:44px;min-height:44px!important}}
+@media(prefers-reduced-motion:reduce){.bb-game-prompt{animation:none!important}}
 `;
