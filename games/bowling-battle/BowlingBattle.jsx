@@ -593,24 +593,31 @@ export default function BowlingBattle({ onComplete }) {
       <style>{STYLES}</style>
       {screen === "welcome" && <section className="bb-screen active bb-welcome">
         <span className="bb-eyebrow">TWO PLAYER ARCADE</span>
-        <h1 className="bb-logo">🎳 Bowling Battle</h1>
-        <p className="bb-tag">Pick your line, send it down the lane, and knock down every pin.</p>
-        <div className="bb-welcome-pins" aria-hidden="true">🎳🎳🎳</div>
+        <h1 className="bb-logo"><span>Bowling</span><span>Battle</span></h1>
+        <p className="bb-tag">Pick your line. Knock down every pin.</p>
         <button className="bb-btn bb-primary" onClick={() => setScreen("input")}>Play</button>
       </section>}
 
       {screen === "input" && <section className="bb-screen active bb-input-screen">
-        <h2 className="bb-heading">Who&apos;s playing?</h2>
-        <form className="bb-name-form" onSubmit={finishPlayerNames}>
-          {names.map((name, index) => <label className={`bb-field bb-p${index + 1}`} key={index}>
-            <span>Player {index + 1}</span>
-            <input value={name} maxLength={14} placeholder={`Player ${index + 1}`} onChange={(event) => setNames((previous) => previous.map((value, item) => item === index ? event.target.value : value))} />
-          </label>)}
-          <div className="bb-button-row">
-            <button type="button" className="bb-btn bb-small" onClick={() => setScreen("welcome")}>← Back</button>
-            <button className="bb-btn bb-primary" type="submit">Continue →</button>
-          </div>
-        </form>
+        <div className="bb-player-panel">
+          <h2 className="bb-heading">WHO&apos;S PLAYING?</h2>
+          <p className="bb-player-subtitle">Choose your players</p>
+          <form className="bb-name-form" onSubmit={finishPlayerNames}>
+            <div className="bb-player-matchup">
+              {names.map((name, index) => <label className={`bb-field bb-player-card bb-p${index + 1}`} key={index}>
+                <span className="bb-player-label">PLAYER {index + 1}</span>
+                <span className="bb-player-icon" aria-hidden="true">🎳</span>
+                <span className="bb-player-prompt">Enter your name</span>
+                <input value={name} maxLength={14} placeholder={`Player ${index + 1}`} onChange={(event) => setNames((previous) => previous.map((value, item) => item === index ? event.target.value : value))} />
+              </label>)}
+              <span className="bb-versus" aria-label="versus">VS</span>
+            </div>
+            <div className="bb-button-row">
+              <button type="button" className="bb-btn bb-back-btn" onClick={() => setScreen("welcome")}>← BACK</button>
+              <button className="bb-btn bb-primary bb-continue-btn" type="submit">CONTINUE →</button>
+            </div>
+          </form>
+        </div>
       </section>}
 
       {screen === "menu" && <section className="bb-screen active bb-menu-screen">
@@ -721,4 +728,33 @@ const STYLES = `
 @media(max-width:760px){.bb-side-column{min-height:0;padding:12px}.bb-score-display{min-height:90px}.bb-frame-status{min-height:62px}.bb-scorecard{padding:8px}.bb-frame-row,.bb-roll-row,.bb-frame-score-row{gap:2px!important}.bb-frame-row span,.bb-roll-row span,.bb-frame-score-row span{min-height:24px;font-size:.58rem}.bb-pick-card{height:86px;min-height:86px!important}.bb-card-grid{gap:9px!important}}
 @media(max-width:420px){.bb-card-move{padding:12px}.bb-pick-card{height:76px;min-height:76px!important}.bb-scorecards{grid-template-columns:1fr}.bb-scorecard-label span{font-size:.5rem}}
 @media(prefers-reduced-motion:reduce){.bb-btn,.bb-pick-card{transition:none;animation:none!important;scroll-behavior:auto}}
+.bowling-battle-game.is-welcome,.bowling-battle-game.is-input{width:min(98%,1680px);max-width:1680px;min-height:calc(100dvh - 112px);padding:clamp(18px,3vw,42px);border-color:rgb(80 180 255 / .16);background:rgb(8 22 52 / .24);box-shadow:0 20px 60px rgb(0 0 0 / .32),inset 0 1px 0 rgb(255 255 255 / .04)}
+.bb-welcome{width:min(100%,1420px);min-height:min(80dvh,900px);justify-content:center;gap:clamp(20px,3vh,34px);padding:clamp(36px,6vw,90px);border-radius:30px;background-image:linear-gradient(90deg,rgb(4 14 34 / .74),rgb(4 14 34 / .34) 55%,rgb(4 14 34 / .08)),linear-gradient(0deg,rgb(4 14 34 / .4),transparent 55%),url('/assets/games/bowling-battle/bowling-battle-welcome-bg.webp');box-shadow:inset 0 0 0 1px rgb(255 255 255 / .12),0 28px 70px rgb(0 0 0 / .34)}
+.bb-logo{display:grid;gap:0;font-size:clamp(4.6rem,10vw,9rem);line-height:.83;letter-spacing:-.065em;text-transform:uppercase;text-shadow:0 8px 34px rgb(0 0 0 / .65),0 0 34px rgb(97 234 255 / .2)}
+.bb-logo span:last-child{color:#73eaff}
+.bb-tag{max-width:600px;margin:0;color:#edf6ff;font-size:clamp(1.15rem,2.2vw,1.6rem);text-shadow:0 3px 16px rgb(0 0 0 / .8)}
+.bb-welcome>.bb-primary{min-width:270px;min-height:68px;border-radius:18px;padding:18px 42px;font-size:1.2rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;box-shadow:0 8px 28px rgb(36 189 233 / .4),0 0 34px rgb(36 189 233 / .2)}
+.bb-input-screen{width:min(100%,1420px);min-height:min(78dvh,860px);justify-content:center;gap:0;padding:clamp(20px,4vw,56px);border-radius:30px;background-image:radial-gradient(ellipse at center,rgb(4 14 34 / .83) 0%,rgb(4 14 34 / .72) 56%,rgb(4 14 34 / .16) 100%),url('/assets/games/bowling-battle/bowling-battle-user-input-bg.webp');box-shadow:inset 0 0 0 1px rgb(255 255 255 / .1),0 24px 60px rgb(0 0 0 / .3)}
+.bb-player-panel{width:min(100%,1020px);padding:clamp(22px,4vw,48px);border:1px solid rgb(143 202 255 / .24);border-radius:28px;background:linear-gradient(145deg,rgb(8 22 45 / .84),rgb(5 14 31 / .82));box-shadow:0 24px 70px rgb(0 0 0 / .38),inset 0 1px 0 rgb(255 255 255 / .09);backdrop-filter:blur(14px)}
+.bb-player-panel>.bb-heading{margin:0;text-align:center;color:#f4f9ff;font-size:clamp(1.8rem,3.5vw,2.7rem);font-weight:950;letter-spacing:.16em;text-shadow:0 3px 18px rgb(0 0 0 / .5)}
+.bb-player-subtitle{margin:9px 0 clamp(24px,4vw,42px);color:#a9bdd6;text-align:center;font-size:1.02rem;letter-spacing:.04em}
+.bb-name-form{width:100%;max-width:none;gap:clamp(24px,4vw,44px)}
+.bb-player-matchup{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:clamp(14px,2.6vw,34px)}
+.bb-player-card{display:flex;min-width:0;min-height:320px;align-items:center;justify-content:center;gap:13px;padding:24px;border:1px solid rgb(132 190 255 / .28);border-radius:24px;background:linear-gradient(155deg,rgb(19 45 78 / .82),rgb(8 21 43 / .91));box-shadow:inset 0 1px 0 rgb(255 255 255 / .09),0 18px 34px rgb(0 0 0 / .24);letter-spacing:normal}
+.bb-player-card.bb-p2{border-color:rgb(255 160 125 / .34);background:linear-gradient(155deg,rgb(68 38 44 / .68),rgb(23 20 34 / .91))}
+.bb-player-label{margin:0!important;color:#c8d9ec;font-size:.88rem;font-weight:900;letter-spacing:.2em}
+.bb-player-icon{font-size:clamp(3.1rem,5vw,4.4rem);filter:drop-shadow(0 8px 12px rgb(0 0 0 / .4))}
+.bb-player-prompt{color:#a8bbd2;font-size:.9rem;letter-spacing:.03em}
+.bb-player-card input{width:100%;min-height:58px;border:1px solid rgb(142 190 239 / .35);border-radius:14px;padding:14px 16px;background:rgb(4 13 29 / .8);color:#fff;text-align:center;font-size:1.05rem;letter-spacing:normal;box-shadow:inset 0 2px 8px rgb(0 0 0 / .24)}
+.bb-player-card input::placeholder{color:#91a6c0}
+.bb-versus{display:grid;width:74px;height:74px;place-items:center;border:1px solid rgb(97 234 255 / .42);border-radius:50%;background:radial-gradient(circle,rgb(30 95 133 / .42),rgb(7 22 45 / .82));color:#79eaff;font-size:2rem;font-weight:1000;font-style:italic;letter-spacing:-.06em;text-shadow:0 0 18px rgb(97 234 255 / .42);box-shadow:0 0 28px rgb(97 234 255 / .12),inset 0 1px 0 rgb(255 255 255 / .12)}
+.bb-name-form .bb-button-row{width:100%;max-width:none;justify-content:space-between;gap:16px;margin-top:0}
+.bb-name-form .bb-button-row .bb-btn{min-height:56px;border-radius:14px;padding:14px 24px;font-size:.9rem;font-weight:900;letter-spacing:.08em}
+.bb-name-form .bb-back-btn{border:1px solid rgb(190 207 230 / .32);background:rgb(255 255 255 / .045);color:#d4deeb;box-shadow:inset 0 1px 0 rgb(255 255 255 / .06)}
+.bb-name-form .bb-continue-btn{min-width:220px;border-radius:14px;box-shadow:0 6px 22px rgb(36 189 233 / .3),0 0 20px rgb(36 189 233 / .12)}
+.bowling-battle-game.is-wide{width:min(99%,1760px);max-width:1760px;max-height:calc(100dvh - 104px);padding:6px;border:1px solid rgb(80 180 255 / .12);border-radius:24px;background:rgb(8 22 52 / .16);box-shadow:0 18px 55px rgb(0 0 0 / .3)}
+.bb-screen.active.bb-game-screen{padding-top:clamp(24px,3vh,36px);gap:clamp(14px,1.7vw,24px)}
+.bb-canvas{height:min(82dvh,940px)}
+@media(max-width:760px){.bowling-battle-game.is-welcome,.bowling-battle-game.is-input{width:100%;min-height:calc(100dvh - 90px);padding:12px;border:0;border-radius:0}.bb-welcome,.bb-input-screen{min-height:calc(100dvh - 114px);padding:24px 16px;border-radius:20px}.bb-logo{font-size:clamp(3.8rem,16vw,6rem)}.bb-player-panel{padding:24px 18px}.bb-player-matchup{grid-template-columns:1fr;gap:12px}.bb-player-card{min-height:240px;padding:18px}.bb-versus{width:52px;height:52px;margin:-2px auto;font-size:1.45rem}.bb-name-form .bb-button-row .bb-btn{min-height:52px;padding:12px 16px}.bb-name-form .bb-continue-btn{min-width:0;flex:1}.bowling-battle-game.is-wide{width:100%;padding:4px;border:0;border-radius:0}.bb-canvas{height:min(46dvh,420px)}}
+@media(max-width:420px){.bb-player-panel{padding:20px 14px}.bb-player-card{min-height:215px}.bb-name-form .bb-button-row{gap:10px}.bb-name-form .bb-button-row .bb-btn{font-size:.78rem}.bb-name-form .bb-continue-btn{min-width:0}}
 `;
