@@ -37,7 +37,7 @@ export const readingRescueStories = [
 
             <p>
               He followed the sound and found a little <strong>yellow duckling</strong>
-              sitting beside the riverbank. The duckling looked worried and tired.
+              {' '}sitting beside the riverbank. The duckling looked worried and tired.
             </p>
 
             <p>
@@ -73,7 +73,7 @@ export const readingRescueStories = [
 
             <p>
               Along the path, they discovered several small <strong>yellow feathers</strong>
-              caught on the bushes.
+              {' '}caught on the bushes.
             </p>
 
             <p>
@@ -361,7 +361,7 @@ export const readingRescueStories = [
             <p>
               He followed the sound until he reached a patch of tall grass.
               Behind the grass, he discovered a small <strong>rabbit</strong>
-              trapped beneath a fallen branch.
+              {' '}trapped beneath a fallen branch.
             </p>
 
             <p>
@@ -1147,7 +1147,7 @@ export const readingRescueStories = [
 
             <p>
               He noticed a group of <strong>large stepping stones</strong>
-              farther down the river. They were close enough together for the
+              {' '}farther down the river. They were close enough together for the
               smaller animals to cross safely.
             </p>
 

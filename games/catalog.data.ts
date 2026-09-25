@@ -54,6 +54,18 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     isNew: true,
     hasComponent: true,
   },
+  bowlingbattle: {
+    name: "Bowling Battle",
+    icon: "🎳",
+    desc: "Take turns aiming, timing your power, and bowling a full ten-frame match against a friend.",
+    cover: "/assets/covers/bowling-battle-cover.webp",
+    tag: { label: "Sports", color: "tag-bio" },
+    badge: "2 Players",
+    difficulty: "Arcade",
+    barColor: "var(--gold)",
+    isNew: true,
+    hasComponent: true,
+  },
   tilebattle: {
     name: "Tile Battle",
     icon: "⚔️",

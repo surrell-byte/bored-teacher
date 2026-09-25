@@ -45,6 +45,7 @@ export type GameComponentProps = {
 };
 
 export const GAME_COMPONENTS: Partial<Record<string, React.LazyExoticComponent<React.ComponentType<any>>>> = {
+  bowlingbattle: lazyGame('bowlingbattle', () => import('@/games/bowling-battle/BowlingBattle.jsx')),
   alphabethunt: lazyGame('alphabethunt', () => import('@/games/alphabet-hunt/AlphabetHunt')),
   powerpointslide: lazyGame('powerpointslide', () => import('@/games/powerpoint-slide/PowerPointSlide.jsx')),
   tilelanes: lazyGame('tilelanes', () => import('@/games/tile-lanes/TileLanes.jsx')),

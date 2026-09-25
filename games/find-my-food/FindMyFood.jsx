@@ -390,6 +390,48 @@ const STYLES = `
   .ff-tile-back .ff-emoji { font-size:1.5rem; }
   .ff-tile-back .ff-word { font-size:0.52rem; }
 }
+/* Find My Food welcome hero */
+  .ff-root:not(.ff-root-emoji) .ff-screen.ff-food-welcome-screen { width:100%; max-width:1450px; margin:20px auto 0; }
+.ff-root:not(.ff-root-emoji) .ff-food-welcome-card {
+  min-height:430px;
+  display:grid;
+  grid-template-columns:minmax(300px,.9fr) minmax(0,1.1fr);
+  align-items:center;
+  gap:clamp(28px,5vw,72px);
+  padding:36px clamp(28px,5vw,72px);
+  text-align:left !important;
+}
+.ff-food-art { position:relative; min-height:330px; border-radius:26px; background:radial-gradient(ellipse at 50% 55%,var(--accent-glow2),transparent 68%); }
+.ff-food-orb { position:absolute; display:grid; place-items:center; width:clamp(68px,7vw,104px); aspect-ratio:1; border:1px solid var(--border-bright); border-radius:28px; background:var(--surface2); box-shadow:var(--shadow-sm); font-size:clamp(2.6rem,5vw,4.4rem); animation:ffFoodFloat 4s ease-in-out infinite; }
+.ff-food-dog { left:12%; top:9%; transform:rotate(-8deg); }
+.ff-food-bone { right:15%; top:4%; animation-delay:.4s; }
+.ff-food-cat { left:3%; top:48%; animation-delay:.8s; }
+.ff-food-fish { right:1%; top:46%; animation-delay:1.2s; }
+.ff-food-rabbit { left:17%; bottom:2%; animation-delay:1.6s; }
+.ff-food-carrot { right:20%; bottom:0; animation-delay:2s; }
+.ff-food-monkey { left:43%; top:30%; width:clamp(78px,8vw,116px); z-index:1; animation-delay:.6s; }
+.ff-food-banana { right:0; bottom:9%; animation-delay:1.4s; }
+@keyframes ffFoodFloat { 0%,100%{translate:0 0} 50%{translate:0 -8px} }
+.ff-food-copy .ff-logo-badge { margin-bottom:12px; }
+.ff-root:not(.ff-root-emoji) .ff-food-copy .ff-hero-title { margin:0 0 8px; font-size:clamp(48px,5vw,76px); line-height:.98; letter-spacing:-.04em; }
+.ff-food-copy .ff-hero-sub { margin:0 0 18px; max-width:520px; }
+.ff-food-pair-preview { justify-content:flex-start; gap:10px; margin:0 0 20px; }
+.ff-pair-card { display:flex; width:72px; height:78px; flex-direction:column; align-items:center; justify-content:center; gap:0; border:1px solid var(--border-bright); border-radius:16px; background:var(--surface2); box-shadow:var(--shadow-sm); font-size:1.65rem; line-height:1.15; }
+.ff-pair-card span+span { margin-top:-1px; }
+.ff-food-copy .ff-btn { min-width:220px; }
+@media(max-width:760px) {
+  .ff-root:not(.ff-root-emoji) .ff-screen.ff-food-welcome-screen { margin-top:0; }
+  .ff-root:not(.ff-root-emoji) .ff-food-welcome-card { min-height:0; grid-template-columns:1fr; gap:8px; padding:24px 22px 30px; }
+  .ff-food-art { min-height:200px; max-width:400px; width:100%; margin:auto; }
+  .ff-food-orb { width:64px; border-radius:20px; font-size:2.6rem; }
+  .ff-food-monkey { width:76px; }
+  .ff-food-copy { text-align:center; }
+  .ff-food-copy .ff-logo-badge { margin-bottom:10px; }
+  .ff-root:not(.ff-root-emoji) .ff-food-copy .ff-hero-title { font-size:clamp(42px,10vw,60px); }
+  .ff-food-copy .ff-hero-sub { font-size:.95rem; }
+  .ff-food-pair-preview { justify-content:center; flex-wrap:nowrap; gap:8px; }
+  .ff-pair-card { width:56px; height:64px; font-size:1.35rem; }
+}
 `;
 
 export default function FindMyFood({ onComplete, themeId, variant = "food" }) {
@@ -521,20 +563,39 @@ export default function FindMyFood({ onComplete, themeId, variant = "food" }) {
       <div className="ff-ambient ff-ambient-1" />
       <div className="ff-ambient ff-ambient-2" />
 
-      <div className="ff-screen ff-setup-screen">
-        <div className="ff-card ff-setup-card" style={{ textAlign:"center" }}>
-          <div className="ff-logo-badge">{variant === "emoji" ? "✨ Two-Player Emoji Edition" : "🌿 Two-Player Edition"}</div>
-          <h1 className="ff-hero-title">{variant === "emoji" ? <>Emoji<br/>Match</> : <>Find My<br/>Food</>}</h1>
-          <p className="ff-hero-sub">{variant === "emoji" ? <>Match identical emojis.<br/>Compete with a friend to see who remembers best.</> : <>Match each animal with the food it loves.<br/>Compete with a friend to see who knows best.</>}</p>
-
-          <div className="ff-pair-preview">
-            <div className="ff-pair-chip">🐕<span className="ff-connector">×</span>🦴</div>
-            <div className="ff-pair-chip">🐱<span className="ff-connector">×</span>🐟</div>
-            <div className="ff-pair-chip">🐰<span className="ff-connector">×</span>🥕</div>
-            <div className="ff-pair-chip">🐵<span className="ff-connector">×</span>🍌</div>
-          </div>
-
-          <button className="ff-btn ff-btn-gold" onClick={() => setScreen("player-info")}>Start Game →</button>
+      <div className={`ff-screen ff-setup-screen${variant === "emoji" ? "" : " ff-food-welcome-screen"}`}>
+        <div className={`ff-card ff-setup-card${variant === "emoji" ? "" : " ff-food-welcome-card"}`} style={{ textAlign:"center" }}>
+          {variant === "emoji" ? <>
+            <div className="ff-logo-badge">✨ Two-Player Emoji Edition</div>
+            <h1 className="ff-hero-title">Emoji<br/>Match</h1>
+            <p className="ff-hero-sub">Match identical emojis.<br/>Compete with a friend to see who remembers best.</p>
+            <div className="ff-pair-preview">
+              <div className="ff-pair-chip">🐕<span className="ff-connector">×</span>🦴</div>
+              <div className="ff-pair-chip">🐱<span className="ff-connector">×</span>🐟</div>
+              <div className="ff-pair-chip">🐰<span className="ff-connector">×</span>🥕</div>
+              <div className="ff-pair-chip">🐵<span className="ff-connector">×</span>🍌</div>
+            </div>
+            <button className="ff-btn ff-btn-gold" onClick={() => setScreen("player-info")}>Start Game →</button>
+          </> : <>
+            <div className="ff-food-art" aria-hidden="true">
+              <span className="ff-food-orb ff-food-dog">🐶</span><span className="ff-food-orb ff-food-bone">🦴</span>
+              <span className="ff-food-orb ff-food-cat">🐱</span><span className="ff-food-orb ff-food-fish">🐟</span>
+              <span className="ff-food-orb ff-food-rabbit">🐰</span><span className="ff-food-orb ff-food-carrot">🥕</span>
+              <span className="ff-food-orb ff-food-monkey">🐵</span><span className="ff-food-orb ff-food-banana">🍌</span>
+            </div>
+            <div className="ff-food-copy">
+              <div className="ff-logo-badge">🌿 Two-Player Edition</div>
+              <h1 className="ff-hero-title">Find My Food</h1>
+              <p className="ff-hero-sub">Match each animal with the food it loves.<br/>Compete with a friend to see who knows best.</p>
+              <div className="ff-pair-preview ff-food-pair-preview">
+                <div className="ff-pair-card"><span>🐶</span><span>🦴</span></div>
+                <div className="ff-pair-card"><span>🐱</span><span>🐟</span></div>
+                <div className="ff-pair-card"><span>🐰</span><span>🥕</span></div>
+                <div className="ff-pair-card"><span>🐵</span><span>🍌</span></div>
+              </div>
+              <button className="ff-btn ff-btn-gold" onClick={() => setScreen("player-info")}>Start Game →</button>
+            </div>
+          </>}
         </div>
       </div>
     </div>
