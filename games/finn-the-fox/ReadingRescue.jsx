@@ -577,8 +577,8 @@ const CSS = `
   object-fit: cover;
 }
 .finn-fox--story.finn-fox--tanya .ff-story { padding: clamp(32px, 3.5vw, 58px); }
-.finn-fox--story.finn-fox--tanya .ff-story small { font-size: 1rem; margin-bottom: 22px; }
-.finn-fox--story.finn-fox--tanya .ff-story p { font-size: clamp(1.55rem, 2vw, 2rem); line-height: 1.8; }
+.finn-fox--story.finn-fox--tanya .ff-story small { font-size: clamp(1.05rem, 1.3vw, 1.25rem); margin-bottom: 22px; }
+.finn-fox--story.finn-fox--tanya .ff-story p { font-size: clamp(1.8rem, 2.2vw, 2.35rem); line-height: 1.65; }
 .finn-fox--story.finn-fox--tanya .ff-actions button { min-height: 58px; padding: 15px 24px; font-size: 1.08rem; }
 
 /* Give the long rabbit story a broad text column so fewer words wrap. */
@@ -614,7 +614,7 @@ const CSS = `
   .finn-fox--story.finn-fox--rabbit .ff-story-layout { grid-template-columns: minmax(0, 1fr); }
   .finn-fox--story.finn-fox--tanya .ff-story-illustration,
   .finn-fox--story.finn-fox--rabbit .ff-story-illustration { width: min(100%, 720px); max-height: 48vh; margin-inline: auto; }
-  .finn-fox--story.finn-fox--tanya .ff-story p { font-size: clamp(1.35rem, 4vw, 1.7rem); }
+  .finn-fox--story.finn-fox--tanya .ff-story p { font-size: clamp(1.45rem, 4.5vw, 1.85rem); line-height: 1.58; }
 }
 
 `;
