@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import { QUIZ_ROUNDS, formatPrize, normalizeAnswer } from "./data";
 import "./general-knowledge-quiz.css";
 
@@ -13,7 +14,8 @@ function prepareRound(round) {
 }
 
 export default function GeneralKnowledgeQuiz({ onComplete }) {
-  const [screen, setScreen] = useState("intro");
+  const [screen, setScreen] = useState("userInfo");
+  const [playerName, setPlayerName] = useState("");
   const [roundId, setRoundId] = useState(1);
   const [questions, setQuestions] = useState([]);
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -27,6 +29,12 @@ export default function GeneralKnowledgeQuiz({ onComplete }) {
   const prize = round.prizes[questionIndex] || round.prizes.at(-1);
   const progress = questions.length ? ((questionIndex + 1) / questions.length) * 100 : 0;
   const ladder = useMemo(() => round.prizes, [round]);
+
+  useEffect(() => {
+    const openMainMenu = () => setScreen("intro");
+    window.addEventListener("general-knowledge-quiz:main-menu", openMainMenu);
+    return () => window.removeEventListener("general-knowledge-quiz:main-menu", openMainMenu);
+  }, []);
 
   const startRound = (id = roundId) => {
     const selectedRound = QUIZ_ROUNDS.find((item) => item.id === id) || QUIZ_ROUNDS[0];
@@ -65,13 +73,24 @@ export default function GeneralKnowledgeQuiz({ onComplete }) {
   };
 
   return (
-    <main className="gk-quiz">
+    <main className={`gk-quiz is-${screen}`}>
       <div className="gk-glow" aria-hidden="true" />
+      {screen === "userInfo" && <section className="gk-panel gk-user-info">
+        <span className="gk-kicker">PLAYER SETUP</span>
+        <div className="gk-hero-icon" aria-hidden="true">👋</div>
+        <h1>Who&apos;s playing?</h1>
+        <p>Enter your name before choosing a quiz round.</p>
+        <form className="gk-player-form" onSubmit={(event) => { event.preventDefault(); if (playerName.trim()) setScreen("intro"); }}>
+          <label htmlFor="gk-player-name">Your name</label>
+          <input id="gk-player-name" value={playerName} onChange={(event) => setPlayerName(event.target.value)} maxLength={24} autoComplete="given-name" required />
+          <button className="gk-button gk-primary" type="submit" disabled={!playerName.trim()}>Continue →</button>
+        </form>
+      </section>}
       {screen === "intro" && <section className="gk-panel gk-intro">
         <span className="gk-kicker">THE BIG QUIZ</span>
         <div className="gk-hero-icon" aria-hidden="true">🧠</div>
         <h1>General Knowledge</h1>
-        <p>Three rounds of trivia, spelling challenges, and big prize questions.</p>
+        <p>{playerName.trim() ? `Welcome, ${playerName.trim()}! ` : "Welcome! "}Choose from three rounds of trivia, spelling challenges, and big prize questions.</p>
         <div className="gk-round-select" aria-label="Choose a round">
           {QUIZ_ROUNDS.map((item) => <button key={item.id} className={roundId === item.id ? "selected" : ""} onClick={() => setRoundId(item.id)} aria-pressed={roundId === item.id}>
             <span>{item.icon}</span><strong>{item.title}</strong><small>{item.questions.length} questions</small>
@@ -81,11 +100,13 @@ export default function GeneralKnowledgeQuiz({ onComplete }) {
       </section>}
 
       {screen === "play" && question && <section className="gk-play-layout">
-        <header className="gk-topbar"><button className="gk-back" onClick={() => setScreen("intro")}>← Rounds</button><span>{round.icon} {round.title}</span><b>QUESTION {questionIndex + 1} / {questions.length}</b></header>
         <div className="gk-progress"><span style={{ width: `${progress}%` }} /></div>
         <div className="gk-play-grid">
           <section className="gk-question-panel" aria-live="polite">
             <div className="gk-prize">{formatPrize(prize)}</div>
+            {question.images?.length > 0 && <div className="gk-question-image-frame">
+              <Image className="gk-question-image" src={question.images[locked ? 1 : 0]} alt={`Question visual: ${question.prompt}`} fill sizes="(max-width: 760px) 100vw, 600px" />
+            </div>}
             <h1>{question.prompt}</h1>
             {question.spelling ? <form className="gk-spelling" onSubmit={(event) => { event.preventDefault(); submitAnswer(); }}>
               <label htmlFor="gk-answer">Type your answer</label>

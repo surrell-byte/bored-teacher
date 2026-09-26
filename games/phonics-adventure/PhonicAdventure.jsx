@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
+import FindTheLetter from "../shared/FindTheLetter";
 
 const LETTER_DATA = {
   A:{ word:"apple",     emoji:"🍎", extras:[["ant","🐜"],["alligator","🐊"]] },
@@ -1005,7 +1006,7 @@ export default function PhonicAdventure({ onComplete }) {
         <div className="phonic-panel quiz-card">
           <h1 className="game-title">Phonics Adventure</h1>
           <p className="game-subtitle">Explore sounds, learn new words, and build your phonics skills.</p>
-          <button className="primary-button" onClick={() => setScreen("menu")}>Let's Play</button>
+          <button className="primary-button" onClick={() => setScreen("menu")}>Let&apos;s Play</button>
         </div>
       </div>
     </div>
@@ -1040,8 +1041,21 @@ export default function PhonicAdventure({ onComplete }) {
               <span className="menu-level-icon">⭕</span>
               <span><span className="menu-level-title">Sound Circle</span><span className="menu-level-description">Circle every word with the target phonics sound.</span></span>
             </button>
+            <button className="menu-level" onClick={() => setScreen("find-letter")}>
+              <span className="menu-level-icon">🔍</span>
+              <span><span className="menu-level-title">Find the Letter A–Z</span><span className="menu-level-description">Find the hidden letter through 26 picture-card levels.</span></span>
+            </button>
           </div>
         </div>
+      </div>
+    </div>
+  );
+
+  if (screen === "find-letter") return (
+    <div className="phonic-root">
+      <PhonicStyles />
+      <div className="phonic-screen">
+        <FindTheLetter onBack={() => setScreen("menu")} onComplete={onComplete} />
       </div>
     </div>
   );

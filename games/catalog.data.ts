@@ -93,7 +93,7 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     name: "General Knowledge Quiz",
     icon: "💰",
     desc: "Take on three trivia rounds with escalating prizes, multiple-choice questions, and spelling challenges.",
-    cover: "/assets/covers/quiz-trail-cover.webp",
+    cover: "/assets/covers/general-knowledge-quiz-cover.webp",
     tag: { label: "General Knowledge", color: "tag-bio" },
     badge: "3 Rounds",
     difficulty: "Mixed Skills",

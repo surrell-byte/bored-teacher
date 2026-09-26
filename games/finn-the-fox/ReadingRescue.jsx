@@ -4,6 +4,7 @@
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import { READING_RESCUE_QUIZZES } from './readingRescueData';
 import { readingRescueStories as READING_RESCUE_STORIES } from './readingRescueStories';
+import FindTheLetter from '../shared/FindTheLetter';
 
 const LEGACY_STORIES = {
   1: {
@@ -111,7 +112,7 @@ function normalizePage(page) {
   return Array.isArray(page) ? { title: page[0], text: page[1] } : page;
 }
 
-export default function ReadingRescue({ onComplete }) {
+export default function ReadingRescue({ onComplete, onHudUpdate }) {
   const [phase, setPhase] = useState('user-info');
   const [level, setLevel] = useState(1);
   const [userName, setUserName] = useState('');
@@ -185,7 +186,7 @@ export default function ReadingRescue({ onComplete }) {
   }
 
   function backgroundClass() {
-    return `finn-fox finn-fox--${phase}${level === 6 ? ' finn-fox--tanya' : ''}`;
+    return `finn-fox finn-fox--${phase}${level === 6 ? ' finn-fox--tanya' : ''}${level === 3 ? ' finn-fox--rabbit' : ''}`;
   }
 
   if (phase === 'story') {
@@ -207,7 +208,11 @@ export default function ReadingRescue({ onComplete }) {
     return <div className={backgroundClass()}><style>{CSS}</style><main><section className="ff-welcome"><div>🦊</div><h1>Adventure Complete!</h1><p>{userName}, you scored {completionScore}% overall comprehension.</p><button className="ff-primary" onClick={() => start(level)}>Play Again</button></section></main></div>;
   }
 
-  return <div className={backgroundClass()}><style>{CSS}</style><main className="game-container"><div className="ff-progress"><i style={{ width: phase === 'user-info' ? '0%' : '100%' }} /></div>{phase === 'user-info' && <section className="ff-user-info"><div className="ff-icon">🦊</div><h1>Meet Finn</h1><p>Tell Finn a little about yourself before your adventure begins.</p><form onSubmit={submitUserInfo}><label htmlFor="reading-rescue-name">Your name</label><input id="reading-rescue-name" value={userName} onChange={(event) => setUserName(event.target.value)} placeholder="Enter your name" maxLength={30} required /><label htmlFor="reading-rescue-grade">Reading level or grade <span>(optional)</span></label><input id="reading-rescue-grade" value={userGrade} onChange={(event) => setUserGrade(event.target.value)} placeholder="For example, Grade 3" maxLength={30} /><button className="ff-primary" type="submit">Start Reading Rescue</button></form></section>}{phase === 'menu' && <section className="intro"><div className="ff-icon">🦊</div><h1>Choose Your Adventure</h1><p className="subtitle">Welcome, {userName}!</p><p>Choose a rescue story, read carefully, and rebuild what happened.</p><div className="ff-level-menu">{LEVELS.map((item) => <button className="ff-level" key={item.number} onClick={() => start(item.number)}><strong>Level {item.number}</strong><span>{item.name}</span><small>{item.description}</small></button>)}</div></section>}</main></div>;
+  if (phase === 'letter-game') {
+    return <div className={backgroundClass()}><style>{CSS}</style><FindTheLetter onComplete={onComplete} onHudUpdate={onHudUpdate} /></div>;
+  }
+
+  return <div className={backgroundClass()}><style>{CSS}</style><main className="game-container"><div className="ff-progress"><i style={{ width: phase === 'user-info' ? '0%' : '100%' }} /></div>{phase === 'user-info' && <section className="ff-user-info"><div className="ff-icon">🦊</div><h1>Meet Finn</h1><p>Tell Finn a little about yourself before your adventure begins.</p><form onSubmit={submitUserInfo}><label htmlFor="reading-rescue-name">Your name</label><input id="reading-rescue-name" value={userName} onChange={(event) => setUserName(event.target.value)} placeholder="Enter your name" maxLength={30} required /><label htmlFor="reading-rescue-grade">Reading level or grade <span>(optional)</span></label><input id="reading-rescue-grade" value={userGrade} onChange={(event) => setUserGrade(event.target.value)} placeholder="For example, Grade 3" maxLength={30} /><button className="ff-primary" type="submit">Start Reading Rescue</button></form></section>}{phase === 'menu' && <section className="intro"><div className="ff-icon">🦊</div><h1>Choose Your Adventure</h1><p className="subtitle">Welcome, {userName}!</p><p>Choose a rescue story, read carefully, and rebuild what happened.</p><div className="ff-level-menu">{LEVELS.map((item) => <button className="ff-level" key={item.number} onClick={() => start(item.number)}><strong>Level {item.number}</strong><span>{item.name}</span><small>{item.description}</small></button>)}</div><button className="ff-primary ff-find-letter-launch" onClick={() => setPhase('letter-game')}>🔍 Find the Letter A–Z <small>Find the hidden letter across 26 levels.</small></button></section>}</main></div>;
 }
 
 const CSS = `
@@ -543,6 +548,73 @@ const CSS = `
   .finn-fox .ff-story { padding: 21px 19px; }
   .finn-fox .ff-story p { font-size: 1.12rem; line-height: 1.65; }
   .finn-fox .ff-quiz-image { max-height: 36vh; }
+}
+
+/* Tanya's pages use a larger reading canvas and more generous type. */
+.finn-fox--story.finn-fox--tanya main {
+  width: min(1720px, calc(100vw - 48px));
+  min-height: 0;
+  height: auto;
+  padding: clamp(30px, 3.2vw, 58px);
+  margin: 0 auto 18px;
+}
+.finn-fox--story.finn-fox--tanya {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.finn-fox--story.finn-fox--tanya .ff-progress { width: min(1720px, calc(100vw - 48px)); margin: 12px auto 0; }
+.finn-fox--story.finn-fox--tanya .ff-story-layout {
+  width: 100%;
+  grid-template-columns: minmax(0, .95fr) minmax(0, 1.25fr);
+  gap: clamp(30px, 4vw, 68px);
+}
+.finn-fox--story.finn-fox--tanya .ff-story-illustration {
+  width: 100%;
+  max-height: 78vh;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+.finn-fox--story.finn-fox--tanya .ff-story { padding: clamp(32px, 3.5vw, 58px); }
+.finn-fox--story.finn-fox--tanya .ff-story small { font-size: 1rem; margin-bottom: 22px; }
+.finn-fox--story.finn-fox--tanya .ff-story p { font-size: clamp(1.55rem, 2vw, 2rem); line-height: 1.8; }
+.finn-fox--story.finn-fox--tanya .ff-actions button { min-height: 58px; padding: 15px 24px; font-size: 1.08rem; }
+
+/* Give the long rabbit story a broad text column so fewer words wrap. */
+.finn-fox--story.finn-fox--rabbit main {
+  width: min(1760px, calc(100vw - 40px));
+  padding: clamp(24px, 2.5vw, 42px);
+}
+.finn-fox--story.finn-fox--rabbit .ff-story-layout {
+  width: 100%;
+  grid-template-columns: minmax(0, .72fr) minmax(0, 1.48fr);
+  gap: clamp(24px, 3vw, 48px);
+}
+.finn-fox--story.finn-fox--rabbit .ff-story-illustration { max-height: 76vh; }
+.finn-fox--story.finn-fox--rabbit .ff-story { padding: clamp(24px, 2.6vw, 42px); }
+.finn-fox--letter-game {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  align-items: stretch;
+  justify-content: center;
+  padding: clamp(8px, 1vw, 16px);
+  background-image: url('/assets/games/finn-the-fox/reading-rescue-main-menu-bg.webp');
+}
+.finn-fox--letter-game::before { display: none; }
+.finn-fox main { backdrop-filter: none; }
+.finn-fox .ff-find-letter-launch { display: grid; gap: 5px; min-width: min(100%, 330px); margin: 26px auto 4px; padding: 16px 24px; font-size: 1.05rem; }
+.finn-fox .ff-find-letter-launch small { font-size: .78rem; font-weight: 600; }
+@media (max-width: 800px) {
+  .finn-fox--story.finn-fox--tanya main,
+  .finn-fox--story.finn-fox--rabbit main { width: calc(100vw - 24px); min-height: 0; padding: 20px; }
+  .finn-fox--story.finn-fox--tanya .ff-story-layout,
+  .finn-fox--story.finn-fox--rabbit .ff-story-layout { grid-template-columns: minmax(0, 1fr); }
+  .finn-fox--story.finn-fox--tanya .ff-story-illustration,
+  .finn-fox--story.finn-fox--rabbit .ff-story-illustration { width: min(100%, 720px); max-height: 48vh; margin-inline: auto; }
+  .finn-fox--story.finn-fox--tanya .ff-story p { font-size: clamp(1.35rem, 4vw, 1.7rem); }
 }
 
 `;

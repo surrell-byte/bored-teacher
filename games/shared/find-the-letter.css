@@ -1,0 +1,414 @@
+.find-letter-game {
+  --fl-ink: #f7f3ff;
+  --fl-muted: #d5cbed;
+  --fl-aqua: #7be7ff;
+  --fl-lime: #d9ff8f;
+  box-sizing: border-box;
+  width: min(100%, 960px);
+  margin: 0 auto;
+  padding: clamp(20px, 3vw, 38px);
+  overflow: hidden;
+  border: 1px solid rgb(224 208 255 / 24%);
+  border-radius: 30px;
+  background:
+    radial-gradient(ellipse at 15% 0%, rgb(130 74 236 / 42%), transparent 42%),
+    radial-gradient(ellipse at 100% 100%, rgb(230 65 157 / 24%), transparent 44%),
+    linear-gradient(145deg, #211343, #120d2d 68%, #201139);
+  box-shadow: 0 28px 70px rgb(8 4 27 / 40%), inset 0 1px 0 rgb(255 255 255 / 9%);
+  color: var(--fl-ink);
+  font-family: "Trebuchet MS", system-ui, sans-serif;
+}
+
+.find-letter-game,
+.find-letter-game * {
+  box-sizing: border-box;
+}
+
+.find-letter-header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.find-letter-quiet-button,
+.find-letter-level,
+.find-letter-lives {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid rgb(231 221 255 / 24%);
+  border-radius: 999px;
+  padding: 9px 15px;
+  background: rgb(255 255 255 / 7%);
+  color: var(--fl-ink);
+  font: inherit;
+  font-size: .84rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.find-letter-quiet-button {
+  justify-self: start;
+  cursor: pointer;
+  transition: background .18s ease, border-color .18s ease, transform .18s ease;
+}
+
+.find-letter-quiet-button:hover {
+  transform: translateY(-1px);
+  border-color: rgb(123 231 255 / 55%);
+  background: rgb(255 255 255 / 12%);
+}
+
+.find-letter-level {
+  color: var(--fl-muted);
+  letter-spacing: .09em;
+}
+
+.find-letter-level strong {
+  color: white;
+  font-size: 1.1rem;
+}
+
+.find-letter-level span { opacity: .7; }
+.find-letter-sound { justify-self: center; }
+
+.find-letter-lives {
+  justify-self: end;
+  gap: 4px;
+  padding-inline: 13px;
+  color: rgb(255 255 255 / 20%);
+  font-size: 1.15rem;
+  letter-spacing: .06em;
+}
+
+.find-letter-lives .is-live {
+  color: #ff718d;
+  text-shadow: 0 0 14px rgb(255 84 123 / 46%);
+}
+
+.find-letter-lives .is-lost { animation: fl-heart-loss .42s ease both; }
+
+.find-letter-intro {
+  margin: clamp(25px, 4vh, 42px) 0 23px;
+  text-align: center;
+}
+
+.find-letter-kicker {
+  margin: 0 0 8px;
+  color: var(--fl-aqua);
+  font-size: .68rem;
+  font-weight: 900;
+  letter-spacing: .22em;
+}
+
+.find-letter-game .find-letter-intro h1 {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(1.75rem, 4vw, 2.7rem);
+  font-weight: 950;
+  letter-spacing: -.035em;
+  line-height: 1.08;
+  text-shadow: 0 4px 25px rgb(172 115 255 / 22%);
+}
+
+.find-letter-instruction {
+  margin: 10px 0 13px;
+  color: var(--fl-muted);
+  font-size: clamp(.95rem, 2vw, 1.08rem);
+}
+
+.find-letter-target {
+  display: inline-grid;
+  min-width: 94px;
+  min-height: 78px;
+  place-items: center;
+  transform: rotate(-2deg);
+  border: 3px solid #fff5bf;
+  border-radius: 22px;
+  background: linear-gradient(155deg, #ffe974, #ffb638);
+  box-shadow: 0 7px 0 #b96822, 0 13px 25px rgb(0 0 0 / 24%);
+  color: #44220c;
+  font-size: 2.25rem;
+  font-weight: 1000;
+  text-shadow: 0 1px #fff9d1;
+}
+
+.find-letter-board {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(12px, 2vw, 20px);
+  width: 100%;
+  max-width: 780px;
+  margin: 0 auto;
+  perspective: 1200px;
+}
+
+.find-letter-board.shake-0 { animation: fl-board-shake-a .34s ease-in-out; }
+.find-letter-board.shake-1 { animation: fl-board-shake-b .34s ease-in-out; }
+
+.find-letter-card {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-width: 0;
+  aspect-ratio: 1.48 / 1;
+  appearance: none;
+  border: 0;
+  border-radius: 22px;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .18s ease, filter .18s ease;
+}
+
+.find-letter-card:hover:not(:disabled) { transform: translateY(-4px); }
+.find-letter-card:focus-visible { outline: 4px solid var(--fl-lime); outline-offset: 5px; }
+.find-letter-card:disabled { cursor: default; }
+
+.find-letter-card-inner {
+  position: absolute;
+  display: block;
+  inset: 0;
+  border-radius: inherit;
+  transform-style: preserve-3d;
+  transition: transform .56s cubic-bezier(.2, .75, .25, 1);
+}
+
+.find-letter-card.is-revealed .find-letter-card-inner { transform: rotateY(180deg); }
+
+.find-letter-card-face {
+  position: absolute;
+  display: flex;
+  inset: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 3px solid rgb(255 255 255 / 86%);
+  border-radius: inherit;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.find-letter-card-front {
+  gap: 8px;
+  background: linear-gradient(155deg, #fffef8 0%, #ffedc1 100%);
+  box-shadow: 0 8px 0 rgb(13 7 37 / 32%), 0 16px 26px rgb(5 2 18 / 24%), inset 0 1px white;
+  color: #442a21;
+}
+
+.find-letter-card-front::after {
+  position: absolute;
+  inset: 8px;
+  border: 1px dashed rgb(148 93 55 / 33%);
+  border-radius: 15px;
+  content: "";
+  pointer-events: none;
+}
+
+.find-letter-emoji {
+  z-index: 1;
+  font-size: clamp(3.1rem, 8vw, 5.3rem);
+  line-height: 1;
+  filter: drop-shadow(0 5px 4px rgb(42 25 17 / 15%));
+}
+
+.find-letter-word {
+  z-index: 1;
+  max-width: calc(100% - 22px);
+  color: #513325;
+  font-size: clamp(1rem, 2.4vw, 1.35rem);
+  font-weight: 900;
+  line-height: 1.1;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.find-letter-tap {
+  z-index: 1;
+  color: #93755d;
+  font-size: .56rem;
+  font-weight: 900;
+  letter-spacing: .17em;
+}
+
+.find-letter-card-back {
+  transform: rotateY(180deg);
+  gap: 3px;
+  border-color: white;
+  background: linear-gradient(145deg, #c7d2fe, #818cf8);
+  box-shadow: 0 8px 0 rgb(13 7 37 / 32%), 0 16px 26px rgb(5 2 18 / 24%);
+  color: #252054;
+}
+
+.find-letter-card.is-correct .find-letter-card-back { background: linear-gradient(145deg, #b6f7d8, #37c88d); }
+.find-letter-card.is-incorrect .find-letter-card-back { background: linear-gradient(145deg, #ffd1d5, #f16b7c); }
+
+.find-letter-back-mark {
+  font-size: clamp(2.3rem, 7vw, 4.4rem);
+  font-weight: 1000;
+  line-height: .95;
+}
+
+.find-letter-back-letter { font-size: clamp(2.3rem, 7vw, 4rem); font-weight: 1000; line-height: 1; }
+.find-letter-back-caption { font-size: clamp(.82rem, 2vw, 1.05rem); font-weight: 850; text-align: center; }
+
+.find-letter-footer {
+  display: flex;
+  min-height: 96px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 18px auto 0;
+  text-align: center;
+}
+
+.find-letter-message {
+  flex: 1 1 100%;
+  margin: 0;
+  color: var(--fl-muted);
+  font-size: clamp(.94rem, 2vw, 1.08rem);
+  font-weight: 750;
+  animation: fl-message-pop .28s cubic-bezier(.2, .85, .25, 1.25) both;
+}
+
+.find-letter-footer.is-won .find-letter-message,
+.find-letter-footer.is-complete .find-letter-message { color: var(--fl-lime); }
+.find-letter-footer.is-lost .find-letter-message { color: #ffb1bd; }
+
+.find-letter-action {
+  min-height: 50px;
+  border: 1px solid #fff09b;
+  border-radius: 999px;
+  padding: 12px 24px;
+  background: linear-gradient(180deg, #ffe76c, #ffb52d);
+  box-shadow: 0 5px 0 #a65d22, 0 10px 22px rgb(5 2 18 / 25%);
+  color: #3b200b;
+  font: inherit;
+  font-size: .95rem;
+  font-weight: 950;
+  cursor: pointer;
+  transition: transform .16s ease, filter .16s ease;
+}
+
+.find-letter-action:hover { transform: translateY(-2px); filter: brightness(1.06); }
+.find-letter-action:active { transform: translateY(2px); }
+.find-letter-complete-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+
+.find-letter-confetti { position: absolute; z-index: 5; inset: 0; overflow: hidden; pointer-events: none; }
+.find-letter-confetti span {
+  position: absolute;
+  top: -2.5rem;
+  left: var(--fl-left);
+  font-size: clamp(1.15rem, 2.5vw, 2rem);
+  animation: fl-confetti-fall 1.45s cubic-bezier(.2, .65, .35, 1) var(--fl-delay) both;
+}
+
+@keyframes fl-board-shake-a {
+  0%, 100% { transform: translateX(0); }
+  18% { transform: translateX(-10px) rotate(-.6deg); }
+  38% { transform: translateX(9px) rotate(.5deg); }
+  58% { transform: translateX(-6px) rotate(-.3deg); }
+  78% { transform: translateX(4px); }
+}
+@keyframes fl-board-shake-b {
+  0%, 100% { transform: translateX(0); }
+  18% { transform: translateX(10px) rotate(.6deg); }
+  38% { transform: translateX(-9px) rotate(-.5deg); }
+  58% { transform: translateX(6px) rotate(.3deg); }
+  78% { transform: translateX(-4px); }
+}
+@keyframes fl-heart-loss {
+  0% { transform: scale(1) rotate(0); opacity: 1; }
+  45% { transform: scale(1.65) rotate(-18deg); opacity: .85; }
+  100% { transform: scale(.55) rotate(16deg); opacity: .38; }
+}
+@keyframes fl-message-pop {
+  0% { transform: scale(.88); opacity: .3; }
+  75% { transform: scale(1.04); }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes fl-confetti-fall {
+  0% { transform: translateY(-5vh) rotate(0); opacity: 0; }
+  12% { opacity: 1; }
+  100% { transform: translateY(105vh) rotate(540deg); opacity: 0; }
+}
+
+.find-letter-game button:focus-visible { outline: 3px solid var(--fl-aqua); outline-offset: 4px; }
+
+/* The game shell owns navigation; keep the play surface inside its remaining height. */
+.find-letter-game {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  align-content: center;
+  gap: clamp(8px, 1.5vh, 18px);
+  width: min(100%, 1320px);
+  height: 100%;
+  min-height: 0;
+  max-height: 100%;
+  padding: clamp(12px, 1.5vw, 24px);
+  overflow: auto;
+  border-radius: 22px;
+  background: linear-gradient(145deg, rgb(21 15 48 / 68%), rgb(18 13 45 / 76%));
+  box-shadow: 0 14px 42px rgb(8 4 27 / 28%), inset 0 1px 0 rgb(255 255 255 / 8%);
+  backdrop-filter: none;
+}
+.find-letter-intro { margin: 0; }
+.find-letter-game .find-letter-intro h1 { font-size: clamp(1.5rem, 3vw, 2.25rem); }
+.find-letter-instruction { margin: 7px 0 9px; font-size: clamp(.88rem, 1.5vw, 1rem); }
+.find-letter-target { min-width: 76px; min-height: 62px; border-radius: 17px; font-size: 1.85rem; }
+.find-letter-board { width: min(100%, 900px); gap: clamp(8px, 1.4vw, 16px); }
+.find-letter-card { aspect-ratio: 1.65 / 1; border-radius: 18px; }
+.find-letter-footer { min-height: 48px; margin: 0 auto; gap: 8px; }
+.find-letter-message { font-size: clamp(.86rem, 1.5vw, 1rem); }
+.find-letter-action { min-height: 42px; padding: 9px 19px; }
+.find-letter-confetti { position: fixed; }
+
+@media (max-height: 760px) and (min-width: 681px) {
+  .find-letter-game { gap: 7px; padding-block: 9px; }
+  .find-letter-instruction { margin-block: 4px 6px; }
+  .find-letter-target { min-width: 62px; min-height: 50px; font-size: 1.55rem; }
+  .find-letter-card { aspect-ratio: 1.9 / 1; }
+  .find-letter-card-front { gap: 5px; }
+  .find-letter-emoji { font-size: clamp(2.4rem, 6vh, 4rem); }
+}
+
+@media (max-width: 680px) {
+  .find-letter-game { width: 100%; height: auto; min-height: 100%; max-height: none; padding: 12px; border-radius: 18px; }
+  .find-letter-header { grid-template-columns: 1fr auto 1fr; gap: 8px; }
+  .find-letter-level { grid-column: 2; grid-row: 1; }
+  .find-letter-sound { grid-column: 1; grid-row: 2; justify-self: start; }
+  .find-letter-lives { grid-column: 3; grid-row: 2; }
+  .find-letter-intro { margin-top: 22px; }
+  .find-letter-card { aspect-ratio: 1 / 1.05; border-radius: 17px; }
+  .find-letter-card-face { border-width: 2px; }
+  .find-letter-tap { font-size: .48rem; }
+}
+
+@media (max-width: 680px) and (max-height: 760px) {
+  .find-letter-game { gap: 8px; }
+  .find-letter-card { aspect-ratio: 1.25 / 1; }
+  .find-letter-emoji { font-size: clamp(2rem, 7vw, 3.2rem); }
+  .find-letter-tap { display: none; }
+}
+
+@media (max-width: 380px) {
+  .find-letter-game { padding: 14px; }
+  .find-letter-quiet-button, .find-letter-level, .find-letter-lives { min-height: 40px; padding: 7px 10px; font-size: .75rem; }
+  .find-letter-board { gap: 8px; }
+  .find-letter-card { border-radius: 14px; }
+  .find-letter-emoji { font-size: 2.8rem; }
+  .find-letter-word { font-size: .92rem; }
+  .find-letter-tap { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .find-letter-game *, .find-letter-game *::before, .find-letter-game *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+  .find-letter-board.shake-0, .find-letter-board.shake-1, .find-letter-message, .find-letter-lives .is-lost, .find-letter-confetti span { animation: none !important; }
+}

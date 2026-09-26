@@ -46,6 +46,7 @@ export default function GamePage() {
   // Connect 4 hands its in-match HUD (player badges + reset/home) up here so
   // it can render inside the GameShell navbar instead of the play area.
   const [c4Hud, setC4Hud] = useState<any>(null);
+  const [readingRescueHud, setReadingRescueHud] = useState<any>(null);
   const [ticTheme, setTicTheme] = useState<TicTacRollTheme>(TIC_TAC_ROLL_THEMES[0]);
   const [flagDarkMode, setFlagDarkMode] = useState(false);
   const [zooTheme, setZooTheme] = useState('savanna');
@@ -126,6 +127,7 @@ export default function GamePage() {
   const gameIcon  = GAME_ICONS[gameId] ?? '🎮';
   const GameComp  = GAME_COMPONENTS[gameId];
   const isConnect4 = gameId === 'connect4';
+  const isReadingRescue = gameId === 'finnthefox';
   const isTicTacRoll = gameId === 'tictacroll';
   const isFlagmaster = gameId === 'flagmaster';
   const isZooGame = gameId === 'zoogame';
@@ -199,6 +201,9 @@ export default function GamePage() {
     setC4Hud(null);
     if (gameId === 'bowlingbattle') {
       window.dispatchEvent(new Event('bowling-battle:main-menu'));
+    } else if (gameId === 'generalknowledgequiz') {
+      setShowRouteWelcome(false);
+      window.dispatchEvent(new Event('general-knowledge-quiz:main-menu'));
     } else if (isWhatsMissing) {
       window.dispatchEvent(new Event('whats-missing:main-menu'));
     } else if (gameId === 'buildtower') {
@@ -381,6 +386,11 @@ export default function GamePage() {
                 <span className="game-shell-topbar-stat"><b>❓ {mathRacingHud.question}</b><span>Question</span></span>
               </span>
             )}
+            {isReadingRescue && readingRescueHud?.active && (
+              <span className="game-shell-topbar-stats" aria-label="Find the Letter lives remaining">
+                <span className="game-shell-topbar-stat"><b aria-live="polite">{'❤️'.repeat(readingRescueHud.lives)}{'🖤'.repeat(3 - readingRescueHud.lives)}</b><span>Tries</span></span>
+              </span>
+            )}
             {isAnimalClass && animalClassHud && (
               <span className="game-shell-topbar-stats" aria-label="Animal Class Quest progress">
                 <span className="game-shell-topbar-stat"><b>{animalClassHud.level}</b></span>
@@ -480,6 +490,7 @@ export default function GamePage() {
               onComplete={handleComplete}
               {...(isTicTacRoll ? { themeId: ticTheme.id, onThemeChange: setTicTheme } : {})}
               {...(isConnect4 ? { onHudUpdate: setC4Hud } : {})}
+              {...(isReadingRescue ? { onHudUpdate: setReadingRescueHud } : {})}
               {...(isNumberClouds ? { onHudUpdate: setNumberCloudsHud } : {})}
               {...(isEmojiSports ? { onHudUpdate: setEmojiSportsHud } : {})}
               {...(isWeatherWizard ? { onHudUpdate: setWeatherWizardHud } : {})}
