@@ -65,12 +65,27 @@ export default function LookAndSay() {
     }, 1000);
   };
 
-  useEffect(() => () => clearTimeout(advanceTimerRef.current), []);
+  useEffect(() => {
+    const returnToMenu = () => {
+      clearTimeout(advanceTimerRef.current);
+      setStarted(false);
+      setFinished(false);
+      setCurrent(0);
+      setScore(0);
+      setSelected(null);
+      setFeedback("");
+    };
+    window.addEventListener("look-and-say:main-menu", returnToMenu);
+    return () => {
+      window.removeEventListener("look-and-say:main-menu", returnToMenu);
+      clearTimeout(advanceTimerRef.current);
+    };
+  }, []);
 
   const progress = items.length > 0 ? ((current + 1) / items.length) * 100 : 0;
 
   return (
-    <div className="look-and-say-game">
+    <div className={`look-and-say-game${!started ? " look-and-say-menu" : ""}`}>
       {!started && (
         <div className="start">
           <div className="start-box">

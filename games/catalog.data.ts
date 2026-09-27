@@ -14,6 +14,7 @@ export interface GameCatalogEntry {
   difficulty: string;
   barColor: string;
   isNew?: boolean;
+  premium?: boolean;
   /** true if this game renders as a React component (see catalog.components.tsx) */
   hasComponent: boolean;
 }
@@ -147,6 +148,7 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     difficulty: "Starter",
     barColor: "var(--blue)",
     isNew: true,
+    premium: true,
     hasComponent: true,
   },
   unicorn: {

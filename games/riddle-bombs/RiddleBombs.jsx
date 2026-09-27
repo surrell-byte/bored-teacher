@@ -91,6 +91,8 @@ export default function RiddleBombs({ onComplete, onHudUpdate }) {
   const riddle = RIDDLES[level * PER_LEVEL + questionIndex];
   const maxTime = ROUND_TIME_SECONDS;
   const timerPercent = Math.max(0, (timeLeft / maxTime) * 100);
+  const countdown = Math.max(0, Math.ceil(timeLeft));
+  const timerTone = countdown <= 10 ? 'red' : countdown <= 20 ? 'orange' : 'green';
 
   useEffect(() => {
     onHudUpdate?.({ score, streak, question: questionIndex + 1, phase: screen });
@@ -196,19 +198,21 @@ export default function RiddleBombs({ onComplete, onHudUpdate }) {
   }
 
   if (screen === 'welcome') {
-    return <div className="riddle-bombs riddle-bombs--welcome"><style>{styles}</style><div className="rb-welcome"><div className="rb-bomb">💣</div><h1>Riddle<span>Bombs</span></h1><p>Defuse the bomb before the fuse runs out. Answer riddles fast, keep your streak alive, and conquer five levels.</p><div className="rb-features"><span>⏱️ Beat the clock</span><span>🔥 Build streaks</span><span>🧠 5 levels</span></div><button className="rb-primary" onClick={() => setScreen('menu')}>Play Now</button></div></div>;
+    return <div className="riddle-bombs riddle-bombs--welcome"><style>{styles}</style><button type="button" className="rb-welcome-start" aria-label="Start Riddle Bombs" onClick={() => setScreen('menu')} /></div>;
   }
 
   if (screen === 'menu') {
     return <div className="riddle-bombs riddle-bombs--menu"><style>{styles}</style><div className="rb-menu"><h1>Select a Level</h1><p>Each level has 10 riddles. Survive with 3 lives before the bomb goes off.</p><div className="rb-level-grid">{LEVELS.map(([name, description, difficulty], index) => <button className="rb-level-card" key={name} onClick={() => startLevel(index)}><strong>Level {index + 1}</strong><span className="rb-difficulty">{difficulty}</span><h2>{name}</h2><p>{description}</p><small>🧩 10 riddles &nbsp; Best: {bestScores[index]}</small></button>)}</div><button className="rb-secondary" onClick={() => setScreen('welcome')}>← Back</button></div></div>;
   }
 
-  return <div className="riddle-bombs riddle-bombs--game"><style>{styles}</style><div className="rb-game"><div className="rb-game-grid"><section className="rb-bomb-panel"><div className="rb-bomb-ring" style={{ '--timer-progress': `${timerPercent}%` }}><div className="rb-bomb-large">💣<b>{Math.max(0, Math.ceil(timeLeft))}</b><small>seconds</small></div></div><div className="rb-lives">{[0, 1, 2].map(index => <span key={index}>{index < lives ? '❤️' : '🖤'}</span>)}</div></section><section className="rb-question-panel"><small>LEVEL {level + 1} - {LEVELS[level][0]} &nbsp; RIDDLE #{questionIndex + 1}</small><h2>{riddle.question}</h2><div className="rb-answers">{answers.map(item => <button key={item.answer} className={selected?.originalIndex === item.originalIndex ? selected.isCorrect ? 'correct' : 'wrong' : ''} disabled={locked} onClick={() => resolveAnswer(item.originalIndex)}>{item.answer}</button>)}</div>{feedback && <div className={`rb-feedback ${feedback.type}`}>{feedback.text}</div>}</section></div></div>{overlay && <div className="rb-overlay"><div className="rb-result"><div>{overlay.emoji}</div><h2>{overlay.title}</h2><p>{overlay.scoreText}</p><button className="rb-primary" onClick={() => startLevel(level)}>{overlay.won ? '🔄 Play Again' : '🔄 Retry Level'}</button><button className="rb-secondary" onClick={() => setScreen('menu')}>☰ Level Select</button></div></div>}</div>;
+  return <div className="riddle-bombs riddle-bombs--game"><style>{styles}</style><div className="rb-game"><div className="rb-game-grid"><section className="rb-bomb-panel"><div className={`rb-bomb-ring rb-bomb-ring--${timerTone}`} style={{ '--timer-progress': `${timerPercent}%` }}><div className="rb-bomb-large">💣<b>{countdown}</b><small>seconds</small></div></div><div className="rb-lives">{[0, 1, 2].map(index => <span key={index}>{index < lives ? '❤️' : '🖤'}</span>)}</div></section><section className="rb-question-panel"><small>LEVEL {level + 1} - {LEVELS[level][0]} &nbsp; RIDDLE #{questionIndex + 1}</small><h2>{riddle.question}</h2><div className="rb-answers">{answers.map(item => <button key={item.answer} className={selected?.originalIndex === item.originalIndex ? selected.isCorrect ? 'correct' : 'wrong' : ''} disabled={locked} onClick={() => resolveAnswer(item.originalIndex)}>{item.answer}</button>)}</div>{feedback && <div className={`rb-feedback ${feedback.type}`}>{feedback.text}</div>}</section></div></div>{overlay && <div className="rb-overlay"><div className="rb-result"><div>{overlay.emoji}</div><h2>{overlay.title}</h2><p>{overlay.scoreText}</p><button className="rb-primary" onClick={() => startLevel(level)}>{overlay.won ? '🔄 Play Again' : '🔄 Retry Level'}</button><button className="rb-secondary" onClick={() => setScreen('menu')}>☰ Level Select</button></div></div>}</div>;
 }
 
 const styles = `
-.riddle-bombs { min-height: 100%; min-width: 0; padding: 24px; color: #fff; background-color:#101421; background-image:linear-gradient(rgba(8,12,24,.48),rgba(8,12,24,.68)),url('/assets/games/riddle-bombs/riddle-bombs-general-bg.webp'); background-position:center; background-size:cover; font-family: var(--font-body, sans-serif); }
-.riddle-bombs--welcome { background-image:linear-gradient(rgba(8,12,24,.25),rgba(8,12,24,.42)),url('/assets/games/riddle-bombs/riddle-bombs-welcome-bg.webp'); }
+.riddle-bombs { box-sizing:border-box; min-height:100%; min-width:0; padding:24px; color:#fff; background-color:#101421; background-image:linear-gradient(rgba(8,12,24,.48),rgba(8,12,24,.68)),url('/assets/games/riddle-bombs/riddle-bombs-general-bg.webp'); background-position:center; background-size:cover; font-family:var(--font-body,sans-serif); }
+.riddle-bombs--welcome { position:relative; display:block; width:100%; height:100%; min-height:100%; padding:0; background-image:url('/assets/games/riddle-bombs/riddle-bombs-welcome-bg.webp'); }
+.rb-welcome-start { position:absolute; left:59%; top:62%; width:29%; height:20%; border:0; border-radius:999px; background:transparent; cursor:pointer; }
+.rb-welcome-start:focus-visible { outline:4px solid #fff; outline-offset:4px; }
 .riddle-bombs--menu { background-image:linear-gradient(rgba(8,12,24,.30),rgba(8,12,24,.52)),url('/assets/games/riddle-bombs/riddle-bombs-main-menu-bg.webp'); }
 .riddle-bombs--game { background-image:linear-gradient(rgba(8,12,24,.35),rgba(8,12,24,.56)),url('/assets/games/riddle-bombs/riddle-bombs-game-screen-bg.webp'); }
 .rb-welcome,.rb-menu { width: min(900px, 100%); min-height: 100%; margin: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 36px 18px; }
@@ -218,4 +222,13 @@ const styles = `
 .rb-bomb-ring { display:grid; place-items:center; width:232px; aspect-ratio:1; padding:10px; border-radius:50%; background:conic-gradient(from -90deg,#ffcc33 0 var(--timer-progress),rgba(255,255,255,.13) var(--timer-progress) 100%); filter:drop-shadow(0 0 18px rgba(255,204,51,.2)); }
 .rb-bomb-large { width:100%;height:100%; }
 @media(max-width:639px){.rb-bomb-ring{width:min(224px,68vw)}}
+.riddle-bombs--game { display:flex; align-items:center; justify-content:center; height:100%; min-height:100%; }
+.rb-game { display:flex; align-items:center; justify-content:center; min-height:100%; margin:0 auto; }
+.rb-game-grid { width:100%; align-items:center; }
+.rb-bomb-ring { --timer-color:#39d353; background:conic-gradient(from -90deg,var(--timer-color) 0 var(--timer-progress),rgba(255,255,255,.13) var(--timer-progress) 100%); filter:drop-shadow(0 0 18px color-mix(in srgb,var(--timer-color) 45%,transparent)); }
+.rb-bomb-ring--orange { --timer-color:#ff9f43; }
+.rb-bomb-ring--red { --timer-color:#ff3b45; animation:rb-critical-flash 1s steps(1,end) infinite; }
+@keyframes rb-critical-flash { 0%,12% { filter:drop-shadow(0 0 28px rgba(255,35,45,.95)); } 13%,100% { filter:drop-shadow(0 0 4px rgba(255,35,45,.2)); } }
+@media(max-width:760px){.riddle-bombs--game{display:block;height:auto;min-height:100%;overflow-y:auto}.rb-game{min-height:calc(100dvh - 120px);margin-block:auto}}
+@media(max-width:639px){.riddle-bombs--welcome{height:100%;padding:0}.rb-welcome-start{left:59%;top:62%;width:29%;height:20%}}
 `;

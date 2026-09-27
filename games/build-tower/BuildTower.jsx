@@ -81,7 +81,7 @@ export default function BuildTower({ onComplete, profileName }) {
     setFeedback('🤔 Not quite! Try smallest first!');
   };
 
-  if (screen === 'welcome') return <main className="build-tower-game" style={{ backgroundImage: "linear-gradient(rgba(34,12,72,.28),rgba(34,12,72,.28)), url('/assets/games/build-the-tower/build-the-tower-welcome-screen.png')" }}><style>{STYLES}</style><div className="build-tower-menu"><div className="build-tower-menu-icon">🏗️</div><h2>Ready to build?</h2><p>Stack every block from smallest to biggest.</p><button type="button" onClick={() => setScreen('player-info')}>Start</button></div></main>;
+  if (screen === 'welcome') return <main className="build-tower-game build-tower-welcome" style={{ backgroundImage: "url('/assets/games/build-the-tower/build-the-tower-welcome-screen.png')" }}><style>{STYLES}</style><button className="build-tower-welcome-start" type="button" aria-label="Start building" onClick={() => setScreen('player-info')} /></main>;
   if (screen === 'player-info') return <main className="build-tower-game" style={{ backgroundImage: "linear-gradient(rgba(34,12,72,.28),rgba(34,12,72,.28)), url('/assets/games/build-the-tower/build-the-tower-floating-islands-bg.png')" }}><style>{STYLES}</style><div className="build-tower-menu"><div className="build-tower-menu-icon">👷</div><h2>Builder info</h2><label><span>Your name</span><input value={playerName} onChange={event => setPlayerName(event.target.value)} placeholder="Enter your name" /></label><ProfileNameAutofill name={profileName} onSelect={setPlayerName} /><button type="button" disabled={!playerName.trim()} onClick={() => setScreen('levels')}>Continue</button></div></main>;
   if (screen === 'levels') return <main className="build-tower-game" style={{ backgroundImage: "linear-gradient(rgba(34,12,72,.28),rgba(34,12,72,.28)), url('/assets/games/build-the-tower/build-the-tower-jungle-bg.png')" }}><style>{STYLES}</style><div className="build-tower-menu"><div className="build-tower-menu-icon">🎯</div><h2>Choose a level</h2><div className="build-tower-levels"><button type="button" onClick={() => { setLevel(1); setScreen('game'); restartRound(); }}>Level 1<small>Available now</small></button><button type="button" disabled>Level 2<small>Coming soon</small></button><button type="button" disabled>Level 3<small>Coming soon</small></button></div></div></main>;
 
@@ -97,7 +97,7 @@ export default function BuildTower({ onComplete, profileName }) {
             <div className="build-tower-label">🧱 Pick a block:</div>
             <div className="build-tower-pool">
               {numbers.map((number) => (
-                <button key={number} type="button" className="build-tower-block" style={{ width: `${60 + number * 12}px`, height: `${44 + number * 4}px`, background: `linear-gradient(135deg, ${COLORS[number % COLORS.length][0]}, ${COLORS[number % COLORS.length][1]})` }} onClick={() => moveToTower(number)}>
+                <button key={number} type="button" className="build-tower-block" style={{ width: `clamp(88px, ${60 + number * 16}px, 190px)`, height: `clamp(62px, ${44 + number * 7}px, 112px)`, background: `linear-gradient(135deg, ${COLORS[number % COLORS.length][0]}, ${COLORS[number % COLORS.length][1]})` }} onClick={() => moveToTower(number)}>
                   {number}
                 </button>
               ))}
@@ -108,7 +108,7 @@ export default function BuildTower({ onComplete, profileName }) {
             <div className="build-tower-tower-label">🏰 Your Tower</div>
             <div className="build-tower-tower">
               {towerOrder.map((number, index) => (
-                <button key={`${number}-${index}`} type="button" className="build-tower-block in-tower" style={{ width: `${60 + number * 12}px`, height: `${44 + number * 4}px`, background: `linear-gradient(135deg, ${COLORS[number % COLORS.length][0]}, ${COLORS[number % COLORS.length][1]})` }} onClick={() => removeFromTower(index)}>
+                <button key={`${number}-${index}`} type="button" className="build-tower-block in-tower" style={{ width: `clamp(88px, ${60 + number * 16}px, 190px)`, height: `clamp(62px, ${44 + number * 7}px, 112px)`, background: `linear-gradient(135deg, ${COLORS[number % COLORS.length][0]}, ${COLORS[number % COLORS.length][1]})` }} onClick={() => removeFromTower(index)}>
                   {number}
                 </button>
               ))}
@@ -140,13 +140,16 @@ const STYLES = `
   font-family: 'Nunito', var(--font-body), sans-serif;
 }
 .build-tower-shell {
-  width: min(100%, 760px);
+  width: min(96vw, 1480px);
   padding: 20px 16px 32px;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
 }
+.build-tower-welcome { position:relative; min-height:100%; background-position:center; background-size:cover; background-repeat:no-repeat; }
+.build-tower-welcome-start { position:absolute; left:34%; top:82%; width:34%; height:16%; border:0; padding:0; background:transparent; cursor:pointer; }
+.build-tower-welcome-start:focus-visible { outline:4px solid white; outline-offset:4px; border-radius:24px; }
 .build-tower-menu { width:min(100%,560px); padding:36px 28px; border-radius:24px; background:rgba(255,255,255,.12); text-align:center; box-shadow:0 18px 50px rgba(0,0,0,.25); }
 .build-tower-menu-icon { font-size:4rem; }
 .build-tower-menu h2 { margin:8px 0; color:#ffe66d; font-size:2rem; }
@@ -180,7 +183,7 @@ const STYLES = `
 }
 .build-tower-layout {
   display: flex;
-  gap: 2rem;
+  gap: clamp(2rem, 7vw, 8rem);
   align-items: flex-end;
   flex-wrap: wrap;
   justify-content: center;
@@ -205,8 +208,8 @@ const STYLES = `
   gap: 14px;
   justify-content: center;
   align-items: flex-end;
-  max-width: 400px;
-  min-height: 120px;
+  max-width: min(48vw, 700px);
+  min-height: clamp(200px, 34vh, 380px);
   padding: 18px;
   background: rgba(255,255,255,0.08);
   border-radius: 20px;
@@ -217,8 +220,8 @@ const STYLES = `
   flex-direction: column-reverse;
   align-items: center;
   gap: 4px;
-  min-height: 200px;
-  width: 260px;
+  min-height: clamp(260px, 42vh, 500px);
+  width: min(38vw, 520px);
   justify-content: flex-start;
 }
 .build-tower-pool-panel.is-empty { display: none; }
@@ -278,4 +281,5 @@ const STYLES = `
   background: linear-gradient(135deg, #f72585, #b5179e);
   color: white;
 }
+@media(max-width:700px){.build-tower-shell{width:100%;}.build-tower-layout{gap:1.5rem}.build-tower-pool{max-width:94vw}.build-tower-tower{width:90vw;min-height:200px}.build-tower-welcome-start{left:27%;width:46%;top:80%;height:18%}}
 `;

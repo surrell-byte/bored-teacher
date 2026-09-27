@@ -36,17 +36,7 @@ const FruitWordHunt_HTML = `<div id="correctPopup" class="popup"></div>
 </div>`;
 
 const FruitWordHunt_CSS = `/* Base Styling */
-    body {
-      background: transparent;
-      font-family: 'Segoe UI', 'Comic Neue', 'Comic Sans MS', 'Chalkboard SE', system-ui, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-      padding: 0;
-    }
-    .fruitwordhunt-root { min-height: 100%; width: 100%; display: flex; justify-content: center; align-items: center; padding: 18px; background: linear-gradient(145deg, #fef5e7 0%, #ffe0b5 100%); }
+    .fruitwordhunt-root { min-height: 100%; width: 100%; display: flex; justify-content: center; align-items: flex-start; padding: clamp(8px, 1.2vh, 18px); background: linear-gradient(145deg, #fef5e7 0%, #ffe0b5 100%); overflow: auto; font-family: 'Segoe UI', 'Comic Neue', 'Comic Sans MS', 'Chalkboard SE', system-ui, sans-serif; }
     .game-box {
       width: 100%;
       max-width: 650px;
@@ -61,9 +51,9 @@ const FruitWordHunt_CSS = `/* Base Styling */
     /* Header & Progress */
     .header {
       background: linear-gradient(120deg, #ff9f3d, #f7b05e);
-      padding: 20px;
+      padding: clamp(10px, 1.5vh, 20px);
       color: white;
-      font-size: 1.4rem;
+      font-size: clamp(1.05rem, 2.2vh, 1.4rem);
     }
     .progress-info {
       background: #fff0cf;
@@ -111,29 +101,29 @@ const FruitWordHunt_CSS = `/* Base Styling */
 
     /* Game Elements */
     .fruit-card {
-      font-size: 6rem;
-      margin: 20px 0 10px;
+      font-size: clamp(3rem, 8vh, 6rem);
+      margin: clamp(8px, 1.3vh, 20px) 0 8px;
       filter: drop-shadow(2px 8px 12px rgba(0,0,0,0.15));
     }
     .current-word {
       font-size: 1.9rem;
       font-family: 'Courier New', monospace;
       letter-spacing: 8px;
-      min-height: 65px;
+      min-height: 48px;
       color: #5a3e1b;
       font-weight: bold;
       background: #fef3e6;
-      padding: 12px;
+      padding: 8px;
       margin: 0 20px;
       border-radius: 60px;
     }
     .tiles-grid {
       display: flex;
       flex-wrap: wrap;
-      gap: 12px;
+      gap: clamp(6px, 1vh, 12px);
       justify-content: center;
-      padding: 20px;
-      min-height: 130px;
+      padding: clamp(10px, 1.4vh, 20px);
+      min-height: 0;
       background: #ffe6ce;
       margin: 15px 20px;
       border-radius: 48px;
@@ -158,7 +148,7 @@ const FruitWordHunt_CSS = `/* Base Styling */
 
     /* Controls */
     .controls {
-      padding: 15px 20px 25px;
+      padding: 10px 14px 14px;
       display: flex;
       justify-content: center;
       gap: 12px;
@@ -276,6 +266,24 @@ export default function FruitWordHunt({ onComplete }) {
       ], 
       extra: 4, 
       required: 4 
+    }
+    @media (max-height: 760px) {
+      .fruitwordhunt-root { padding-block: 6px; }
+      .game-box { border-width: 3px; border-radius: 30px; }
+      .progress-info { padding: 7px; }
+      .level-bar { padding: 8px; gap: 8px; }
+      .level-btn { padding: 7px 15px; }
+      .fruit-card { margin: 4px 0; }
+      .current-word { min-height: 40px; padding: 6px; }
+      .tiles-grid { margin-block: 8px; padding: 9px; gap: 7px; }
+      .tile { width: 54px; height: 54px; border-radius: 15px; }
+      .controls { padding: 6px 10px 10px; }
+    }
+    @media (max-height: 620px) and (min-width: 551px) {
+      .fruit-card { font-size: 3rem; }
+      .tile { width: 46px; height: 46px; font-size: 1.35rem; }
+      .tiles-grid { margin-block: 5px; padding: 6px; }
+      .btn { padding: 8px 18px; }
     }
   ];
 

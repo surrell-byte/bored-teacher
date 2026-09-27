@@ -23,16 +23,14 @@ const EMOJI_PAIRS = [
 ];
 
 export const THEMES = [
-  { name:"Dark",     key:"dark",     front:"linear-gradient(135deg,#5c626d,#30343d)", border:"rgba(255,255,255,0.18)", accent:"#d8dde5", accent2:"#8f98a6", glow:"rgba(216,221,229,0.16)", glow2:"rgba(216,221,229,0.07)", bg:"#0d0d0f", surface:"#141416", surface2:"#1c1c20", surface3:"#252529", emoji:"🌙" },
-  { name:"Light",    key:"light",    front:"linear-gradient(135deg,#d9bf73,#f5dfa0)", border:"rgba(117,92,31,0.28)", accent:"#a47c20", accent2:"#c6a04b", glow:"rgba(164,124,32,0.16)", glow2:"rgba(164,124,32,0.08)", bg:"#f4f1eb", surface:"#ffffff", surface2:"#f0ede6", surface3:"#e4e0d8", emoji:"☀️" },
-  { name:"Gold",     key:"gold",     front:"linear-gradient(135deg,#c4a45a,#e8c97a)", border:"rgba(232,201,122,0.55)", accent:"#e8c97a", accent2:"#c4a45a", glow:"rgba(232,201,122,0.18)", glow2:"rgba(232,201,122,0.08)", bg:"#0d0d0f", surface:"#141416", surface2:"#1c1c20", surface3:"#252529", emoji:"✨" },
-  { name:"Emerald",  key:"emerald",  front:"linear-gradient(135deg,#22b96b,#45d49a)", border:"rgba(69,212,154,0.6)",  accent:"#62dfa6", accent2:"#22a966", glow:"rgba(69,212,154,0.20)", glow2:"rgba(69,212,154,0.09)", bg:"#09120e", surface:"#101b16", surface2:"#17261f", surface3:"#20342a", emoji:"🌿" },
-  { name:"Sapphire", key:"sapphire", front:"linear-gradient(135deg,#287dc5,#4eb2ee)", border:"rgba(78,178,238,0.6)",  accent:"#6bc4f4", accent2:"#318dd0", glow:"rgba(78,178,238,0.20)", glow2:"rgba(78,178,238,0.09)", bg:"#091018", surface:"#101923", surface2:"#182433", surface3:"#213145", emoji:"💎" },
-  { name:"Rose",     key:"rose",     front:"linear-gradient(135deg,#c72d67,#f06c99)", border:"rgba(240,108,153,0.6)", accent:"#ff8eb3", accent2:"#d94178", glow:"rgba(240,108,153,0.20)", glow2:"rgba(240,108,153,0.09)", bg:"#160a10", surface:"#211019", surface2:"#311724", surface3:"#432031", emoji:"🌹" },
-  { name:"Violet",   key:"violet",   front:"linear-gradient(135deg,#7142ac,#ad78db)", border:"rgba(173,120,219,0.6)", accent:"#c89bf0", accent2:"#8952bf", glow:"rgba(200,155,240,0.20)", glow2:"rgba(200,155,240,0.09)", bg:"#110a18", surface:"#1a1025", surface2:"#271837", surface3:"#352149", emoji:"💜" },
+  { name:"Enchanted Forest", key:"forest", front:"linear-gradient(135deg,#39D353,#8BEA24)", border:"#39D35394", accent:"#FFD83D", accent2:"#8BEA24", glow:"#B8FF4538", glow2:"#B8FF451F", bg:"#063B2A", surface:"#102c24", surface2:"#17392d", surface3:"#214938", emoji:"🌿" },
+  { name:"African Safari", key:"safari", front:"linear-gradient(135deg,#F4A62A,#E6C35A)", border:"#F4A62A94", accent:"#72B943", accent2:"#E6C35A", glow:"#FFD85A38", glow2:"#FFD85A1F", bg:"#8B5A2B", surface:"#34251b", surface2:"#463322", surface3:"#5a432b", emoji:"🦁" },
+  { name:"Ocean Adventure", key:"ocean", front:"linear-gradient(135deg,#18BFE8,#35E0D0)", border:"#18BFE894", accent:"#FFD83D", accent2:"#35E0D0", glow:"#6FFFF238", glow2:"#6FFFF21F", bg:"#075985", surface:"#102938", surface2:"#173b4a", surface3:"#214d5e", emoji:"🌊" },
+  { name:"Arctic Expedition", key:"arctic", front:"linear-gradient(135deg,#63D8FF,#A9E8FF)", border:"#63D8FF94", accent:"#B58CFF", accent2:"#A9E8FF", glow:"#E8FAFF38", glow2:"#E8FAFF24", bg:"#326B91", surface:"#172d3d", surface2:"#203e52", surface3:"#2b5067", emoji:"❄️" },
+  { name:"Dinosaur Island", key:"dino", front:"linear-gradient(135deg,#58C93C,#9BE33F)", border:"#58C93C94", accent:"#FF8A24", accent2:"#9BE33F", glow:"#FFD43B38", glow2:"#FFD43B21", bg:"#174B35", surface:"#172d24", surface2:"#214232", surface3:"#2e5740", emoji:"🌋" },
 ];
 
-const AVATARS = ["🐶","🐼","🦊","🐯","🐸","🐧","🦁","🐨"];
+const AVATARS = ["🐶","🐼","🦊","🐯","🐸","🐧","🦁","🐨","🐻","🐰","🐵","🐷"];
 const HOW_TO_PLAY_CARDS = ["🐕", "🦴", "🐱", "🐟", "🐰", "🥕", "🐵", "🍌", "🐭", "🧀", "🦁", "🍗", "🐦", "🪱", "🐴", "🍎"];
 
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
@@ -112,6 +110,9 @@ const STYLES = `
 
 .ff-root:not(.ff-root-emoji) { background-color:#18231f;background-image:linear-gradient(rgba(9,20,17,.25),rgba(9,20,17,.4)),url('/assets/games/find-my-food/find-my-food-general-bg.webp');background-position:center;background-size:cover;background-attachment:fixed; }
 .ff-root:not(.ff-root-emoji).ff-food-screen-welcome { background-image:linear-gradient(rgba(9,20,17,.18),rgba(9,20,17,.32)),url('/assets/games/find-my-food/find-my-food-welcome-bg.webp'); }
+.ff-root:not(.ff-root-emoji).ff-food-screen-welcome { position:relative; min-height:100%; height:100%; padding:0; }
+.ff-welcome-start-hotspot { position:absolute; z-index:20; left:68%; top:65%; width:27%; height:25%; border:0; border-radius:50%; background:transparent; cursor:pointer; }
+.ff-welcome-start-hotspot:focus-visible { outline:4px solid #fff; outline-offset:4px; }
 .ff-root:not(.ff-root-emoji).ff-food-screen-player-info { background-image:linear-gradient(rgba(9,20,17,.24),rgba(9,20,17,.42)),url('/assets/games/find-my-food/find-my-food-user-input-bg.webp'); }
 .ff-root:not(.ff-root-emoji).ff-food-screen-game,.ff-root:not(.ff-root-emoji).ff-food-screen-mode,.ff-root:not(.ff-root-emoji).ff-food-screen-end { background-image:linear-gradient(rgba(9,20,17,.22),rgba(9,20,17,.38)),url('/assets/games/find-my-food/find-my-food-game-screen-bg.webp'); }
 
@@ -196,6 +197,7 @@ const STYLES = `
 
 .ff-avatar-row { display:flex; gap:8px; flex-wrap:wrap; }
 .ff-avatar-btn { width:48px; height:48px; border-radius:50%; background: var(--surface2); border:2px solid var(--border); font-size:1.5rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition: all 0.2s; padding:0; line-height:1; font-family:inherit; }
+.ff-food-screen-player-info .ff-avatar-row { display:grid; grid-template-columns:repeat(6, 40px); gap:8px; width:max-content; max-width:100%; }
 .ff-avatar-btn:hover { border-color: var(--border-bright); transform: scale(1.1); }
 .ff-avatar-btn.selected { border-color: var(--accent); background: var(--accent-glow); box-shadow: 0 0 0 3px var(--accent-glow2); }
 
@@ -312,7 +314,7 @@ const STYLES = `
 @media (min-width: 960px) {
   .ff-root { align-items:center; }
   .ff-screen.ff-setup-screen { max-width: 1320px; }
-  .ff-screen.ff-howto-screen { max-width: 1240px; }
+  .ff-screen.ff-howto-screen { max-width: 980px; }
   .ff-screen.ff-game-screen { max-width: 1380px; }
   .ff-game-card { padding: clamp(30px, 2.5vw, 52px); }
   .ff-game-layout {
@@ -365,7 +367,7 @@ const STYLES = `
 .ff-root.ff-root-game .ff-game-layout { min-height: min(76vh, 900px); }
 
 @media (min-width: 760px) {
-  .ff-screen.ff-howto-screen { max-width:1180px; }
+  .ff-screen.ff-howto-screen { max-width:980px; }
   .ff-howto-card { padding:42px 52px; }
   .ff-howto-card .ff-logo-badge { margin-bottom:10px; }
   .ff-howto-card .ff-hero-title { font-size:2.55rem !important; margin-bottom:4px; }
@@ -407,7 +409,7 @@ const STYLES = `
   text-align:left !important;
 }
 .ff-food-art { position:relative; min-height:330px; border-radius:26px; background:radial-gradient(ellipse at 50% 55%,var(--accent-glow2),transparent 68%); }
-.ff-food-orb { position:absolute; display:grid; place-items:center; width:clamp(68px,7vw,104px); aspect-ratio:1; border:1px solid var(--border-bright); border-radius:28px; background:var(--surface2); box-shadow:var(--shadow-sm); font-size:clamp(2.6rem,5vw,4.4rem); animation:ffFoodFloat 4s ease-in-out infinite; }
+.ff-food-orb { position:absolute; display:grid; place-items:center; width:clamp(68px,7vw,104px); aspect-ratio:1; border:1px solid var(--accent); border-radius:28px; background:var(--surface2); box-shadow:0 0 24px var(--accent-glow),var(--shadow-sm); font-size:clamp(2.6rem,5vw,4.4rem); animation:ffFoodFloat 4s ease-in-out infinite; }
 .ff-food-dog { left:12%; top:9%; transform:rotate(-8deg); }
 .ff-food-bone { right:15%; top:4%; animation-delay:.4s; }
 .ff-food-cat { left:3%; top:48%; animation-delay:.8s; }
@@ -437,6 +439,39 @@ const STYLES = `
   .ff-food-pair-preview { justify-content:center; flex-wrap:nowrap; gap:8px; }
   .ff-pair-card { width:56px; height:64px; font-size:1.35rem; }
 }
+
+/* Keep the two name forms compact and the six main avatars on the first row. */
+.ff-root:not(.ff-root-emoji).ff-food-screen-player-info .ff-screen.ff-setup-screen { max-width:1020px; }
+.ff-food-screen-player-info .ff-setup-card { padding:clamp(24px, 3vw, 38px); }
+.ff-food-screen-player-info .ff-player-setup > div { flex:0 1 390px !important; min-width:0 !important; }
+.ff-food-screen-player-info .ff-fancy-input { max-width:100%; }
+.ff-screen.ff-mode-screen { max-width:760px; }
+.ff-mode-screen .ff-mode-back { margin-top:26px; }
+
+/* Larger symbols and labels on the memory cards. */
+.ff-root.ff-root-game .ff-tile-front { font-size:1.7rem; }
+.ff-root.ff-root-game .ff-tile-back .ff-emoji { font-size:clamp(2.8rem, 5vh, 4.25rem); }
+.ff-root.ff-root-game .ff-tile-back .ff-word { font-size:clamp(.72rem, 1vw, .95rem); }
+
+/* Sixteen cards need a more compact board so the whole game remains visible. */
+.ff-root.ff-root-game.ff-pairs-8 { padding:clamp(8px, 1vw, 14px); }
+.ff-root.ff-root-game.ff-pairs-8 .ff-game-card { padding:clamp(14px, 1.5vw, 22px); }
+.ff-root.ff-root-game.ff-pairs-8 .ff-game-layout { min-height:0; gap:clamp(16px, 2vw, 28px); }
+.ff-root.ff-root-game.ff-pairs-8 .ff-game-board .ff-grid { max-width:740px; gap:clamp(8px, .8vw, 12px); }
+.ff-root.ff-root-game.ff-pairs-8 .ff-tile { min-height:0; aspect-ratio:1.12 / 1; }
+.ff-root.ff-root-game.ff-pairs-8 .ff-tile-back .ff-emoji { font-size:clamp(2.3rem, 4.2vh, 3.5rem); }
+.ff-root.ff-root-game.ff-pairs-8 .ff-tile-back .ff-word { font-size:clamp(.62rem, .8vw, .78rem); }
+
+@media (max-width:760px) {
+  .ff-food-screen-player-info .ff-player-setup > div { flex-basis:min(100%, 390px) !important; }
+  .ff-food-screen-player-info .ff-avatar-row { grid-template-columns:repeat(6, 36px); }
+  .ff-food-screen-player-info .ff-avatar-btn { width:36px; height:36px; font-size:1.1rem; }
+  .ff-root.ff-root-game.ff-pairs-8 .ff-game-layout { min-height:0; }
+  .ff-root.ff-root-game.ff-pairs-8 .ff-game-card { padding:12px; }
+  .ff-root.ff-root-game.ff-pairs-8 .ff-game-board .ff-grid { gap:6px; }
+  .ff-root.ff-root-game.ff-pairs-8 .ff-tile-back .ff-emoji { font-size:clamp(1.45rem, 5vw, 2.2rem); }
+  .ff-root.ff-root-game.ff-pairs-8 .ff-tile-back .ff-word { font-size:.55rem; }
+}
 `;
 
 export default function FindMyFood({ onComplete, themeId, variant = "food" }) {
@@ -444,7 +479,6 @@ export default function FindMyFood({ onComplete, themeId, variant = "food" }) {
   const [screen, setScreen] = useState("welcome");
   const selectedTheme = THEMES.find(item => item.key === themeId) || THEMES[0];
   const theme = Math.max(0, THEMES.indexOf(selectedTheme));
-  const isDark = selectedTheme.key !== "light";
   const [p1, setP1] = useState({ name:"Player 1", avatar:"🐶" });
   const [p2, setP2] = useState({ name:"Player 2", avatar:"🐼" });
   const [cards, setCards] = useState([]);
@@ -558,11 +592,18 @@ export default function FindMyFood({ onComplete, themeId, variant = "food" }) {
   const t = THEMES[theme];
   const cssVarOverrides = {
     "--tile-front": t.front, "--tile-front-border": t.border, "--accent": t.accent, "--accent2": t.accent2, "--accent-glow": t.glow, "--accent-glow2": t.glow2,
-    "--bg": t.bg, "--surface": t.surface, "--surface2": t.surface2, "--surface3": t.surface3,
+    "--bg": t.bg, "--surface": t.surface, "--surface2": t.surface2, "--surface3": t.surface3, "--green": t.accent2, "--green-glow": t.glow,
   };
 
+  if (screen === "welcome" && variant !== "emoji") return (
+    <div className={rootClass} data-ff-theme={selectedTheme.key} style={cssVarOverrides}>
+      <style>{STYLES}</style>
+      <button type="button" className="ff-welcome-start-hotspot" aria-label="Start Find My Food" onClick={() => setScreen("player-info")} />
+    </div>
+  );
+
   if (screen === "welcome") return (
-    <div className={rootClass} data-ff-theme={isDark ? "dark" : "light"} style={cssVarOverrides}>
+    <div className={rootClass} data-ff-theme={selectedTheme.key} style={cssVarOverrides}>
       <style>{STYLES}</style>
       <div className="ff-noise" />
       <div className="ff-ambient ff-ambient-1" />
@@ -607,7 +648,7 @@ export default function FindMyFood({ onComplete, themeId, variant = "food" }) {
   );
 
   if (screen === "player-info") return (
-    <div className={rootClass} data-ff-theme={isDark ? "dark" : "light"} style={cssVarOverrides}>
+    <div className={rootClass} data-ff-theme={selectedTheme.key} style={cssVarOverrides}>
       <style>{STYLES}</style>
       <div className="ff-noise" /><div className="ff-ambient ff-ambient-1" /><div className="ff-ambient ff-ambient-2" />
       <div className="ff-screen ff-setup-screen"><div className="ff-card ff-setup-card" style={{ textAlign:"center" }}>
@@ -641,7 +682,7 @@ export default function FindMyFood({ onComplete, themeId, variant = "food" }) {
   );
 
   if (screen === "how-to-play") return (
-    <div className={rootClass} data-ff-theme={isDark ? "dark" : "light"} style={cssVarOverrides}>
+    <div className={rootClass} data-ff-theme={selectedTheme.key} style={cssVarOverrides}>
       <style>{STYLES}</style>
       <div className="ff-noise" />
       <div className="ff-ambient ff-ambient-1" />
@@ -668,13 +709,13 @@ export default function FindMyFood({ onComplete, themeId, variant = "food" }) {
   );
 
   if (screen === "mode") return (
-    <div className={rootClass} data-ff-theme={isDark ? "dark" : "light"} style={cssVarOverrides}>
+    <div className={rootClass} data-ff-theme={selectedTheme.key} style={cssVarOverrides}>
       <style>{STYLES}</style><div className="ff-noise" /><div className="ff-ambient ff-ambient-1" /><div className="ff-ambient ff-ambient-2" />
-      <div className="ff-screen"><div className="ff-card" style={{ textAlign:"center" }}>
+      <div className="ff-screen ff-mode-screen"><div className="ff-card" style={{ textAlign:"center" }}>
         <div className="ff-logo-badge">🎯 Choose pairs</div><h1 className="ff-hero-title" style={{ fontSize:"clamp(2.2rem, 5vw, 3.1rem)" }}>Set the challenge</h1>
         <p className="ff-hero-sub">More pairs means a bigger memory challenge.</p>
         <div className="ff-btn-row">{[4,6,8].map(n => <button key={n} className={`ff-btn ${pairCount===n?"ff-btn-gold":"ff-btn-outline"}`} onClick={() => { setPairCount(n); startGame(n); }}>{n} Pairs →</button>)}</div>
-        <button className="ff-btn ff-btn-ghost" onClick={() => setScreen("how-to-play")}>← Back</button>
+        <button className="ff-btn ff-btn-ghost ff-mode-back" onClick={() => setScreen("how-to-play")}>← Back</button>
       </div></div>
     </div>
   );
@@ -682,7 +723,7 @@ export default function FindMyFood({ onComplete, themeId, variant = "food" }) {
   if (screen === "end") {
     const winner = scores[1] > scores[2] ? p1 : scores[2] > scores[1] ? p2 : null;
     return (
-      <div className="ff-root" data-ff-theme={isDark ? "dark" : "light"} style={cssVarOverrides}>
+      <div className="ff-root" data-ff-theme={selectedTheme.key} style={cssVarOverrides}>
         <style>{STYLES}</style>
         <div className="ff-noise" />
         <div className="ff-ambient ff-ambient-1" />
@@ -723,7 +764,7 @@ export default function FindMyFood({ onComplete, themeId, variant = "food" }) {
   const matchedPairs = matched.size / 2;
 
   return (
-    <div className={`${rootClass} ff-root-game ff-pairs-${pairCount}`} data-ff-theme={isDark ? "dark" : "light"} style={cssVarOverrides}>
+    <div className={`${rootClass} ff-root-game ff-pairs-${pairCount}`} data-ff-theme={selectedTheme.key} style={cssVarOverrides}>
       <style>{STYLES}</style>
       <div className="ff-noise" />
       <div className="ff-ambient ff-ambient-1" />

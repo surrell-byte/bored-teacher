@@ -17,7 +17,7 @@ const MODES = [
   { id:"speed",   label:"⚡ Speed",   desc:"Fast sequences" },
 ];
 
-export default function ColourClash({ onComplete }) {
+export default function ColourClash({ onComplete, onHudUpdate }) {
   const { completeGame } = useGame();
   const [screen, setScreen] = useState("menu");
   const [mode, setMode] = useState("classic");
@@ -31,7 +31,25 @@ export default function ColourClash({ onComplete }) {
   const [correctCount, setCorrectCount] = useState(0);
   const [totalQuestions, setTotalQuestions] = useState(0);
   const phaseRef = useRef(phase);
+  const sequenceIntervalRef = useRef(null);
+  const timersRef = useRef([]);
   phaseRef.current = phase;
+
+  const scheduleTimeout = useCallback((callback, delay) => {
+    const timer = window.setTimeout(() => {
+      timersRef.current = timersRef.current.filter(activeTimer => activeTimer !== timer);
+      callback();
+    }, delay);
+    timersRef.current.push(timer);
+    return timer;
+  }, []);
+
+  const clearGameTimers = useCallback(() => {
+    window.clearInterval(sequenceIntervalRef.current);
+    sequenceIntervalRef.current = null;
+    timersRef.current.forEach(timer => window.clearTimeout(timer));
+    timersRef.current = [];
+  }, []);
 
   const colours = mode === "hard" ? COLOURS : COLOURS.slice(0, 4);
   const startLives = mode === "hard" ? 1 : 3;
@@ -40,23 +58,50 @@ export default function ColourClash({ onComplete }) {
     setPhase("showing");
     const speed = mode === "speed" ? 400 : 600;
     let i = 0;
-    const interval = setInterval(() => {
+    const interval = window.setInterval(() => {
       if (i >= seq.length) {
-        clearInterval(interval);
+        window.clearInterval(interval);
+        sequenceIntervalRef.current = null;
         setLit(null);
-        setTimeout(() => setPhase("input"), 300);
+        scheduleTimeout(() => setPhase("input"), 300);
         return;
       }
       const c = seq[i];
       setLit(c);
       const col = colours.find(x => x.id === c);
       if (col) playBeep(col.sound, 0.2);
-      setTimeout(() => setLit(null), speed * 0.6);
+      scheduleTimeout(() => setLit(null), speed * 0.6);
       i++;
     }, speed);
-  }, [mode, colours]);
+    sequenceIntervalRef.current = interval;
+  }, [mode, colours, scheduleTimeout]);
+
+  useEffect(() => {
+    const returnToMenu = () => {
+      clearGameTimers();
+      setScreen("menu");
+      setPhase("idle");
+      setLit(null);
+      setPlayerSeq([]);
+    };
+    window.addEventListener("colour-clash:main-menu", returnToMenu);
+    return () => window.removeEventListener("colour-clash:main-menu", returnToMenu);
+  }, [clearGameTimers]);
+
+  useEffect(() => {
+    onHudUpdate?.(screen === "game" ? {
+      round,
+      score,
+      lives,
+      totalLives: startLives,
+      phase,
+      sequenceLength: sequence.length,
+      sequenceProgress: playerSeq.length,
+    } : null);
+  }, [lives, onHudUpdate, phase, playerSeq.length, round, score, screen, sequence.length, startLives]);
 
   const startGame = useCallback(() => {
+    clearGameTimers();
     const first = colours[Math.floor(Math.random() * colours.length)].id;
     const seq = [first];
     setSequence(seq);
@@ -68,7 +113,7 @@ export default function ColourClash({ onComplete }) {
     setTotalQuestions(0);
     showSequence(seq);
     setScreen("game");
-  }, [colours, startLives, showSequence]);
+  }, [clearGameTimers, colours, startLives, showSequence]);
 
   const tap = (id) => {
     if (phase !== "input") return;
@@ -100,7 +145,7 @@ export default function ColourClash({ onComplete }) {
         setPhase("gameover");
       } else {
         setPhase("wrong");
-        setTimeout(() => {
+        scheduleTimeout(() => {
           setPlayerSeq([]);
           showSequence(sequence);
         }, 1000);
@@ -112,10 +157,10 @@ export default function ColourClash({ onComplete }) {
     if (nextPlayer.length === sequence.length) {
       // Correct full sequence
       playBeep(800, 0.1);
-      setTimeout(() => playBeep(1000, 0.1), 120);
+      scheduleTimeout(() => playBeep(1000, 0.1), 120);
       setScore(s => s + sequence.length * 10);
       setPhase("correct");
-      setTimeout(() => {
+      scheduleTimeout(() => {
         const next = [...sequence, colours[Math.floor(Math.random() * colours.length)].id];
         setSequence(next);
         setPlayerSeq([]);
@@ -124,6 +169,8 @@ export default function ColourClash({ onComplete }) {
       }, 800);
     }
   };
+
+  useEffect(() => () => clearGameTimers(), [clearGameTimers]);
 
   if (screen === "menu") return (
     <div style={{
@@ -175,37 +222,21 @@ export default function ColourClash({ onComplete }) {
 
   return (
     <div style={{
-      minHeight:"100vh", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
-      background:"linear-gradient(135deg,#0f172a,#1e1b4b)", fontFamily:"'Segoe UI',sans-serif", color:"#fff", padding:24,
+      height:"100%", minHeight:0, boxSizing:"border-box", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
+      background:"linear-gradient(135deg,#0f172a,#1e1b4b)", fontFamily:"'Segoe UI',sans-serif", color:"#fff", padding:"clamp(12px, 2.2vh, 28px) clamp(16px, 3vw, 48px)",
     }}>
-      <div style={{ display:"flex", justifyContent:"space-between", width:"100%", maxWidth:"min(560px, calc(100vw - 56px))", marginBottom:16 }}>
-        <span style={{ color:"#94a3b8" }}>Round {round}</span>
-        <span style={{ color:"#fbbf24", fontWeight:800 }}>⭐ {score}</span>
-        <span>{Array.from({length:startLives},(_,i)=>i<lives?"❤️":"🖤").join("")}</span>
-      </div>
-
-      <div style={{ marginBottom:12, fontWeight:700, minHeight:32, fontSize:"1rem", textAlign:"center",
-        color: phase==="showing"?"#fbbf24":phase==="correct"?"#4ade80":phase==="wrong"?"#f87171":"#94a3b8"
-      }}>
-        {phase==="showing"?"👀 Watch carefully..."
-        :phase==="input"?"👆 Your turn! Repeat the sequence"
-        :phase==="correct"?"✅ Correct!"
-        :phase==="wrong"?"❌ Wrong!"
-        :""}
-      </div>
-
       <div style={{
-        display:"grid", gridTemplateColumns:"1fr 1fr",
-        gap:"clamp(10px, 1.6vw, 20px)", maxWidth:"min(560px, calc(100vw - 56px))", width:"100%",
+        display:"grid", gridTemplateColumns:"1fr 1fr", gridTemplateRows:mode === "hard" ? "repeat(3, minmax(0, 1fr))" : "repeat(2, minmax(0, 1fr))",
+        flex:"1 1 0", minHeight:0, maxHeight:900, gap:"clamp(10px, 2vw, 28px)", maxWidth:"min(1100px, 100%)", width:"100%",
       }}>
         {colours.map(col => (
           <button key={col.id} onClick={() => tap(col.id)} style={{
-            height:"clamp(90px, 15vw, 170px)", borderRadius:20, border:"none", cursor: phase==="input"?"pointer":"default",
+            height:"100%", minHeight:0, borderRadius:"clamp(14px, 2vw, 26px)", border:"none", cursor: phase==="input"?"pointer":"default",
             background: lit===col.id ? "white" : col.bg,
             boxShadow: lit===col.id ? `0 0 40px white, 0 0 80px ${col.id==="yellow"?"#fbbf24":col.id}` : "0 4px 16px rgba(0,0,0,0.4)",
             transition:"all 0.1s ease",
             transform: lit===col.id ? "scale(1.05)" : "scale(1)",
-            fontWeight:800, fontSize:"clamp(1rem, 1.8vw, 1.4rem)", color:"rgba(255,255,255,0.9)",
+            fontWeight:800, fontSize:"clamp(1rem, 2.5vw, 2rem)", color:"rgba(255,255,255,0.9)",
             letterSpacing:2,
           }}>
             {col.label}
@@ -213,14 +244,6 @@ export default function ColourClash({ onComplete }) {
         ))}
       </div>
 
-      <div style={{ marginTop:16, display:"flex", gap:6 }}>
-        {sequence.map((_, i) => (
-          <div key={i} style={{
-            width:10, height:10, borderRadius:"50%",
-            background: i < playerSeq.length ? "#4ade80" : "rgba(255,255,255,0.2)",
-          }} />
-        ))}
-      </div>
     </div>
   );
 }

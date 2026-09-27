@@ -61,6 +61,14 @@ export default function AnimalClassQuest({ onComplete, onHudUpdate }) {
   },[]);
 
   const current = questions[idx];
+  const backgroundImage = screen === "menu"
+    ? "/assets/games/animal-class-quest/animal-class-quest-welcome-page-bg.webp"
+    : screen === "game" && current?.cls === "Bird"
+      ? "/assets/games/animal-class-quest/animal-class-quest-birds-bg.webp"
+      : screen === "game" && current?.cls === "Mammal"
+        ? "/assets/games/animal-class-quest/animal-class-quest-mammals-bg.webp"
+        : "/assets/games/animal-class-quest/animal-class-quest-game-screen-bg.webp";
+  const backgroundStyle = { backgroundImage: `url('${backgroundImage}')`, backgroundPosition: "center", backgroundSize: "cover", backgroundRepeat: "no-repeat" };
 
   useEffect(() => {
     if (screen !== "game") {
@@ -114,7 +122,7 @@ export default function AnimalClassQuest({ onComplete, onHudUpdate }) {
   /* ── MENU ── */
   if(screen==="menu") return (
     <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",
-      justifyContent:"center",background:"linear-gradient(135deg,#064e3b,#065f46,#047857)",
+      justifyContent:"center",...backgroundStyle,
       fontFamily:"'Segoe UI',sans-serif",color:"#ecfdf5",padding:24,textAlign:"center"}}>
       <div style={{fontSize:"3.5rem",marginBottom:8}}>🐾</div>
       <h1 style={{fontSize:"2.2rem",margin:"0 0 6px",color:"#6ee7b7"}}>Animal Class Quest</h1>
@@ -145,7 +153,7 @@ export default function AnimalClassQuest({ onComplete, onHudUpdate }) {
     const nxt = level==="easy"?"medium":level==="medium"?"hard":null;
     return (
       <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",
-        justifyContent:"center",background:"linear-gradient(135deg,#064e3b,#065f46)",
+        justifyContent:"center",...backgroundStyle,
         fontFamily:"'Segoe UI',sans-serif",color:"#ecfdf5",padding:24,textAlign:"center"}}>
         <div style={{fontSize:"4rem",marginBottom:12}}>🏆</div>
         <h2 style={{fontSize:"2rem",color:"#fbbf24",marginBottom:8,textTransform:"capitalize"}}>{level} Complete!</h2>
@@ -164,7 +172,7 @@ export default function AnimalClassQuest({ onComplete, onHudUpdate }) {
   /* ── GAME ── */
   return (
     <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",
-      justifyContent:"center",background:"linear-gradient(135deg,#064e3b,#065f46,#047857)",
+      justifyContent:"center",...backgroundStyle,
       fontFamily:"'Segoe UI',sans-serif",color:"#ecfdf5",padding:24}}>
       <div style={{width:"100%",maxWidth:"min(760px, calc(100vw - 56px))"}}>
         {/* Animal card */}

@@ -350,23 +350,24 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
     padding: "clamp(1.2rem, 2vw, 2.5rem)",
   };
 
-  const welcomeBackground = "url('/assets/images/tic-tac-roll-welcome-bg.webp') center/cover no-repeat";
-  const inputBackground = `url('${window.innerWidth <= 600 ? '/assets/images/tic-tac-roll-general-phone-bg.webp' : '/assets/images/tic-tac-roll-user-input-screen-bg.webp'}') center/cover no-repeat`;
+  const welcomeBackground = "/assets/images/tic-tac-roll-welcome-page-bg.webp";
+  const inputBackground = window.innerWidth <= 600 ? "/assets/images/tic-tac-roll-general-phone-bg.webp" : "/assets/images/tic-tac-roll-user-input-screen-bg.webp";
+  const gameBackground = "/assets/images/tic-tac-roll-welcome-bg.webp";
 
   return (
     <div style={{ height: "100%", minHeight: "100%", background: "transparent", color: theme.text, fontFamily: "'DM Sans', 'Segoe UI', sans-serif", transition: "background 0.4s, color 0.4s" }}>
 
       {/* WELCOME SCREEN */}
       {screen === "welcome" && (
-        <div style={{ position: "relative", width: "100%", height: "100%", minHeight: "100%", background: welcomeBackground, backgroundSize: "100% 100%" }}>
+        <div style={{ position: "relative", width: "100%", height: "100%", minHeight: "100%", backgroundImage: `url(${welcomeBackground})`, backgroundPosition: "center", backgroundSize: "cover", backgroundRepeat: "no-repeat" }}>
           <button aria-label="Play Now" onClick={() => { tone(500, 0.08, 0.07); setScreen("setup"); }} style={{ position: "absolute", left: "37.2%", top: "66.2%", width: "25.8%", height: "13.5%", border: 0, background: "transparent", cursor: "pointer" }} />
-          <button aria-label="How to Play" onClick={() => { tone(500, 0.08, 0.07); setScreen("menu"); }} style={{ position: "absolute", left: "37.8%", top: "82.5%", width: "24.5%", height: "10.5%", border: 0, background: "transparent", cursor: "pointer" }} />
+          <button aria-label="How to Play" onClick={() => { tone(500, 0.08, 0.07); setScreen("howtoplay"); }} style={{ position: "absolute", left: "37.8%", top: "82.5%", width: "24.5%", height: "10.5%", border: 0, background: "transparent", cursor: "pointer" }} />
         </div>
       )}
 
       {/* SETUP SCREEN */}
       {screen === "setup" && (
-        <div style={{ maxWidth: "min(100%, 700px)", margin: "2rem auto", padding: "clamp(1.5rem, 3vw, 2.5rem)", background: `${theme.surface}ee`, borderRadius: "clamp(16px, 3vw, 24px)", border: `1px solid ${theme.border}`, boxShadow: theme.shadow, overflowY: "auto", maxHeight: "100vh", backgroundImage: inputBackground, backgroundSize: "cover", backgroundPosition: "center" }}>
+        <div style={{ maxWidth: "min(100%, 700px)", margin: "2rem auto", padding: "clamp(1.5rem, 3vw, 2.5rem)", backgroundColor: `${theme.surface}ee`, borderRadius: "clamp(16px, 3vw, 24px)", border: `1px solid ${theme.border}`, boxShadow: theme.shadow, overflowY: "auto", maxHeight: "100vh", backgroundImage: `url(${inputBackground})`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" }}>
           <button onClick={() => { tone(500, 0.08, 0.07); setScreen("welcome"); }} style={{ background: "none", border: "none", color: theme.muted, cursor: "pointer", fontSize: "0.9rem", marginBottom: "1rem" }}>← Back</button>
           <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.5rem, 4vw, 2.5rem)", margin: "0 0 0.3rem" }}>Create Your Profile</h2>
           <p style={{ color: theme.muted, fontSize: "0.9rem", marginBottom: "1.5rem" }}>Personalise your experience</p>
@@ -396,7 +397,7 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
 
       {/* MENU SCREEN */}
       {screen === "menu" && (
-        <div style={{ maxWidth: "min(100%, 700px)", margin: window.innerWidth <= 600 ? "0 auto" : "2rem auto", padding: "clamp(1.5rem, 3vw, 2.5rem)", background: `${theme.surface}ee`, borderRadius: "clamp(16px, 3vw, 24px)", border: `1px solid ${theme.border}`, boxShadow: theme.shadow, overflowY: "auto", maxHeight: "100vh", backgroundImage: inputBackground, backgroundSize: "cover", backgroundPosition: "center" }}>
+        <div style={{ maxWidth: "min(100%, 700px)", margin: window.innerWidth <= 600 ? "0 auto" : "2rem auto", padding: "clamp(1.5rem, 3vw, 2.5rem)", backgroundColor: `${theme.surface}ee`, borderRadius: "clamp(16px, 3vw, 24px)", border: `1px solid ${theme.border}`, boxShadow: theme.shadow, overflowY: "auto", maxHeight: "100vh", backgroundImage: `url(${inputBackground})`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1.5rem" }}>
             <span style={{ fontSize: "2rem" }}>{profile.avatar}</span>
             <div><div style={{ fontWeight: 600 }}>{profile.name}</div><div style={{ fontSize: "0.8rem", color: theme.muted }}>Player</div></div>
@@ -422,7 +423,7 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
 
       {/* DIFFICULTY SCREEN */}
       {screen === "difficulty" && (
-        <div style={{ maxWidth: "clamp(400px, 60vw, 700px)", margin: "2rem auto", padding: "clamp(1.5rem, 3vw, 2.5rem)", background: `${theme.surface}ee`, borderRadius: "clamp(16px, 3vw, 24px)", border: `1px solid ${theme.border}`, boxShadow: theme.shadow, overflowY: "auto", maxHeight: "100vh", backgroundImage: inputBackground, backgroundSize: "cover", backgroundPosition: "center" }}>
+        <div style={{ maxWidth: "clamp(400px, 60vw, 700px)", margin: "2rem auto", padding: "clamp(1.5rem, 3vw, 2.5rem)", backgroundColor: `${theme.surface}ee`, borderRadius: "clamp(16px, 3vw, 24px)", border: `1px solid ${theme.border}`, boxShadow: theme.shadow, overflowY: "auto", maxHeight: "100vh", backgroundImage: `url(${inputBackground})`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" }}>
           <button onClick={() => { tone(500, 0.08, 0.07); setScreen("menu"); }} style={{ background: "none", border: "none", color: theme.muted, cursor: "pointer", fontSize: "0.9rem", marginBottom: "1rem" }}>← Main Menu</button>
           <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.5rem, 4vw, 2.5rem)", margin: "0 0 0.3rem" }}>vs AI</h2>
           <p style={{ color: theme.muted, fontSize: "0.9rem", marginBottom: "1.5rem" }}>Select difficulty & your symbol</p>
@@ -445,9 +446,9 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
       )}
 
       {/* HOW TO PLAY */}
-      {false && screen === "howtoplay" && (
-        <div style={{ maxWidth: "clamp(400px, 60vw, 700px)", margin: "2rem auto", padding: "clamp(1.5rem, 3vw, 2.5rem)", background: `${theme.surface}ee`, borderRadius: "clamp(16px, 3vw, 24px)", border: `1px solid ${theme.border}`, boxShadow: theme.shadow, overflowY: "auto", maxHeight: "100vh", backgroundImage: inputBackground, backgroundSize: "cover", backgroundPosition: "center" }}>
-          <button onClick={() => { tone(500, 0.08, 0.07); setScreen(screen === "howtoplay" ? "welcome" : "menu"); }} style={{ background: "none", border: "none", color: theme.muted, cursor: "pointer", fontSize: "0.9rem", marginBottom: "1rem" }}>← Back</button>
+      {screen === "howtoplay" && (
+        <div style={{ maxWidth: "clamp(400px, 60vw, 700px)", margin: "2rem auto", padding: "clamp(1.5rem, 3vw, 2.5rem)", backgroundColor: `${theme.surface}ee`, borderRadius: "clamp(16px, 3vw, 24px)", border: `1px solid ${theme.border}`, boxShadow: theme.shadow, overflowY: "auto", maxHeight: "100vh", backgroundImage: `url(${inputBackground})`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" }}>
+          <button onClick={() => { tone(500, 0.08, 0.07); setScreen("welcome"); }} style={{ background: "none", border: "none", color: theme.muted, cursor: "pointer", fontSize: "0.9rem", marginBottom: "1rem" }}>← Back</button>
           <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.5rem, 4vw, 2.5rem)", margin: "0 0 1rem" }}>How to Play</h2>
           <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem" }}>
             {["classic", "roll", "ai", "grid"].map(t => (
@@ -460,12 +461,13 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
             {htpTab === "ai" && <><p>Play solo against the computer. Easy = mostly random moves. Normal = blocks and seeks openings. Hard = unbeatable on 3×3, strong heuristics on larger grids.</p></>}
             {htpTab === "grid" && <><p>Choose from 3×3 (classic, need 3), 5×5 (medium, need 4), 6×6 (large, need 4), or 7×7 (epic, need 4) in the main menu before starting.</p></>}
           </div>
+          <button type="button" onClick={() => { tone(500, 0.08, 0.07); setScreen("menu"); }} style={{ width: "100%", marginTop: "1.25rem", padding: "0.95rem", border: 0, borderRadius: 50, background: `linear-gradient(160deg, ${theme.accent}, ${theme.accent2 || theme.accent})`, color: "white", fontWeight: 800, cursor: "pointer" }}>Continue to Main Menu →</button>
         </div>
       )}
 
       {/* GAME SCREEN */}
       {screen === "game" && (
-        <div style={gameLayoutStyle}>
+        <div style={{ ...gameLayoutStyle, backgroundImage: `url(${gameBackground})`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat", borderRadius: 20 }}>
 
           {/* SIDEBAR */}
           <div style={{ display: "grid", gridTemplateColumns: window.innerWidth < 700 ? "repeat(2, minmax(0, 1fr))" : "1fr", gap: "clamp(0.75rem, 1.5vw, 1.2rem)", alignSelf: "start", position: "sticky", top: "clamp(1rem, 2vw, 2rem)" }}>

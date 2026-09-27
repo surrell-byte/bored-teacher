@@ -39,7 +39,7 @@ function makeQuestion(difficulty, theme) {
 }
 
 export default function CountAndAdd({ onComplete }) {
-  const [screen, setScreen] = useState('menu');
+  const [screen, setScreen] = useState('welcome');
   const [difficulty, setDifficulty] = useState('easy');
   const [round, setRound] = useState(1);
   const [score, setScore] = useState(0);
@@ -163,6 +163,13 @@ export default function CountAndAdd({ onComplete }) {
     }
   };
 
+  if (screen === 'welcome') {
+    return <main className="count-add-game count-add-game--welcome" aria-label="Count and Add welcome screen">
+      <style>{COUNT_ADD_STYLES}</style>
+      <button type="button" className="count-add-game__welcome-start" aria-label="Start Count and Add" onClick={() => setScreen('menu')} />
+    </main>;
+  }
+
   if (screen === 'menu') {
     return <main className="count-add-game count-add-game--menu">
       <style>{COUNT_ADD_STYLES}</style>
@@ -180,7 +187,7 @@ export default function CountAndAdd({ onComplete }) {
   }
 
   if (screen === 'game-over') {
-    return <main className="count-add-game count-add-game--menu">
+    return <main className="count-add-game count-add-game--victory">
       <style>{COUNT_ADD_STYLES}</style>
       <div className="count-add-game__menu-card">
         <div className="count-add-game__menu-icon">💪</div>
@@ -192,7 +199,7 @@ export default function CountAndAdd({ onComplete }) {
     </main>;
   }
 
-  return <main className="count-add-game">
+  return <main className="count-add-game count-add-game--play">
     <style>{COUNT_ADD_STYLES}</style>
     <div className="count-add-game__frame">
       <section className="count-add-game__card-wrap">
@@ -225,7 +232,7 @@ function EmojiGroup({ item, count, shaking }) {
 const COUNT_ADD_STYLES = `
 .count-add-game{min-height:100%;width:100%;display:flex;align-items:stretch;justify-content:center;padding:clamp(10px,1.8vw,26px);background:linear-gradient(180deg,#d9fff2,#f7fff5);font-family:Nunito,var(--font-body),sans-serif;color:#0f6e56;overflow:auto}.count-add-game *{box-sizing:border-box}.count-add-game__frame{width:min(100%,1120px);min-height:100%;display:flex;flex-direction:column;justify-content:center}.count-add-game__topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 auto clamp(8px,1.6vw,18px);width:min(100%,980px);padding:0 6px}.count-add-game__level-row,.count-add-game__score-row,.count-add-game__stars{display:flex;align-items:center;gap:clamp(4px,1vw,9px)}.count-add-game__stars{font-size:clamp(18px,2.1vw,29px)}.count-add-game__stars span{line-height:1;color:#9acabb}.count-add-game__stars .is-lit{animation:count-add-pop .3s cubic-bezier(.34,1.56,.64,1);color:#f5bb22}.count-add-game__level{padding:5px 13px;border-radius:999px;background:#e1f5ee;font-size:clamp(12px,1.4vw,17px);font-weight:900;white-space:nowrap}.count-add-game__score-row{justify-content:flex-end}.count-add-game__score,.count-add-game__streak{display:flex;align-items:center;gap:7px;padding:7px 16px;border-radius:999px;font-size:clamp(20px,2.4vw,31px);font-weight:900;line-height:1}.count-add-game__score{background:#faeeda;color:#ba7517}.count-add-game__score small{font-size:clamp(11px,1.1vw,14px);color:#854f0b;text-transform:uppercase}.count-add-game__streak{background:#faece7;color:#993c1d;font-size:clamp(13px,1.5vw,19px)}.count-add-game__difficulty{display:flex;justify-content:center;gap:8px;margin-bottom:clamp(10px,1.8vw,18px)}.count-add-game__difficulty button{padding:6px 16px;border:2px solid transparent;border-radius:999px;background:#e1f5ee;color:#0f6e56;font:800 clamp(12px,1.4vw,16px) Nunito,var(--font-body),sans-serif;cursor:pointer}.count-add-game__difficulty button.is-active{background:#0f6e56;color:#fff}.count-add-game__card-wrap{position:relative;width:min(100%,980px);margin:0 auto}.count-add-game__card{min-height:clamp(460px,66vh,660px);display:flex;flex-direction:column;justify-content:center;padding:clamp(22px,4vw,54px);border:2px solid #9fe1cb;border-radius:clamp(22px,3vw,34px);background:#fff;box-shadow:0 10px 36px rgba(15,110,86,.12)}.count-add-game__theme{margin:0 0 clamp(16px,3vh,30px);text-align:center;color:#1d9e75;font-size:clamp(14px,1.7vw,20px);font-weight:900;letter-spacing:.05em}.count-add-game__equation{display:flex;align-items:center;justify-content:center;gap:clamp(8px,1.8vw,22px);margin-bottom:clamp(22px,4vh,42px)}.count-add-game__equation>b{color:#0f6e56;font-size:clamp(42px,5.5vw,76px);line-height:1}.count-add-game__group{display:grid;grid-template-columns:repeat(5,minmax(28px,1fr));gap:clamp(3px,.65vw,8px);align-content:center;min-width:clamp(180px,28vw,330px);min-height:clamp(106px,16vw,168px);padding:clamp(12px,2vw,21px);border:3px solid #cdeee2;border-radius:clamp(15px,2.3vw,24px);background:#fff;box-shadow:0 4px 14px rgba(0,0,0,.05)}.count-add-game__group span{font-size:clamp(28px,4.1vw,54px);line-height:1;text-align:center;animation:count-add-pop .28s cubic-bezier(.34,1.56,.64,1) both}.count-add-game__answer{width:clamp(82px,11vw,128px);height:clamp(82px,11vw,128px);display:grid;place-items:center;flex:0 0 auto;border:3px dashed #1d9e75;border-radius:clamp(16px,2.8vw,26px);color:#1d9e75;font-size:clamp(38px,5.5vw,68px);font-weight:900;animation:count-add-pulse 1.6s ease-in-out infinite}.count-add-game__answer.correct{border-style:solid;border-color:#0f6e56;background:#e1f5ee;animation:none;transform:scale(1.08)}.count-add-game__answer.wrong{border-style:solid;border-color:#d85a30;background:#faece7;color:#d85a30;animation:none}.count-add-game__choices{display:flex;justify-content:center;gap:clamp(14px,3vw,32px)}.count-add-game__choices button{width:clamp(94px,13vw,150px);height:clamp(86px,12vw,136px);border:0;border-radius:clamp(18px,2.7vw,28px);background:#fff;color:#085041;box-shadow:0 5px 16px rgba(0,0,0,.1),0 1px 3px rgba(0,0,0,.06);font:900 clamp(30px,4.8vw,58px) Nunito,var(--font-body),sans-serif;cursor:pointer;transition:transform .15s,box-shadow .15s}.count-add-game__choices button:hover:not(:disabled){transform:translateY(-5px);box-shadow:0 12px 26px rgba(0,0,0,.13)}.count-add-game__choices button.correct{background:#e1f5ee;color:#0f6e56}.count-add-game__choices button.wrong{background:#faece7;color:#d85a30;animation:count-add-shake .35s}.count-add-game__feedback{display:flex;align-items:center;justify-content:center;gap:12px;min-height:52px;margin-top:clamp(18px,3vh,28px);font-size:clamp(16px,2vw,23px)}.count-add-game__feedback>span{font-size:clamp(31px,4vw,48px);line-height:1}.count-add-game__feedback>span.is-bouncing{animation:count-add-bounce .4s cubic-bezier(.34,1.56,.64,1)}.count-add-game__round{margin:clamp(9px,1.5vw,16px) 0 0;text-align:center;color:#398b74;font-size:clamp(12px,1.4vw,16px);font-weight:900}.count-add-game__level-up{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;border-radius:clamp(22px,3vw,34px);background:rgba(225,245,238,.94);text-align:center;animation:count-add-fade .25s}.count-add-game__level-up div{font-size:clamp(62px,9vw,108px)}.count-add-game__level-up strong{font-size:clamp(25px,4vw,46px)}.count-add-game__level-up span{font-size:clamp(15px,2vw,22px);font-weight:800;color:#1d9e75}@keyframes count-add-pop{0%{transform:scale(0) rotate(-12deg);opacity:0}70%{transform:scale(1.2) rotate(4deg)}100%{transform:scale(1) rotate(0);opacity:1}}@keyframes count-add-shake{20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}@keyframes count-add-bounce{40%{transform:scale(1.25) rotate(-8deg)}70%{transform:scale(.95) rotate(4deg)}}@keyframes count-add-pulse{50%{transform:scale(1.06)}}@keyframes count-add-fade{from{opacity:0}}.count-add-game__group.is-shaking{animation:count-add-shake .45s}@media(max-width:760px){.count-add-game{padding:10px}.count-add-game__card{min-height:0;padding:22px 12px 18px}.count-add-game__equation{gap:7px;flex-wrap:wrap}.count-add-game__group{grid-template-columns:repeat(3,1fr);min-width:min(42vw,180px);min-height:90px}.count-add-game__equation>b{font-size:38px}.count-add-game__answer{width:70px;height:70px}.count-add-game__choices button{width:82px;height:78px}.count-add-game__topbar{align-items:flex-start}.count-add-game__stars span:nth-child(n+4){display:none}}@media(max-width:430px){.count-add-game__topbar{gap:6px}.count-add-game__level{padding:4px 8px}.count-add-game__score,.count-add-game__streak{padding:6px 9px}.count-add-game__score small{display:none}.count-add-game__difficulty button{padding:5px 9px}.count-add-game__group{min-width:130px;padding:9px}.count-add-game__equation{gap:5px}.count-add-game__equation>b{font-size:29px}.count-add-game__answer{width:60px;height:60px}.count-add-game__choices{gap:9px}.count-add-game__choices button{width:70px;height:68px}.count-add-game__feedback{font-size:14px}}
 /* Wide GameShell layout overrides */
-.count-add-game--menu{align-items:center}.count-add-game__menu-card{width:min(100%,620px);padding:clamp(24px,5vw,56px);border:2px solid #b8eadb;border-radius:28px;background:#ffffffdd;text-align:center;box-shadow:0 18px 50px #17866b22}.count-add-game__menu-icon{font-size:clamp(3rem,8vw,5rem)}.count-add-game__menu-kicker{margin:8px 0 0;font-weight:900;letter-spacing:.08em;text-transform:uppercase}.count-add-game__menu-card h1{margin:4px 0 10px;font-size:clamp(1.8rem,4vw,3rem)}.count-add-game__menu-card>p:not(.count-add-game__menu-kicker){margin:0 0 22px;color:#347d6d}.count-add-game__mode-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.count-add-game__mode-grid button{display:grid;gap:5px;padding:16px;border:2px solid #c2ecdf;border-radius:16px;background:#f4fffb;color:#0f6e56;font:inherit;cursor:pointer}.count-add-game__mode-grid button:hover{border-color:#0f6e56;background:#e1f5ee}.count-add-game__mode-grid strong{font-size:1.1rem}.count-add-game__mode-grid small{color:#4f8e80}@media(max-width:520px){.count-add-game__mode-grid{grid-template-columns:1fr}.count-add-game__menu-card{padding:24px 16px}}
+.count-add-game--welcome{position:relative;min-height:100%;height:100%;padding:0;background:#063b2a url('/assets/games/count-and-add/count-and-add-welcome-bg.webp') center/cover no-repeat}.count-add-game__welcome-start{position:absolute;left:59%;top:62%;width:29%;height:20%;border:0;border-radius:999px;background:transparent;cursor:pointer}.count-add-game__welcome-start:focus-visible{outline:4px solid #fff;outline-offset:4px}.count-add-game--menu{align-items:center;background:#c8f4e4 url('/assets/games/count-and-add/count-and-add-main-menu-bg.webp') center/cover no-repeat}.count-add-game--play{background:#c8f4e4 url('/assets/games/count-and-add/count-and-add-main-menu-bg.webp') center/cover no-repeat}.count-add-game--victory{background:#c8f4e4 url('/assets/games/count-and-add/count-and-add-victory-screen-bg.webp') center/cover no-repeat}.count-add-game__menu-card{width:min(100%,620px);padding:clamp(24px,5vw,56px);border:2px solid #b8eadb;border-radius:28px;background:#ffffffdd;text-align:center;box-shadow:0 18px 50px #17866b22}.count-add-game__menu-icon{font-size:clamp(3rem,8vw,5rem)}.count-add-game__menu-kicker{margin:8px 0 0;font-weight:900;letter-spacing:.08em;text-transform:uppercase}.count-add-game__menu-card h1{margin:4px 0 10px;font-size:clamp(1.8rem,4vw,3rem)}.count-add-game__menu-card>p:not(.count-add-game__menu-kicker){margin:0 0 22px;color:#347d6d}.count-add-game__mode-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.count-add-game__mode-grid button{display:grid;gap:5px;padding:16px;border:2px solid #c2ecdf;border-radius:16px;background:#f4fffb;color:#0f6e56;font:inherit;cursor:pointer}.count-add-game__mode-grid button:hover{border-color:#0f6e56;background:#e1f5ee}.count-add-game__mode-grid strong{font-size:1.1rem}.count-add-game__mode-grid small{color:#4f8e80}@media(max-width:520px){.count-add-game__mode-grid{grid-template-columns:1fr}.count-add-game__menu-card{padding:24px 16px}}
 .count-add-game__topbar,.count-add-game__card-wrap{width:min(100%,1120px)}
 .count-add-game__group{min-width:clamp(150px,22vw,260px)}
 .count-add-game__group span{font-size:clamp(28px,3.4vw,48px)}
@@ -234,4 +241,52 @@ const COUNT_ADD_STYLES = `
 .count-add-game__frame,.count-add-game__topbar,.count-add-game__card-wrap{width:100%;max-width:1280px}
 .count-add-game__menu-card{width:min(100%,760px)}
 @media (orientation: portrait) and (max-width: 640px){.count-add-game{padding:10px}.count-add-game__card{padding:16px 12px 18px;border-radius:18px}.count-add-game__equation{width:100%;gap:6px;padding:12px 8px;border-radius:18px}.count-add-game__group{min-width:0;min-height:80px;padding:6px}.count-add-game__group span{font-size:1.7rem}.count-add-game__choices{width:100%;gap:10px}.count-add-game__choices button{min-height:76px;border-radius:16px}}
+
+/* Farm World palette and a tighter, unified equation composition. */
+.count-add-game--play { color:#174e43; }
+.count-add-game__frame { width:min(100%, 1080px); }
+.count-add-game__card-wrap { width:min(100%, 1000px); }
+.count-add-game__card {
+  min-height:clamp(390px, 58vh, 570px);
+  padding:clamp(18px, 2.4vw, 32px);
+  border:2px solid rgba(46,184,148,.3);
+  border-radius:30px;
+  background:rgba(250,255,252,.92);
+  box-shadow:0 18px 50px rgba(25,100,80,.15),0 5px 15px rgba(30,100,80,.08);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+}
+.count-add-game__theme,
+.count-add-game__equation>b,
+.count-add-game__feedback { color:#16866c; }
+.count-add-game__equation { gap:clamp(7px, 1.2vw, 16px); margin-bottom:clamp(14px, 2.4vh, 24px); }
+.count-add-game__group {
+  background:linear-gradient(145deg,#fff,#f2fbf7);
+  border-color:#c8eee1;
+  box-shadow:0 5px 16px rgba(30,100,80,.08),inset 0 1px 0 rgba(255,255,255,.9);
+}
+.count-add-game__answer { background:#f0fbf7; border-color:#22a981; color:#16866c; }
+.count-add-game__choices { gap:clamp(10px, 2vw, 22px); }
+.count-add-game__choices button {
+  background:linear-gradient(145deg,#fff,#eefbf6);
+  border:2px solid rgba(39,168,132,.1);
+  box-shadow:0 8px 20px rgba(30,100,80,.1),inset 0 1px 0 rgba(255,255,255,.9);
+}
+.count-add-game__choices button:hover:not(:disabled) {
+  border-color:#35b990;
+  box-shadow:0 12px 25px rgba(35,170,135,.18);
+}
+.count-add-game__feedback { margin-top:clamp(10px, 1.8vh, 18px); }
+.count-add-game__round { margin-top:8px; color:#16866c; }
+@media (max-height:800px) and (min-width:761px) {
+  .count-add-game__card { min-height:0; }
+  .count-add-game__theme { margin-bottom:12px; }
+  .count-add-game__equation { margin-bottom:14px; }
+  .count-add-game__lives { margin:6px 0; }
+  .count-add-game__feedback { min-height:36px; margin-top:10px; }
+}
+@media (max-width:760px) {
+  .count-add-game__card { min-height:0; border-radius:22px; padding:18px 12px; }
+  .count-add-game__equation { margin-bottom:14px; }
+}
 `;

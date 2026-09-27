@@ -177,7 +177,7 @@ function SidePanel({ name, avatar, theme, score, active, side }) {
 
 export default function Connect4({ onComplete, onHudUpdate }) {
   const { completeGame } = useGame();
-  const [screen, setScreen] = useState("welcome"); // welcome | setup | game | celeb
+  const [screen, setScreen] = useState("welcome"); // welcome | players | setup | game | celeb
   const [mode, setMode] = useState("pvp");
   const [aiDiff, setAiDiff] = useState("medium");
   const [p1Theme, setP1Theme] = useState("crimson");
@@ -331,32 +331,38 @@ export default function Connect4({ onComplete, onHudUpdate }) {
   }, [screen, active, current, p1Name, p2Name, p1Avatar, p2Avatar, t1, t2, scores.p1, scores.p2, resetMatch, goHome]);
 
   useEffect(() => { onHudUpdate?.(hud); }, [hud, onHudUpdate]);
+  useEffect(() => { const returnToMenu = () => goHome(); window.addEventListener("connect4:main-menu", returnToMenu); return () => window.removeEventListener("connect4:main-menu", returnToMenu); }, [goHome]);
   useEffect(() => () => { onHudUpdate?.(null); }, [onHudUpdate]);
 
   const isWin = (r, c) => winCells.some(w => w.row === r && w.col === c);
   const previewRow = hoverCol >= 0 && active && !(mode === "ai" && current === 2) ? topRow(board, hoverCol) : -1;
+  const screenBackground = screen === "welcome"
+    ? "connect-4-welcome.webp"
+    : screen === "setup"
+      ? "connect-4-user-input.webp"
+      : screen === "game"
+        ? "connect-4-game-screen.webp"
+        : "connect-4-main-menu.webp";
 
   return (
     <div className="c4-root" style={{
       "--p1-a": t1.a, "--p1-b": t1.b, "--p2-a": t2.a, "--p2-b": t2.b,
       minHeight: "100%", width: "100%", display: "flex", alignItems: "center", justifyContent: "center",
-      background: "radial-gradient(circle at center, #0d1322 0%, #06080f 70%), #05070d",
+      background: `url('/assets/games/connect-4/${screenBackground}') center / cover no-repeat, radial-gradient(circle at center, #0d1322 0%, #06080f 70%), #05070d`,
       fontFamily: "'DM Sans', sans-serif", color: "#e8edf5", position: "relative", overflow: "hidden", padding: "0.8rem",
     }}>
-      {/* ambient glow wash */}
-      <div style={{
-        position: "absolute", inset: 0, pointerEvents: "none", zIndex: 0,
-        background: "radial-gradient(circle at 20% 30%, rgba(0,140,255,0.10), transparent 35%), radial-gradient(circle at 80% 70%, rgba(255,0,120,0.08), transparent 35%)",
-        filter: "blur(80px)", animation: "c4Ambient 18s ease-in-out infinite alternate",
-      }} />
-
       {screen === "welcome" && (
-        <div className="c4-card c4-card-welcome" style={{ textAlign: "center" }}>
+        <button type="button" className="c4-welcome-start" aria-label="Start Connect Four" onClick={() => setScreen("players")} />
+      )}
+
+      {screen === "players" && (
+        <div className="c4-card c4-card-player-count" style={{ textAlign: "center" }}>
           <div className="c4-welcome-icon">🔴🟡</div>
-          <div className="c4-brand">CONNECT FOUR</div>
-          <div className="c4-sub">Prestige Edition</div>
+          <div className="c4-brand">CHOOSE PLAYERS</div>
+          <div className="c4-sub">How would you like to play?</div>
           <button className="c4-btn c4-btn-primary" onClick={() => openSetup("pvp")}>👥&nbsp; Two Players</button>
           <button className="c4-btn c4-btn-ghost" onClick={() => openSetup("ai")}>🤖&nbsp; Play vs AI</button>
+          <button className="c4-btn c4-btn-ghost" onClick={() => setScreen("welcome")}>← Back</button>
         </div>
       )}
 
@@ -434,7 +440,7 @@ export default function Connect4({ onComplete, onHudUpdate }) {
           )}
 
           <button className="c4-btn c4-btn-primary" style={{ marginTop: "2rem" }} onClick={startGame}>Launch Match</button>
-          <button className="c4-btn c4-btn-ghost" onClick={() => setScreen("welcome")}>← Back</button>
+          <button className="c4-btn c4-btn-ghost" onClick={() => setScreen("players")}>← Back</button>
         </div>
       )}
 
@@ -509,6 +515,8 @@ export default function Connect4({ onComplete, onHudUpdate }) {
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
 
         .c4-root * { box-sizing: border-box; }
+        .c4-welcome-start { position:absolute; left:72%; top:66%; z-index:2; width:19%; height:15%; border:0; border-radius:999px; background:transparent; cursor:pointer; }
+        .c4-welcome-start:focus-visible { outline:4px solid #fff; outline-offset:5px; }
 
         .c4-card {
           background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.015)),
@@ -555,6 +563,7 @@ export default function Connect4({ onComplete, onHudUpdate }) {
         .c4-card-welcome .c4-brand { font-size: clamp(3rem, 9vw, 5.6rem); margin-bottom: 0.4rem; }
         .c4-card-welcome .c4-sub { font-size: clamp(0.95rem, 1.7vw, 1.3rem); letter-spacing: 9px; margin-bottom: clamp(2.4rem, 6vh, 4rem); }
         .c4-card-welcome .c4-btn { padding: clamp(1.15rem, 2.6vh, 1.55rem) 1.8rem; font-size: clamp(1.05rem, 1.9vw, 1.35rem); border-radius: 130px; margin-bottom: 1.15rem; }
+        .c4-card-player-count { width:min(92vw, 520px); }
 
         .c4-label { font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 4px; color: #4a5568; opacity: 0.7; text-transform: uppercase; margin-bottom: 0.8rem; }
         .c4-input {
@@ -624,7 +633,7 @@ export default function Connect4({ onComplete, onHudUpdate }) {
         /* ── fit within the viewport without scrolling.                     */
         .c4-game-row {
           display: flex; align-items: center; justify-content: center;
-          gap: clamp(0.8rem, 2.4vw, 2.2rem);
+          gap: clamp(0.35rem, 0.9vw, 0.8rem);
         }
 
         /* ── Portrait player panel — replaces the old navbar badges; lives ── */
@@ -731,6 +740,7 @@ export default function Connect4({ onComplete, onHudUpdate }) {
         }
 
         @media (max-width: 720px) {
+          .c4-welcome-start { left:62%; top:66%; width:30%; height:15%; }
           .c4-game-row { flex-direction: column; gap: 0.6rem; }
           .c4-side-panel {
             flex-direction: row; width: 100%; max-width: 380px; padding: 0.5rem 1rem;

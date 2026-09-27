@@ -378,6 +378,30 @@
 .find-letter-action { min-height: 42px; padding: 9px 19px; }
 .find-letter-confetti { position: fixed; }
 
+/* Use the game shell's full canvas and give the picture choices most of the space. */
+.find-letter-game {
+  width: 100%;
+  max-width: none;
+  padding: clamp(10px, 1vw, 18px);
+}
+.find-letter-layout {
+  min-height: 0;
+  grid-template-columns: minmax(0, 1.65fr) minmax(280px, .75fr);
+  gap: clamp(14px, 2vw, 28px);
+}
+.find-letter-board {
+  width: 100%;
+  max-width: none;
+  gap: clamp(8px, 1vw, 14px);
+}
+.find-letter-card { aspect-ratio: 1.28 / 1; }
+.find-letter-emoji { font-size: clamp(3.5rem, 9vh, 6.5rem); }
+.find-letter-word { font-size: clamp(1.1rem, 2vw, 1.6rem); }
+.find-letter-tap { font-size: clamp(.58rem, .8vw, .72rem); }
+.find-letter-game .find-letter-intro h1 { font-size: clamp(1.8rem, 3.2vw, 3rem); }
+.find-letter-instruction { font-size: clamp(1rem, 1.6vw, 1.25rem); }
+.find-letter-target { min-width: 104px; min-height: 86px; font-size: 2.6rem; }
+
 @media (max-height: 760px) and (min-width: 681px) {
   .find-letter-game { gap: 7px; padding-block: 9px; }
   .find-letter-instruction { margin-block: 4px 6px; }
@@ -397,6 +421,12 @@
   .find-letter-card { aspect-ratio: 1 / 1.05; border-radius: 17px; }
   .find-letter-card-face { border-width: 2px; }
   .find-letter-tap { font-size: .48rem; }
+}
+
+@media (max-width: 680px) {
+  .find-letter-layout { grid-template-columns: 1fr; gap: 10px; }
+  .find-letter-card { aspect-ratio: 1.15 / 1; }
+  .find-letter-emoji { font-size: clamp(2.8rem, 12vw, 4.5rem); }
 }
 
 @media (max-width: 680px) and (max-height: 760px) {

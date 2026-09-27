@@ -3,15 +3,19 @@
 import { useEffect, useState } from 'react';
 import ProfileNameAutofill from '../shared/ProfileNameAutofill';
 
-const TOTAL = 15;
+const LEVELS = {
+  easy: { rounds: 10, description: 'Addition and subtraction, with a little extra time.' },
+  medium: { rounds: 15, description: 'Mix operations as the race gets trickier.' },
+  hard: { rounds: 20, description: 'All operations from the start, with a faster rival.' },
+};
 const AVATARS = ['🏎️', '🚀', '🦄', '🐉', '🐙', '🦊', '🐸', '🦖', '🐝', '👽', '🤖', '🐳'];
 
 function randomBetween(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function makeQuestion(round) {
-  const difficulty = Math.min(Math.floor(round / 3), 2);
+function makeQuestion(round, level = 'medium') {
+  const difficulty = level === 'easy' ? Math.min(Math.floor(round / 4), 1) : level === 'hard' ? 2 : Math.min(Math.floor(round / 3), 2);
   const ops = ['+', '-', '×'];
   const op = ops[randomBetween(0, Math.min(ops.length - 1, difficulty))];
   let a = 0;
@@ -42,19 +46,21 @@ function makeQuestion(round) {
 export default function MathRacing({ onComplete, onHudUpdate, profileName }) {
   const [avatar, setAvatar] = useState('🚀');
   const [playerName, setPlayerName] = useState(profileName || '');
-  const [screen, setScreen] = useState('setup');
+  const [screen, setScreen] = useState('menu');
+  const [difficulty, setDifficulty] = useState('medium');
   const [playerProgress, setPlayerProgress] = useState(0);
   const [cpuProgress, setCpuProgress] = useState(0);
   const [round, setRound] = useState(1);
   const [score, setScore] = useState(0);
-  const [question, setQuestion] = useState(() => makeQuestion(1));
+  const [question, setQuestion] = useState(() => makeQuestion(1, 'medium'));
   const [feedback, setFeedback] = useState('');
   const [answered, setAnswered] = useState(false);
   const [winner, setWinner] = useState('');
+  const totalRounds = LEVELS[difficulty].rounds;
 
   useEffect(() => {
-    onHudUpdate?.(screen === 'race' ? { score, question: `${Math.min(round, TOTAL)}/${TOTAL}` } : null);
-  }, [onHudUpdate, round, score, screen]);
+    onHudUpdate?.(screen === 'race' ? { score, question: `${Math.min(round, totalRounds)}/${totalRounds}` } : null);
+  }, [onHudUpdate, round, score, screen, totalRounds]);
 
   const startGame = () => {
     setPlayerProgress(0);
@@ -64,7 +70,7 @@ export default function MathRacing({ onComplete, onHudUpdate, profileName }) {
     setScore(0);
     setAnswered(false);
     setWinner('');
-    setQuestion(makeQuestion(1));
+    setQuestion(makeQuestion(1, difficulty));
     setScreen('race');
   };
 
@@ -96,20 +102,21 @@ export default function MathRacing({ onComplete, onHudUpdate, profileName }) {
   };
 
   const nextQuestion = () => {
-    if (round >= TOTAL) {
+    if (round >= totalRounds) {
       setWinner(playerProgress >= cpuProgress ? 'You Win!' : 'CPU Wins!');
-      onComplete?.(score, Math.round((score / (TOTAL * 10)) * 100));
+      onComplete?.(score, Math.round((score / (totalRounds * 10)) * 100));
       return;
     }
 
     setRound((current) => current + 1);
     setAnswered(false);
     setFeedback('');
-    const next = makeQuestion(round + 1);
+    const next = makeQuestion(round + 1, difficulty);
     setQuestion(next);
 
-    if (Math.random() < 0.45) {
-      moveCpu(randomBetween(10, 15));
+    const cpuChance = difficulty === 'hard' ? 0.65 : difficulty === 'easy' ? 0.3 : 0.45;
+    if (Math.random() < cpuChance) {
+      moveCpu(randomBetween(difficulty === 'hard' ? 12 : 10, difficulty === 'hard' ? 18 : 15));
     }
   };
 
@@ -135,10 +142,27 @@ export default function MathRacing({ onComplete, onHudUpdate, profileName }) {
     <main className="math-racing-game">
       <style>{STYLES}</style>
       <div className="math-racing-shell">
+        {screen === 'menu' && (
+          <section className="math-racing-level-menu" aria-labelledby="math-racing-level-title">
+            <div className="math-racing-setup-icon" aria-hidden="true">🏁</div>
+            <p className="math-racing-menu-kicker">Choose your challenge</p>
+            <h1 id="math-racing-level-title">Math Racing</h1>
+            <p className="math-racing-menu-copy">Pick a level to start your race.</p>
+            <div className="math-racing-level-grid">
+              {Object.entries(LEVELS).map(([level, details]) => (
+                <button type="button" key={level} className={`math-racing-level-card${difficulty === level ? ' selected' : ''}`} onClick={() => { setDifficulty(level); setScreen('setup'); }}>
+                  <strong>{level}</strong><span>{details.rounds} questions</span><small>{details.description}</small><b>Choose level →</b>
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
+
         {screen === 'setup' && (
           <form className="math-racing-setup" onSubmit={startRace}>
             <div className="math-racing-setup-icon" aria-hidden="true">🏁</div>
             <h1>Math Racing</h1>
+            <button type="button" className="math-racing-selected-level" onClick={() => setScreen('menu')}>Level: {difficulty} · Change</button>
             <p>Choose your racer and get ready to solve your way to the finish line.</p>
             <label htmlFor="math-racing-player-name">Your name</label>
             <input id="math-racing-player-name" value={playerName} onChange={(event) => setPlayerName(event.target.value)} placeholder="Enter your name" maxLength={24} autoComplete="name" autoFocus required />
@@ -159,7 +183,7 @@ export default function MathRacing({ onComplete, onHudUpdate, profileName }) {
               </div>
               <div className="math-racing-status">
                 <span>⭐ {score}</span>
-                <span>❓ Q: {Math.min(round, TOTAL)}/{TOTAL}</span>
+                <span>❓ Q: {Math.min(round, totalRounds)}/{totalRounds}</span>
               </div>
             </section>
 
@@ -219,6 +243,7 @@ export default function MathRacing({ onComplete, onHudUpdate, profileName }) {
             <h2>{winner}</h2>
             <p>Score: {score}</p>
             <button type="button" onClick={startGame}>Race Again! 🏎️</button>
+            <button type="button" className="math-racing-change-level" onClick={() => setScreen('menu')}>Choose a different level</button>
           </div>
         )}
       </div>
@@ -236,7 +261,9 @@ const STYLES = `
   color: white;
   font-family: 'Nunito', var(--font-body), sans-serif;
   overflow: hidden;
+  user-select: none;
 }
+.math-racing-game input { user-select:text; }
 .math-racing-shell {
   width: min(1100px, 94vw);
   display: flex;
@@ -245,6 +272,26 @@ const STYLES = `
   padding: 22px 20px 36px;
   text-align: center;
 }
+.math-racing-level-menu {
+  width: min(100%, 980px);
+  padding: clamp(24px, 5vw, 58px);
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 28px;
+  background: linear-gradient(145deg, #24244a, #111b38);
+  box-shadow: 0 18px 50px rgba(0,0,0,.28);
+  text-align: center;
+}
+.math-racing-menu-kicker { margin: 0; color:#ff9dc9; font-size:.75rem; font-weight:900; letter-spacing:.16em; text-transform:uppercase; }
+.math-racing-level-menu h1 { margin:4px 0; color:#ffe66d; font:clamp(2.2rem,5vw,3.4rem) 'Fredoka One','Trebuchet MS',sans-serif; text-shadow:2px 2px 0 #e84393; }
+.math-racing-menu-copy { margin:0 0 26px; color:#d5d7ef; }
+.math-racing-level-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+.math-racing-level-card { display:flex; min-height:230px; flex-direction:column; align-items:flex-start; gap:10px; padding:22px; border:1px solid rgba(255,255,255,.15); border-radius:20px; background:linear-gradient(155deg,#202b55,#17203e); color:#f4f2ff; text-align:left; cursor:pointer; transition:transform .18s,border-color .18s,box-shadow .18s; }
+.math-racing-level-card:hover,.math-racing-level-card.selected { transform:translateY(-3px); border-color:#ffe66d; box-shadow:0 10px 28px rgba(0,0,0,.22),0 0 0 2px rgba(255,230,109,.12); }
+.math-racing-level-card strong { color:#ffe66d; font:2rem 'Fredoka One','Trebuchet MS',sans-serif; text-transform:capitalize; }
+.math-racing-level-card span { color:#ff9dc9; font-weight:900; }
+.math-racing-level-card small { color:#c4c8e0; line-height:1.5; }
+.math-racing-level-card b { margin-top:auto; color:#7be8d3; }
+.math-racing-selected-level { align-self:center; padding:7px 12px; border:1px solid #ffe66d55; border-radius:999px; background:#ffe66d12; color:#ffe66d; font:700 .8rem 'Nunito',sans-serif; cursor:pointer; text-transform:capitalize; }
 .math-racing-setup {
   width: min(460px, 100%);
   display: flex;
@@ -389,6 +436,8 @@ const STYLES = `
 }
 @media (max-width: 700px) {
   .math-racing-shell { width: min(96vw, 620px); padding: 16px 10px 28px; }
+  .math-racing-level-grid { grid-template-columns:1fr; }
+  .math-racing-level-card { min-height:0; }
   .math-racing-track { padding: 10px; gap: 8px; }
   .math-racing-track-label { width: 82px; }
   .math-racing-track-label span { font-size: .82rem; }
@@ -434,6 +483,7 @@ const STYLES = `
   font-family: 'Fredoka One', 'Trebuchet MS', sans-serif;
   cursor: pointer;
 }
+.math-racing-winner-banner .math-racing-change-level { background:transparent; border:1px solid rgba(255,255,255,.25); font-size:1rem; color:#d5d7ef; }
 @keyframes math-racing-bounce {
   from { transform: scale(1); }
   to { transform: scale(1.1); }

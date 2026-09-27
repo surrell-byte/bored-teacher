@@ -20,6 +20,16 @@ interface GameResult {
   gameId: string;
 }
 
+interface ColourClashHud {
+  round: number;
+  score: number;
+  lives: number;
+  totalLives: number;
+  phase: 'showing' | 'input' | 'correct' | 'wrong' | 'idle' | 'gameover';
+  sequenceLength: number;
+  sequenceProgress: number;
+}
+
 const GAMES_WITH_WELCOME = new Set([
    'animalAdventureRace', 'connect4', 'farmgame', 'findmyfood', 'flagmaster', 'emojimatch',
   'finnthefox', 'hiddencolours', 'oceanquest', 'parachutedrop', 'weatherwizard',
@@ -69,8 +79,33 @@ export default function GamePage() {
   const [whatsMissingHud, setWhatsMissingHud] = useState<any>(null);
   const [whatsMissingTheme, setWhatsMissingTheme] = useState('green');
   const [moneyBlocksTheme, setMoneyBlocksTheme] = useState('black');
-  const [findMyFoodTheme, setFindMyFoodTheme] = useState('dark');
+  const [findMyFoodTheme, setFindMyFoodTheme] = useState('safari');
   const [mathRacingHud, setMathRacingHud] = useState<any>(null);
+  const [colourClashHud, setColourClashHud] = useState<ColourClashHud | null>(null);
+
+  useEffect(() => {
+    const assets: Record<string, string[]> = {
+      buildtower: ['/assets/games/build-the-tower/build-the-tower-welcome-screen.png', '/assets/games/build-the-tower/build-the-tower-floating-islands-bg.png', '/assets/games/build-the-tower/build-the-tower-jungle-bg.png', '/assets/games/build-the-tower/build-the-tower-game-bg.png'],
+      connect4: ['/assets/games/connect-4/connect-4-welcome.webp', '/assets/games/connect-4/connect-4-main-menu.webp', '/assets/games/connect-4/connect-4-user-input.webp', '/assets/games/connect-4/connect-4-game-screen.webp'],
+      emojisportsquiz: ['/assets/games/sports-quiz/sports-quiz-welcome-bg.webp', '/assets/games/sports-quiz/sports-quiz-welcome-phone-bg.webp', '/assets/games/sports-quiz/vocab-game-bg.png', '/assets/games/sports-quiz/spelling-game-bg.png', '/assets/games/sports-quiz/sentence-game-bg.png'],
+      tictacroll: ['/assets/images/tic-tac-roll-welcome-page-bg.webp', '/assets/images/tic-tac-roll-user-input-screen-bg.webp', '/assets/images/tic-tac-roll-welcome-bg.webp'],
+      weatherwizard: ['/assets/games/weather-wizard/weather-wizards-welcome-bg.webp', '/assets/games/weather-wizard/weather-wizards-classroom-bg.webp', '/assets/games/weather-wizard/weather-wizards-summer-bg.webp', '/assets/games/weather-wizard/weather-wizards-spring-bg.webp', '/assets/games/weather-wizard/weather-wizards-astronomy-tower-bg.webp', '/assets/games/weather-wizard/weather-wizards-autumn-bg.webp', '/assets/games/weather-wizard/weather-wizards-winter-bg.webp', '/assets/games/weather-wizard/weather-wizards-courtyard-bg.webp'],
+      zoogame: ['/assets/games/zoo-game/zoo-game-menu-bg.webp', '/assets/games/zoo-game/zoo-game-game-bg.webp', '/assets/games/zoo-game/zoo-game-user-input-bg.webp'],
+      snowyslopes: ['/assets/games/snowy-slopes/snowy-slopes-welcome-bg.webp', '/assets/games/snowy-slopes/snowy-slopes-welcome-phone-bg.webp', '/assets/games/snowy-slopes/snowy-slopes-game-screen-bg.webp', '/assets/games/snowy-slopes/snowy-slopes-game-screen-phone-bg.webp'],
+    };
+    const queue = assets[gameId] || [];
+    if (!queue.length) return;
+    const load = (src: string) => { const image = new Image(); image.decoding = 'async'; image.src = src; image.decode?.().catch(() => {}); };
+    load(queue[0]);
+    const rest = queue.slice(1);
+    const idleId = 'requestIdleCallback' in window
+      ? window.requestIdleCallback(() => rest.forEach(load), { timeout: 1200 })
+      : window.setTimeout(() => rest.forEach(load), 250);
+    return () => {
+      if ('cancelIdleCallback' in window && typeof idleId === 'number') window.cancelIdleCallback(idleId);
+      else window.clearTimeout(idleId as number);
+    };
+  }, [gameId]);
 
   useEffect(() => {
     setShowRouteWelcome(!GAMES_WITH_WELCOME.has(gameId));
@@ -146,11 +181,14 @@ export default function GamePage() {
   const isWhatsMissing = gameId === 'whatsmissing';
   const isMoneyBlocks = gameId === 'moneyblocks';
   const isMathRacing = gameId === 'mathracing';
+  const isColourClash = gameId === 'colourclash';
   const findMyFoodShellTheme = {
-    dark: { nav: '#111215', navRaised: '#252529', navText: '#f0ede8', navMuted: '#b9b3aa', background: '#0d0d0f' },
-    light: { nav: '#f4f1eb', navRaised: '#ffffff', navText: '#1a1814', navMuted: '#6b6258', background: '#f4f1eb' },
-    gold: { nav: '#141416', navRaised: '#2a2520', navText: '#f0ede8', navMuted: '#c7b27d', background: '#0d0d0f' },
-  }[findMyFoodTheme] ?? { nav: '#111215', navRaised: '#252529', navText: '#f0ede8', navMuted: '#b9b3aa', background: '#0d0d0f' };
+    forest: { nav: '#123B25', navRaised: '#39D353', navText: '#F4FFE9', navMuted: '#8BEA24', background: '#063B2A' },
+    safari: { nav: '#4A2C18', navRaised: '#F4A62A', navText: '#FFF6D6', navMuted: '#E6C35A', background: '#8B5A2B' },
+    ocean: { nav: '#063B5B', navRaised: '#18BFE8', navText: '#E8FFFF', navMuted: '#35E0D0', background: '#075985' },
+    arctic: { nav: '#193B5A', navRaised: '#63D8FF', navText: '#F4FCFF', navMuted: '#A9E8FF', background: '#326B91' },
+    dino: { nav: '#21451D', navRaised: '#58C93C', navText: '#F4FFE9', navMuted: '#9BE33F', background: '#174B35' },
+  }[findMyFoodTheme] ?? { nav: '#4A2C18', navRaised: '#F4A62A', navText: '#FFF6D6', navMuted: '#E6C35A', background: '#8B5A2B' };
   const moneyBlocksShellTheme = {
     black: { nav: '#080809', navRaised: '#202127', navText: '#f0ece2', navMuted: '#aaa49b', background: '#080809' },
     gold: { nav: '#171109', navRaised: '#3a2912', navText: '#fff7df', navMuted: '#dfc681', background: '#171109' },
@@ -200,7 +238,16 @@ export default function GamePage() {
   function handleMainMenu() {
     setResult(null);
     setC4Hud(null);
-    if (gameId === 'bowlingbattle') {
+    if (gameId === 'connect4') {
+      setShowRouteWelcome(false);
+      window.dispatchEvent(new Event('connect4:main-menu'));
+    } else if (isColourClash) {
+      setColourClashHud(null);
+      if (showRouteWelcome) setShowRouteWelcome(false);
+      else window.dispatchEvent(new Event('colour-clash:main-menu'));
+    } else if (gameId === 'lookandsay') {
+      window.dispatchEvent(new Event('look-and-say:main-menu'));
+    } else if (gameId === 'bowlingbattle') {
       window.dispatchEvent(new Event('bowling-battle:main-menu'));
     } else if (gameId === 'generalknowledgequiz') {
       setShowRouteWelcome(false);
@@ -328,11 +375,20 @@ export default function GamePage() {
         hideExitControl={false}
         controls={null}
         themeVars={isTicTacRoll ? { nav: ticTheme.surface, navRaised: ticTheme.bg, navText: ticTheme.text, navMuted: ticTheme.muted, background: ticTheme.bg } : isAlphabetHunt ? { nav: alphabetTheme === 'ocean' ? '#087f8c' : alphabetTheme === 'arcade' ? '#352354' : '#1b1b1f', navRaised: alphabetTheme === 'ocean' ? '#e5a83b' : alphabetTheme === 'arcade' ? '#ff71ce' : '#c98a2c', navText: '#fffaf0', navMuted: '#eee8da', background: alphabetTheme === 'ocean' ? '#dff4f2' : alphabetTheme === 'arcade' ? '#24183d' : '#eee8da' } : isWordFusion ? { nav: wordFusionTheme === 'forest' ? '#214c3c' : wordFusionTheme === 'sunset' ? '#7b3f2e' : '#245b6c', navRaised: wordFusionTheme === 'forest' ? '#75b798' : wordFusionTheme === 'sunset' ? '#e29b52' : '#8ed1d5', navText: '#fffaf0', navMuted: '#d6eeee', background: wordFusionTheme === 'forest' ? '#dcefe2' : wordFusionTheme === 'sunset' ? '#f4d4b5' : '#d9eef0' } : isZooGame ? zooShellTheme : isFruitWordHunt ? { nav: '#a5662a', navRaised: '#f7b05e', navText: '#fffbee', navMuted: '#fff0cf', background: '#ffe0b5' } : isFlagmaster ? { nav: flagDarkMode ? '#05070d' : '#0b1628', navRaised: flagDarkMode ? '#121a2c' : '#1a3358', navText: flagDarkMode ? '#d4daf0' : '#f9f3e3', navMuted: flagDarkMode ? '#aebbd2' : '#f0e6c8', background: flagDarkMode ? '#05070d' : '#f9f3e3' } : (isFindMyFood || isEmojiMatch) ? findMyFoodShellTheme : isMoneyBlocks ? moneyBlocksShellTheme : undefined}
-        themeOptions={isTicTacRoll ? TIC_TAC_ROLL_THEMES.map(theme => ({ id: theme.id, name: theme.name })) : isAlphabetHunt ? [{ id: 'classroom', name: 'Classroom' }, { id: 'ocean', name: 'Ocean' }, { id: 'arcade', name: 'Arcade' }] : isWordFusion ? [{ id: 'ocean', name: 'Ocean' }, { id: 'forest', name: 'Forest' }, { id: 'sunset', name: 'Sunset' }] : isZooGame ? [{ id: 'savanna', name: 'Savanna' }, { id: 'ocean', name: 'Ocean' }, { id: 'jungle', name: 'Jungle' }] : isWhatsMissing ? [{ id: 'green', name: 'Green' }, { id: 'blue', name: 'Blue' }, { id: 'red', name: 'Red' }, { id: 'yellow', name: 'Yellow' }, { id: 'white', name: 'White' }, { id: 'black', name: 'Black' }] : isMoneyBlocks ? [{ id: 'black', name: 'Black' }, { id: 'gold', name: 'Gold' }, { id: 'white', name: 'White' }] : (isFindMyFood || isEmojiMatch) ? [{ id: 'dark', name: 'Dark' }, { id: 'light', name: 'Light' }, { id: 'gold', name: 'Gold' }] : undefined}
+        themeOptions={isTicTacRoll ? TIC_TAC_ROLL_THEMES.map(theme => ({ id: theme.id, name: theme.name })) : isAlphabetHunt ? [{ id: 'classroom', name: 'Classroom' }, { id: 'ocean', name: 'Ocean' }, { id: 'arcade', name: 'Arcade' }] : isWordFusion ? [{ id: 'ocean', name: 'Ocean' }, { id: 'forest', name: 'Forest' }, { id: 'sunset', name: 'Sunset' }] : isZooGame ? [{ id: 'savanna', name: 'Savanna' }, { id: 'ocean', name: 'Ocean' }, { id: 'jungle', name: 'Jungle' }] : isWhatsMissing ? [{ id: 'green', name: 'Green' }, { id: 'blue', name: 'Blue' }, { id: 'red', name: 'Red' }, { id: 'yellow', name: 'Yellow' }, { id: 'white', name: 'White' }, { id: 'black', name: 'Black' }] : isMoneyBlocks ? [{ id: 'black', name: 'Black' }, { id: 'gold', name: 'Gold' }, { id: 'white', name: 'White' }] : (isFindMyFood || isEmojiMatch) ? [{ id: 'forest', name: 'Enchanted Forest' }, { id: 'safari', name: 'African Safari' }, { id: 'ocean', name: 'Ocean Adventure' }, { id: 'arctic', name: 'Arctic Expedition' }, { id: 'dino', name: 'Dinosaur Island' }] : undefined}
         themeValue={isTicTacRoll ? ticTheme.id : isAlphabetHunt ? alphabetTheme : isWordFusion ? wordFusionTheme : isZooGame ? zooTheme : isWhatsMissing ? whatsMissingTheme : isMoneyBlocks ? moneyBlocksTheme : isFindMyFood ? findMyFoodTheme : undefined}
         onThemeChange={isTicTacRoll ? themeId => setTicTheme(TIC_TAC_ROLL_THEMES.find(theme => theme.id === themeId) ?? TIC_TAC_ROLL_THEMES[0]) : isAlphabetHunt ? setAlphabetTheme : isWordFusion ? setWordFusionTheme : isZooGame ? setZooTheme : isWhatsMissing ? setWhatsMissingTheme : isMoneyBlocks ? setMoneyBlocksTheme : isFindMyFood ? setFindMyFoodTheme : undefined}
         headerExtra={
           <>
+            {isColourClash && colourClashHud && (
+              <span className="game-shell-topbar-stats" aria-label="Colour Clash game progress" style={{ flexWrap: 'wrap' }}>
+                <span className="game-shell-topbar-stat"><b>Round {colourClashHud.round}</b></span>
+                <span className="game-shell-topbar-stat"><b>⭐ {colourClashHud.score}</b></span>
+                <span className="game-shell-topbar-stat"><b>{'❤️'.repeat(colourClashHud.lives)}{'🖤'.repeat(colourClashHud.totalLives - colourClashHud.lives)}</b></span>
+                <span className="game-shell-topbar-stat"><b>{colourClashHud.phase === 'showing' ? '👀 Watch' : colourClashHud.phase === 'input' ? '👆 Repeat' : colourClashHud.phase === 'correct' ? '✅ Correct' : colourClashHud.phase === 'wrong' ? '❌ Wrong' : 'Get ready'}</b></span>
+                <span className="game-shell-topbar-stat"><b>{colourClashHud.sequenceProgress}/{colourClashHud.sequenceLength}</b><span>Sequence</span></span>
+              </span>
+            )}
             {isVocabValley && <button className="game-shell-header-action" type="button" onClick={() => window.dispatchEvent(new Event('vocab-valley:trail-map'))} aria-label="Trail map" title="Trail map"><span aria-hidden="true">←</span><span className="game-shell-action-label">Trail map</span></button>}
             {isCountAdd && countAddHud && (
               <>
@@ -516,6 +572,7 @@ export default function GamePage() {
               {...(isWeatherWizard ? { onHudUpdate: setWeatherWizardHud } : {})}
               {...(isSnowySlopes ? { onHudUpdate: setSnowySlopesHud } : {})}
               {...(isMathRacing ? { onHudUpdate: setMathRacingHud } : {})}
+              {...(isColourClash ? { onHudUpdate: setColourClashHud } : {})}
               {...(isAnimalClass ? { onHudUpdate: setAnimalClassHud } : {})}
               {...(isFlagmaster ? { darkMode: flagDarkMode, isCreator } : {})}
               {...(isZooGame ? { themeId: zooTheme } : {})}

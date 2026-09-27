@@ -275,7 +275,7 @@ select.fm-field-input { cursor:pointer; }
 .fm-message-panel.fm-msg-correct { background: rgba(46,204,113,0.08); border-color: rgba(46,204,113,0.3); color:#1a6b3a; }
 .fm-message-panel.fm-msg-wrong { background: rgba(231,76,60,0.08); border-color: rgba(231,76,60,0.3); color:#8b1a1a; }
 
-.fm-map-frame { position:relative; width:100%; height:340px; background: radial-gradient(circle at 50% 50%, #1a3358, #0b1628); border-radius:2px; margin:20px 0; overflow:hidden; box-shadow: inset 0 0 40px rgba(0,0,0,0.5), 0 8px 32px rgba(0,0,0,0.3); }
+.fm-map-frame { position:relative; width:100%; height:340px; background: url('/assets/games/flagmaster/flagmaster-mission-map-bg.webp') center / cover no-repeat, radial-gradient(circle at 50% 50%, #1a3358, #0b1628); border-radius:2px; margin:20px 0; overflow:hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
 .fm-map-node { position:absolute; width:56px; height:56px; border-radius:50%; background: rgba(17,34,64,0.85); border:2px solid rgba(201,168,76,0.4); display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:1.6rem; transform: translate(-50%,-50%); cursor:pointer; transition: all .25s cubic-bezier(.2,.9,.3,1.2); z-index:5; box-shadow: 0 4px 16px rgba(0,0,0,0.4); }
 .fm-map-node.fm-breathe { animation: fm-breathe 3s ease-in-out infinite; }
 @keyframes fm-breathe { 0%,100% { transform: translate(-50%,-50%) scale(1); } 50% { transform: translate(-50%,-50%) scale(1.05); } }

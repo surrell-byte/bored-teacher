@@ -46,6 +46,7 @@ export const TEACHER_PRO_GAME_IDS = new Set([
   'tornado',
   'vocabvalley',
   'tilelanes',
+  'snowyslopes',
 ]);
 
 export function canAccessGame(gameId: string) {

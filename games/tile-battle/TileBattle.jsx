@@ -32,7 +32,6 @@ export const THEMES = {
   rose:    { bg: "#1a0812", surface: "#280d1c", surface2: "#381228", border: "#601838", border2: "#8a2050", text: "#ffe0ee", text2: "#c878a0", accent: "#c0305a", accent2: "#9a2048" },
   slate:   { bg: "#0e1117", surface: "#161b25", surface2: "#1e2535", border: "#2a3348", border2: "#3c4d68", text: "#e0e8f8", text2: "#7888a8", accent: "#4a7abf", accent2: "#375e99" },
 };
-const THEME_KEYS = Object.keys(THEMES);
 
 // ── Sound effects ── (drop matching mp3s in public/assets/sounds/tile-battle/ — missing files fail silently)
 const SFX_FILES = {
@@ -56,8 +55,9 @@ function buildTiles() {
   return shuffle(out);
 }
 
-// applies an outcome, MUTATES the hp array passed in, returns both description and floating numbers info
-function applyOutcome(type, actor, target, hp, names) {
+// Resolve combat without mutating React state or the caller's HP array.
+function applyOutcome(type, actor, target, currentHp, names) {
+  const hp = [...currentHp];
   const p = names[actor], o = names[target];
   const floatingNumbers = [];
   let desc = "";
@@ -97,7 +97,17 @@ function applyOutcome(type, actor, target, hp, names) {
     default:
       desc = "";
   }
-  return { desc, floatingNumbers };
+  return {
+    hp: hp.map((value) => Math.max(0, Math.min(100, value))),
+    desc,
+    floatingNumbers,
+    type,
+    actor,
+    target,
+    color: OUTCOME_COLOR[type],
+    sound: SFX_FOR_OUTCOME[type],
+    intensity: type === 6 ? "devastating" : type === 1 || type === 3 ? "heavy" : "normal",
+  };
 }
 
 // one-time global stylesheet for keyframe animations (can't express these as inline style objects)
@@ -117,6 +127,14 @@ const FX_STYLE = `
 @keyframes tb-floatNumber { 0% { opacity:0; transform:translate(-50%,-50%) scale(.5); } 20% { opacity:1; transform:translate(-50%,-65%) scale(1.25); } 100% { opacity:0; transform:translate(-50%,-140%) scale(.9); } }
 @keyframes tb-tileBounce { 0% { transform:translateY(0); } 40% { transform:translateY(-8px); } 70% { transform:translateY(2px); } 100% { transform:translateY(0); } }
 @keyframes tb-flipFlash { 0% { opacity:0; } 25% { opacity:.75; } 100% { opacity:0; } }
+@keyframes tb-damageShake { 0%,100% { transform:translateX(0); } 20% { transform:translateX(-7px); } 40% { transform:translateX(7px); } 60% { transform:translateX(-5px); } 80% { transform:translateX(4px); } }
+@keyframes tb-healthHit { 0% { opacity:0; } 25% { opacity:.9; } 100% { opacity:0; } }
+@keyframes tb-healthGlow { 0%,100% { filter:drop-shadow(0 0 0 transparent); } 50% { filter:drop-shadow(0 0 18px #22c55e); } }
+@keyframes tb-devastationFlash { 0% { opacity:0; } 15% { opacity:.82; } 100% { opacity:0; } }
+.tb-damage-trail { position:absolute; left:0; width:100%; background:rgba(255,255,255,.78); box-shadow:0 0 14px rgba(255,255,255,.55); transition:opacity .45s ease; }
+.tb-health-hit { position:absolute; inset:0; z-index:2; border-radius:inherit; background:rgba(255,255,255,.9); pointer-events:none; animation:tb-healthHit .35s ease-out forwards; }
+.tb-devastation-overlay { position:fixed; inset:0; z-index:5; background:rgba(0,0,0,.68); pointer-events:none; animation:tb-devastationFlash .45s ease-out forwards; }
+.tb-life-link { position:fixed; z-index:8; pointer-events:none; color:#d8a4ff; font-size:24px; text-shadow:0 0 15px #a855f7; animation:tb-particleFly .7s forwards ease-out; }
 .tb-banner-show { animation: tb-bannerShow .6s forwards; }
 .tb-banner-hide { animation: tb-bannerHide .35s forwards; }
 .tb-floating-number { position:fixed; transform:translate(-50%,-50%); pointer-events:none; font-weight:800; font-size:clamp(22px,2vw,34px); z-index:9999; text-shadow:0 2px 8px rgba(0,0,0,.35); animation:tb-floatNumber .9s forwards; }
@@ -138,10 +156,19 @@ export default function TileBattle({ onComplete, themeId }) {
   const [colors, setColors] = useState([COLORS[0].v, COLORS[2].v]);
 
   const [hp, setHp] = useState([100, 100]);
+  const [displayHp, setDisplayHp] = useState([100, 100]);
   const [turn, setTurn] = useState(0);
   const [tiles, setTiles] = useState(() => buildTiles());
   const [flipped, setFlipped] = useState(() => new Set());
   const [busy, setBusy] = useState(false);
+  const [activeTile, setActiveTile] = useState(null);
+  const [battlePhase, setBattlePhase] = useState("idle");
+  const [combatEvent, setCombatEvent] = useState(null);
+  const [hitPlayer, setHitPlayer] = useState(null);
+  const [healingPlayer, setHealingPlayer] = useState(null);
+  const [healthFlash, setHealthFlash] = useState(null);
+  const [healthTrails, setHealthTrails] = useState([null, null]);
+  const [devastation, setDevastation] = useState(false);
   const [banner, setBanner] = useState({ icon: "", text: "Choose a tile to begin!", color: null, show: true, key: 0 });
   const [end, setEnd] = useState(null); // { emoji, title, msg, winner, hp }
   const [particles, setParticles] = useState([]);
@@ -155,13 +182,15 @@ export default function TileBattle({ onComplete, themeId }) {
   // ── sound ──
   const sfxRef = useRef({});
   useEffect(() => {
+    const audioElements = {};
     Object.entries(SFX_FILES).forEach(([key, file]) => {
       const a = new Audio(`/assets/sounds/tile-battle/${file}`);
       a.volume = key === "music" ? 0.18 : 0.55;
       if (key === "music") a.loop = true;
-      sfxRef.current[key] = a;
+      audioElements[key] = a;
     });
-    return () => { Object.values(sfxRef.current).forEach((a) => a.pause()); };
+    sfxRef.current = audioElements;
+    return () => { Object.values(audioElements).forEach((a) => a.pause()); };
   }, []);
   const playSound = useCallback((key) => {
     const a = sfxRef.current[key];
@@ -223,7 +252,7 @@ export default function TileBattle({ onComplete, themeId }) {
   }, []);
 
   // ── floating numbers ──
-  const showFloatingNumber = useCallback((player, amount, heal = false) => {
+  const showFloatingNumber = useCallback((player, amount, heal = false, hpPercent = 100) => {
     const pillarId = player === 0 ? "pillar1" : "pillar2";
     const pillar = document.getElementById(pillarId);
     if (!pillar) return;
@@ -233,7 +262,7 @@ export default function TileBattle({ onComplete, themeId }) {
     setFloatingNumbers((prev) => [...prev, {
       id,
       left: rect.left + rect.width / 2,
-      top: rect.top + 40,
+      top: rect.bottom - rect.height * Math.max(0, Math.min(100, hpPercent)) / 100,
       text: (heal ? "+" : "-") + amount,
       heal,
       fontSize,
@@ -255,8 +284,17 @@ export default function TileBattle({ onComplete, themeId }) {
 
   const startGame = useCallback(() => {
     setHp([100, 100]);
+    setDisplayHp([100, 100]);
     setTurn(0);
     setBusy(false);
+    setActiveTile(null);
+    setBattlePhase("idle");
+    setCombatEvent(null);
+    setHitPlayer(null);
+    setHealingPlayer(null);
+    setHealthFlash(null);
+    setHealthTrails([null, null]);
+    setDevastation(false);
     setTiles(buildTiles());
     setFlipped(new Set());
     flipsRef.current = 0;
@@ -297,10 +335,11 @@ export default function TileBattle({ onComplete, themeId }) {
     onComplete?.(score, moves);
   }, [names, avatars, completeGame, onComplete, playSound, launchConfetti]);
 
-  const onTile = useCallback((idx, e) => {
+  const onTile = useCallback(async (idx, e) => {
     if (busy || flipped.has(idx)) return;
     setBusy(true);
-    setFlipped((prev) => new Set(prev).add(idx));
+    setActiveTile(idx);
+    setBattlePhase("lifting");
     flipsRef.current += 1;
     const thisFlipCount = flipsRef.current;
 
@@ -318,54 +357,86 @@ export default function TileBattle({ onComplete, themeId }) {
     });
 
     playSound("flip");
-    const rect = e.currentTarget.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2;
-    spawnParticles(cx, cy, OUTCOME_COLOR[type], type === 6 ? 45 : 20);
+    await new Promise((resolve) => setTimeout(resolve, 180));
+    setBattlePhase("flipping");
 
-    // Flip after lift
-    setTimeout(() => {
-      setHp((prevHp) => {
-        const newHp = [...prevHp];
-        const { desc, floatingNumbers: nums } = applyOutcome(type, actor, target, newHp, names);
-        newHp[0] = Math.max(0, Math.min(100, newHp[0]));
-        newHp[1] = Math.max(0, Math.min(100, newHp[1]));
-        
-        // Show floating numbers
-        nums.forEach(({ player, amount, heal }) => {
-          setTimeout(() => {
-            showFloatingNumber(player, amount, heal);
-          }, 100);
-        });
-        
-        showBanner(OD[type].e, desc, OUTCOME_COLOR[type]);
-        playSound(SFX_FOR_OUTCOME[type]);
+    // Let the tile pass through the hidden midpoint before resolving combat.
+    await new Promise((resolve) => setTimeout(resolve, 430));
+    const beforeHp = [...hp];
+    const event = applyOutcome(type, actor, target, beforeHp, names);
+    setFlipped((previous) => new Set(previous).add(idx));
+    setCombatEvent(event);
+    setBattlePhase("revealed");
 
-        // Landing animation
-        setTimeout(() => {
-          tileEl.animate([
-            { transform: "translateY(-12px) scale(1.05)" },
-            { transform: "translateY(3px) scale(.98)" },
-            { transform: "translateY(0px) scale(1)" }
-          ], {
-            duration: 220,
-            easing: "ease-out"
-          });
-        }, 650);
+    await new Promise((resolve) => setTimeout(resolve, 130));
+    setBattlePhase("impact");
+    const rect = tileEl.getBoundingClientRect();
+    spawnParticles(rect.left + rect.width / 2, rect.top + rect.height / 2, event.color, type === 6 ? 45 : type === 3 ? 28 : 20);
+    if (type === 6) {
+      setDevastation(true);
+      setTimeout(() => setDevastation(false), 420);
+    }
 
-        setTimeout(() => {
-          const p1Dead = newHp[0] <= 0, p2Dead = newHp[1] <= 0;
-          if (p1Dead || p2Dead || thisFlipCount >= TILE_COUNT) {
-            finishGame(p1Dead, p2Dead, newHp);
-          } else {
-            setTurn(target);
-            setBusy(false);
-          }
-        }, 900);
+    const damageTarget = event.floatingNumbers.find((number) => !number.heal)?.player;
+    const healingTargets = event.floatingNumbers.filter((number) => number.heal).map((number) => number.player);
+    if (damageTarget != null) {
+      setHitPlayer(damageTarget);
+      setHealthFlash(damageTarget);
+      if (event.hp[damageTarget] < beforeHp[damageTarget]) {
+        setHealthTrails((previous) => previous.map((value, player) => player === damageTarget ? beforeHp[player] : value));
+      }
+      setTimeout(() => {
+        setHitPlayer((player) => player === damageTarget ? null : player);
+        setHealthFlash((player) => player === damageTarget ? null : player);
+        setHealthTrails((previous) => previous.map((value, player) => player === damageTarget ? null : value));
+      }, 520);
+    }
+    healingTargets.forEach((player) => {
+      setHealingPlayer(player);
+      const pillar = document.getElementById(player === 0 ? "pillar1" : "pillar2");
+      if (pillar) {
+        const bounds = pillar.getBoundingClientRect();
+        spawnParticles(bounds.left + bounds.width / 2, bounds.bottom - bounds.height * (beforeHp[player] / 100), "#22c55e", 14);
+      }
+      setTimeout(() => setHealingPlayer((current) => current === player ? null : current), 520);
+    });
+    if (type === 3) {
+      const targetPillar = document.getElementById(target === 0 ? "pillar1" : "pillar2");
+      if (targetPillar) {
+        const bounds = targetPillar.getBoundingClientRect();
+        spawnParticles(bounds.left + bounds.width / 2, bounds.top + bounds.height / 2, "#a855f7", 24);
+      }
+    }
 
-        return newHp;
-      });
-    }, 180);
-  }, [busy, flipped, turn, tiles, names, finishGame, playSound, spawnParticles, showBanner, showFloatingNumber]);
+    event.floatingNumbers.forEach(({ player, amount, heal }) => {
+      showFloatingNumber(player, amount, heal, heal ? event.hp[player] : beforeHp[player]);
+    });
+    showBanner(OD[type].e, event.desc, event.color);
+    playSound(event.sound);
+    setHp(event.hp);
+    setTimeout(() => setDisplayHp(event.hp), 500);
+    tileEl.animate([
+      { transform: "translateY(-12px) scale(1.05)" },
+      { transform: "translateY(3px) scale(.98)" },
+      { transform: "translateY(0px) scale(1)" },
+    ], { duration: 220, easing: "ease-out" });
+
+    // Allow the damage trail and HP easing to finish before switching turns.
+    await new Promise((resolve) => setTimeout(resolve, 700));
+    const nextHp = event.hp;
+    const p1Dead = nextHp[0] <= 0, p2Dead = nextHp[1] <= 0;
+    setCombatEvent(null);
+    setBattlePhase("idle");
+    setActiveTile(null);
+    if (p1Dead || p2Dead || thisFlipCount >= TILE_COUNT) {
+      setBattlePhase("finished");
+      finishGame(p1Dead, p2Dead, nextHp);
+    } else {
+      setTurn(target);
+      showBanner("", `${names[target]}'s turn — choose a tile`, COLORS[target].v);
+      setBusy(false);
+    }
+  }, [busy, flipped, turn, tiles, names, hp, finishGame, playSound, spawnParticles, showBanner, showFloatingNumber]);
 
   // ── shared styling helpers (glass look — translucent surfaces over a themed gradient backdrop) ──
   const pageBg = {
@@ -430,6 +501,7 @@ export default function TileBattle({ onComplete, themeId }) {
           animation: `tb-confettiFall ${c.duration}s linear forwards`,
         }} />
       ))}
+      {devastation && <div className="tb-devastation-overlay" aria-hidden="true" />}
       {floatingNumbers.map((n) => (
         <div key={n.id} className={`tb-floating-number ${n.heal ? "heal" : "damage"}`} style={{
           left: `${n.left}px`,
@@ -515,21 +587,31 @@ export default function TileBattle({ onComplete, themeId }) {
 
   // ── GAME ──
   if (screen === "game") {
-    const panel = (pi) => (
+    const panel = (pi) => {
+      const health = Math.max(0, Math.min(100, hp[pi]));
+      const shownHealth = Math.max(0, Math.min(100, displayHp[pi]));
+      const healthState = health <= 0 ? "defeated" : health <= 30 ? "critical" : health <= 60 ? "wounded" : "healthy";
+      const trail = healthTrails[pi] == null ? 0 : Math.max(0, healthTrails[pi] - health);
+      const healthColor = health <= 30 ? "#ef4444" : colors[pi];
+      return (
       <div className="tile-battle-screen" style={{
         display: "flex", flexDirection: "column", alignItems: "center", gap: 12,
         ...glass, border: `1.5px solid ${turn === pi ? t.accent : t.border2}66`,
         boxShadow: turn === pi ? `0 0 35px ${t.accent}66, 0 18px 45px rgba(0,0,0,.18)` : glass.boxShadow,
         borderRadius: 16, padding: "1.8rem 1.4rem", minWidth: 150, transition: "border-color .25s,box-shadow .25s",
+        animation: hitPlayer === pi ? "tb-damageShake .45s ease" : healingPlayer === pi ? "tb-healthGlow .55s ease" : "none",
       }}>
         <div style={{ fontSize: 44 }}>{avatars[pi]}</div>
         <div style={{ fontSize: 17, fontWeight: 500, textAlign: "center" }}>{names[pi]}</div>
-        <div id={pi === 0 ? "pillar1" : "pillar2"} style={{ width: 34, flex: "0 0 180px", height: 180, background: t.surface2, borderRadius: 99, overflow: "hidden", position: "relative" }}>
-          <div style={{ position: "absolute", bottom: 0, left: 0, width: "100%", height: `${Math.max(0, Math.min(100, hp[pi]))}%`, background: colors[pi], borderRadius: 99, transition: "height .5s cubic-bezier(.4,0,.2,1)" }} />
+        <div id={pi === 0 ? "pillar1" : "pillar2"} className={`tb-health ${healthState}`} style={{ width: 34, flex: "0 0 180px", height: 180, background: t.surface2, borderRadius: 99, overflow: "hidden", position: "relative" }}>
+          <div style={{ position: "absolute", zIndex: 1, bottom: 0, left: 0, width: "100%", height: `${health}%`, background: healthColor, borderRadius: 99, boxShadow: healthState === "critical" ? "0 0 18px #ef4444" : `0 0 12px ${healthColor}88`, transition: "height .5s cubic-bezier(.4,0,.2,1), background .25s" }} />
+          {trail > 0 && <div className="tb-damage-trail" style={{ bottom: `${health}%`, height: `${trail}%` }} />}
+          {healthFlash === pi && <div className="tb-health-hit" />}
         </div>
-        <div style={{ fontSize: 15, color: t.text2 }}>{Math.round(Math.max(0, hp[pi]))}%</div>
+        <div style={{ fontSize: 15, color: t.text2 }}>{Math.round(shownHealth)}%</div>
       </div>
-    );
+      );
+    };
 
     return (
       <div style={{
@@ -548,6 +630,7 @@ export default function TileBattle({ onComplete, themeId }) {
           }}>
             {tiles.map((type, i) => {
               const isFlipped = flipped.has(i);
+              const isActive = activeTile === i;
               const od = OD[type];
               const gradients = {
                 1: "linear-gradient(180deg,#ff6b6b,#dc2626)",
@@ -563,6 +646,7 @@ export default function TileBattle({ onComplete, themeId }) {
                   perspective: 1200, position: "relative", userSelect: "none",
                   transformStyle: "preserve-3d",
                   transition: ".18s",
+                  transform: isActive && battlePhase === "lifting" ? "translateY(-12px) scale(1.05)" : "translateY(0) scale(1)",
                 }}>
                   {/* Flash overlay for flip effect */}
                   <div style={{
@@ -588,16 +672,17 @@ export default function TileBattle({ onComplete, themeId }) {
                     background: "rgba(0,0,0,.18)",
                     filter: "blur(10px)",
                     zIndex: -1,
-                    transform: isFlipped ? "scale(1.15)" : "scale(1)",
-                    opacity: isFlipped ? 0.6 : 1,
-                    transition: ".18s",
+                    transform: isActive ? "scale(1.35)" : isFlipped ? "scale(1.15)" : "scale(1)",
+                    opacity: isActive ? 0.45 : isFlipped ? 0.6 : 1,
+                    boxShadow: isActive && combatEvent ? `0 0 30px ${combatEvent.color}` : "none",
+                    transition: ".25s",
                   }} />
                   
                   <div style={{
                     width: "100%", height: "100%", position: "relative", transformStyle: "preserve-3d",
                     transition: "transform .65s cubic-bezier(.22,1,.36,1), filter .35s ease",
-                    transform: isFlipped ? "translateY(-10px) rotateY(180deg) scale(1.04)" : "rotateY(0deg)",
-                    animation: isFlipped ? "tb-tileBounce .35s .55s ease-out forwards" : "none",
+                    transform: isFlipped ? "translateY(-10px) rotateY(180deg) scale(1.04)" : isActive && battlePhase === "flipping" ? "translateY(-10px) rotateY(90deg) scale(1.04)" : "rotateY(0deg)",
+                    animation: isFlipped && isActive ? "tb-tileBounce .35s ease-out forwards" : "none",
                   }}>
                     <div style={{
                       position: "absolute", inset: 0, borderRadius: 18, display: "flex",
@@ -677,4 +762,3 @@ export default function TileBattle({ onComplete, themeId }) {
     </div>
   );
 }
-
