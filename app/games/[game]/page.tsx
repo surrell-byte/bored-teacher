@@ -47,6 +47,7 @@ export default function GamePage() {
   // it can render inside the GameShell navbar instead of the play area.
   const [c4Hud, setC4Hud] = useState<any>(null);
   const [readingRescueHud, setReadingRescueHud] = useState<any>(null);
+  const [riddleBombsHud, setRiddleBombsHud] = useState<any>(null);
   const [ticTheme, setTicTheme] = useState<TicTacRollTheme>(TIC_TAC_ROLL_THEMES[0]);
   const [flagDarkMode, setFlagDarkMode] = useState(false);
   const [zooTheme, setZooTheme] = useState('savanna');
@@ -242,6 +243,16 @@ export default function GamePage() {
     } else if (gameId === 'finnthefox') {
       setShowRouteWelcome(false);
       window.dispatchEvent(new Event('reading-rescue:main-menu'));
+    } else if (gameId === 'riddlebombs') {
+      setRiddleBombsHud(null);
+      setShowRouteWelcome(false);
+      window.dispatchEvent(new Event('riddle-bombs:main-menu'));
+    } else if (gameId === 'phonicsadventure') {
+      setShowRouteWelcome(false);
+      window.dispatchEvent(new Event('phonics-adventure:main-menu'));
+    } else if (gameId === 'phonicsworld') {
+      setShowRouteWelcome(false);
+      window.dispatchEvent(new Event('phonics-world:main-menu'));
     } else {
       setShowRouteWelcome(true);
       setGameSession(session => session + 1);
@@ -344,6 +355,13 @@ export default function GamePage() {
                   </select>
                 </label>
               </>
+            )}
+            {gameId === 'riddlebombs' && riddleBombsHud?.phase === 'game' && (
+              <span className="game-shell-topbar-stats" aria-label="Riddle Bombs progress">
+                <span className="game-shell-topbar-stat"><b>{riddleBombsHud.streak}</b><span>Streak</span></span>
+                <span className="game-shell-topbar-stat"><b>{riddleBombsHud.score}</b><span>Score</span></span>
+                <span className="game-shell-topbar-stat"><b>{riddleBombsHud.question}/10</b><span>Riddle</span></span>
+              </span>
             )}
             {isEmojiSports && emojiSportsHud && (
               <span className="game-shell-topbar-stats" aria-label="Sports Quiz progress">
@@ -488,6 +506,8 @@ export default function GamePage() {
             <GameComp
               key={gameSession}
               onComplete={handleComplete}
+              profileName={auth?.currentUser ? state.name : ''}
+              onHudUpdate={gameId === 'riddlebombs' ? setRiddleBombsHud : undefined}
               {...(isTicTacRoll ? { themeId: ticTheme.id, onThemeChange: setTicTheme } : {})}
               {...(isConnect4 ? { onHudUpdate: setC4Hud } : {})}
               {...(isReadingRescue ? { onHudUpdate: setReadingRescueHud } : {})}

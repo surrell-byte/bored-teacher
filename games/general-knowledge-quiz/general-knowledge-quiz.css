@@ -10,12 +10,12 @@
 .gk-quiz.is-intro{background-color:#09152b;background-image:linear-gradient(180deg,rgba(5,14,33,.12),rgba(5,14,33,.38)),url('/assets/games/general-knowledge-quiz/general-knowledge-quiz-main-menu-bg.webp');background-size:cover;background-repeat:no-repeat;background-position:center}
 .gk-quiz.is-play{background-color:#071321;background-image:linear-gradient(180deg,rgba(4,12,25,.12),rgba(4,12,25,.2)),url('/assets/games/general-knowledge-quiz/general-knowledge-quiz-game-screen-bg.webp');background-size:cover;background-repeat:no-repeat;background-position:center}
 .gk-quiz.is-results{background-color:#111a23;background-image:linear-gradient(180deg,rgba(7,16,32,.17),rgba(7,16,32,.36)),url('/assets/games/general-knowledge-quiz/general-knowledge-quiz-user-input-bg.webp');background-size:cover;background-repeat:no-repeat;background-position:center}
-.gk-question-image-frame{position:relative;align-self:center;width:min(100%,600px);height:clamp(110px,26vh,250px);overflow:hidden;border:1px solid rgba(167,198,243,.18);border-radius:14px;background:rgba(4,11,21,.4)}
+.gk-question-image-frame{position:relative;align-self:center;width:min(100%,760px);height:clamp(220px,42vh,440px);overflow:hidden;border:1px solid rgba(167,198,243,.18);border-radius:14px;background:rgba(4,11,21,.4)}
 .gk-question-image{object-fit:cover}
 
 .gk-quiz.is-play{display:flex;align-items:stretch;justify-content:center}
 .gk-quiz.is-play>.gk-play-layout{height:100%;flex:1 1 auto}
-.gk-feedback{width:100%}
+.gk-feedback{width:100%;grid-template-columns:minmax(0,1fr);justify-items:start}.gk-ladder .gk-feedback .gk-button{width:100%}
 @media(max-height:760px) and (min-width:761px){.gk-quiz{padding:12px}.gk-play-layout{gap:10px}.gk-question-panel{gap:12px;padding:18px}.gk-question-image-frame{height:clamp(90px,18vh,150px)}.gk-answer{min-height:54px;padding:8px 11px}.gk-feedback{gap:8px;padding:8px}.gk-ladder-step{min-height:24px}}
 .gk-quiz.is-userInfo{background-color:#09152b;background-image:linear-gradient(180deg,rgba(5,14,33,.18),rgba(5,14,33,.42)),url('/assets/games/general-knowledge-quiz/general-knowledge-quiz-user-input-bg.webp');background-size:cover;background-repeat:no-repeat;background-position:center}
 .gk-quiz.is-results{background-color:#09152b;background-image:linear-gradient(180deg,rgba(5,14,33,.12),rgba(5,14,33,.38)),url('/assets/games/general-knowledge-quiz/general-knowledge-quiz-main-menu-bg.webp');background-size:cover;background-repeat:no-repeat;background-position:center}

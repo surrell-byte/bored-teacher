@@ -64,7 +64,7 @@ function PhonicStyles() {
         background:
           radial-gradient(circle at 20% 10%, rgba(36, 183, 255, .18), transparent 30%),
           radial-gradient(circle at 85% 80%, rgba(126, 211, 255, .1), transparent 30%),
-          linear-gradient(180deg, #122f55 0%, #1e4c86 55%, #173b68 100%);
+          linear-gradient(rgba(18,47,85,.34),rgba(23,59,104,.46)), url('/assets/games/phonics-adventure/phonics-adventure-game-screen-bg.webp') center / cover fixed;
         overflow-x: hidden;
         position: relative;
         isolation: isolate;
@@ -84,6 +84,12 @@ function PhonicStyles() {
         pointer-events: none;
         z-index: -1;
       }
+      .phonic-root--welcome { background-image:linear-gradient(rgba(18,47,85,.24),rgba(23,59,104,.38)),url('/assets/games/phonics-adventure/phonics-adventure-welcome-bg.webp');background-position:center;background-size:cover; }
+      .phonic-root--menu { background-image:linear-gradient(rgba(18,47,85,.24),rgba(23,59,104,.38)),url('/assets/games/phonics-adventure/phonics-adventure-main-menu-bg.webp');background-position:center;background-size:cover; }
+      .phonic-find-word-layout { display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:stretch;gap:clamp(18px,3vw,36px);margin-top:20px; }
+      .phonic-find-word-layout .question-card { min-height:100%;display:flex;flex-direction:column;justify-content:center;margin:0!important; }
+      .phonic-find-word-layout .answers { align-content:center; }
+      @media(max-width:760px){.phonic-find-word-layout{grid-template-columns:1fr}.phonic-find-word-layout .question-card{min-height:280px}}
 
       .phonic-screen {
         min-height: calc(100vh - 48px);
@@ -879,6 +885,12 @@ export default function PhonicAdventure({ onComplete }) {
     if (searchParams.get("screen") === "menu") setScreen("menu");
   }, [searchParams]);
 
+  useEffect(() => {
+    const openMainMenu = () => setScreen("menu");
+    window.addEventListener("phonics-adventure:main-menu", openMainMenu);
+    return () => window.removeEventListener("phonics-adventure:main-menu", openMainMenu);
+  }, []);
+
   const currentLetter = ALPHABET[letterIdx];
   const currentData = LETTER_DATA[currentLetter];
 
@@ -1000,7 +1012,7 @@ export default function PhonicAdventure({ onComplete }) {
   };
 
   if (screen === "welcome") return (
-    <div className="phonic-root">
+    <div className="phonic-root phonic-root--welcome">
       <PhonicStyles />
       <div className="phonic-screen">
         <div className="phonic-panel quiz-card">
@@ -1013,7 +1025,7 @@ export default function PhonicAdventure({ onComplete }) {
   );
 
   if (screen === "menu") return (
-    <div className="phonic-root">
+    <div className="phonic-root phonic-root--menu">
       <PhonicStyles />
       <div className="phonic-screen">
         <div className="phonic-panel quiz-card">
@@ -1200,7 +1212,6 @@ export default function PhonicAdventure({ onComplete }) {
           <div className="result-actions">
             {!spellingResult && <button className="primary-button" onClick={checkSpelling}>Check Answer</button>}
             {spellingResult && <button className="primary-button" onClick={nextSpelling}>Next Word</button>}
-            <button className="back-home" onClick={() => setScreen("menu")}>Back to Home</button>
           </div>
         </div>
       </div>
@@ -1213,31 +1224,21 @@ export default function PhonicAdventure({ onComplete }) {
       <PhonicStyles />
       <div className="phonic-screen">
         <div className="phonic-panel">
-          <div className="quiz-meta">
-            <span className="status-pill">🎯 CHALLENGE</span>
-            <span className="key score-key">⭐ {score}</span>
-            {streak > 0 && <span className="key streak-key">🔥 {streak}</span>}
-            <span className="key question-counter">{qIdx+1} / {quizLetters.length}</span>
-          </div>
-
           <div className="progress" aria-hidden="true">
             <div className="progress-fill" style={{ width:`${((qIdx + (answered ? 1 : 0))/quizLetters.length)*100}%` }} />
           </div>
 
-          <div className="quiz-card question-card" style={{ marginTop: 20, marginBottom: 22 }}>
-            <div className="question-badge">FIND THE WORD</div>
-            <div className="question-letter">{currentQ.letter}</div>
-            <p className="question">
-              Which word starts with <strong>{currentQ.letter}</strong>?
-            </p>
-            {answered && (
-              <div className={`feedback ${selected === currentQ.letter ? "" : "wrong"}`}>
+          <div className="phonic-find-word-layout">
+            <div className="quiz-card question-card">
+              <div className="question-badge">FIND THE WORD</div>
+              <div className="question-letter">{currentQ.letter}</div>
+              <p className="question">Which word starts with <strong>{currentQ.letter}</strong>?</p>
+              {answered && <div className={`feedback ${selected === currentQ.letter ? "" : "wrong"}`}>
                 <span className="feedback-main">{selected === currentQ.letter ? "🎉 Amazing!" : "💪 Nice try!"}</span>
                 <span className="feedback-answer">{currentQ.correct.emoji} {currentQ.correct.word}</span>
                 {selected === currentQ.letter && <span className="feedback-xp">⭐ +10 XP</span>}
-              </div>
-            )}
-          </div>
+              </div>}
+            </div>
 
           <div className="answers">
             {currentQ.opts.map((opt, index) => {
@@ -1259,13 +1260,13 @@ export default function PhonicAdventure({ onComplete }) {
               );
             })}
           </div>
+          </div>
 
           {answered && (
             <div style={{ textAlign:"center", marginTop:18 }}>
               <button className="next-button" onClick={quizNext}>➡️ Next</button>
             </div>
           )}
-          <button className="back-home" onClick={() => setScreen("menu")}>Back to Home</button>
         </div>
       </div>
     </div>

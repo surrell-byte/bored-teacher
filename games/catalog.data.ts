@@ -831,7 +831,7 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     name: "Zoo Game",
     icon: "🦁",
     desc: "Identify zoo, farm, and sea animals through guessing, acting, and sentence practice.",
-    cover: "/assets/covers/animal-class-quest-cover.webp",
+    cover: "/assets/covers/zoo-game-cover.webp",
     tag: { label: "Vocabulary", color: "tag-vocab" },
     badge: "Animal Skills",
     difficulty: "Starter",

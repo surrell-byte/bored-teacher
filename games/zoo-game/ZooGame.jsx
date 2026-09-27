@@ -63,7 +63,7 @@ export default function ZooGame({ themeId = 'savanna', onComplete }) {
 
   if (showMenu) {
     return (
-      <div className={`zoogame-root zoo-theme-${themeId}`}>
+      <div className={`zoogame-root zoo-theme-${themeId} zoo-screen-menu`}>
         <div className="zoo-main-menu" role="main" aria-label="Zoo Game main menu">
           <div className="zoo-menu-hero">
             <div className="zoo-menu-icon">🦁</div>
@@ -100,7 +100,7 @@ export default function ZooGame({ themeId = 'savanna', onComplete }) {
   }
 
   return (
-    <div className={`zoogame-root zoo-theme-${themeId}`}>
+    <div className={`zoogame-root zoo-theme-${themeId} zoo-screen-game zoo-screen-${activeTab}`}>
       <div className="game-wrapper" role="main" aria-label="Zoo animal guessing game">
         <span id="scoreDisplay" hidden>{score}</span>
 

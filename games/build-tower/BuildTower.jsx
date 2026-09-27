@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import ProfileNameAutofill from '../shared/ProfileNameAutofill';
 
 const COLORS = [
   ['#f72585', '#b5179e'],
@@ -22,9 +23,9 @@ function makeRound() {
   return { numbers, towerOrder: [] };
 }
 
-export default function BuildTower({ onComplete }) {
+export default function BuildTower({ onComplete, profileName }) {
   const [screen, setScreen] = useState('welcome');
-  const [playerName, setPlayerName] = useState('');
+  const [playerName, setPlayerName] = useState(profileName || '');
   const [level, setLevel] = useState(1);
   const [round, setRound] = useState(1);
   const [numbers, setNumbers] = useState(() => makeRound().numbers);
@@ -81,7 +82,7 @@ export default function BuildTower({ onComplete }) {
   };
 
   if (screen === 'welcome') return <main className="build-tower-game" style={{ backgroundImage: "linear-gradient(rgba(34,12,72,.28),rgba(34,12,72,.28)), url('/assets/games/build-the-tower/build-the-tower-welcome-screen.png')" }}><style>{STYLES}</style><div className="build-tower-menu"><div className="build-tower-menu-icon">🏗️</div><h2>Ready to build?</h2><p>Stack every block from smallest to biggest.</p><button type="button" onClick={() => setScreen('player-info')}>Start</button></div></main>;
-  if (screen === 'player-info') return <main className="build-tower-game" style={{ backgroundImage: "linear-gradient(rgba(34,12,72,.28),rgba(34,12,72,.28)), url('/assets/games/build-the-tower/build-the-tower-floating-islands-bg.png')" }}><style>{STYLES}</style><div className="build-tower-menu"><div className="build-tower-menu-icon">👷</div><h2>Builder info</h2><label><span>Your name</span><input value={playerName} onChange={event => setPlayerName(event.target.value)} placeholder="Enter your name" /></label><button type="button" disabled={!playerName.trim()} onClick={() => setScreen('levels')}>Continue</button></div></main>;
+  if (screen === 'player-info') return <main className="build-tower-game" style={{ backgroundImage: "linear-gradient(rgba(34,12,72,.28),rgba(34,12,72,.28)), url('/assets/games/build-the-tower/build-the-tower-floating-islands-bg.png')" }}><style>{STYLES}</style><div className="build-tower-menu"><div className="build-tower-menu-icon">👷</div><h2>Builder info</h2><label><span>Your name</span><input value={playerName} onChange={event => setPlayerName(event.target.value)} placeholder="Enter your name" /></label><ProfileNameAutofill name={profileName} onSelect={setPlayerName} /><button type="button" disabled={!playerName.trim()} onClick={() => setScreen('levels')}>Continue</button></div></main>;
   if (screen === 'levels') return <main className="build-tower-game" style={{ backgroundImage: "linear-gradient(rgba(34,12,72,.28),rgba(34,12,72,.28)), url('/assets/games/build-the-tower/build-the-tower-jungle-bg.png')" }}><style>{STYLES}</style><div className="build-tower-menu"><div className="build-tower-menu-icon">🎯</div><h2>Choose a level</h2><div className="build-tower-levels"><button type="button" onClick={() => { setLevel(1); setScreen('game'); restartRound(); }}>Level 1<small>Available now</small></button><button type="button" disabled>Level 2<small>Coming soon</small></button><button type="button" disabled>Level 3<small>Coming soon</small></button></div></div></main>;
 
   return (

@@ -110,6 +110,11 @@ const STYLES = `
   --shadow-sm: 0 8px 24px rgba(0,0,0,0.08);
 }
 
+.ff-root:not(.ff-root-emoji) { background-color:#18231f;background-image:linear-gradient(rgba(9,20,17,.25),rgba(9,20,17,.4)),url('/assets/games/find-my-food/find-my-food-general-bg.webp');background-position:center;background-size:cover;background-attachment:fixed; }
+.ff-root:not(.ff-root-emoji).ff-food-screen-welcome { background-image:linear-gradient(rgba(9,20,17,.18),rgba(9,20,17,.32)),url('/assets/games/find-my-food/find-my-food-welcome-bg.webp'); }
+.ff-root:not(.ff-root-emoji).ff-food-screen-player-info { background-image:linear-gradient(rgba(9,20,17,.24),rgba(9,20,17,.42)),url('/assets/games/find-my-food/find-my-food-user-input-bg.webp'); }
+.ff-root:not(.ff-root-emoji).ff-food-screen-game,.ff-root:not(.ff-root-emoji).ff-food-screen-mode,.ff-root:not(.ff-root-emoji).ff-food-screen-end { background-image:linear-gradient(rgba(9,20,17,.22),rgba(9,20,17,.38)),url('/assets/games/find-my-food/find-my-food-game-screen-bg.webp'); }
+
 .ff-noise {
   position: absolute; inset: 0;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
@@ -457,7 +462,7 @@ export default function FindMyFood({ onComplete, themeId, variant = "food" }) {
   const popupTimeout = useRef(null);
   const pairSet = variant === "emoji" ? EMOJI_PAIRS : PAIRS;
   const howToCards = variant === "emoji" ? EMOJI_PAIRS.flatMap(pair => [pair.animal, pair.food]) : HOW_TO_PLAY_CARDS;
-  const rootClass = variant === "emoji" ? "ff-root ff-root-emoji" : "ff-root";
+  const rootClass = `${variant === "emoji" ? "ff-root ff-root-emoji" : "ff-root"} ff-food-screen-${screen}`;
 
   useEffect(() => () => clearTimeout(popupTimeout.current), []);
 

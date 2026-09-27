@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import ProfileNameAutofill from '../shared/ProfileNameAutofill';
 
 const TOTAL = 15;
 const AVATARS = ['🏎️', '🚀', '🦄', '🐉', '🐙', '🦊', '🐸', '🦖', '🐝', '👽', '🤖', '🐳'];
@@ -38,9 +39,9 @@ function makeQuestion(round) {
   };
 }
 
-export default function MathRacing({ onComplete, onHudUpdate }) {
+export default function MathRacing({ onComplete, onHudUpdate, profileName }) {
   const [avatar, setAvatar] = useState('🚀');
-  const [playerName, setPlayerName] = useState('');
+  const [playerName, setPlayerName] = useState(profileName || '');
   const [screen, setScreen] = useState('setup');
   const [playerProgress, setPlayerProgress] = useState(0);
   const [cpuProgress, setCpuProgress] = useState(0);
@@ -141,6 +142,7 @@ export default function MathRacing({ onComplete, onHudUpdate }) {
             <p>Choose your racer and get ready to solve your way to the finish line.</p>
             <label htmlFor="math-racing-player-name">Your name</label>
             <input id="math-racing-player-name" value={playerName} onChange={(event) => setPlayerName(event.target.value)} placeholder="Enter your name" maxLength={24} autoComplete="name" autoFocus required />
+            <ProfileNameAutofill name={profileName} onSelect={setPlayerName} />
             <span className="math-racing-setup-label">Choose your racer</span>
             <div className="math-racing-avatar-picker" aria-label="Choose your racer">
               {AVATARS.map((item) => <button type="button" key={item} className={avatar === item ? 'selected' : ''} onClick={() => setAvatar(item)} aria-label={`Choose ${item} racer`}>{item}</button>)}

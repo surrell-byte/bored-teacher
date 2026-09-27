@@ -198,7 +198,7 @@ const STYLES = `
   align-items: center;
   justify-content: center;
   width: min(100%, 1200px);
-  transform: translateY(clamp(8px, 2vh, 18px));
+  transform: none;
 }
 .pizza-fractions-pizza-container {
   display: flex;
@@ -286,6 +286,9 @@ const STYLES = `
 .pizza-fractions-game { background: linear-gradient(rgba(35,14,5,.16),rgba(35,14,5,.16)), url('/games/pizza-fractions/game-bg.png') center / cover fixed; overflow: auto; }
 @media (max-width: 640px), (orientation: portrait) { .pizza-fractions-game { background-image: linear-gradient(rgba(35,14,5,.16),rgba(35,14,5,.16)), url('/games/pizza-fractions/game-bg-phone.png'); background-position: center; background-size: cover; } }
 .pizza-fractions-pizza-stage { width: 100%; display: grid; place-items: center; }
+/* Keep the pie centered over the chopping board artwork at every viewport size. */
+.pizza-fractions-pizza-container { width: 100%; }
+.pizza-fractions-pizza-stage { min-height: min(46vw, 560px); }
 .pizza-fractions-pizza { position: relative; z-index: 1; width: min(460px, 32vw); aspect-ratio: 1; overflow: hidden; border: 13px solid #e7a53b; border-radius: 50%; background: radial-gradient(circle at 50% 45%,#e84519 0,#c92710 55%,#a7190b 100%); box-shadow: 0 10px 15px rgba(0,0,0,.45),0 3px 0 #7a3d0e,inset 0 0 0 5px #f5c45c,inset 0 0 30px rgba(80,15,0,.35); }
 .pizza-fractions-pizza::before { content: ''; position: absolute; inset: 18px; z-index: 0; border-radius: 50%; background: radial-gradient(circle at 30% 30%,#ffd75c 0 3%,transparent 4%),radial-gradient(circle at 70% 25%,#f6c83f 0 4%,transparent 5%),radial-gradient(circle at 50% 70%,#ffdf68 0 3%,transparent 4%),linear-gradient(135deg,#ffd85b,#efaa28); }
 .pizza-fractions-slice { position: absolute; z-index: 2; width: 50%; height: 50%; padding: 0; border: 0; cursor: pointer; background: radial-gradient(circle at 50% 50%,#f8cf50,#df9f27); transition: transform .18s ease,filter .18s ease,box-shadow .18s ease; overflow: hidden; }
@@ -317,6 +320,7 @@ const STYLES = `
   .pizza-fractions-order-sub { font-size: .88rem; }
   .pizza-fractions-main { grid-template-columns: minmax(0, 1fr); gap: 16px; transform: none; }
   .pizza-fractions-pizza-stage { width: min(100%, 520px); }
+  .pizza-fractions-pizza-stage { min-height: 0; }
   .pizza-fractions-pizza { width: min(100%, 430px); border-width: 10px; }
   .pizza-fractions-pizza::before { inset: 13px; }
   .pizza-fractions-toppings-panel { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; width: 100%; }

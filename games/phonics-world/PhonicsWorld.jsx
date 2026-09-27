@@ -84,6 +84,8 @@ const PhonicsWorld_CSS = `* {
             padding: 0;
         }
 
+        .phonicsworld-root { position:relative;isolation:isolate;min-height:100vh;width:100%;background:linear-gradient(rgba(18,47,85,.32),rgba(23,59,104,.44)),url('/assets/games/phonics-adventure/phonics-adventure-game-screen-bg.webp') center / cover fixed; }
+
         :root {
             --primary: #6c5ce7;
             --primary-dark: #5649c0;
@@ -1014,6 +1016,17 @@ export default function PhonicsWorld() {
         loadGame();
         renderWorldMap();
     });
+    const returnToMainMenu = () => {
+        if (autoTimer) { clearTimeout(autoTimer); autoTimer = null; }
+        landingPage.style.display = 'block';
+        quizApp.style.display = 'none';
+    };
+    const removeMenuListener = () => {
+        window.removeEventListener('phonics-world:main-menu', returnToMainMenu);
+        window.removeEventListener('phonics-world:cleanup', removeMenuListener);
+    };
+    window.addEventListener('phonics-world:main-menu', returnToMainMenu);
+    window.addEventListener('phonics-world:cleanup', removeMenuListener);
     nextBtn.addEventListener('click', () => { if(!questionLocked) goToNext(); });
     resetBtn.addEventListener('click', fullRestart);
     nextLevelBtn.addEventListener('click', nextIsland);
@@ -1032,6 +1045,7 @@ export default function PhonicsWorld() {
     container.appendChild(script);
 
     return () => {
+      window.dispatchEvent(new Event('phonics-world:cleanup'));
       // Clean up injected script tag on unmount
       if (script.parentNode) script.parentNode.removeChild(script);
     };

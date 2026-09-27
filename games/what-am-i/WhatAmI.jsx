@@ -75,7 +75,6 @@ const WhatAmI_HTML = `<div class="app">
           <div class="qmark" id="qmark">?</div>
         </div>
         <div class="name-tag" id="nameTag">— — — — —</div>
-        <button class="next-btn" id="nextBtn">Next specimen →</button>
       </div>
     </div>
   </section>
@@ -658,7 +657,6 @@ function loadQuestion(){
   document.getElementById('answerInput').disabled = false;
   document.getElementById('feedback').textContent = '';
   document.getElementById('feedback').className = 'feedback';
-  document.getElementById('nextBtn').style.display = 'none';
   document.getElementById('nameTag').textContent = '— '.repeat(q.answer.length).trim();
 
   renderLives();
@@ -756,10 +754,6 @@ function handleCorrect(q){
   document.getElementById('qmark').style.display = 'none';
   launchConfetti();
 
-  const btn = document.getElementById('nextBtn');
-  btn.style.display = 'inline-block';
-  btn.textContent = (state.index === state.queue.length-1) ? 'See report →' : 'Next specimen →';
-
   setTimeout(()=>{ if(state.answered) advance(); }, 2200);
 }
 
@@ -783,9 +777,6 @@ function handleWrong(q){
     document.getElementById('cardStage').classList.add('reveal');
     document.getElementById('nameTag').textContent = q.answer.toUpperCase();
     document.getElementById('qmark').style.display = 'none';
-    const btn = document.getElementById('nextBtn');
-    btn.style.display = 'inline-block';
-    btn.textContent = (state.index === state.queue.length-1) ? 'See report →' : 'Next specimen →';
     setTimeout(()=>{ if(state.answered) advance(); }, 2400);
   } else {
     fb.textContent = \`❌ Not quite! \${state.lives} attempt\${state.lives===1?'':'s'} remaining.\`;
@@ -793,8 +784,6 @@ function handleWrong(q){
     renderHint(q.answer);
   }
 }
-
-document.getElementById('nextBtn').addEventListener('click', advance);
 
 function advance(){
   state.answered = true;

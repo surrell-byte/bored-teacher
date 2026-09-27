@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import ProfileNameAutofill from "../shared/ProfileNameAutofill";
 
 const AVATARS = ["🐶", "🐱", "🐰", "🦊", "🐼", "🦁", "🐢", "🦉", "🐬", "🦄"];
 
@@ -95,9 +96,9 @@ const QUESTIONS = [
   },
 ];
 
-export default function VictoryVet({ onComplete }) {
+export default function VictoryVet({ onComplete, profileName }) {
   const [screen, setScreen] = useState("welcome");
-  const [playerName, setPlayerName] = useState("");
+  const [playerName, setPlayerName] = useState(profileName || "");
   const [avatar, setAvatar] = useState("🐶");
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selected, setSelected] = useState(null);
@@ -141,7 +142,7 @@ export default function VictoryVet({ onComplete }) {
   const complete = currentQuestion >= QUESTIONS.length - 1 && selected === question.correct;
 
   if (screen === "welcome") return <main className="victory-vet vv-welcome"><section className="vv-welcome-card"><div className="vv-welcome-icon">🩺🐾</div><p className="vv-kicker">ANIMAL CARE ACADEMY</p><h1>Victory Vet</h1><p>Learn how to help animals stay safe, healthy, and happy.</p><button className="vv-reset" onClick={() => setScreen("setup")}>Start mission</button></section></main>;
-  if (screen === "setup") return <main className="victory-vet vv-welcome"><section className="vv-welcome-card vv-setup"><p className="vv-kicker">READY, {playerName || "VET"}?</p><h1>Choose your vet</h1><input className="vv-name-input" value={playerName} onChange={(event) => setPlayerName(event.target.value)} placeholder="Your name" maxLength={18} /><div className="vv-avatar-grid">{AVATARS.map((item) => <button type="button" className={avatar === item ? "selected" : ""} onClick={() => setAvatar(item)} key={item}>{item}</button>)}</div><button className="vv-reset" disabled={!playerName.trim()} onClick={() => { setCurrentQuestion(0); setSelected(null); setScore(0); setLives(3); setScreen("game"); }}>Enter clinic</button></section></main>;
+  if (screen === "setup") return <main className="victory-vet vv-welcome"><section className="vv-welcome-card vv-setup"><p className="vv-kicker">READY, {playerName || "VET"}?</p><h1>Choose your vet</h1><input className="vv-name-input" value={playerName} onChange={(event) => setPlayerName(event.target.value)} placeholder="Your name" maxLength={18} /><ProfileNameAutofill name={profileName} onSelect={setPlayerName} /><div className="vv-avatar-grid">{AVATARS.map((item) => <button type="button" className={avatar === item ? "selected" : ""} onClick={() => setAvatar(item)} key={item}>{item}</button>)}</div><button className="vv-reset" disabled={!playerName.trim()} onClick={() => { setCurrentQuestion(0); setSelected(null); setScore(0); setLives(3); setScreen("game"); }}>Enter clinic</button></section></main>;
 
   return (
     <main className="victory-vet">

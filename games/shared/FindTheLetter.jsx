@@ -199,13 +199,8 @@ export default function FindTheLetter({ onComplete, onHudUpdate }) {
 
   return (
     <section className="find-letter-game" aria-label="Find the Letter A to Z">
-      <div className="find-letter-intro">
-        <h1>Find the hidden letter</h1>
-        <p className="find-letter-instruction">Choose the picture whose name begins with</p>
-        <div className="find-letter-target" aria-label={`Target letter ${letter}`}>{letter}</div>
-      </div>
-
-      <div className={`find-letter-board${state.shakeId ? ` is-shaking shake-${state.shakeId % 2}` : ''}`} role="group" aria-label={`Choose a picture beginning with ${letter}`}>
+      <div className="find-letter-layout">
+        <div className={`find-letter-board${state.shakeId ? ` is-shaking shake-${state.shakeId % 2}` : ''}`} role="group" aria-label={`Choose a picture beginning with ${letter}`}>
         {state.cards.map((card, index) => {
           const revealed = state.revealed.includes(index);
           const isTarget = index === state.targetIndex;
@@ -232,14 +227,21 @@ export default function FindTheLetter({ onComplete, onHudUpdate }) {
             </button>
           );
         })}
+        </div>
+        <aside className="find-letter-side">
+          <div className="find-letter-intro">
+            <h1>Find the hidden letter</h1>
+            <p className="find-letter-instruction">Choose the picture whose name begins with</p>
+            <div className="find-letter-target" aria-label={`Target letter ${letter}`}>{letter}</div>
+          </div>
+          <footer className={`find-letter-footer is-${state.status}`}>
+            <p key={state.messageId} className="find-letter-message" role="status" aria-live="polite">{state.message}</p>
+            {state.status === 'won' && <button className="find-letter-action" type="button" onClick={nextLevel}>{state.levelIndex === FIND_THE_LETTER_LEVELS.length - 1 ? 'Finish alphabet' : 'Next letter'} <span aria-hidden="true">→</span></button>}
+            {state.status === 'lost' && <button className="find-letter-action" type="button" onClick={() => dispatch({ type: 'restart', round: makeRound(state.levelIndex) })}>Try this letter again <span aria-hidden="true">↻</span></button>}
+            {state.status === 'complete' && <div className="find-letter-complete-actions"><button className="find-letter-action" type="button" onClick={playAgain}>Play again <span aria-hidden="true">↻</span></button></div>}
+          </footer>
+        </aside>
       </div>
-
-      <footer className={`find-letter-footer is-${state.status}`}>
-        <p key={state.messageId} className="find-letter-message" role="status" aria-live="polite">{state.message}</p>
-        {state.status === 'won' && <button className="find-letter-action" type="button" onClick={nextLevel}>{state.levelIndex === FIND_THE_LETTER_LEVELS.length - 1 ? 'Finish alphabet' : 'Next letter'} <span aria-hidden="true">→</span></button>}
-        {state.status === 'lost' && <button className="find-letter-action" type="button" onClick={() => dispatch({ type: 'restart', round: makeRound(state.levelIndex) })}>Try this letter again <span aria-hidden="true">↻</span></button>}
-        {state.status === 'complete' && <div className="find-letter-complete-actions"><button className="find-letter-action" type="button" onClick={playAgain}>Play again <span aria-hidden="true">↻</span></button><button className="find-letter-quiet-button" type="button" onClick={onBack}>Return to menu</button></div>}
-      </footer>
       {state.confetti.length > 0 && <div className="find-letter-confetti" aria-hidden="true">{state.confetti.map((piece) => <span key={piece.id} style={{ '--fl-left': `${piece.left}%`, '--fl-delay': `${piece.delay}s` }}>{piece.emoji}</span>)}</div>}
     </section>
   );

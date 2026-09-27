@@ -25,7 +25,7 @@
   width: 100%;
   min-height: 100%;
   max-height: none;
-  background: #fff8e7;
+  background: linear-gradient(rgba(255, 248, 231, .9), rgba(255, 248, 231, .9)), url('/assets/games/zoo-game/zoo-game-game-bg.webp') center / cover fixed;
   border-radius: 0;
   padding: 20px 26px 20px;
   box-shadow: 0 16px 50px rgba(0, 0, 0, 0.20), 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -613,6 +613,12 @@
   display: block;
 }
 
+.zoogame-root.zoo-screen-look .game-wrapper {
+  background-image: linear-gradient(rgba(255, 248, 231, .88), rgba(255, 248, 231, .88)), url('/assets/games/zoo-game/zoo-game-user-input-bg.webp');
+  background-position: center;
+  background-size: cover;
+}
+
 /* The menu owns the full play surface so a previous theme cannot show through. */
 .zoo-main-menu {
   position: relative;
@@ -625,9 +631,7 @@
   align-items: center;
   padding: 35px 40px 45px;
   color: #173b2b;
-  background:
-    radial-gradient(circle at 50% 15%, rgba(255, 255, 255, 0.75), transparent 35%),
-    linear-gradient(180deg, #fff8df 0%, #f8edc9 55%, #efe0ad 100%);
+  background: linear-gradient(rgba(255, 248, 223, .78), rgba(239, 224, 173, .82)), url('/assets/games/zoo-game/zoo-game-menu-bg.webp') center / cover;
 }
 
 .zoo-menu-hero,
@@ -760,12 +764,12 @@
 
 .zoogame-root.zoo-theme-ocean .zoo-main-menu {
   color: #123d4c;
-  background: linear-gradient(180deg, #effcff 0%, #bde8ec 55%, #8ed1d5 100%);
+  background: linear-gradient(rgba(239, 252, 255, .72), rgba(142, 209, 213, .78)), url('/assets/games/zoo-game/zoo-game-menu-bg.webp') center / cover;
 }
 
 .zoogame-root.zoo-theme-jungle .zoo-main-menu {
   color: #173b2b;
-  background: linear-gradient(180deg, #f2ffe9 0%, #c9e6af 55%, #9fc27b 100%);
+  background: linear-gradient(rgba(242, 255, 233, .72), rgba(159, 194, 123, .78)), url('/assets/games/zoo-game/zoo-game-menu-bg.webp') center / cover;
 }
 .zoogame-root.zoo-theme-ocean .game-wrapper,
 .zoogame-root.zoo-theme-jungle .game-wrapper { color: #173b2b; }
@@ -790,7 +794,7 @@
 }
 
 .zoogame-root.zoo-theme-ocean .game-wrapper {
-  background: #effcff;
+  background: linear-gradient(rgba(239, 252, 255, .88), rgba(239, 252, 255, .88)), url('/assets/games/zoo-game/zoo-game-game-bg.webp') center / cover fixed;
   border-color: #73b9c4;
 }
 
@@ -801,8 +805,12 @@
 }
 
 .zoogame-root.zoo-theme-jungle .game-wrapper {
-  background: #f2ffe9;
+  background: linear-gradient(rgba(242, 255, 233, .88), rgba(242, 255, 233, .88)), url('/assets/games/zoo-game/zoo-game-game-bg.webp') center / cover fixed;
   border-color: #83a866;
+}
+
+.zoogame-root.zoo-screen-look .game-wrapper {
+  background: linear-gradient(rgba(255, 248, 231, .88), rgba(255, 248, 231, .88)), url('/assets/games/zoo-game/zoo-game-user-input-bg.webp') center / cover fixed;
 }
 
 .zoogame-root.zoo-theme-ocean .zoo-victory {

@@ -4,7 +4,7 @@
   --fl-aqua: #7be7ff;
   --fl-lime: #d9ff8f;
   box-sizing: border-box;
-  width: min(100%, 960px);
+  width: min(100%, 1500px);
   margin: 0 auto;
   padding: clamp(20px, 3vw, 38px);
   overflow: hidden;
@@ -96,6 +96,9 @@
   text-align: center;
 }
 
+.find-letter-layout { display:grid; grid-template-columns:minmax(0,1.2fr) minmax(310px,.8fr); align-items:center; gap:clamp(24px,4vw,64px); }
+.find-letter-side { min-width:0; }
+
 .find-letter-kicker {
   margin: 0 0 8px;
   color: var(--fl-aqua);
@@ -141,10 +144,12 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: clamp(12px, 2vw, 20px);
   width: 100%;
-  max-width: 780px;
+  max-width: none;
   margin: 0 auto;
   perspective: 1200px;
 }
+
+@media(max-width:760px){.find-letter-layout{grid-template-columns:1fr;gap:4px}.find-letter-side{grid-row:1}.find-letter-board{grid-row:2}.find-letter-intro{margin:12px 0 18px}.find-letter-footer{min-height:72px;margin:10px auto}.find-letter-game{padding:18px}}
 
 .find-letter-board.shake-0 { animation: fl-board-shake-a .34s ease-in-out; }
 .find-letter-board.shake-1 { animation: fl-board-shake-b .34s ease-in-out; }
@@ -366,6 +371,9 @@
 .find-letter-board { width: min(100%, 900px); gap: clamp(8px, 1.4vw, 16px); }
 .find-letter-card { aspect-ratio: 1.65 / 1; border-radius: 18px; }
 .find-letter-footer { min-height: 48px; margin: 0 auto; gap: 8px; }
+.find-letter-footer.is-won,
+.find-letter-footer.is-lost,
+.find-letter-footer.is-complete { min-height: 88px; align-content: center; }
 .find-letter-message { font-size: clamp(.86rem, 1.5vw, 1rem); }
 .find-letter-action { min-height: 42px; padding: 9px 19px; }
 .find-letter-confetti { position: fixed; }

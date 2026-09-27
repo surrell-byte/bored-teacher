@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { QUIZ_ROUNDS, formatPrize, normalizeAnswer } from "./data";
 import "./general-knowledge-quiz.css";
+import ProfileNameAutofill from "../shared/ProfileNameAutofill";
 
 function shuffle(items) {
   return [...items].map((item) => ({ item, order: Math.random() })).sort((a, b) => a.order - b.order).map(({ item }) => item);
@@ -13,9 +14,9 @@ function prepareRound(round) {
     : { ...question, answers: shuffle(question.answers) });
 }
 
-export default function GeneralKnowledgeQuiz({ onComplete }) {
+export default function GeneralKnowledgeQuiz({ onComplete, profileName }) {
   const [screen, setScreen] = useState("userInfo");
-  const [playerName, setPlayerName] = useState("");
+  const [playerName, setPlayerName] = useState(profileName || "");
   const [roundId, setRoundId] = useState(1);
   const [questions, setQuestions] = useState([]);
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -83,6 +84,7 @@ export default function GeneralKnowledgeQuiz({ onComplete }) {
         <form className="gk-player-form" onSubmit={(event) => { event.preventDefault(); if (playerName.trim()) setScreen("intro"); }}>
           <label htmlFor="gk-player-name">Your name</label>
           <input id="gk-player-name" value={playerName} onChange={(event) => setPlayerName(event.target.value)} maxLength={24} autoComplete="given-name" required />
+          <ProfileNameAutofill name={profileName} onSelect={setPlayerName} />
           <button className="gk-button gk-primary" type="submit" disabled={!playerName.trim()}>Continue →</button>
         </form>
       </section>}
@@ -103,9 +105,8 @@ export default function GeneralKnowledgeQuiz({ onComplete }) {
         <div className="gk-progress"><span style={{ width: `${progress}%` }} /></div>
         <div className="gk-play-grid">
           <section className="gk-question-panel" aria-live="polite">
-            <div className="gk-prize">{formatPrize(prize)}</div>
             {question.images?.length > 0 && <div className="gk-question-image-frame">
-              <Image className="gk-question-image" src={question.images[locked ? 1 : 0]} alt={`Question visual: ${question.prompt}`} fill sizes="(max-width: 760px) 100vw, 600px" />
+              <Image className="gk-question-image" src={question.images[0]} alt={`Question visual: ${question.prompt}`} fill sizes="(max-width: 760px) 100vw, 600px" />
             </div>}
             <h1>{question.prompt}</h1>
             {question.spelling ? <form className="gk-spelling" onSubmit={(event) => { event.preventDefault(); submitAnswer(); }}>
@@ -121,10 +122,6 @@ export default function GeneralKnowledgeQuiz({ onComplete }) {
                 </button>;
               })}
             </div>}
-            {locked && <div className={`gk-feedback ${feedback === "Correct!" ? "is-correct" : "is-wrong"}`} role="status">
-              <strong>{feedback === "Correct!" ? "✓ Correct" : "✕ Not quite"}</strong><span>{feedback === "Correct!" ? `You reached ${formatPrize(prize)}.` : feedback}</span>
-              <button className="gk-button gk-primary" onClick={nextQuestion}>{questionIndex + 1 === questions.length ? "See results" : "Next question"} →</button>
-            </div>}
           </section>
           <aside className="gk-ladder" aria-label="Prize ladder">
             <div className="gk-score"><small>RIGHT ANSWERS</small><strong>{correctCount}</strong></div>
@@ -133,6 +130,10 @@ export default function GeneralKnowledgeQuiz({ onComplete }) {
               const index = ladder.length - reversedIndex - 1;
               return <div key={`${amount}-${index}`} className={`gk-ladder-step${index === questionIndex ? " current" : ""}${index < questionIndex ? " passed" : ""}`}><span>{index + 1}</span><b>{formatPrize(amount)}</b></div>;
             })}
+            {locked && <div className={`gk-feedback ${feedback === "Correct!" ? "is-correct" : "is-wrong"}`} role="status">
+              <strong>{feedback === "Correct!" ? "✓ Correct" : "✕ Not quite"}</strong><span>{feedback === "Correct!" ? `You reached ${formatPrize(prize)}.` : feedback}</span>
+              <button className="gk-button gk-primary" onClick={nextQuestion}>{questionIndex + 1 === questions.length ? "See results" : "Next question"} →</button>
+            </div>}
           </aside>
         </div>
       </section>}
