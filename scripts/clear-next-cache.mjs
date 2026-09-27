@@ -3,11 +3,11 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const repoRoot = fileURLToPath(new URL('..', import.meta.url));
-const nextDir = path.join(repoRoot, '.next');
+const nextDir = path.join(repoRoot, '.next-dev');
 
 try {
   fs.rmSync(nextDir, { recursive: true, force: true });
-  console.log('Cleared stale .next cache.');
+  console.log('Cleared stale .next-dev cache.');
 } catch (error) {
   console.warn('Could not clear stale .next cache:', error instanceof Error ? error.message : error);
   process.exitCode = 1;

@@ -98,11 +98,17 @@ export default function GamePage() {
     const load = (src: string) => { const image = new Image(); image.decoding = 'async'; image.src = src; image.decode?.().catch(() => {}); };
     load(queue[0]);
     const rest = queue.slice(1);
-    const idleId = 'requestIdleCallback' in window
-      ? window.requestIdleCallback(() => rest.forEach(load), { timeout: 1200 })
+    const requestIdle = typeof window.requestIdleCallback === 'function'
+      ? window.requestIdleCallback.bind(window)
+      : null;
+    const cancelIdle = typeof window.cancelIdleCallback === 'function'
+      ? window.cancelIdleCallback.bind(window)
+      : null;
+    const idleId = requestIdle
+      ? requestIdle(() => rest.forEach(load), { timeout: 1200 })
       : window.setTimeout(() => rest.forEach(load), 250);
     return () => {
-      if ('cancelIdleCallback' in window && typeof idleId === 'number') window.cancelIdleCallback(idleId);
+      if (cancelIdle && typeof idleId === 'number') cancelIdle(idleId);
       else window.clearTimeout(idleId as number);
     };
   }, [gameId]);
@@ -563,7 +569,7 @@ export default function GamePage() {
               key={gameSession}
               onComplete={handleComplete}
               profileName={auth?.currentUser ? state.name : ''}
-              onHudUpdate={gameId === 'riddlebombs' ? setRiddleBombsHud : undefined}
+              {...(gameId === 'riddlebombs' ? { onHudUpdate: setRiddleBombsHud } : {})}
               {...(isTicTacRoll ? { themeId: ticTheme.id, onThemeChange: setTicTheme } : {})}
               {...(isConnect4 ? { onHudUpdate: setC4Hud } : {})}
               {...(isReadingRescue ? { onHudUpdate: setReadingRescueHud } : {})}
