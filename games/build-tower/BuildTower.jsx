@@ -81,7 +81,7 @@ export default function BuildTower({ onComplete, profileName }) {
     setFeedback('🤔 Not quite! Try smallest first!');
   };
 
-  if (screen === 'welcome') return <main className="build-tower-game build-tower-welcome" style={{ backgroundImage: "url('/assets/games/build-the-tower/build-the-tower-welcome-screen.png')" }}><style>{STYLES}</style><button className="build-tower-welcome-start" type="button" aria-label="Start building" onClick={() => setScreen('player-info')} /></main>;
+  if (screen === 'welcome') return <main className="build-tower-game build-tower-welcome" style={{ backgroundImage: "url('/assets/games/build-the-tower/build-the-tower-welcome-screen.png')" }}><style>{STYLES}</style><button className="build-tower-welcome-start" type="button" onClick={() => setScreen('player-info')}><span aria-hidden="true">▶</span> Start Building</button></main>;
   if (screen === 'player-info') return <main className="build-tower-game" style={{ backgroundImage: "linear-gradient(rgba(34,12,72,.28),rgba(34,12,72,.28)), url('/assets/games/build-the-tower/build-the-tower-floating-islands-bg.png')" }}><style>{STYLES}</style><div className="build-tower-menu"><div className="build-tower-menu-icon">👷</div><h2>Builder info</h2><label><span>Your name</span><input value={playerName} onChange={event => setPlayerName(event.target.value)} placeholder="Enter your name" /></label><ProfileNameAutofill name={profileName} onSelect={setPlayerName} /><button type="button" disabled={!playerName.trim()} onClick={() => setScreen('levels')}>Continue</button></div></main>;
   if (screen === 'levels') return <main className="build-tower-game" style={{ backgroundImage: "linear-gradient(rgba(34,12,72,.28),rgba(34,12,72,.28)), url('/assets/games/build-the-tower/build-the-tower-jungle-bg.png')" }}><style>{STYLES}</style><div className="build-tower-menu"><div className="build-tower-menu-icon">🎯</div><h2>Choose a level</h2><div className="build-tower-levels"><button type="button" onClick={() => { setLevel(1); setScreen('game'); restartRound(); }}>Level 1<small>Available now</small></button><button type="button" disabled>Level 2<small>Coming soon</small></button><button type="button" disabled>Level 3<small>Coming soon</small></button></div></div></main>;
 
@@ -148,8 +148,10 @@ const STYLES = `
   text-align: center;
 }
 .build-tower-welcome { position:relative; min-height:100%; background-position:center; background-size:cover; background-repeat:no-repeat; }
-.build-tower-welcome-start { position:absolute; left:34%; top:82%; width:34%; height:16%; border:0; padding:0; background:transparent; cursor:pointer; }
-.build-tower-welcome-start:focus-visible { outline:4px solid white; outline-offset:4px; border-radius:24px; }
+.build-tower-welcome-start { position:absolute; left:50%; bottom:5%; transform:translateX(-50%); width:min(48%,640px); min-height:64px; border:3px solid #fff1a8; border-radius:24px; padding:12px 24px; display:flex; align-items:center; justify-content:center; gap:14px; background:linear-gradient(180deg,rgba(255,207,79,.42),rgba(131,57,12,.48)); box-shadow:0 0 12px #fff2a8,0 0 32px rgba(255,174,42,.92),inset 0 0 20px rgba(255,247,190,.2); color:#fffdf0; font-family:'Fredoka One','Trebuchet MS',sans-serif; font-size:clamp(1.35rem,2.4vw,2.15rem); font-weight:900; text-shadow:0 3px 2px #6e3214,0 0 12px rgba(255,224,126,.8); cursor:pointer; transition:transform .18s ease,box-shadow .18s ease,background .18s ease; }
+.build-tower-welcome-start:hover { transform:translateX(-50%) translateY(-3px) scale(1.02); background:linear-gradient(180deg,rgba(255,222,115,.56),rgba(159,74,17,.58)); box-shadow:0 0 16px #fff6c4,0 0 42px rgba(255,190,58,1),inset 0 0 24px rgba(255,247,190,.28); }
+.build-tower-welcome-start:active { transform:translateX(-50%) scale(.99); }
+.build-tower-welcome-start:focus-visible { outline:4px solid white; outline-offset:5px; }
 .build-tower-menu { width:min(100%,560px); padding:36px 28px; border-radius:24px; background:rgba(255,255,255,.12); text-align:center; box-shadow:0 18px 50px rgba(0,0,0,.25); }
 .build-tower-menu-icon { font-size:4rem; }
 .build-tower-menu h2 { margin:8px 0; color:#ffe66d; font-size:2rem; }
@@ -281,5 +283,5 @@ const STYLES = `
   background: linear-gradient(135deg, #f72585, #b5179e);
   color: white;
 }
-@media(max-width:700px){.build-tower-shell{width:100%;}.build-tower-layout{gap:1.5rem}.build-tower-pool{max-width:94vw}.build-tower-tower{width:90vw;min-height:200px}.build-tower-welcome-start{left:27%;width:46%;top:80%;height:18%}}
+@media(max-width:700px){.build-tower-shell{width:100%;}.build-tower-layout{gap:1.5rem}.build-tower-pool{max-width:94vw}.build-tower-tower{width:90vw;min-height:200px}.build-tower-welcome-start{width:72%;min-height:58px;bottom:6%;border-radius:18px;padding:10px 16px;font-size:1.45rem}}
 `;

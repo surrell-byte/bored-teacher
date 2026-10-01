@@ -141,7 +141,7 @@ export default function EmojiSportsQuiz({ onHudUpdate, onComplete }) {
   const percentage = round.length ? Math.round((score / (round.length * 100 + ((round.length * (round.length - 1)) / 2) * 25)) * 100) : 0;
   const resultMessage = percentage >= 80 ? "🔥 Sports master! You know your games!" : percentage >= 60 ? "👏 Great job! You know your sports!" : percentage >= 40 ? "👍 Not bad! Keep practicing!" : "💪 Keep playing — you'll get better!";
 
-  if (screen === "welcome") return <div className="emoji-sports-page emoji-sports-page-welcome"><button type="button" aria-label="Start Sports Quiz" className="sports-welcome-start" onClick={() => setScreen("modes")} /></div>;
+  if (screen === "welcome") return <div className="emoji-sports-page emoji-sports-page-welcome"><button type="button" className="sports-welcome-start" onClick={() => setScreen("modes")}>Start Sports Quiz <span aria-hidden="true">→</span></button></div>;
 
   if (screen === "modes") return <div className="emoji-sports-page emoji-sports-page-modes"><section className="emoji-sports-game mode-menu" aria-labelledby="sports-quiz-title"><div className="mode-menu-heading"><span aria-hidden="true">🏆</span><p>Choose a mode</p><h1 id="sports-quiz-title">Sports <span>Quiz</span></h1><p>Every level is ready to play.</p></div><div className="mode-grid">{MODES.map((item) => <button key={item.id} type="button" className="mode-card" onClick={() => startGame(item.id)}><span className="mode-icon" aria-hidden="true">{item.icon}</span><span className="mode-copy"><strong>{item.title}</strong><small>{item.description}</small></span><span className="mode-status">Play →</span></button>)}</div></section></div>;
 

@@ -87,15 +87,12 @@ export default function LookAndSay() {
   return (
     <div className={`look-and-say-game${!started ? " look-and-say-menu" : ""}`}>
       {!started && (
-        <div className="start">
-          <div className="start-box">
-            <div className="start-icon" aria-hidden="true">👀</div>
-            <h1>Look <span>&amp;</span> Say!</h1>
-            <p><strong>Look carefully!</strong><br />Look at the picture. Choose the sentence that exactly describes what you see.</p>
-            <div className="question-badge"><span aria-hidden="true">✦</span> {items.length} QUESTIONS</div>
-            <button className="start-btn" onClick={startGame}>Start Game <span aria-hidden="true">→</span></button>
-          </div>
-        </div>
+        <button
+          className="start-hotspot"
+          type="button"
+          aria-label="Start Look and Say"
+          onClick={startGame}
+        />
       )}
 
       {started && !finished && !item && (

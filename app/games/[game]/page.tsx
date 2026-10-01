@@ -30,8 +30,17 @@ interface ColourClashHud {
   sequenceProgress: number;
 }
 
+interface AirPuckHud {
+  mode: 'normal' | 'card';
+  name: string;
+  playerScore: number;
+  aiScore: number;
+  difficulty: 'easy' | 'medium' | 'hard';
+  turn: string;
+}
+
 const GAMES_WITH_WELCOME = new Set([
-   'animalAdventureRace', 'connect4', 'farmgame', 'findmyfood', 'flagmaster', 'emojimatch',
+  'airpuck', 'animalAdventureRace', 'connect4', 'farmgame', 'findmyfood', 'flagmaster', 'emojimatch',
   'finnthefox', 'hiddencolours', 'oceanquest', 'parachutedrop', 'weatherwizard',
   'phonicsadventure', 'riddlebombs', 'tictacroll', 'tornado', 'wordfusion', 'weatherwizard', 'victoryvet',
   'turbodash',
@@ -53,6 +62,7 @@ export default function GamePage() {
 
   const [result, setResult]   = useState<GameResult | null>(null);
   const [gameSession, setGameSession] = useState(0);
+  const [airPuckHud, setAirPuckHud] = useState<AirPuckHud | null>(null);
   // Connect 4 hands its in-match HUD (player badges + reset/home) up here so
   // it can render inside the GameShell navbar instead of the play area.
   const [c4Hud, setC4Hud] = useState<any>(null);
@@ -65,6 +75,7 @@ export default function GamePage() {
    const [alphabetTheme, setAlphabetTheme] = useState('classroom');
   const [wordFusionTheme, setWordFusionTheme] = useState('ocean');
   const [showRouteWelcome, setShowRouteWelcome] = useState(!GAMES_WITH_WELCOME.has(gameId));
+  const [clientReady, setClientReady] = useState(false);
   const [accessReady, setAccessReady] = useState(false);
   const [canPlay, setCanPlay] = useState(false);
   const [routeError, setRouteError] = useState<string | null>(null);
@@ -119,6 +130,10 @@ export default function GamePage() {
   }, [gameId]);
 
   useEffect(() => {
+    setClientReady(true);
+  }, []);
+
+  useEffect(() => {
     const handleChunkError = () => {
       setRouteError('The game bundle was stale. Clearing the cached build and reloading…');
       if (typeof window !== 'undefined') {
@@ -168,6 +183,7 @@ export default function GamePage() {
   const gameName  = GAME_NAMES[gameId] ?? 'Game';
   const gameIcon  = GAME_ICONS[gameId] ?? '🎮';
   const GameComp  = GAME_COMPONENTS[gameId];
+  const isAirPuck = gameId === 'airpuck';
   const isConnect4 = gameId === 'connect4';
   const isReadingRescue = gameId === 'finnthefox';
   const isTicTacRoll = gameId === 'tictacroll';
@@ -238,13 +254,17 @@ export default function GamePage() {
   function handleContinue() {
     setResult(null);
     setC4Hud(null);
+    setAirPuckHud(null);
     setGameSession(session => session + 1);
   }
 
   function handleMainMenu() {
     setResult(null);
     setC4Hud(null);
-    if (gameId === 'connect4') {
+    if (isAirPuck) {
+      setAirPuckHud(null);
+      window.dispatchEvent(new Event('air-puck:main-menu'));
+    } else if (gameId === 'connect4') {
       setShowRouteWelcome(false);
       window.dispatchEvent(new Event('connect4:main-menu'));
     } else if (isColourClash) {
@@ -312,7 +332,19 @@ export default function GamePage() {
     }
   }
 
-  if (!accessReady) return null;
+  const requiresAccessCheck = TEACHER_PRO_GAME_IDS.has(gameId) || COMING_SOON_GAME_IDS.has(gameId);
+
+  if (!accessReady && requiresAccessCheck) {
+    return (
+      <section className="route-game-welcome" aria-busy="true" role="status">
+        <div className="route-game-welcome-card">
+          <div className="route-game-welcome-icon" aria-hidden="true">{gameIcon}</div>
+          <h1>{gameName}</h1>
+          <p>Checking game access…</p>
+        </div>
+      </section>
+    );
+  }
 
   if (TEACHER_PRO_GAME_IDS.has(gameId) && !isCreator && !hasTeacherPro) {
     return (
@@ -377,7 +409,7 @@ export default function GamePage() {
         onRestart={handleContinue}
         onMainMenu={handleMainMenu}
         hideMainMenuButton={gameId === 'dragonslingshot'}
-        hidePauseControl={isFlagmaster}
+        hidePauseControl={isFlagmaster || (isAirPuck && airPuckHud?.mode === 'card')}
         hideExitControl={false}
         controls={null}
         themeVars={isTicTacRoll ? { nav: ticTheme.surface, navRaised: ticTheme.bg, navText: ticTheme.text, navMuted: ticTheme.muted, background: ticTheme.bg } : isAlphabetHunt ? { nav: alphabetTheme === 'ocean' ? '#087f8c' : alphabetTheme === 'arcade' ? '#352354' : '#1b1b1f', navRaised: alphabetTheme === 'ocean' ? '#e5a83b' : alphabetTheme === 'arcade' ? '#ff71ce' : '#c98a2c', navText: '#fffaf0', navMuted: '#eee8da', background: alphabetTheme === 'ocean' ? '#dff4f2' : alphabetTheme === 'arcade' ? '#24183d' : '#eee8da' } : isWordFusion ? { nav: wordFusionTheme === 'forest' ? '#214c3c' : wordFusionTheme === 'sunset' ? '#7b3f2e' : '#245b6c', navRaised: wordFusionTheme === 'forest' ? '#75b798' : wordFusionTheme === 'sunset' ? '#e29b52' : '#8ed1d5', navText: '#fffaf0', navMuted: '#d6eeee', background: wordFusionTheme === 'forest' ? '#dcefe2' : wordFusionTheme === 'sunset' ? '#f4d4b5' : '#d9eef0' } : isZooGame ? zooShellTheme : isFruitWordHunt ? { nav: '#a5662a', navRaised: '#f7b05e', navText: '#fffbee', navMuted: '#fff0cf', background: '#ffe0b5' } : isFlagmaster ? { nav: flagDarkMode ? '#05070d' : '#0b1628', navRaised: flagDarkMode ? '#121a2c' : '#1a3358', navText: flagDarkMode ? '#d4daf0' : '#f9f3e3', navMuted: flagDarkMode ? '#aebbd2' : '#f0e6c8', background: flagDarkMode ? '#05070d' : '#f9f3e3' } : (isFindMyFood || isEmojiMatch) ? findMyFoodShellTheme : isMoneyBlocks ? moneyBlocksShellTheme : undefined}
@@ -386,6 +418,29 @@ export default function GamePage() {
         onThemeChange={isTicTacRoll ? themeId => setTicTheme(TIC_TAC_ROLL_THEMES.find(theme => theme.id === themeId) ?? TIC_TAC_ROLL_THEMES[0]) : isAlphabetHunt ? setAlphabetTheme : isWordFusion ? setWordFusionTheme : isZooGame ? setZooTheme : isWhatsMissing ? setWhatsMissingTheme : isMoneyBlocks ? setMoneyBlocksTheme : isFindMyFood ? setFindMyFoodTheme : undefined}
         headerExtra={
           <>
+            {isAirPuck && airPuckHud && (
+              <span className="game-shell-topbar-stats" aria-label="Air Puck controls" style={{ maxWidth: '58vw' }}>
+                <span className="game-shell-topbar-stat" aria-label={`${airPuckHud.name} ${airPuckHud.playerScore}, AI ${airPuckHud.aiScore}`}>
+                  <b>🔵 {airPuckHud.playerScore}</b><span aria-hidden="true">:</span><b>🔴 {airPuckHud.aiScore}</b>
+                </span>
+                <label className="game-shell-header-action" style={{ gap: 3, minHeight: 34, padding: '5px 7px' }}>
+                  <span aria-hidden="true">🎚</span>
+                  <select
+                    value={airPuckHud.difficulty}
+                    onChange={event => window.dispatchEvent(new CustomEvent('air-puck:set-difficulty', { detail: event.target.value }))}
+                    aria-label="Choose Air Puck difficulty"
+                    style={{ border: 0, background: 'transparent', color: 'inherit', font: 'inherit', fontWeight: 800, outline: 0, cursor: 'pointer' }}
+                  >
+                    <option value="easy">Easy</option>
+                    <option value="medium">Medium</option>
+                    <option value="hard">Hard</option>
+                  </select>
+                </label>
+                <button className="game-shell-header-action" type="button" onClick={() => window.dispatchEvent(new Event('air-puck:restart'))} aria-label="Restart Air Puck match" title="Restart match" style={{ minHeight: 34, minWidth: 36, width: 36, padding: 5 }}>
+                  <span aria-hidden="true">↻</span>
+                </button>
+              </span>
+            )}
             {isColourClash && colourClashHud && (
               <span className="game-shell-topbar-stats" aria-label="Colour Clash game progress" style={{ flexWrap: 'wrap' }}>
                 <span className="game-shell-topbar-stat"><b>Round {colourClashHud.round}</b></span>
@@ -495,7 +550,7 @@ export default function GamePage() {
             {isFlagmaster && <button className="game-shell-header-action" type="button" onClick={() => setFlagDarkMode(value => !value)} aria-label="Toggle Flagmaster theme" title="Toggle Flagmaster theme"><span aria-hidden="true">{flagDarkMode ? '☀️' : '🌙'}</span><span className="game-shell-action-label">{flagDarkMode ? 'Light' : 'Dark'}</span></button>}
           </>
         }
-        stats={isNumberClouds ? [] : [
+        stats={isNumberClouds || isAirPuck ? [] : [
           { label: 'Best', value: state.games[gameId]?.highScore ?? 0, icon: '⭐' },
           { label: 'Coins', value: state.coins, icon: '🪙' },
         ]}
@@ -564,6 +619,13 @@ export default function GamePage() {
                 </div>
               </section>
             )
+          ) : !clientReady ? (
+            <div role="status" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)' }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '3rem', marginBottom: 12 }}>{gameIcon}</div>
+                <div style={{ fontFamily: 'var(--font-display, Syne)', fontWeight: 800 }}>Loading {gameName}…</div>
+              </div>
+            </div>
           ) : (
             <GameComp
               key={gameSession}
@@ -579,6 +641,7 @@ export default function GamePage() {
               {...(isSnowySlopes ? { onHudUpdate: setSnowySlopesHud } : {})}
               {...(isMathRacing ? { onHudUpdate: setMathRacingHud } : {})}
               {...(isColourClash ? { onHudUpdate: setColourClashHud } : {})}
+              {...(isAirPuck ? { onHudUpdate: setAirPuckHud } : {})}
               {...(isAnimalClass ? { onHudUpdate: setAnimalClassHud } : {})}
               {...(isFlagmaster ? { darkMode: flagDarkMode, isCreator } : {})}
               {...(isZooGame ? { themeId: zooTheme } : {})}

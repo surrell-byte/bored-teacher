@@ -76,11 +76,14 @@ export default function WhatsMissing({ onComplete, onHudUpdate, themeId: externa
   function nextRound() {
     if (!answer) return;
     if (round >= 10) {
-      const finalScore = score + (answer && challenge.missingItems.some(item => item[0] === answer) ? 1 : 0);
+      const finalScore = score;
       onComplete?.(finalScore, Math.round((finalScore / 10) * 100));
       setRound(1);
       setScore(0);
       setStreak(0);
+      setAnswer(null);
+      setGameStarted(false);
+      setPhase('menu');
     } else {
       setRound(current => current + 1);
     }
@@ -104,7 +107,7 @@ export default function WhatsMissing({ onComplete, onHudUpdate, themeId: externa
       <div className="wm-top-row"><span>⭐ Score: {score}</span><span>🔥 Streak: {streak}</span><span>Round {round} / 10</span></div>
       <div className="wm-progress"><i style={{ width: `${progress}%` }} /></div>
       <section className="wm-board" aria-live="polite">
-        {challenge.chosen.map(([name, emoji], index) => <div className="wm-card" key={`${name}-${index}`}><span>{phase === 'answered' || !challenge.missingIndices.includes(index) ? emoji : '❓'}</span></div>)}
+        {challenge.chosen.map(([name, emoji], index) => <div className="wm-card" key={`${name}-${index}`}><span>{phase === 'preview' || phase === 'answered' || !challenge.missingIndices.includes(index) ? emoji : '❓'}</span></div>)}
       </section>
       <p className="wm-status">{status}</p>
       {phase !== 'preview' && <div className="wm-options">{challenge.options.map(([name, emoji]) => <button type="button" key={name} className={answer && challenge.missingItems.some(item => item[0] === name) ? 'correct' : answer === name ? 'wrong' : ''} onClick={() => choose([name, emoji])} disabled={phase !== 'question'}><span>{emoji}</span><small>{name}</small></button>)}</div>}

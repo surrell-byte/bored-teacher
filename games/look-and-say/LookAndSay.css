@@ -40,75 +40,32 @@
 
 .look-and-say-game .feedback { text-align: center; min-height: 30px; font-size: 20px; font-weight: 900; margin-top: 15px; }
 
-.look-and-say-game .start { position: absolute; inset: 0; background: rgba(255,255,255,0.74); z-index: 5; display: flex; align-items: center; justify-content: center; text-align: center; padding: 30px; }
 .look-and-say-game.look-and-say-menu { background-image: url('/assets/games/look-and-say/look-and-say-welcome-bg.webp'); }
-.look-and-say-game .start {
-  background: transparent;
-  isolation: isolate;
-}
-.look-and-say-game .start-box {
-  width: min(560px, 100%);
-  padding: clamp(30px, 5vw, 48px) clamp(24px, 5vw, 52px);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 28px;
-  background: rgba(10, 23, 42, 0.94);
-  color: #fff;
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-.look-and-say-game .start-icon { font-size: 38px; margin-bottom: 12px; }
-.look-and-say-game .start-box h1 {
-  color: #fff;
-  font-size: clamp(42px, 5vw, 68px);
-  line-height: 1;
-  font-weight: 800;
-  letter-spacing: -1.5px;
-  margin: 0 0 22px;
-  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
-}
-.look-and-say-game .start-box h1 span { color: #ffd21c; }
-.look-and-say-game .start-box p {
-  max-width: 470px;
-  margin: 0 auto 22px;
-  color: #c9d3e3;
-  font-size: 18px;
-  line-height: 1.55;
-}
-.look-and-say-game .start-box p strong { display: inline-block; color: #fff; font-size: 20px; margin-bottom: 4px; }
-.look-and-say-game .question-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
-  margin-bottom: 28px;
-  border: 1px solid rgba(255, 210, 28, 0.35);
+.look-and-say-game .start-hotspot {
+  position: absolute;
+  z-index: 5;
+  left: 50%;
+  top: 94.5%;
+  width: min(32%, 440px);
+  height: 10%;
+  min-height: 48px;
+  padding: 0;
+  border: 0;
   border-radius: 999px;
-  background: rgba(255, 210, 28, 0.12);
-  color: #ffd21c;
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 0.8px;
+  background: transparent;
+  box-shadow: none;
+  color: transparent;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
 }
-.look-and-say-game .start-btn {
-  min-width: 220px;
-  padding: 17px 28px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, #ffe047, #ffbd00);
-  color: #172033;
-  font-size: 18px;
-  font-weight: 800;
-  box-shadow: 0 8px 0 #c88e00, 0 15px 30px rgba(255, 190, 0, 0.25);
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
+.look-and-say-game .start-hotspot:hover {
+  filter: none;
+  transform: translate(-50%, -50%);
 }
-.look-and-say-game .start-btn:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 0 #c88e00, 0 20px 40px rgba(255, 190, 0, 0.35);
+.look-and-say-game .start-hotspot:focus-visible {
+  outline: 3px solid #fff4b8;
+  outline-offset: 3px;
 }
-.look-and-say-game .start-btn:active {
-  transform: translateY(3px);
-  box-shadow: 0 4px 0 #c88e00, 0 8px 16px rgba(255, 190, 0, 0.2);
-}
-.look-and-say-game .start-btn span { margin-left: 10px; }
-.look-and-say-game .start-btn:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
 
 .look-and-say-game .finish { position: absolute; inset: 0; background: transparent; z-index: 10; display: flex; align-items: center; justify-content: center; text-align: center; padding: 20px; }
 .look-and-say-game .finish-box { width: min(560px, 100%); padding: clamp(28px, 5vw, 48px); border-radius: 24px; background: #0a172a; color: #fff; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4); }
@@ -123,12 +80,11 @@
   .look-and-say-game .picture-card { height: 250px; }
   .look-and-say-game .top { align-items: flex-start; }
   .look-and-say-game .score { font-size: 16px; padding: 9px 12px; }
-  .look-and-say-game .start { padding: 18px; }
-  .look-and-say-game .start-box { border-radius: 24px; }
+  .look-and-say-game .start-hotspot { width: 58%; top: 94%; height: 10%; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .look-and-say-game .start-btn { transition: none; }
+  .look-and-say-game .start-hotspot { transition: none; }
 }
 
 @media (max-width: 420px) {

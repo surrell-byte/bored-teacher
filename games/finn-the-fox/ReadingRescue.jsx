@@ -1,7 +1,7 @@
 'use client';
 
 /* eslint-disable react/no-unescaped-entities, @next/next/no-img-element */
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { Children, Fragment, isValidElement, useEffect, useMemo, useState } from 'react';
 import { READING_RESCUE_QUIZZES } from './readingRescueData';
 import { readingRescueStories as READING_RESCUE_STORIES } from './readingRescueStories';
 import FindTheLetter from '../shared/FindTheLetter';
@@ -54,6 +54,8 @@ const LEVELS = [
 ];
 
 const QUIZ_LETTERS = ['A', 'B', 'C', 'D'];
+const MAX_STORY_PAGE_WORDS = 100;
+const MAX_STORY_PAGE_PARAGRAPHS = 8;
 const TANYA_SCENE_IMAGES = [
   'tanya-story-scene-1.webp',
   'tanya-story-scene-1.5.webp',
@@ -113,8 +115,54 @@ function normalizePage(page) {
   return Array.isArray(page) ? { title: page[0], text: page[1] } : page;
 }
 
+function countWords(node) {
+  if (Array.isArray(node)) return node.reduce((total, child) => total + countWords(child), 0);
+  if (isValidElement(node)) return countWords(node.props.children);
+  if (typeof node === 'string') return node.trim().split(/\s+/).filter(Boolean).length;
+  return 0;
+}
+
+function paginateStoryPages(sourcePages) {
+  return sourcePages.flatMap((sourcePage, sourceIndex) => {
+    const normalized = normalizePage(sourcePage);
+    const fragmentChildren = isValidElement(normalized.text) && normalized.text.type === Fragment
+      ? Children.toArray(normalized.text.props.children).filter((child) => countWords(child) > 0)
+      : null;
+    const paragraphs = fragmentChildren?.filter((child) => isValidElement(child) && child.type === 'p');
+    const blocks = paragraphs?.length ? paragraphs : [normalized.text];
+    const sourceImageIndex = normalized.page ? normalized.page - 1 : sourceIndex;
+    const totalWords = blocks.reduce((total, block) => total + countWords(block), 0);
+
+    if (blocks.length <= 1 || (totalWords <= MAX_STORY_PAGE_WORDS && blocks.length <= MAX_STORY_PAGE_PARAGRAPHS)) {
+      return [{ ...normalized, imageIndex: sourceImageIndex }];
+    }
+
+    const groups = [];
+    let currentGroup = [];
+    let currentWords = 0;
+    for (const block of blocks) {
+      const words = countWords(block);
+      if (currentGroup.length && (currentWords + words > MAX_STORY_PAGE_WORDS || currentGroup.length >= MAX_STORY_PAGE_PARAGRAPHS)) {
+        groups.push(currentGroup);
+        currentGroup = [];
+        currentWords = 0;
+      }
+      currentGroup.push(block);
+      currentWords += words;
+    }
+    if (currentGroup.length) groups.push(currentGroup);
+
+    return groups.map((group, groupIndex) => ({
+      ...normalized,
+      title: groupIndex === 0 ? normalized.title : `${normalized.title} (continued)`,
+      text: <>{group}</>,
+      imageIndex: sourceImageIndex,
+    }));
+  });
+}
+
 export default function ReadingRescue({ onComplete, onHudUpdate, profileName }) {
-  const [phase, setPhase] = useState('user-info');
+  const [phase, setPhase] = useState('welcome');
   const [level, setLevel] = useState(1);
   const [userName, setUserName] = useState(profileName || '');
   const [userGrade, setUserGrade] = useState('');
@@ -127,7 +175,7 @@ export default function ReadingRescue({ onComplete, onHudUpdate, profileName }) 
   const [revealed, setRevealed] = useState(false);
 
   const story = READING_RESCUE_STORIES.find((item) => item.level === level) || LEGACY_STORIES[level];
-  const pages = story.pages;
+  const pages = useMemo(() => paginateStoryPages(story.pages), [story.pages]);
   const quiz = normalizeQuiz(level);
   const activity = RETELL_ACTIVITIES[level];
   const blanks = activity.answers;
@@ -190,9 +238,13 @@ export default function ReadingRescue({ onComplete, onHudUpdate, profileName }) 
     return `finn-fox finn-fox--${phase}${level === 6 ? ' finn-fox--tanya' : ''}${level === 3 ? ' finn-fox--rabbit' : ''}`;
   }
 
+  if (phase === 'welcome') {
+    return <div className={backgroundClass()}><style>{CSS}</style><main className="ff-welcome-screen"><button className="ff-welcome-start" type="button" onClick={() => setPhase('user-info')}>Start Reading Rescue</button></main></div>;
+  }
+
   if (phase === 'story') {
     const currentPage = normalizePage(pages[page]);
-    return <div className={backgroundClass()}><style>{CSS}</style><div className="ff-progress"><i style={{ width: `${((page + 1) / pages.length) * 33}%` }} /></div><main><section className="ff-story-layout"><img className="ff-story-illustration" src={getStoryImage(level, page)} alt={`${story.title}, page ${page + 1}`} /><div><article className="ff-story"><small>Page {page + 1} - {currentPage.title}</small>{storyText(currentPage.text)}</article><div className="ff-actions"><button className="ff-secondary" disabled={!page} onClick={() => setPage((value) => value - 1)}>Previous</button><button className="ff-primary" onClick={() => page < pages.length - 1 ? setPage((value) => value + 1) : setPhase('quiz')}>{page < pages.length - 1 ? 'Next' : 'Take the Quiz'}</button></div></div></section></main></div>;
+    return <div className={backgroundClass()}><style>{CSS}</style><div className="ff-progress"><i style={{ width: `${((page + 1) / pages.length) * 33}%` }} /></div><main><section className="ff-story-layout"><img className="ff-story-illustration" src={getStoryImage(level, currentPage.imageIndex ?? page)} alt={`${story.title}, page ${page + 1}`} /><div><article className="ff-story"><small>Page {page + 1} - {currentPage.title}</small>{storyText(currentPage.text)}</article><div className="ff-actions"><button className="ff-secondary" disabled={!page} onClick={() => setPage((value) => value - 1)}>Previous</button><button className="ff-primary" onClick={() => page < pages.length - 1 ? setPage((value) => value + 1) : setPhase('quiz')}>{page < pages.length - 1 ? 'Next' : 'Take the Quiz'}</button></div></div></section></main></div>;
   }
 
   if (phase === 'quiz') {
@@ -627,5 +679,122 @@ const CSS = `
 .finn-fox--quiz.finn-fox--tanya .ff-options { gap:clamp(14px,1.5vw,22px); margin:clamp(22px,3vh,38px) 0; }
 .finn-fox--quiz.finn-fox--tanya .ff-options button { min-height:clamp(82px,9vh,120px); padding:20px 26px; border-radius:20px; font-size:clamp(1.35rem,2vw,1.8rem); }
 @media(max-width:800px){.finn-fox--quiz.finn-fox--tanya main{width:calc(100vw - 24px);padding:20px}.finn-fox--quiz.finn-fox--tanya .ff-quiz-layout{grid-template-columns:1fr;gap:20px}.finn-fox--quiz.finn-fox--tanya .ff-quiz-image{height:auto;max-height:46vh}.finn-fox--quiz.finn-fox--tanya .ff-options button{min-height:64px}}
+
+.finn-fox--welcome {
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  padding: 0;
+  background: url('/assets/games/finn-the-fox/reading-rescue-welcome-bg.webp') center / cover no-repeat;
+  background-attachment: scroll;
+}
+.finn-fox--welcome::before { display: none; }
+.finn-fox--welcome .ff-welcome-screen {
+  position: relative;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+.ff-welcome-start {
+  position: absolute;
+  top: 67%;
+  left: 50%;
+  width: min(23vw, 360px);
+  min-width: 210px;
+  height: clamp(54px, 9vh, 88px);
+  transform: translate(-50%, -50%);
+  border: 0;
+  border-radius: 18px;
+  background: transparent;
+  color: #522d16;
+  font: 950 clamp(1rem, 1.8vw, 1.4rem)/1.1 Inter, sans-serif;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, .35);
+  cursor: pointer;
+  transition: filter .18s ease, transform .18s ease;
+}
+.ff-welcome-start:hover { filter: brightness(1.08); transform: translate(-50%, -52%); }
+.ff-welcome-start:focus-visible { outline: 4px solid #fff8d9; outline-offset: 2px; }
+
+.finn-fox--story {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  flex-direction: column;
+  padding: 8px clamp(10px, 1.5vw, 22px);
+}
+.finn-fox--story main,
+.finn-fox--story.finn-fox--tanya main,
+.finn-fox--story.finn-fox--rabbit main {
+  display: flex;
+  width: min(1280px, 100%);
+  height: auto;
+  min-height: 0;
+  flex: 1 1 0;
+  align-items: center;
+  margin: 8px auto;
+  padding: clamp(14px, 1.7vw, 24px);
+  overflow: hidden;
+}
+.finn-fox--story .ff-story-layout,
+.finn-fox--story.finn-fox--tanya .ff-story-layout,
+.finn-fox--story.finn-fox--rabbit .ff-story-layout {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+  align-items: center;
+  gap: clamp(16px, 2vw, 28px);
+}
+.finn-fox--story .ff-story-layout > div { min-width: 0; }
+.finn-fox--story .ff-story-illustration,
+.finn-fox--story.finn-fox--tanya .ff-story-illustration,
+.finn-fox--story.finn-fox--rabbit .ff-story-illustration {
+  width: 100%;
+  max-height: 66vh;
+  aspect-ratio: 4 / 3;
+  object-fit: contain;
+}
+.finn-fox--story .ff-story,
+.finn-fox--story.finn-fox--tanya .ff-story,
+.finn-fox--story.finn-fox--rabbit .ff-story {
+  padding: clamp(14px, 1.6vw, 22px);
+}
+.finn-fox--story .ff-story p,
+.finn-fox--story.finn-fox--tanya .ff-story p,
+.finn-fox--story.finn-fox--rabbit .ff-story p {
+  margin: 0 0 8px;
+  font-size: clamp(1rem, 1.35vw, 1.22rem);
+  line-height: 1.48;
+}
+.finn-fox--story .ff-story p:last-child { margin-bottom: 0; }
+.finn-fox--story .ff-actions { flex-shrink: 0; }
+@media (max-width: 800px) {
+  .ff-welcome-start { width: 56vw; min-width: 0; top: 67%; }
+  .finn-fox--story { height: auto; min-height: 100%; padding: 8px; }
+  .finn-fox--story main,
+  .finn-fox--story.finn-fox--tanya main,
+  .finn-fox--story.finn-fox--rabbit main { width: 100%; flex: 0 0 auto; margin: 6px auto; padding: 12px; }
+  .finn-fox--story .ff-story-layout,
+  .finn-fox--story.finn-fox--tanya .ff-story-layout,
+  .finn-fox--story.finn-fox--rabbit .ff-story-layout { height: auto; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .finn-fox--story .ff-story-illustration,
+  .finn-fox--story.finn-fox--tanya .ff-story-illustration,
+  .finn-fox--story.finn-fox--rabbit .ff-story-illustration { width: min(100%, 420px); max-height: 20vh; margin-inline: auto; }
+  .finn-fox--story .ff-story,
+  .finn-fox--story.finn-fox--tanya .ff-story,
+  .finn-fox--story.finn-fox--rabbit .ff-story { padding: 12px; }
+  .finn-fox--story .ff-story p,
+  .finn-fox--story.finn-fox--tanya .ff-story p,
+  .finn-fox--story.finn-fox--rabbit .ff-story p { margin-bottom: 6px; font-size: 1rem; line-height: 1.42; }
+}
 
 `;

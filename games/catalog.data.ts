@@ -985,6 +985,18 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     hasComponent: true,
     isNew: true,
   },
+  airpuck: {
+    name: "Air Puck",
+    icon: "🏒",
+    desc: "Play fast-paced air hockey against the AI, or switch to a turn-based card match.",
+    cover: "/assets/covers/air-hockey-cover.webp",
+    tag: { label: "Sports", color: "tag-bio" },
+    badge: "First to 7",
+    difficulty: "Arcade",
+    barColor: "var(--teal)",
+    hasComponent: true,
+    isNew: true,
+  },
 };
 
 export const GAME_KEYS = Object.keys(GAME_CATALOG);
