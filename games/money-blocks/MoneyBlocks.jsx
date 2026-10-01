@@ -9,16 +9,6 @@ const AVATARS = [
   "🎭", "🌟", "⚡", "🔥", "💎"
 ];
 
-const THEME_OPTIONS = [
-  { key: "black", name: "Black", swatch: "#111215", border: "#555" },
-  { key: "white", name: "White", swatch: "#F0EDE6", border: "#bbb" },
-  { key: "gold", name: "Gold", swatch: "#C9A961", border: "#E8C97A" },
-  { key: "red", name: "Red", swatch: "#EF4444", border: "#FF7A7A" },
-  { key: "blue", name: "Blue", swatch: "#3B82F6", border: "#7AAEFF" },
-  { key: "green", name: "Green", swatch: "#22C55E", border: "#4ADE80" },
-  { key: "yellow", name: "Yellow", swatch: "#FACC15", border: "#FDE047" }
-];
-
 const BOARD_LAYOUT = [
   { type: "green", c: "1/4", r: "1/3" },
   { type: "red", c: "4/6", r: "1/3" },
@@ -55,15 +45,6 @@ const TYPE_SYMBOLS = {
   yellow: "💎",
   purple: "🛡️",
   black: "🎲"
-};
-
-const TYPE_BACK_CLASS = {
-  green: "reveal-back-green",
-  red: "reveal-back-red",
-  blue: "reveal-back-blue",
-  yellow: "reveal-back-yellow",
-  purple: "reveal-back-purple",
-  black: "reveal-back-black"
 };
 
 const LETTER_COLORS = {
@@ -541,6 +522,7 @@ export default function MoneyBlocks({ themeId = "black" }) {
       blackEvent,
       opponentShields: opponent.shields
     });
+    const tileColor = getTileColor(tile);
     const bounds = event.currentTarget.getBoundingClientRect();
 
     setReveal({
@@ -550,6 +532,8 @@ export default function MoneyBlocks({ themeId = "black" }) {
       yellowReward,
       blackEvent,
       previewText,
+      tileBackground: tileColor.background,
+      tileTextColor: tileColor.color,
       origin: { left: bounds.left, top: bounds.top, width: bounds.width, height: bounds.height }
     });
     setRevealPhase("opening");
@@ -716,23 +700,6 @@ export default function MoneyBlocks({ themeId = "black" }) {
                   <button className="side-btn" type="button" onClick={resetBoardState}>Reset Table</button>
                 </div>
 
-                <div className="theme-picker">
-                  <span className="theme-picker-label">Theme</span>
-                  <div className="theme-swatches">
-                    {THEME_OPTIONS.map((option) => (
-                      <button
-                        key={option.key}
-                        type="button"
-                        className={`theme-swatch ${theme === option.key ? "active" : ""}`}
-                        title={option.name}
-                        data-name={option.name}
-                        style={{ background: option.swatch, borderColor: option.border }}
-                        onClick={() => setTheme(option.key)}
-                      />
-                    ))}
-                  </div>
-                </div>
-
                 <div className="turn-pill">
                   <span className="dot" />
                   {nameFor(currentPlayer)} to move
@@ -785,18 +752,14 @@ export default function MoneyBlocks({ themeId = "black" }) {
             <div className={`reveal-card ${revealPhase === "centered" ? "flipped" : ""}`}>
               <div
                 className="reveal-face front"
-                style={
-                  LETTER_COLORS[reveal.tile.letter] === "rainbow"
-                    ? { background: "linear-gradient(90deg, #ff0000, #ff9900, #ffee00, #33ff00, #00ffee, #3300ff, #cc00ff, #ff0000)", color: "#fff" }
-                    : { background: `linear-gradient(150deg, ${LETTER_COLORS[reveal.tile.letter]}, ${shade(LETTER_COLORS[reveal.tile.letter], -0.38)})`, color: luminance(LETTER_COLORS[reveal.tile.letter]) > 0.58 ? "#14161E" : "#F3EFE6" }
-                }
+                style={{ background: reveal.tileBackground, color: reveal.tileTextColor }}
               >
                 <span className="tile-letter">{reveal.tile.letter}</span>
               </div>
 
-              <div className={`reveal-face back ${TYPE_BACK_CLASS[reveal.tile.type]}`}>
-                <span style={{ fontSize: "2em", lineHeight: 1 }}>{TYPE_SYMBOLS[reveal.tile.type]}</span>
-                <span style={{ fontSize: "0.38em", fontFamily: "'IBM Plex Mono', monospace", fontWeight: 700, letterSpacing: ".03em", textAlign: "center", padding: "0 0.4em", lineHeight: 1.3 }}>{reveal.previewText}</span>
+              <div className="reveal-face back" style={{ background: reveal.tileBackground, color: reveal.tileTextColor }}>
+                <span className="reveal-symbol">{TYPE_SYMBOLS[reveal.tile.type]}</span>
+                <span className="reveal-preview">{reveal.previewText}</span>
               </div>
             </div>
           </div>

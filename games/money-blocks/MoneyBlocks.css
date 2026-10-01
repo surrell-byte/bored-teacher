@@ -1,5 +1,5 @@
-.money-blocks-local-theme { display: none !important; }
 @import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&family=Montserrat:wght@600;700&display=swap");
+.money-blocks-local-theme { display: none !important; }
 
 :root {
   --bg: #0a0b0e;
@@ -154,11 +154,14 @@
 }
 
 .money-blocks {
-  min-height: 100vh;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
   background:
     radial-gradient(ellipse at 50% -8%, var(--bg-top), transparent 52%),
     radial-gradient(ellipse at center, var(--bg-deep) 0%, var(--bg-deep-end) 100%);
   color: var(--ivory);
+  font-family: "Inter", sans-serif;
   position: relative;
   overflow: hidden;
   transition: background 1.2s ease;
@@ -261,7 +264,7 @@
 .setup-title, .htp-title {
   margin: 8px 0 0;
   font-family: "Fraunces", serif;
-  font-size: clamp(2rem, 4vw, 2.8rem);
+  font-size: clamp(2.2rem, 4.5vw, 3.2rem);
   color: var(--ivory);
 }
 
@@ -275,25 +278,27 @@
   background: rgba(255,255,255,0.02);
   border: 1px solid var(--panel-border);
   border-radius: 20px;
-  padding: 18px 16px 16px;
+  padding: 22px 20px 20px;
 }
 
 .setup-player-label, .setup-avatar-label {
   font-family: "IBM Plex Mono", monospace;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  font-size: 10px;
+  font-size: 12px;
   color: var(--gold-bright);
   margin-bottom: 12px;
 }
 
-.setup-name-input {
+.money-blocks .setup-name-input {
   width: 100%;
+  min-height: 58px;
   background: rgba(255,255,255,0.03);
   border: 1px solid var(--panel-border);
   border-radius: 12px;
   padding: 12px 14px;
   color: var(--ivory);
+  font: 500 1.08rem "Inter", sans-serif;
   margin-bottom: 18px;
 }
 
@@ -305,16 +310,16 @@
 .avatar-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
 }
 
-.avatar-btn {
-  width: 44px;
-  height: 44px;
+.money-blocks .avatar-btn {
+  width: 54px;
+  height: 54px;
   border-radius: 12px;
   background: rgba(255,255,255,0.02);
   border: 1px solid var(--panel-border);
-  font-size: 1.45rem;
+  font-size: 1.8rem;
   transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
@@ -331,8 +336,9 @@
 .game {
   width: 96%;
   max-width: 1440px;
-  height: 94vh;
-  min-height: min(650px, 94vh);
+  height: 100%;
+  min-height: 0;
+  max-height: 100%;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -378,7 +384,7 @@
   grid-template-columns: repeat(12, 1fr);
   grid-template-rows: repeat(12, 1fr);
   height: 100%;
-  min-height: 540px;
+  min-height: 0;
   padding: 18px;
   border-radius: 28px;
   background: var(--board-bg);
@@ -499,8 +505,9 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   min-height: 0;
+  overflow: hidden;
 }
 
 .side-panels .account-card,
@@ -510,10 +517,10 @@
 }
 
 .account-card {
-  padding: 16px 18px;
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
 }
 
 .account-card.active {
@@ -564,8 +571,8 @@
 }
 
 .account-balance {
-  margin-top: 18px;
-  font-size: clamp(1.3rem, 2vw, 1.9rem);
+  margin-top: 6px;
+  font-size: clamp(1.15rem, 1.7vw, 1.6rem);
   font-weight: 800;
   color: var(--ivory);
 }
@@ -573,8 +580,8 @@
 .progress-wrap {
   position: relative;
   width: 100%;
-  height: 8px;
-  margin-top: 14px;
+  height: 6px;
+  margin-top: 6px;
   border-radius: 999px;
   background: rgba(255,255,255,0.06);
   overflow: hidden;
@@ -590,8 +597,8 @@
 .progress-ticks {
   display: flex;
   justify-content: space-between;
-  margin-top: 8px;
-  font-size: 10px;
+  margin-top: 4px;
+  font-size: 9px;
   color: var(--ivory-dim);
   letter-spacing: 0.02em;
 }
@@ -766,7 +773,7 @@
   top: 50%;
   width: 36vmin;
   height: 36vmin;
-  font-size: 14.4vmin;
+  font-size: min(8.5vmin, 40px);
   transform: translate(-50%, -50%);
 }
 
@@ -792,6 +799,7 @@
   border: 1px solid rgba(255, 255, 255, .13);
   box-shadow: 0 30px 70px rgba(0, 0, 0, .6);
   background-image: repeating-linear-gradient(135deg, rgba(255,255,255,.035) 0px, rgba(255,255,255,.035) 1px, transparent 1px, transparent 6px);
+  overflow: hidden;
 }
 
 .reveal-face.front {
@@ -802,15 +810,15 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: .18em;
-  padding: 8%;
+  gap: .1em;
+  padding: 5%;
   transform: rotateY(180deg);
   font-weight: 700;
+  overflow-wrap: anywhere;
 }
 
-.reveal-symbol {
-  font-size: clamp(2.2rem, 4vw, 3rem);
-}
+.reveal-symbol { flex: 0 0 auto; font-size: 2em; line-height: 1; }
+.reveal-preview { width: 100%; max-height: 3em; overflow: hidden; overflow-wrap: anywhere; font-size: .5em; line-height: 1.2; }
 
 .reveal-result {
   max-width: 100%;

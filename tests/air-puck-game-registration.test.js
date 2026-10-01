@@ -15,11 +15,14 @@ test('Air Puck card mode schedules AI turns, reveals cards, and animates doubled
   assert.match(component, /className="welcome-hitbox"[^>]*aria-label="Start Air Puck"/);
   assert.match(component, /\.playfield\{position:absolute;inset:0;width:100%;height:100%;overflow:hidden/);
   assert.equal((component.match(/className="sprite sprite-mallet"/g) || []).length, 4);
-  assert.match(component, /\.sprite-mallet\{width:20\.8cqw/);
-  assert.match(component, /\.sprite-puck\{width:8\.4cqw/);
-  assert.match(component, /r: 168/);
-  assert.match(component, /r: 68/);
+  assert.match(component, /\.sprite-mallet\{width:10\.4cqw/);
+  assert.match(component, /\.sprite-puck\{width:4\.2cqw/);
+  assert.match(component, /r: 84/);
+  assert.match(component, /r: 34/);
   assert.match(component, /GOAL_HEIGHT = 220/);
+  assert.match(component, /const CARD_BOARD = \{ left: 0\.125, top: 0\.245, width: 0\.53, height: 0\.49 \}/);
+  assert.match(component, /spriteTransform\(object, portrait, cardMode\)/);
+  assert.match(component, /@media \(max-height:500px\) and \(orientation:landscape\)/);
   assert.match(component, /image\.decode\(\)/);
   assert.match(component, /Promise\.all\(required\.map/);
   assert.match(component, /air-hockey-game-screen-bg\.webp/);

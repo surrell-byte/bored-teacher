@@ -12,6 +12,7 @@ const W = 1000, H = 500, GOAL_HEIGHT = 220, WIN_SCORE = 7;
 const FIELD = { left: 12, right: W - 12, top: 12, bottom: H - 12 };
 const GOAL_T = H / 2 - GOAL_HEIGHT / 2, GOAL_B = H / 2 + GOAL_HEIGHT / 2;
 const BOARD = { left: 0.19, top: 0.225, width: 0.62, height: 0.55 };
+const CARD_BOARD = { left: 0.125, top: 0.245, width: 0.53, height: 0.49 };
 const ASSETS = {
   welcome: "/games/air-puck/air-puck-welcome-screen-bg.webp",
   name: "/games/air-puck/air-puck-user-input-bg.webp",
@@ -63,11 +64,14 @@ function loadDecodedAsset(src, fetchPriority) {
   return promise;
 }
 
-const boardBounds = (portrait) => portrait
-  ? { left: 1 - BOARD.top - BOARD.height, top: BOARD.left, width: BOARD.height, height: BOARD.width }
-  : BOARD;
-const spriteTransform = (object, portrait) => {
-  const bounds = boardBounds(portrait);
+const boardBounds = (portrait, cardMode = false) => {
+  const board = cardMode ? CARD_BOARD : BOARD;
+  return portrait
+    ? { left: 1 - board.top - board.height, top: board.left, width: board.height, height: board.width }
+    : board;
+};
+const spriteTransform = (object, portrait, cardMode = false) => {
+  const bounds = boardBounds(portrait, cardMode);
   const x = bounds.left + (portrait ? 1 - object.y / H : object.x / W) * bounds.width;
   const y = bounds.top + (portrait ? object.x / W : object.y / H) * bounds.height;
   return `translate3d(${x * 100}cqw,${y * 100}cqh,0) translate(-50%,-50%)`;
@@ -203,10 +207,10 @@ const CSS = `
     background:transparent;touch-action:none;cursor:crosshair;isolation:isolate}
   .sprite{position:absolute;left:0;top:0;display:block;object-fit:contain;pointer-events:none;will-change:transform;
     transform:translate3d(0,0,0) translate(-50%,-50%);z-index:1}
-  .sprite-mallet{width:20.8cqw;aspect-ratio:1}
-  .sprite-puck{width:8.4cqw;aspect-ratio:1}
-  .playfield.portrait .sprite-mallet{width:20.8cqh}
-  .playfield.portrait .sprite-puck{width:8.4cqh}
+  .sprite-mallet{width:10.4cqw;aspect-ratio:1}
+  .sprite-puck{width:4.2cqw;aspect-ratio:1}
+  .playfield.portrait .sprite-mallet{width:10.4cqh}
+  .playfield.portrait .sprite-puck{width:4.2cqh}
 
   .message{position:absolute;inset:5px;display:flex;align-items:center;justify-content:center;padding:20px;
     pointer-events:none;border-radius:20px;background:rgba(4,8,15,.48);backdrop-filter:blur(5px);
@@ -245,8 +249,8 @@ const CSS = `
   .card-board-inner{position:absolute;inset:0;border-radius:0;background:transparent;display:block;overflow:visible;pointer-events:none}
   .card-board-goal{position:absolute;top:50%;z-index:2;text-align:center;padding:10px 7px;font-size:10px;font-weight:800;
     letter-spacing:1px;transform:translateY(-50%);
-    &.ai{right:19%;color:rgba(255,105,153,.95);background:rgba(8,16,32,.74);border-right:3px solid #ff4f8b}
-    &.you{left:19%;color:rgba(53,231,255,.95);background:rgba(8,16,32,.74);border-left:3px solid #35e7ff}}
+    &.ai{right:32%;color:rgba(255,105,153,.95);background:rgba(8,16,32,.74);border-right:3px solid #ff4f8b}
+    &.you{left:8%;color:rgba(53,231,255,.95);background:rgba(8,16,32,.74);border-left:3px solid #35e7ff}}
   .card-board-field{position:absolute;inset:0;pointer-events:none}
   .card-log{position:absolute;left:5%;bottom:5%;width:min(48vw,600px);max-height:14%;overflow:auto;padding:10px 14px;
     border:1px solid rgba(255,255,255,.12);border-radius:12px;background:rgba(5,13,30,.72);font-size:11px;line-height:1.7;color:var(--muted)}
@@ -348,6 +352,20 @@ const CSS = `
     .score-number{font-size:26px}
     .instructions{font-size:9px}}
 }
+@media (max-height:500px) and (orientation:landscape){
+  .ap{
+    .card-sidebar{top:4%;right:1%;bottom:4%;width:min(198px,24vw);padding:8px;gap:6px}
+    .card-status{padding:8px 10px}
+    .card-panel-heading{padding:4px;font-size:11px}
+    .card-turn-indicator{margin-top:5px;font-size:9px}
+    .card-hand{gap:6px}
+    .play-card{gap:3px;padding:5px;
+      .card-shape{width:24px;height:24px;
+        &.shape-triangle{border-left-width:12px;border-right-width:12px;border-bottom-width:21px}}
+      .card-label{font-size:9px}
+      .card-desc{font-size:8px;line-height:1.2}}
+    .card-log{display:none}}
+}
 @media (prefers-reduced-motion:reduce){
   .ap *,.ap *::before,.ap *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }`;
@@ -392,9 +410,9 @@ export default function AirPuck({ onHudUpdate } = {}) {
   const C = useRef({ p: 0, a: 0, streak: 0, over: false, busy: false, turn: "player" });
   const penLock = useRef(false);
   const G = useRef({
-    player: { x: 190, y: H / 2, tx: 190, ty: H / 2, r: 168, speed: 0.28 },
-    ai: { x: W - 190, y: H / 2, r: 168, ex: 0, et: 0 },
-    puck: { x: W / 2, y: H / 2, r: 68, vx: 0, vy: 0, max: 900, stuckFor: 0 },
+    player: { x: 190, y: H / 2, tx: 190, ty: H / 2, r: 84, speed: 0.28 },
+    ai: { x: W - 190, y: H / 2, r: 84, ex: 0, et: 0 },
+    puck: { x: W / 2, y: H / 2, r: 34, vx: 0, vy: 0, max: 900, stuckFor: 0 },
     rally: 0,
     over: false, paused: false, counting: false, goalPause: 0,
     p: 0, a: 0, streak: 0, diff: "medium", muted: false,
@@ -615,8 +633,9 @@ export default function AirPuck({ onHudUpdate } = {}) {
     const fitField = () => {
       const portrait = window.matchMedia("(max-width: 700px) and (orientation: portrait)").matches;
       field.classList.toggle("portrait", portrait);
+      const cardMode = field.classList.contains("card-board-field");
       const place = (element, object) => {
-        if (element) element.style.transform = spriteTransform(object, portrait);
+        if (element) element.style.transform = spriteTransform(object, portrait, cardMode);
       };
       place(aiElRef.current, g.ai);
       place(playerElRef.current, g.player);
@@ -670,10 +689,10 @@ export default function AirPuck({ onHudUpdate } = {}) {
   const animateSpritePath = (element, points, duration) => {
     if (!element || !playfieldRef.current) return;
     const portrait = playfieldRef.current.classList.contains("portrait");
-    const frames = points.map((point) => ({ transform: spriteTransform(point, portrait) }));
+    const frames = points.map((point) => ({ transform: spriteTransform(point, portrait, true) }));
     const animation = element.animate(frames, { duration, easing: "cubic-bezier(.2,.8,.3,1)", fill: "forwards" });
     later(() => {
-      element.style.transform = spriteTransform(points[points.length - 1], portrait);
+      element.style.transform = spriteTransform(points[points.length - 1], portrait, true);
       animation.cancel();
     }, duration + 20);
   };
@@ -703,7 +722,7 @@ export default function AirPuck({ onHudUpdate } = {}) {
     later(() => {
       puck.x = home.x; puck.y = home.y; puck.vx = 0; puck.vy = 0; puck.stuckFor = 0;
       if (puckElRef.current && playfieldRef.current) {
-        puckElRef.current.style.transform = spriteTransform(home, playfieldRef.current.classList.contains("portrait"));
+        puckElRef.current.style.transform = spriteTransform(home, playfieldRef.current.classList.contains("portrait"), true);
       }
     }, 720);
   };
@@ -999,11 +1018,11 @@ export default function AirPuck({ onHudUpdate } = {}) {
                     <div className="card-board-goal ai">AI GOAL</div>
                     <div className="card-board-goal you">YOUR GOAL</div>
                     <img ref={aiElRef} className="sprite sprite-mallet" src={ASSETS.ai} alt="AI mallet" draggable="false"
-                      style={{ transform: "translate3d(74.2cqw,50cqh,0) translate(-50%,-50%)" }} />
+                      style={{ transform: "translate3d(55.4cqw,49.5cqh,0) translate(-50%,-50%)" }} />
                     <img ref={playerElRef} className="sprite sprite-mallet" src={ASSETS.player} alt={`${name} mallet`} draggable="false"
-                      style={{ transform: "translate3d(25.8cqw,50cqh,0) translate(-50%,-50%)" }} />
+                      style={{ transform: "translate3d(22.6cqw,49.5cqh,0) translate(-50%,-50%)" }} />
                     <img ref={puckElRef} className="sprite sprite-puck card-puck" src={ASSETS.puck} alt="Puck" draggable="false"
-                      style={{ transform: "translate3d(50cqw,50cqh,0) translate(-50%,-50%)" }} />
+                      style={{ transform: "translate3d(39.8cqw,49.5cqh,0) translate(-50%,-50%)" }} />
                   </div>
                   <div className="card-log" ref={logRef}>
                     {log.map((t, i) => <div key={i}>{t}</div>)}

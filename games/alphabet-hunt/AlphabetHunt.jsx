@@ -3,6 +3,9 @@ import './alphabetHunt.css';
 
 const AVATARS = ['🚗', '🐱', '⭐', '🚀', '🐸', '🍩', '🎈', '🦖', '⚽', '🌵', '🐳', '🎧', '🍕', '🦋', '🐧', '🍄', '🎩', '🐝', '🌙', '🎲', '🦉', '🍉', '🐢', '🎯', '🐙', '🍦'];
 const CELEBRATION_PIECES = ['🎉', '⭐', '✨', '🎊', '🏆', '🎈'];
+const AVATARS_TO_WIN = 7;
+const EVENT_TILE_COUNT = 12;
+const POINTS_PER_BONUS_REVEAL = 1000;
 const DEFAULT_THEME = { name: 'Classroom', paper: '#eee8da', panel: '#fffaf0', ink: '#1b1b1f', p1: '#2f6f4f', p2: '#5b3ea8', gold: '#c98a2c', p1Soft: '#dcebe1', p2Soft: '#e6ddf6', muted: '#5a5a52', tileHover: '#303037' };
 const THEMES = {
   classroom: { name: 'Classroom', paper: '#eee8da', panel: '#fffaf0', ink: '#1b1b1f', p1: '#2f6f4f', p2: '#5b3ea8', gold: '#c98a2c', p1Soft: '#dcebe1', p2Soft: '#e6ddf6', muted: '#5a5a52', tileHover: '#303037' },
@@ -33,11 +36,25 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
   const [confetti, setConfetti] = useState([]);
   const [hardRules, setHardRules] = useState(false);
   const [scores, setScores] = useState({ 1: 0, 2: 0 });
+  const [bonusReveals, setBonusReveals] = useState({ 1: 0, 2: 0 });
+  const [bonusMilestones, setBonusMilestones] = useState({ 1: 0, 2: 0 });
   const [wins, setWins] = useState({ 1: 0, 2: 0 });
   const [streaks, setStreaks] = useState({ 1: 0, 2: 0 });
   const [lastCorrectPlayer, setLastCorrectPlayer] = useState(null);
   const [winningPlayer, setWinningPlayer] = useState(null);
   const theme = resolveTheme(themeId);
+
+  const awardPoints = (player, points) => {
+    const nextScore = scores[player] + points;
+    setScores(value => ({ ...value, [player]: value[player] + points }));
+    const reachedMilestone = Math.floor(Math.max(0, nextScore) / POINTS_PER_BONUS_REVEAL);
+    const earnedReveals = Math.max(0, reachedMilestone - bonusMilestones[player]);
+    if (earnedReveals > 0) {
+      setBonusMilestones(value => ({ ...value, [player]: Math.max(value[player], reachedMilestone) }));
+      setBonusReveals(value => ({ ...value, [player]: value[player] + earnedReveals }));
+    }
+    return earnedReveals;
+  };
 
   const skipTurn = () => {
     if (lock) return;
@@ -73,9 +90,9 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
     const letters = QWERTY_KEYS;
 
     const contents = [];
-    for (let a = 0; a < 5; a++) contents.push('p1');
-    for (let b = 0; b < 5; b++) contents.push('p2');
-    for (let c = 0; c < 16; c++) contents.push(EFFECTS[c % EFFECTS.length]);
+    for (let a = 0; a < AVATARS_TO_WIN; a++) contents.push('p1');
+    for (let b = 0; b < AVATARS_TO_WIN; b++) contents.push('p2');
+    for (let c = 0; c < EVENT_TILE_COUNT; c++) contents.push(EFFECTS[c % EFFECTS.length]);
     const shuffledContents = shuffle(contents);
 
     const newTiles = letters.map((letter, idx) => ({
@@ -95,6 +112,8 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
     setTurnNumber(1);
     setStatusLine('');
     setScores({ 1: 0, 2: 0 });
+    setBonusReveals({ 1: 0, 2: 0 });
+    setBonusMilestones({ 1: 0, 2: 0 });
     setStreaks({ 1: 0, 2: 0 });
     setLastCorrectPlayer(null);
     setWinningPlayer(null);
@@ -135,6 +154,9 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
 
     const owner = tile.content === 'p1' ? 1 : tile.content === 'p2' ? 2 : null;
     const mine = owner === current;
+    const usesBonusReveal = bonusReveals[current] > 0;
+    let earnedBonusReveals = 0;
+    if (usesBonusReveal) setBonusReveals(value => ({ ...value, [current]: value[current] - 1 }));
 
     if (owner) {
       tile.matched = true;
@@ -151,15 +173,15 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
         const nextStreak = lastCorrectPlayer === current ? streaks[current] + 1 : 1;
         const points = 100 + nextStreak * 100;
         setStreaks(value => ({ ...value, [current]: nextStreak }));
-        setScores(value => ({ ...value, [current]: value[current] + points }));
+        earnedBonusReveals = awardPoints(current, points);
         setLastCorrectPlayer(current);
-        setStatusLine(`${ownerName} found ${ownerAvatar}! +${points} points${nextStreak > 1 ? ` (${nextStreak} streak)` : ''}`);
+        setStatusLine(`${ownerName} found ${ownerAvatar}! +${points} points${nextStreak > 1 ? ` (${nextStreak} streak)` : ''}${earnedBonusReveals ? ` — earned ${earnedBonusReveals} bonus reveal${earnedBonusReveals === 1 ? '' : 's'}` : ''}`);
       } else {
         setLastCorrectPlayer(null);
         setStatusLine(`${current === 1 ? name1 : name2} found ${ownerAvatar} — that's ${ownerName}'s tile!`);
       }
 
-      if ((owner === 1 && newFound1 >= 5) || (owner === 2 && newFound2 >= 5)) {
+      if ((owner === 1 && newFound1 >= AVATARS_TO_WIN) || (owner === 2 && newFound2 >= AVATARS_TO_WIN)) {
         setTimeout(() => showWin(owner, ownerName, ownerAvatar), 500);
         return;
       }
@@ -193,13 +215,21 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
       if (wasOpponentAvatar) {
         setStatusLine(`${name} found ${opponentAv} — that's ${opponentName}'s tile!`);
       } else {
-        if (tile.content.includes('+500 points')) setScores(value => ({ ...value, [current]: value[current] + 500 }));
-        if (tile.content.includes('-300 points')) setScores(value => ({ ...value, [current]: value[current] - 300 }));
-        if (tile.content.includes('Steal 100 points')) setScores(value => ({ ...value, [current]: value[current] + 100, [current === 1 ? 2 : 1]: value[current === 1 ? 2 : 1] - 100 }));
-        setStatusLine(`${name} found ${tile.content}.`);
+        if (tile.content.includes('+500 points')) earnedBonusReveals = awardPoints(current, 500);
+        if (tile.content.includes('-300 points')) earnedBonusReveals = awardPoints(current, -300);
+        if (tile.content.includes('Steal 100 points')) {
+          earnedBonusReveals = awardPoints(current, 100);
+          awardPoints(current === 1 ? 2 : 1, -100);
+        }
+        setStatusLine(`${name} found ${tile.content}${earnedBonusReveals ? ` — earned ${earnedBonusReveals} bonus reveal${earnedBonusReveals === 1 ? '' : 's'}` : ''}.`);
       }
 
         setTimeout(() => {
+          if (earnedBonusReveals > 0) {
+            setStatusLine(`${name} has ${earnedBonusReveals} bonus reveal${earnedBonusReveals === 1 ? '' : 's'}! Choose another tile.`);
+            setLock(false);
+            return;
+          }
         const nextCurrent = current === 1 ? 2 : 1;
         setCurrent(nextCurrent);
         setTurnNumber(turnNumber + 1);
@@ -216,13 +246,22 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
 
     if (mine && !hardRules) {
       setLock(true);
-      setTimeout(() => { setCurrent(current === 1 ? 2 : 1); setTurnNumber(value => value + 1); setLock(false); }, 700);
+      setTimeout(() => {
+        if (earnedBonusReveals > 0) {
+          setStatusLine(`${current === 1 ? name1 : name2} has ${earnedBonusReveals} bonus reveal${earnedBonusReveals === 1 ? '' : 's'}! Choose another tile.`);
+          setLock(false);
+          return;
+        }
+        setCurrent(current === 1 ? 2 : 1);
+        setTurnNumber(value => value + 1);
+        setLock(false);
+      }, 700);
     }
   };
 
   const showWin = (winner, name, avatar) => {
     const misses = winner === 1 ? misses1 : misses2;
-    const accuracy = Math.round((5 / Math.max(turnNumber, 1)) * 100);
+    const accuracy = Math.round((AVATARS_TO_WIN / Math.max(turnNumber, 1)) * 100);
 
     setWinningPlayer(winner);
 
@@ -276,11 +315,11 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
           <h1>Alphabet Hunt</h1>
           <p className="ah-tag">A two-player memory game on a QWERTY keyboard</p>
           <p className="ah-rules">
-            Twenty-six keys cover a QWERTY keyboard. Underneath, five keys hide
-            <b> Player One's</b> avatar and five hide <b>Player Two's</b> avatar &mdash;
+            Twenty-six keys cover a QWERTY keyboard. Underneath, seven keys hide
+            <b> Player One's</b> avatar and seven hide <b>Player Two's</b> avatar &mdash;
             the rest are empty. Take turns flipping one tile at a time. Find your own
             avatar and you flip again; find an empty tile or your opponent's avatar and
-            the turn passes. <b className="two">Whoever uncovers all five of their own avatar first wins.</b>
+            the turn passes. Earn 1,000 net points for a bonus tile reveal. <b className="two">Whoever uncovers all seven of their own avatar first wins.</b>
           </p>
           <label className="ah-mode-toggle"><input type="checkbox" checked={hardRules} onChange={(event) => setHardRules(event.target.checked)} /> Hard rules: correct picks earn another turn</label>
           <button className="ah-btn" onClick={() => setScreen('howto')}>How to play</button>
@@ -294,8 +333,8 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
       <div className="alphabet-hunt ah-screen ah-welcome-screen" style={{ '--paper': theme.paper, '--panel': theme.panel, '--ink': theme.ink, '--p1': theme.p1, '--p2': theme.p2, '--p1-soft': theme.p1Soft, '--p2-soft': theme.p2Soft, '--muted': theme.muted, '--tile-hover': theme.tileHover, '--gold': theme.gold }}>
         <div className="ah-card">
           <h1>How to play</h1>
-          <p className="ah-tag">Find your five hidden avatar tiles before your opponent.</p>
-          <p className="ah-rules">Take turns choosing a key. Your own avatar earns points and another turn. An opponent tile or event tile passes play to the other player. Use Skip when you want to give up the turn.</p>
+          <p className="ah-tag">Find your seven hidden avatar tiles before your opponent.</p>
+          <p className="ah-rules">Take turns choosing a key. Your own avatar earns points and another turn. An opponent tile or event tile passes play to the other player. Earn a bonus tile reveal for each 1,000 net points. Use Skip when you want to give up the turn.</p>
           <button className="ah-btn" onClick={() => setScreen('setup')}>Set up players</button>
         </div>
       </div>
@@ -410,13 +449,13 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
               </div>
               <div className="ah-hud-turn">{current === 1 ? 'Your turn' : ''}</div>
               <div className="ah-hud-found">
-                {[...Array(5)].map((_, i) => (
+                {[...Array(AVATARS_TO_WIN)].map((_, i) => (
                   <div key={i} className={`ah-hud-slot ${i < found1 ? 'filled' : ''}`}>
                     {i < found1 ? av1 : ''}
                   </div>
                 ))}
               </div>
-              <div className="ah-hud-score"><span>Points</span><strong>{scores[1]}</strong><small>Wins {wins[1]}</small></div>
+              <div className="ah-hud-score"><span>Points</span><strong>{scores[1]}</strong><small>Wins {wins[1]} · Bonus reveals {bonusReveals[1]}</small></div>
             </div>
 
             <div className={`ah-hud-player ah-p2 ${current === 2 ? 'active' : ''}`}>
@@ -426,13 +465,13 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
               </div>
               <div className="ah-hud-turn">{current === 2 ? 'Your turn' : ''}</div>
               <div className="ah-hud-found">
-                {[...Array(5)].map((_, i) => (
+                {[...Array(AVATARS_TO_WIN)].map((_, i) => (
                   <div key={i} className={`ah-hud-slot ${i < found2 ? 'filled' : ''}`}>
                     {i < found2 ? av2 : ''}
                   </div>
                 ))}
               </div>
-              <div className="ah-hud-score"><span>Points</span><strong>{scores[2]}</strong><small>Wins {wins[2]}</small></div>
+              <div className="ah-hud-score"><span>Points</span><strong>{scores[2]}</strong><small>Wins {wins[2]} · Bonus reveals {bonusReveals[2]}</small></div>
             </div>
           </div>
 
@@ -486,7 +525,7 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
   if (screen === 'win') {
     const winnerNumber = winningPlayer ?? current;
     const misses = winnerNumber === 1 ? misses1 : misses2;
-    const accuracy = Math.round((5 / Math.max(turnNumber, 1)) * 100);
+    const accuracy = Math.round((AVATARS_TO_WIN / Math.max(turnNumber, 1)) * 100);
     const avatar = winnerNumber === 1 ? av1 : av2;
     const name = winnerNumber === 1 ? name1 : name2;
 
@@ -495,7 +534,7 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
         <div className="ah-card ah-win-card">
           <div className="ah-win-avatar">{avatar}</div>
           <h1 className="ah-win-title">{name} wins!</h1>
-          <p className="ah-tag">Found all five {avatar} tiles first.</p>
+          <p className="ah-tag">Found all seven {avatar} tiles first.</p>
 
           <div className="ah-win-stats">
             <div>

@@ -25,10 +25,10 @@
 }
 
 .emoji-sports-page-welcome { padding:0; position:relative; background-image:url('/assets/games/sports-quiz/sports-quiz-welcome-bg.webp'), linear-gradient(135deg, #081426, #102d4f, #07111f); background-position:center; background-size:cover; background-attachment:fixed; }
-.sports-welcome-start { position:absolute; left:50%; top:82%; width:min(24vw, 320px); min-width:220px; height:clamp(54px, 8vh, 78px); transform:translate(-50%, -50%); display:flex; align-items:center; justify-content:center; gap:12px; border:3px solid rgba(255,255,255,.88); border-radius:18px; background:linear-gradient(135deg, #ffe24d, #ff9d28); box-shadow:0 7px 0 #a64c1d, 0 14px 30px rgba(1,10,24,.34), inset 0 1px 0 rgba(255,255,255,.55); color:#17283c; font:950 clamp(1rem, 1.8vw, 1.3rem)/1 Inter, sans-serif; text-transform:uppercase; cursor:pointer; transition:filter .18s ease, box-shadow .18s ease, transform .18s ease; }
-.sports-welcome-start:hover { transform:translate(-50%, calc(-50% - 3px)); filter:brightness(1.06); box-shadow:0 10px 0 #a64c1d, 0 18px 34px rgba(1,10,24,.38), inset 0 1px 0 rgba(255,255,255,.62); }
-.sports-welcome-start:active { transform:translate(-50%, -45%); box-shadow:0 3px 0 #a64c1d; }
-.sports-welcome-start:focus-visible { outline:4px solid white; outline-offset:4px; }
+.sports-welcome-start { position:absolute; inset-inline:0; bottom:0; width:100%; height:9%; min-width:0; transform:none; display:flex; align-items:center; justify-content:center; gap:12px; border:0; border-radius:0; background:transparent; box-shadow:none; color:white; font:950 clamp(1rem, 1.8vw, 1.3rem)/1 Inter, sans-serif; text-transform:uppercase; text-shadow:0 2px 8px rgba(0,0,0,.7); cursor:pointer; transition:background-color .18s ease; }
+.sports-welcome-start:hover { transform:none; background:rgba(3,12,24,.12); }
+.sports-welcome-start:active { transform:none; background:rgba(255,255,255,.1); }
+.sports-welcome-start:focus-visible { outline:3px solid white; outline-offset:-5px; }
 .emoji-sports-page-modes { background-image: url('/assets/games/sports-quiz/vocab-game-bg.png'), linear-gradient(135deg, #081426, #102d4f, #07111f); background-position: center; background-size: cover; background-attachment: fixed; }
 .emoji-sports-page-emoji { background-image: url('/assets/games/sports-quiz/vocab-game-bg.png'), linear-gradient(135deg, #081426, #102d4f, #07111f); background-position: center; background-size: cover; background-attachment: fixed; }
 .emoji-sports-page-spell { background-image: url('/assets/games/sports-quiz/spelling-game-bg.png'), linear-gradient(135deg, #081426, #102d4f, #07111f); background-position: center; background-size: cover; background-attachment: fixed; }
@@ -108,7 +108,7 @@
   .emoji-sports-page { padding: 12px; }
   .emoji-sports-page { background-attachment: scroll; }
   .emoji-sports-page-welcome { background-image: url('/assets/games/sports-quiz/sports-quiz-welcome-phone-bg.webp'), linear-gradient(135deg, #081426, #102d4f, #07111f); }
-  .sports-welcome-start { left:50%; width:min(76%, 340px); min-width:0; height:60px; }
+  .sports-welcome-start { width:100%; height:9%; }
   .emoji-sports-page-modes { background-image: url('/assets/games/sports-quiz/vocab-game-bg.png'), linear-gradient(135deg, #081426, #102d4f, #07111f); }
   .emoji-sports-game { padding: 18px; border-radius: 24px; }
   .quiz-header { align-items: flex-start; }

@@ -349,7 +349,7 @@ export default function Connect4({ onComplete, onHudUpdate }) {
       "--p1-a": t1.a, "--p1-b": t1.b, "--p2-a": t2.a, "--p2-b": t2.b,
       minHeight: "100%", width: "100%", display: "flex", alignItems: "center", justifyContent: "center",
       background: `url('/assets/games/connect-4/${screenBackground}') center / cover no-repeat, radial-gradient(circle at center, #0d1322 0%, #06080f 70%), #05070d`,
-      fontFamily: "'DM Sans', sans-serif", color: "#e8edf5", position: "relative", overflow: "hidden", padding: "0.8rem",
+      fontFamily: "'DM Sans', sans-serif", color: "#e8edf5", position: "relative", overflow: "hidden", padding: screen === "game" ? 0 : "0.8rem",
     }}>
       {screen === "welcome" && (
         <button type="button" className="c4-welcome-start" aria-label="Start Connect Four" onClick={() => setScreen("players")} />
@@ -632,8 +632,9 @@ export default function Connect4({ onComplete, onHudUpdate }) {
         /* ── Game screen: side panels flank the board, everything sized to ── */
         /* ── fit within the viewport without scrolling.                     */
         .c4-game-row {
-          display: flex; align-items: center; justify-content: center;
-          gap: clamp(0.35rem, 0.9vw, 0.8rem);
+          display: grid; align-items: center; justify-content: stretch;
+          grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+          gap: 0;
         }
 
         /* ── Portrait player panel — replaces the old navbar badges; lives ── */
@@ -641,17 +642,18 @@ export default function Connect4({ onComplete, onHudUpdate }) {
         .c4-side-panel {
           display: flex; flex-direction: column; align-items: center; justify-content: center;
           gap: clamp(0.5rem, 1.4vh, 1rem);
-          width: clamp(96px, 12vw, 176px);
+          width: min(100%, clamp(160px, 16vw, 220px));
+          min-height: min(46vh, 360px);
           padding: clamp(1rem, 2.4vh, 1.8rem) 0.8rem;
           border-radius: 24px;
-          background: linear-gradient(160deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01)), rgba(10,14,24,0.55);
-          border: 1px solid rgba(255,255,255,0.08);
-          box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+          background: linear-gradient(160deg, rgba(18,47,78,0.98), rgba(7,18,34,0.98));
+          border: 1px solid rgba(197,224,255,0.42);
+          box-shadow: 0 10px 28px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.14);
           transition: box-shadow 0.25s, border-color 0.25s, background 0.25s;
-          flex-shrink: 0;
+          justify-self: center;
         }
         .c4-side-panel.active {
-          border-color: var(--badge-a); background: rgba(255,255,255,0.06);
+          border-color: var(--badge-a); background: linear-gradient(160deg, rgba(22,54,86,0.99), rgba(7,18,34,0.99));
           box-shadow: 0 0 0 2px var(--badge-a)55, 0 0 30px var(--badge-a)33, inset 0 1px 0 rgba(255,255,255,0.08);
         }
         .c4-side-avatar {
@@ -665,7 +667,7 @@ export default function Connect4({ onComplete, onHudUpdate }) {
           font-weight: 800; font-size: clamp(0.8rem, 1.1vw, 1rem); color: #e8edf5; text-align: center;
           white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
         }
-        .c4-side-score { font-family: 'DM Mono', monospace; font-size: 0.68rem; opacity: 0.6; color: #9aa7bd; letter-spacing: 0.5px; }
+        .c4-side-score { font-family: 'DM Mono', monospace; font-size: 0.72rem; opacity: 0.95; color: #d5e7fa; letter-spacing: 0.5px; }
         .c4-side-turn {
           font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 1.5px; text-transform: uppercase;
           color: var(--badge-a); background: var(--badge-a)1a; border: 1px solid var(--badge-a)55;
@@ -678,13 +680,12 @@ export default function Connect4({ onComplete, onHudUpdate }) {
           --gap-y: calc(var(--cell) * 0.14);
           --pad-x: calc(var(--cell) * 0.42);
           --pad-y: calc(var(--cell) * 0.28);
-          background: linear-gradient(145deg, rgba(30,45,80,0.82), rgba(8,12,24,0.95));
-          backdrop-filter: blur(18px);
-          border: 1px solid rgba(255,255,255,0.08);
+          background: linear-gradient(145deg, rgba(38,112,184,0.98), rgba(12,54,112,0.99));
+          border: 1px solid rgba(194,226,255,0.7);
           border-radius: 28px;
           padding: var(--pad-y) var(--pad-x);
           box-shadow: 0 30px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -10px 30px rgba(0,0,0,0.5);
-          position: relative; margin: 0 auto; flex-shrink: 0;
+          position: relative; margin: 0; flex-shrink: 0;
         }
         .c4-board-grid {
           display: grid;
@@ -695,8 +696,8 @@ export default function Connect4({ onComplete, onHudUpdate }) {
         }
         .c4-cell {
           width: var(--cell); height: var(--cell); border-radius: 50%;
-          background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.04), rgba(0,0,0,0.88));
-          box-shadow: inset 0 6px 12px rgba(255,255,255,0.04), inset 0 -10px 20px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.03);
+          background: radial-gradient(circle at 35% 30%, rgba(211,239,255,0.42), rgba(9,38,82,0.9));
+          box-shadow: inset 0 5px 10px rgba(255,255,255,0.2), inset 0 -8px 15px rgba(0,0,0,0.62), 0 0 0 1px rgba(225,243,255,0.35);
           position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;
           cursor: pointer; transition: background 0.08s;
         }
@@ -713,8 +714,8 @@ export default function Connect4({ onComplete, onHudUpdate }) {
         .c4-board-frame.over .c4-col-overlay { pointer-events: none !important; }
 
         .c4-cell-label {
-          font-family: 'DM Mono', monospace; font-size: 0.85rem; font-weight: 700; color: rgba(255,255,255,0.28);
-          text-shadow: 0 0 8px rgba(255,255,255,0.12); pointer-events: none;
+          font-family: 'DM Mono', monospace; font-size: clamp(0.95rem, 1.35vw, 1.2rem); font-weight: 900; color: #fff;
+          text-shadow: 0 1px 3px rgba(0,0,0,0.98), 0 0 9px rgba(0,0,0,0.8); pointer-events: none;
         }
 
         .c4-col-overlays {
@@ -741,9 +742,9 @@ export default function Connect4({ onComplete, onHudUpdate }) {
 
         @media (max-width: 720px) {
           .c4-welcome-start { left:62%; top:66%; width:30%; height:15%; }
-          .c4-game-row { flex-direction: column; gap: 0.6rem; }
+          .c4-game-row { display: flex; flex-direction: column; gap: 0.6rem; }
           .c4-side-panel {
-            flex-direction: row; width: 100%; max-width: 380px; padding: 0.5rem 1rem;
+            flex-direction: row; width: 100%; max-width: 380px; min-height: 0; padding: 0.5rem 1rem;
             gap: 0.7rem; justify-content: flex-start;
           }
           .c4-side-avatar { width: 34px; height: 34px; font-size: 1.1rem; }
