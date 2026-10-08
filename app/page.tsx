@@ -5,7 +5,8 @@ import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged } from '@/lib/firebase';
 
-const SPLASH_DURATION_MS = 5000;
+const MIN_SPLASH_DURATION_MS = 650;
+const AUTH_FALLBACK_DELAY_MS = 2500;
 const STATUS_MESSAGES = [
   'Preparing achievements...',
   'Loading classroom...',
@@ -30,7 +31,21 @@ export default function SplashPage() {
 
   useEffect(() => {
     let resolved = false;
+    let finishing = false;
+    const startedAt = performance.now();
     const timers: ReturnType<typeof setTimeout>[] = [];
+
+    function finish() {
+      if (finishing) return;
+      finishing = true;
+      if (finishRef.current) clearTimeout(finishRef.current);
+      const remaining = Math.max(0, MIN_SPLASH_DURATION_MS - (performance.now() - startedAt));
+      redirectRef.current = setTimeout(() => {
+        setProgress(100);
+        setExiting(true);
+        router.replace(destinationRef.current);
+      }, remaining);
+    }
 
     function queue(ms: number, nextProgress: number, nextStatus: string) {
       timers.push(setTimeout(() => {
@@ -39,25 +54,21 @@ export default function SplashPage() {
       }, ms));
     }
 
-    queue(200, 10, STATUS_MESSAGES[0]);
-    queue(700, 22, STATUS_MESSAGES[1]);
-    queue(1300, 42, STATUS_MESSAGES[2]);
-    queue(2000, 55, STATUS_MESSAGES[3]);
-    queue(2700, 70, STATUS_MESSAGES[4]);
-    queue(3400, 85, STATUS_MESSAGES[5]);
-    queue(4200, 94, STATUS_MESSAGES[6]);
-    queue(4700, 98, STATUS_MESSAGES[7]);
+    queue(120, 18, STATUS_MESSAGES[0]);
+    queue(280, 38, STATUS_MESSAGES[1]);
+    queue(450, 62, STATUS_MESSAGES[4]);
+    queue(600, 82, STATUS_MESSAGES[7]);
 
     finishRef.current = setTimeout(() => {
-      setProgress(100);
-      setExiting(true);
-      router.replace(destinationRef.current);
-    }, SPLASH_DURATION_MS);
+      if (!resolved) destinationRef.current = '/auth';
+      finish();
+    }, AUTH_FALLBACK_DELAY_MS);
 
     const unsub = onAuthStateChanged((user) => {
       if (resolved) return;
       resolved = true;
       destinationRef.current = user ? '/hub' : '/auth';
+      finish();
     });
 
     return () => {

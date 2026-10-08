@@ -1,6 +1,6 @@
 export default {
   id: "colour-clash",
-  title: "Colour Clash",
+  title: "Colour Tunes",
   category: "Vocabulary",
   type: "reaction",
   difficulty: "easy",

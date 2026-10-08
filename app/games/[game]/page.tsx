@@ -51,7 +51,7 @@ const GAMES_WITH_WELCOME = new Set([
   'moneyblocks',
   'emojisportsquiz',
   'generalknowledgequiz',
-  'alphabethunt', 'buildtower', 'whatsmissing',
+  'alphabethunt', 'buildtower', 'whatsmissing', 'angryverbs', 'miniracer',
 ]);
 
 // ── Page ──────────────────────────────────────────────────────
@@ -99,7 +99,7 @@ export default function GamePage() {
       buildtower: ['/assets/games/build-the-tower/build-the-tower-welcome-screen.png', '/assets/games/build-the-tower/build-the-tower-floating-islands-bg.png', '/assets/games/build-the-tower/build-the-tower-jungle-bg.png', '/assets/games/build-the-tower/build-the-tower-game-bg.png'],
       connect4: ['/assets/games/connect-4/connect-4-welcome.webp', '/assets/games/connect-4/connect-4-main-menu.webp', '/assets/games/connect-4/connect-4-user-input.webp', '/assets/games/connect-4/connect-4-game-screen.webp'],
       emojisportsquiz: ['/assets/games/sports-quiz/sports-quiz-welcome-bg.webp', '/assets/games/sports-quiz/sports-quiz-welcome-phone-bg.webp', '/assets/games/sports-quiz/vocab-game-bg.png', '/assets/games/sports-quiz/spelling-game-bg.png', '/assets/games/sports-quiz/sentence-game-bg.png'],
-      tictacroll: ['/assets/images/tic-tac-roll-welcome-page-bg.webp', '/assets/images/tic-tac-roll-user-input-screen-bg.webp', '/assets/images/tic-tac-roll-welcome-bg.webp'],
+      tictacroll: ['/assets/images/tic-tac-roll-welcome-page-bg.webp', '/assets/images/tic-tac-roll-user-input-screen-bg.webp', '/assets/images/tic-tac-roll-welcome-bg.webp', '/assets/images/tic-tac-roll-general-phone-bg.webp'],
       weatherwizard: ['/assets/games/weather-wizard/weather-wizards-welcome-bg.webp', '/assets/games/weather-wizard/weather-wizards-classroom-bg.webp', '/assets/games/weather-wizard/weather-wizards-summer-bg.webp', '/assets/games/weather-wizard/weather-wizards-spring-bg.webp', '/assets/games/weather-wizard/weather-wizards-astronomy-tower-bg.webp', '/assets/games/weather-wizard/weather-wizards-autumn-bg.webp', '/assets/games/weather-wizard/weather-wizards-winter-bg.webp', '/assets/games/weather-wizard/weather-wizards-courtyard-bg.webp'],
       zoogame: ['/assets/games/zoo-game/zoo-game-menu-bg.webp', '/assets/games/zoo-game/zoo-game-game-bg.webp', '/assets/games/zoo-game/zoo-game-user-input-bg.webp'],
       snowyslopes: ['/assets/games/snowy-slopes/snowy-slopes-welcome-bg.webp', '/assets/games/snowy-slopes/snowy-slopes-welcome-phone-bg.webp', '/assets/games/snowy-slopes/snowy-slopes-game-screen-bg.webp', '/assets/games/snowy-slopes/snowy-slopes-game-screen-phone-bg.webp'],
@@ -442,7 +442,7 @@ export default function GamePage() {
               </span>
             )}
             {isColourClash && colourClashHud && (
-              <span className="game-shell-topbar-stats" aria-label="Colour Clash game progress" style={{ flexWrap: 'wrap' }}>
+              <span className="game-shell-topbar-stats" aria-label="Colour Tunes game progress" style={{ flexWrap: 'wrap' }}>
                 <span className="game-shell-topbar-stat"><b>Round {colourClashHud.round}</b></span>
                 <span className="game-shell-topbar-stat"><b>⭐ {colourClashHud.score}</b></span>
                 <span className="game-shell-topbar-stat"><b>{'❤️'.repeat(colourClashHud.lives)}{'🖤'.repeat(colourClashHud.totalLives - colourClashHud.lives)}</b></span>

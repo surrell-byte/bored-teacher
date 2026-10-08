@@ -15,9 +15,11 @@ const THEMES = {
 const resolveTheme = (themeId) => ({ ...DEFAULT_THEME, ...(THEMES[themeId] || {}) });
 const EFFECTS = ['💥 -300 points', '💰 +500 points', '🥷 Steal 100 points'];
 const QWERTY_KEYS = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'].join('').split('');
+const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 
 export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
   const [screen, setScreen] = useState('welcome');
+  const [gameMode, setGameMode] = useState('emoji');
   const [name1, setName1] = useState('');
   const [name2, setName2] = useState('');
   const [av1, setAv1] = useState(null);
@@ -43,6 +45,16 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
   const [lastCorrectPlayer, setLastCorrectPlayer] = useState(null);
   const [winningPlayer, setWinningPlayer] = useState(null);
   const theme = resolveTheme(themeId);
+  const isLetterMode = gameMode === 'letter';
+  const targetOptions = isLetterMode ? LETTERS : AVATARS;
+  const targetPhrase = isLetterMode ? 'a letter' : 'an emoji avatar';
+
+  const selectMode = (mode) => {
+    setGameMode(mode);
+    setAv1(null);
+    setAv2(null);
+    setScreen('setup');
+  };
 
   const awardPoints = (player, points) => {
     const nextScore = scores[player] + points;
@@ -87,7 +99,7 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
   };
 
   const startGame = () => {
-    const letters = QWERTY_KEYS;
+    const tileLabels = isLetterMode ? AVATARS : QWERTY_KEYS;
 
     const contents = [];
     for (let a = 0; a < AVATARS_TO_WIN; a++) contents.push('p1');
@@ -95,8 +107,8 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
     for (let c = 0; c < EVENT_TILE_COUNT; c++) contents.push(EFFECTS[c % EFFECTS.length]);
     const shuffledContents = shuffle(contents);
 
-    const newTiles = letters.map((letter, idx) => ({
-      letter,
+    const newTiles = tileLabels.map((label, idx) => ({
+      letter: label,
       content: shuffledContents[idx],
       revealed: false,
       matched: false,
@@ -125,7 +137,7 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
       setLock(true);
 
       setTimeout(() => {
-        setRoundMessage('Find your avatar!');
+        setRoundMessage(isLetterMode ? 'Find your letter!' : 'Find your emoji avatar!');
       }, 700);
 
       setTimeout(() => {
@@ -175,10 +187,10 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
         setStreaks(value => ({ ...value, [current]: nextStreak }));
         earnedBonusReveals = awardPoints(current, points);
         setLastCorrectPlayer(current);
-        setStatusLine(`${ownerName} found ${ownerAvatar}! +${points} points${nextStreak > 1 ? ` (${nextStreak} streak)` : ''}${earnedBonusReveals ? ` — earned ${earnedBonusReveals} bonus reveal${earnedBonusReveals === 1 ? '' : 's'}` : ''}`);
+        setStatusLine(`${ownerName} found ${isLetterMode ? 'the letter' : 'the avatar'} ${ownerAvatar}! +${points} points${nextStreak > 1 ? ` (${nextStreak} streak)` : ''}${earnedBonusReveals ? ` — earned ${earnedBonusReveals} bonus reveal${earnedBonusReveals === 1 ? '' : 's'}` : ''}`);
       } else {
         setLastCorrectPlayer(null);
-        setStatusLine(`${current === 1 ? name1 : name2} found ${ownerAvatar} — that's ${ownerName}'s tile!`);
+        setStatusLine(`${current === 1 ? name1 : name2} found ${isLetterMode ? 'the letter' : 'the avatar'} ${ownerAvatar} — that's ${ownerName}'s tile!`);
       }
 
       if ((owner === 1 && newFound1 >= AVATARS_TO_WIN) || (owner === 2 && newFound2 >= AVATARS_TO_WIN)) {
@@ -213,7 +225,7 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
 
       setLastCorrectPlayer(null);
       if (wasOpponentAvatar) {
-        setStatusLine(`${name} found ${opponentAv} — that's ${opponentName}'s tile!`);
+        setStatusLine(`${name} found ${isLetterMode ? 'the letter' : 'the avatar'} ${opponentAv} — that's ${opponentName}'s tile!`);
       } else {
         if (tile.content.includes('+500 points')) earnedBonusReveals = awardPoints(current, 500);
         if (tile.content.includes('-300 points')) earnedBonusReveals = awardPoints(current, -300);
@@ -307,20 +319,25 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
     startGame();
   };
 
-  // Welcome screen
+  // Main menu
   if (screen === 'welcome') {
     return (
       <div className="alphabet-hunt ah-screen ah-welcome-screen" style={{ '--paper': theme.paper, '--panel': theme.panel, '--ink': theme.ink, '--p1': theme.p1, '--p2': theme.p2, '--p1-soft': theme.p1Soft, '--p2-soft': theme.p2Soft, '--muted': theme.muted, '--tile-hover': theme.tileHover, '--gold': theme.gold }}>
         <div className="ah-card">
           <h1>Alphabet Hunt</h1>
-          <p className="ah-tag">A two-player memory game on a QWERTY keyboard</p>
-          <p className="ah-rules">
-            Twenty-six keys cover a QWERTY keyboard. Underneath, seven keys hide
-            <b> Player One's</b> avatar and seven hide <b>Player Two's</b> avatar &mdash;
-            the rest are empty. Take turns flipping one tile at a time. Find your own
-            avatar and you flip again; find an empty tile or your opponent's avatar and
-            the turn passes. Earn 1,000 net points for a bonus tile reveal. <b className="two">Whoever uncovers all seven of their own avatar first wins.</b>
-          </p>
+          <p className="ah-tag">Choose a game mode to get started</p>
+          <div className="ah-mode-options">
+            <button className="ah-mode-card" onClick={() => selectMode('emoji')}>
+              <span className="ah-mode-icon" aria-hidden="true">🐸</span>
+              <strong>Emoji mode</strong>
+              <span>Choose an emoji avatar, then find it under the letter tiles.</span>
+            </button>
+            <button className="ah-mode-card" onClick={() => selectMode('letter')}>
+              <span className="ah-mode-icon" aria-hidden="true">A</span>
+              <strong>Letter mode</strong>
+              <span>Choose a letter, then find it under the emoji tiles.</span>
+            </button>
+          </div>
           <label className="ah-mode-toggle"><input type="checkbox" checked={hardRules} onChange={(event) => setHardRules(event.target.checked)} /> Hard rules: correct picks earn another turn</label>
           <button className="ah-btn" onClick={() => setScreen('howto')}>How to play</button>
         </div>
@@ -333,9 +350,9 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
       <div className="alphabet-hunt ah-screen ah-welcome-screen" style={{ '--paper': theme.paper, '--panel': theme.panel, '--ink': theme.ink, '--p1': theme.p1, '--p2': theme.p2, '--p1-soft': theme.p1Soft, '--p2-soft': theme.p2Soft, '--muted': theme.muted, '--tile-hover': theme.tileHover, '--gold': theme.gold }}>
         <div className="ah-card">
           <h1>How to play</h1>
-          <p className="ah-tag">Find your seven hidden avatar tiles before your opponent.</p>
-          <p className="ah-rules">Take turns choosing a key. Your own avatar earns points and another turn. An opponent tile or event tile passes play to the other player. Earn a bonus tile reveal for each 1,000 net points. Use Skip when you want to give up the turn.</p>
-          <button className="ah-btn" onClick={() => setScreen('setup')}>Set up players</button>
+          <p className="ah-tag">Find your seven matching tiles before your opponent.</p>
+          <p className="ah-rules">In Emoji mode, choose an emoji avatar and reveal it under the letter tiles. In Letter mode, choose a letter and reveal it under the emoji tiles. Take turns choosing tiles: finding your own target earns points and another turn; an opponent target or event tile passes play. Earn a bonus tile reveal for each 1,000 net points. Use Skip when you want to give up the turn.</p>
+          <button className="ah-btn" onClick={() => setScreen('welcome')}>Choose a mode</button>
         </div>
       </div>
     );
@@ -346,16 +363,16 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
     const errorMsg = !name1.trim() || !name2.trim()
       ? 'Both players need a name.'
       : !av1 || !av2
-        ? 'Both players need to pick an avatar.'
+        ? `Both players need to pick ${targetPhrase}.`
         : av1 === av2
-          ? 'Players need different avatars.'
+            ? `Players need different ${isLetterMode ? 'letters' : 'avatars'}.`
           : '';
 
     return (
       <div className="alphabet-hunt ah-screen ah-setup-screen" style={{ '--paper': theme.paper, '--panel': theme.panel, '--ink': theme.ink, '--p1': theme.p1, '--p2': theme.p2, '--p1-soft': theme.p1Soft, '--p2-soft': theme.p2Soft, '--muted': theme.muted, '--tile-hover': theme.tileHover, '--gold': theme.gold }}>
         <div className="ah-card">
           <h1 style={{ fontSize: '2rem' }}>Who's playing?</h1>
-          <p className="ah-tag">Enter a name and pick an avatar for each player</p>
+          <p className="ah-tag">Enter a name and pick {targetPhrase} for each player</p>
 
           <div className="ah-setup-players">
             <div className="ah-player-block ah-p1">
@@ -368,11 +385,12 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
                 onChange={(e) => setName1(e.target.value)}
               />
               <div className="ah-avatar-grid">
-                {AVATARS.map((a) => (
+                {targetOptions.map((a) => (
                   <button
                     key={a}
                     className={`ah-avatar-choice ${av1 === a ? 'selected p1sel' : ''} ${av2 === a ? 'taken' : ''}`}
                     onClick={() => chooseAvatar(1, a)}
+                    aria-label={`${a}${isLetterMode ? ' letter' : ''}`}
                   >
                     {a}
                   </button>
@@ -390,11 +408,12 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
                 onChange={(e) => setName2(e.target.value)}
               />
               <div className="ah-avatar-grid">
-                {AVATARS.map((a) => (
+                {targetOptions.map((a) => (
                   <button
                     key={a}
                     className={`ah-avatar-choice ${av2 === a ? 'selected p2sel' : ''} ${av1 === a ? 'taken' : ''}`}
                     onClick={() => chooseAvatar(2, a)}
+                    aria-label={`${a}${isLetterMode ? ' letter' : ''}`}
                   >
                     {a}
                   </button>
@@ -482,7 +501,7 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
                 className={`ah-tile ${tile.revealed ? 'flipped' : ''} ${tile.matched ? 'matched' : ''}`}
                 onClick={() => handleTileClick(idx)}
                 disabled={lock || tile.matched}
-                aria-label={tile.revealed ? `${tile.letter}: ${tile.content === 'p1' ? av1 : tile.content === 'p2' ? av2 : tile.content}` : `Choose ${tile.letter}`}
+                aria-label={tile.revealed ? `${tile.letter}: ${tile.content === 'p1' ? av1 : tile.content === 'p2' ? av2 : tile.content}` : `Choose ${isLetterMode ? 'emoji' : 'letter'} ${tile.letter}`}
               >
                 <div className="ah-tile-inner">
                   <div className="ah-tile-face ah-tile-front" aria-hidden={tile.revealed}>{tile.letter}</div>
@@ -534,7 +553,7 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
         <div className="ah-card ah-win-card">
           <div className="ah-win-avatar">{avatar}</div>
           <h1 className="ah-win-title">{name} wins!</h1>
-          <p className="ah-tag">Found all seven {avatar} tiles first.</p>
+          <p className="ah-tag">Found all seven of your {isLetterMode ? 'letter' : 'emoji'} tiles first.</p>
 
           <div className="ah-win-stats">
             <div>

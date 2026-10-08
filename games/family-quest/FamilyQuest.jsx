@@ -147,20 +147,24 @@ const FamilyQuestPremium_CSS = `/* ── RESET & ROOT ────────�
 ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 6px; }
 
 /* ── BODY + BG ────────────────────────────────── */
-body {
-  margin: 0; padding: 0;
-  font-family: 'Nunito', sans-serif;
-  background: var(--parchment);
-  min-height: 100vh;
-  display: flex; justify-content: center; align-items: flex-start;
-  overflow-x: hidden;
+.familyquestpremium-root {
   position: relative;
+  isolation: isolate;
+  display: flex;
+  width: 100%;
+  min-height: 100%;
+  justify-content: center;
+  align-items: center;
+  overflow-x: hidden;
+  background: var(--parchment);
+  color: var(--ink);
+  font-family: 'Nunito', sans-serif;
 }
 
 /* layered background */
-body::before {
+.familyquestpremium-root::before {
   content:'';
-  position: fixed; inset: 0; z-index: 0;
+  position: absolute; inset: 0; z-index: -1;
   background:
     radial-gradient(ellipse 80% 60% at 15% 20%, rgba(232,196,160,.45) 0%, transparent 70%),
     radial-gradient(ellipse 60% 70% at 85% 80%, rgba(200,145,58,.18) 0%, transparent 70%),
@@ -168,9 +172,9 @@ body::before {
   pointer-events: none;
 }
 /* grain */
-body::after {
+.familyquestpremium-root::after {
   content:'';
-  position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: .35;
+  position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: .35;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='.4'/%3E%3C/svg%3E");
   background-size: 160px 160px;
 }
@@ -181,13 +185,13 @@ body::after {
 /* ── MAIN WRAP ───────────────────────────────── */
 .wrap {
   position: relative; z-index: 1;
-  width: 100%; max-width: 560px;
+  width: 100%; max-width: 1020px;
   min-height: 100%;
   padding: 16px 12px 16px;
   display: flex; flex-direction: column; align-items: center;
 }
 
-.familyquestpremium-root { min-height: 100%; display: flex; justify-content: center; align-items: center; }
+.familyquestpremium-root .card { width: 100%; max-width: 860px; margin-inline: auto; }
 
 .familyquestpremium-root .game-header, .familyquestpremium-root .acc-row { display: none; }
 

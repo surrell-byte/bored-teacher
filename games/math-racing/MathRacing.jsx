@@ -177,24 +177,6 @@ export default function MathRacing({ onComplete, onHudUpdate, profileName }) {
 
         {screen === 'race' && (
           <>
-            <section className="math-racing-header">
-              <div className="math-racing-title-row">
-                <h1>🏁 Math Racing!</h1>
-              </div>
-              <div className="math-racing-status">
-                <span>⭐ {score}</span>
-                <span>❓ Q: {Math.min(round, totalRounds)}/{totalRounds}</span>
-              </div>
-            </section>
-
-            <div className="math-racing-avatar-picker math-racing-race-picker" aria-label="Choose your racer">
-              {AVATARS.map((item) => (
-                <button type="button" key={item} className={avatar === item ? 'selected' : ''} onClick={() => setAvatar(item)} aria-label={`Choose ${item} racer`}>
-                  {item}
-                </button>
-              ))}
-            </div>
-
             <div className="math-racing-progress-summary">
               <span>Race progress</span>
               <span>{Math.round(playerProgress)}%</span>

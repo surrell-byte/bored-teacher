@@ -102,7 +102,7 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
     setBoard(newBoard);
     setWonLine(null);
   }
-  function resetGame() {
+  function resetGame(mode: "classic" | "roll" | "ai" = gameMode) {
     if (rollTimer.current) { clearInterval(rollTimer.current); rollTimer.current = null; }
     setRolling(false);
     const b = Array(totalCells).fill(null);
@@ -115,8 +115,8 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
     setRollVal(1);
     setLastMove("");
     setWonLine(null);
-    if (gameMode === "roll") { setPhase("roll"); setStatus({ main: "Player X's turn", hint: "Roll the dice to begin" }); }
-    else if (gameMode === "ai") { setPhase("play"); setStatus({ main: profile.name + "'s turn", hint: "Choose a tile" }); }
+    if (mode === "roll") { setPhase("roll"); setStatus({ main: "Player X's turn", hint: "Roll the dice to begin" }); }
+    else if (mode === "ai") { setPhase("play"); setStatus({ main: profile.name + "'s turn", hint: "Choose a tile" }); }
     else { setPhase("play"); setStatus({ main: "Player X's turn", hint: "Choose any empty tile" }); }
     snd.reset();
   }
@@ -145,15 +145,15 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
     nextTurn(player);
   }
 
-  function nextTurn(from?: "X" | "O") {
+  function nextTurn(from?: "X" | "O", pendingSkips = skipNext) {
     const prev = from || currentPlayer;
     const next = prev === "X" ? "O" : "X";
     setCurrentPlayer(next);
-    if (skipNext[next] > 0) {
-      const newSkip = { ...skipNext }; newSkip[next]--; setSkipNext(newSkip);
+    if (pendingSkips[next] > 0) {
+      const newSkip = { ...pendingSkips }; newSkip[next]--; setSkipNext(newSkip);
       setStatus({ main: `Player ${next} loses this turn`, hint: "Skipped by a roll of 2" });
       snd.skip();
-      setTimeout(() => { if (gameActive) nextTurn(next); }, 900);
+      setTimeout(() => { if (gameActive) nextTurn(next, newSkip); }, 900);
       return;
     }
     if (gameMode === "roll") {
@@ -282,11 +282,14 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
     switch (val) {
       case 1: case 3: case 5:
         setPhase("play"); setStatus({ main: `Player ${currentPlayer} rolled ${val}`, hint: "Place your mark" }); break;
-      case 2:
-        setSkipNext(prev => ({ ...prev, [currentPlayer === "X" ? "O" : "X"]: prev[currentPlayer === "X" ? "O" : "X"] + 1 }));
+      case 2: {
+        const skippedPlayer = currentPlayer === "X" ? "O" : "X";
+        const pendingSkips = { ...skipNext, [skippedPlayer]: skipNext[skippedPlayer] + 1 };
+        setSkipNext(pendingSkips);
         setStatus({ main: `Player ${currentPlayer} rolled 2`, hint: "Opponent skips next turn" });
-        snd.skip(); setTimeout(() => { if (gameActive) nextTurn(currentPlayer); }, 900);
+        snd.skip(); setTimeout(() => { if (gameActive) nextTurn(currentPlayer, pendingSkips); }, 900);
         break;
+      }
       case 4:
         setCanConvert(true); setPhase("play");
         setStatus({ main: `Player ${currentPlayer} rolled 4`, hint: "Convert an opponent tile" }); break;
@@ -302,7 +305,7 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
     setScores({ X: 0, O: 0, draw: 0 });
     buildBoard();
     setScreen("game");
-    setTimeout(() => { resetGame(); }, 50);
+    setTimeout(() => { resetGame(mode); }, 50);
   }
 
   function startNewGame() {
@@ -350,12 +353,10 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
     padding: "clamp(1.2rem, 2vw, 2.5rem)",
   };
 
-  const welcomeBackground = "/assets/images/tic-tac-roll-welcome-page-bg.webp";
+  const welcomeBackground = "/assets/images/tic-tac-roll-welcome-bg.webp";
   const inputBackground = window.innerWidth <= 600 ? "/assets/images/tic-tac-roll-general-phone-bg.webp" : "/assets/images/tic-tac-roll-user-input-screen-bg.webp";
-  const gameBackground = "/assets/images/tic-tac-roll-welcome-bg.webp";
-
   return (
-    <div style={{ height: "100%", minHeight: "100%", background: "transparent", color: theme.text, fontFamily: "'DM Sans', 'Segoe UI', sans-serif", transition: "background 0.4s, color 0.4s" }}>
+    <div data-tictacroll-screen={screen} style={{ width: "100%", height: "100%", minHeight: 0, boxSizing: "border-box", backgroundColor: "transparent", color: theme.text, fontFamily: "'DM Sans', 'Segoe UI', sans-serif", transition: "color 0.4s" }}>
 
       {/* WELCOME SCREEN */}
       {screen === "welcome" && (
@@ -367,7 +368,8 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
 
       {/* SETUP SCREEN */}
       {screen === "setup" && (
-        <div style={{ maxWidth: "min(100%, 700px)", margin: "2rem auto", padding: "clamp(1.5rem, 3vw, 2.5rem)", backgroundColor: `${theme.surface}ee`, borderRadius: "clamp(16px, 3vw, 24px)", border: `1px solid ${theme.border}`, boxShadow: theme.shadow, overflowY: "auto", maxHeight: "100vh", backgroundImage: `url(${inputBackground})`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" }}>
+        <div style={{ display: "flex", alignItems: "safe center", justifyContent: "center", boxSizing: "border-box", width: "100%", height: "100%", minHeight: "100%", overflowY: "auto", padding: "clamp(0.75rem, 2vw, 1.5rem)", backgroundImage: `url(${inputBackground})`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" }}>
+          <div style={{ width: "100%", maxWidth: 700, boxSizing: "border-box", margin: "auto", padding: "clamp(1.5rem, 3vw, 2.5rem)", backgroundColor: `${theme.surface}ee`, borderRadius: "clamp(16px, 3vw, 24px)", border: `1px solid ${theme.border}`, boxShadow: theme.shadow }}>
           <button onClick={() => { tone(500, 0.08, 0.07); setScreen("welcome"); }} style={{ background: "none", border: "none", color: theme.muted, cursor: "pointer", fontSize: "0.9rem", marginBottom: "1rem" }}>← Back</button>
           <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.5rem, 4vw, 2.5rem)", margin: "0 0 0.3rem" }}>Create Your Profile</h2>
           <p style={{ color: theme.muted, fontSize: "0.9rem", marginBottom: "1.5rem" }}>Personalise your experience</p>
@@ -392,12 +394,14 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
             </div>
           </div>
           <button disabled={!canContinue} onClick={() => { tone(500, 0.08, 0.07); setScreen("menu"); }} style={{ width: "100%", padding: "1rem", fontSize: "1rem", fontWeight: 600, borderRadius: 50, border: "none", background: `linear-gradient(160deg, ${theme.accent}, ${theme.accent}dd)`, color: "#fff", cursor: canContinue ? "pointer" : "not-allowed", opacity: canContinue ? 1 : 0.5, boxShadow: `0 4px 15px ${theme.glow}` }}>Continue →</button>
+          </div>
         </div>
       )}
 
       {/* MENU SCREEN */}
       {screen === "menu" && (
-        <div style={{ maxWidth: "min(100%, 700px)", margin: window.innerWidth <= 600 ? "0 auto" : "2rem auto", padding: "clamp(1.5rem, 3vw, 2.5rem)", backgroundColor: `${theme.surface}ee`, borderRadius: "clamp(16px, 3vw, 24px)", border: `1px solid ${theme.border}`, boxShadow: theme.shadow, overflowY: "auto", maxHeight: "100vh", backgroundImage: `url(${inputBackground})`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" }}>
+        <div style={{ display: "flex", alignItems: "safe center", justifyContent: "center", boxSizing: "border-box", width: "100%", height: "100%", minHeight: "100%", overflowY: "auto", padding: "clamp(0.75rem, 2vw, 1.5rem)", backgroundImage: `url(${inputBackground})`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" }}>
+          <div style={{ width: "100%", maxWidth: 700, boxSizing: "border-box", margin: "auto", padding: "clamp(1.5rem, 3vw, 2.5rem)", backgroundColor: `${theme.surface}ee`, borderRadius: "clamp(16px, 3vw, 24px)", border: `1px solid ${theme.border}`, boxShadow: theme.shadow }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1.5rem" }}>
             <span style={{ fontSize: "2rem" }}>{profile.avatar}</span>
             <div><div style={{ fontWeight: 600 }}>{profile.name}</div><div style={{ fontSize: "0.8rem", color: theme.muted }}>Player</div></div>
@@ -417,6 +421,7 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
             {[3, 4, 5, 6, 7].map(s => (
               <button key={s} onClick={() => setGridSize(s)} style={{ flex: 1, padding: "0.6rem", borderRadius: 12, border: gridSize === s ? `2px solid ${theme.accent}` : `1px solid ${theme.border}`, background: gridSize === s ? theme.glow : theme.card, cursor: "pointer", fontWeight: gridSize === s ? 700 : 400, color: theme.text, fontSize: "clamp(0.8rem, 2vw, 0.9rem)" }}>{s}×{s}</button>
             ))}
+          </div>
           </div>
         </div>
       )}
@@ -447,7 +452,8 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
 
       {/* HOW TO PLAY */}
       {screen === "howtoplay" && (
-        <div style={{ maxWidth: "clamp(400px, 60vw, 700px)", margin: "2rem auto", padding: "clamp(1.5rem, 3vw, 2.5rem)", backgroundColor: `${theme.surface}ee`, borderRadius: "clamp(16px, 3vw, 24px)", border: `1px solid ${theme.border}`, boxShadow: theme.shadow, overflowY: "auto", maxHeight: "100vh", backgroundImage: `url(${inputBackground})`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" }}>
+        <div style={{ display: "flex", alignItems: "safe center", justifyContent: "center", boxSizing: "border-box", width: "100%", height: "100%", minHeight: "100%", overflowY: "auto", padding: "clamp(0.75rem, 2vw, 1.5rem)", backgroundImage: `url(${inputBackground})`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" }}>
+          <div style={{ width: "100%", maxWidth: 700, boxSizing: "border-box", margin: "auto", padding: "clamp(1.5rem, 3vw, 2.5rem)", backgroundColor: `${theme.surface}ee`, borderRadius: "clamp(16px, 3vw, 24px)", border: `1px solid ${theme.border}`, boxShadow: theme.shadow }}>
           <button onClick={() => { tone(500, 0.08, 0.07); setScreen("welcome"); }} style={{ background: "none", border: "none", color: theme.muted, cursor: "pointer", fontSize: "0.9rem", marginBottom: "1rem" }}>← Back</button>
           <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.5rem, 4vw, 2.5rem)", margin: "0 0 1rem" }}>How to Play</h2>
           <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem" }}>
@@ -462,12 +468,13 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
             {htpTab === "grid" && <><p>Choose from 3×3 (classic, need 3), 5×5 (medium, need 4), 6×6 (large, need 4), or 7×7 (epic, need 4) in the main menu before starting.</p></>}
           </div>
           <button type="button" onClick={() => { tone(500, 0.08, 0.07); setScreen("menu"); }} style={{ width: "100%", marginTop: "1.25rem", padding: "0.95rem", border: 0, borderRadius: 50, background: `linear-gradient(160deg, ${theme.accent}, ${theme.accent2 || theme.accent})`, color: "white", fontWeight: 800, cursor: "pointer" }}>Continue to Main Menu →</button>
+          </div>
         </div>
       )}
 
       {/* GAME SCREEN */}
       {screen === "game" && (
-        <div style={{ ...gameLayoutStyle, backgroundImage: `url(${gameBackground})`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat", borderRadius: 20 }}>
+        <div style={{ ...gameLayoutStyle, height: "100%", minHeight: 0, boxSizing: "border-box" }}>
 
           {/* SIDEBAR */}
           <div style={{ display: "grid", gridTemplateColumns: window.innerWidth < 700 ? "repeat(2, minmax(0, 1fr))" : "1fr", gap: "clamp(0.75rem, 1.5vw, 1.2rem)", alignSelf: "start", position: "sticky", top: "clamp(1rem, 2vw, 2rem)" }}>
@@ -514,7 +521,7 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
             {/* Board */}
             <div style={responsiveBoardStyle}>
               {boardDisplay.map(cell => (
-                <button key={cell.idx} onClick={() => handleCellClick(cell.idx)} disabled={!gameActive || cell.val !== null} style={{
+                <button key={cell.idx} onClick={() => handleCellClick(cell.idx)} disabled={!gameActive || phase === "roll" || cell.val !== null} style={{
                   position: "relative",
                   borderRadius: "clamp(8px, 1.5vw, 14px)",
                   border: cell.isWin ? `2px solid ${theme.accent}` : `1px solid rgba(0,0,0,0.12)`,

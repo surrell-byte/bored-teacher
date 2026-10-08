@@ -139,6 +139,50 @@
   color: var(--p2);
 }
 
+.ah-mode-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 0 0 22px;
+}
+
+.ah-mode-card {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 8px;
+  min-height: 180px;
+  padding: 20px 16px;
+  border: 2px solid var(--ink);
+  border-radius: 4px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 var(--ink);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.ah-mode-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0 var(--ink);
+}
+
+.ah-mode-card strong {
+  font: 700 1.2rem 'Trebuchet MS', sans-serif;
+}
+
+.ah-mode-card > span:last-child {
+  color: var(--muted);
+  font: 0.9rem/1.4 'Trebuchet MS', sans-serif;
+}
+
+.ah-mode-icon {
+  min-height: 2.2rem;
+  font: 700 2rem/1 'Trebuchet MS', sans-serif;
+}
+
 /* Setup screen */
 .ah-setup-players {
   display: grid;
@@ -690,6 +734,23 @@
 
 /* Responsive */
 @media (max-width: 600px) {
+  .ah-mode-options {
+    grid-template-columns: 1fr;
+  }
+
+  .ah-mode-card {
+    min-height: 0;
+    grid-template-columns: auto 1fr;
+    justify-items: start;
+    align-items: center;
+    text-align: left;
+    padding: 14px;
+  }
+
+  .ah-mode-card > span:last-child {
+    grid-column: 2;
+  }
+
   .ah-card {
     padding: 20px;
     box-shadow: 4px 4px 0 var(--ink);

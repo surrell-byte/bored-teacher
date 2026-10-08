@@ -24,6 +24,18 @@ test('Alphabet Hunt merges incomplete future themes with a complete fallback', (
   assert.match(component, /const theme = resolveTheme\(themeId\)/);
 });
 
+test('Alphabet Hunt offers emoji and reverse letter modes before player setup', () => {
+  const component = read('games/alphabet-hunt/AlphabetHunt.jsx');
+
+  assert.match(component, /const \[gameMode, setGameMode\] = useState\('emoji'\)/);
+  assert.match(component, /selectMode\('emoji'\)/);
+  assert.match(component, /selectMode\('letter'\)/);
+  assert.match(component, /const targetOptions = isLetterMode \? LETTERS : AVATARS/);
+  assert.match(component, /const tileLabels = isLetterMode \? AVATARS : QWERTY_KEYS/);
+  assert.match(component, /letter: label/);
+  assert.match(component, /{targetOptions\.map\(/);
+});
+
 test('Alphabet Hunt announces the actual winning player on the win screen', () => {
   const component = read('games/alphabet-hunt/AlphabetHunt.jsx');
 

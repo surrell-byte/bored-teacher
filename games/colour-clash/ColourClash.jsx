@@ -18,7 +18,7 @@ const MEMORY_MODES = [
 ];
 
 const GAME_OPTIONS = [
-  { id:"clash", label:"🎨 Colour Clash", desc:"Main game" },
+  { id:"clash", label:"🎵 Colour Tunes", desc:"Main game" },
   { id:"memory", label:"🧠 Memory Pattern", desc:"Classic reminder mode" },
 ];
 
@@ -270,7 +270,7 @@ export default function ColourClash({ onComplete, onHudUpdate }) {
             boxShadow:"0 10px 30px rgba(99,102,241,0.4)",
           }}
         >
-          {gameType === "memory" ? "🧠 Start memory run" : "🎮 Start Colour Clash"}
+          {gameType === "memory" ? "🧠 Start memory run" : "🎵 Start Colour Tunes"}
         </button>
       </div>
     );

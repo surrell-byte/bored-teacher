@@ -7,7 +7,7 @@ import { usePathname } from 'next/navigation';
 // visible when `background-size: cover` crops the image to fit the
 // viewport. Tune these once per image, not per viewport.
 const BACKGROUNDS: Record<string, { src: string; position: string }> = {
-  plain:        { src: '/assets/images/plain-bg.png',              position: 'center' },
+  plain:        { src: '/assets/.optimized/images/plain-bg.webp',  position: 'center' },
   general:      { src: '/assets/images/general-bg.webp',           position: 'center' },
   welcome:      { src: '/assets/images/welcome-page.webp',        position: 'center' },
   startPlaying: { src: '/assets/images/start-playing-page.webp',  position: 'center' },
@@ -18,7 +18,7 @@ const BACKGROUNDS: Record<string, { src: string; position: string }> = {
   trophy:       { src: '/assets/images/trophy-room-bg-desktop.webp', position: 'center' },
   shop:         { src: '/assets/images/shop-bg-desktop.webp',     position: 'center' },
   resources:    { src: '/assets/images/resources-bg-desktop.webp', position: 'center' },
-  blog:         { src: '/assets/images/plain-bg.png',             position: 'center' },
+  blog:         { src: '/assets/.optimized/images/plain-bg.webp', position: 'center' },
   subscription: { src: '/assets/images/subscription-bg.webp',    position: 'center' },
 };
 export default function AppBackground() {
@@ -69,12 +69,9 @@ export default function AppBackground() {
   }
 
   useEffect(() => {
-    const plainImage = new Image();
-    plainImage.decoding = 'async';
-    plainImage.fetchPriority = 'high';
-    plainImage.src = BACKGROUNDS.plain.src;
     const img = new Image();
     img.decoding = 'async';
+    img.fetchPriority = 'high';
     img.src = entry.src;
   }, [entry.src]);
 

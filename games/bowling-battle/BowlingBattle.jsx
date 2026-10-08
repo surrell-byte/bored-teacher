@@ -2,10 +2,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 const WIDTH = 500;
 const HEIGHT = 700;
-const CENTER_X = 250;
+const CENTER_X = 220;
 const PIN_SPACING = 100;
-const PIN_START_Y = 440;
-const BALL_START_Y = 620;
+const PIN_START_Y = 430;
+const BALL_START_Y = 610;
 const BALL_END_Y = 140;
 const BALL_RADIUS = 27;
 const BALL_OPTIONS = [
@@ -15,7 +15,7 @@ const BALL_OPTIONS = [
 ];
 const PIN_SPRITE = "/assets/games/bowling-battle/sprites/pin.webp";
 const PLAYER_MODES = [
-  { id: "aim", name: "Aim & Power", detail: "Aim your ball and control your power.", icon: "🎯", hint: "← → Aim   ·   SPACE Shoot" },
+  { id: "aim", name: "Aim & Power", detail: "Aim your ball and control your power.", icon: "🎯", hint: "← → Aim · SPACE charge, SPACE roll" },
   { id: "card", name: "Lucky Cards", detail: "Choose a hidden card to reveal your pinfall.", icon: "🃏", hint: "Pick a card to bowl" },
 ];
 const PIN_LAYOUT = [
@@ -60,8 +60,10 @@ function createGame(names, mode, ballSelections) {
     py: PIN_START_Y + y * PIN_SPACING,
     standing: true,
     fallProgress: 0,
+    fallStartTime: 0,
     fallDir: 1,
-    rotation: (Math.random() - 0.5) * 0.1,
+    rotation: 0,
+    pitch: 0,
   }));
   if (mode === "card") dealCards(game);
   return game;
@@ -81,6 +83,7 @@ function prepareNextRoll(game) {
   game.power = 0;
   game.powerDir = 1;
   game.ballY = BALL_START_Y;
+  game.ballRotation = 0;
   game.cardRevealTimer = 0;
   game.chosenCard = null;
   if (game.mode === "card") {
@@ -95,6 +98,11 @@ function resetPins(game) {
   game.pins.forEach((pin) => {
     pin.standing = true;
     pin.fallProgress = 0;
+    pin.fallStartTime = 0;
+    pin.py = PIN_START_Y + pin.y * PIN_SPACING;
+    pin.fallDir = 1;
+    pin.rotation = 0;
+    pin.pitch = 0;
   });
 }
 
@@ -236,15 +244,15 @@ function drawLane(ctx, game, sprites) {
   });
 
   const ballSprite = sprites.balls[game.ballSelections[game.currentPlayerIdx]];
-  if (["aim", "power", "cardPick", "cardReveal"].includes(game.phase)) drawBall(ctx, CENTER_X + game.aim * PIN_SPACING, BALL_START_Y, ballSprite);
-  else if (game.phase === "rolling") drawBall(ctx, game.ballX, game.ballY, ballSprite);
+  if (["aim", "power", "cardPick", "cardReveal"].includes(game.phase)) drawBall(ctx, CENTER_X + game.aim * PIN_SPACING, BALL_START_Y, ballSprite, game.ballRotation ?? 0);
+  else if (game.phase === "rolling") drawBall(ctx, game.ballX, game.ballY, ballSprite, game.ballRotation ?? 0);
   if (game.phase === "aim") drawAim(ctx, game);
   if (game.phase === "power") drawPowerMeter(ctx, game);
   if (game.message) drawMessage(ctx, game);
 }
 
-function drawBall(ctx, x, y, sprite) {
-  ctx.save(); ctx.translate(x, y);
+function drawBall(ctx, x, y, sprite, rotation = 0) {
+  ctx.save(); ctx.translate(x, y); ctx.rotate(rotation);
   ctx.fillStyle = "rgba(0,0,0,.3)";
   ctx.beginPath(); ctx.ellipse(7, 13, BALL_RADIUS * 1.05, BALL_RADIUS * 0.42, 0, 0, Math.PI * 2); ctx.fill();
   if (sprite?.complete && sprite.naturalWidth > 0) {
@@ -382,6 +390,10 @@ export default function BowlingBattle({ onComplete }) {
     completedRef.current = false;
     refresh();
     setScreen("game");
+    requestAnimationFrame(() => {
+      const gameShell = canvasRef.current?.closest(".bowling-battle-game");
+      if (gameShell) gameShell.scrollTop = 0;
+    });
   }, [refresh, savedNames, selectedMode, ballSelections]);
 
   useEffect(() => {
@@ -493,16 +505,26 @@ export default function BowlingBattle({ onComplete }) {
       } else if (game.phase === "rolling") {
         const progress = Math.min(1, (now - game.rollStartTime) / 900);
         const eased = 1 - (1 - progress) ** 3;
+        game.ballRotation = (game.ballRotation ?? 0) + delta * 0.02;
         game.ballY = BALL_START_Y - (BALL_START_Y - BALL_END_Y) * eased;
         if (game.ballY <= PIN_START_Y && !game.pinsSettled) {
-          game.knockedThisRoll.forEach((id) => {
+          game.knockedThisRoll.forEach((id, index) => {
             const pin = game.pins.find((candidate) => candidate.id === id);
-            if (pin?.standing) { pin.standing = false; pin.fallDir = Math.random() < 0.5 ? -1 : 1; }
+            if (pin?.standing) {
+              pin.standing = false;
+              pin.fallDir = Math.random() < 0.5 ? -1 : 1;
+              pin.pitch = (Math.random() - 0.5) * 1.4;
+              pin.fallStartTime = now + index * 32 + Math.random() * 22;
+            }
           });
           game.pinsSettled = true;
         }
         game.pins.forEach((pin) => {
-          if (!pin.standing && pin.fallProgress < 1) pin.fallProgress = Math.min(1, pin.fallProgress + delta * 0.003);
+          if (!pin.standing && pin.fallProgress < 1 && now >= pin.fallStartTime) {
+            pin.fallProgress = Math.min(1, pin.fallProgress + delta * 0.003);
+            pin.py = PIN_START_Y + pin.y * PIN_SPACING + pin.fallProgress * 48;
+            pin.rotation = pin.pitch * (0.5 + pin.fallProgress * 2.2);
+          }
         });
         if (progress >= 1) {
           if (!game.rollCompleteTime) game.rollCompleteTime = now;
@@ -668,7 +690,7 @@ export default function BowlingBattle({ onComplete }) {
 
       {screen === "game" && game && <section className="bb-screen active bb-game-screen">
         <div className="bb-lane-column">
-          <canvas ref={canvasRef} className="bb-canvas" width={WIDTH} height={HEIGHT} aria-label="Bowling lane. Use the left and right arrow keys to aim and Space to set power and roll." />
+          <canvas ref={canvasRef} className="bb-canvas" width={WIDTH} height={HEIGHT} aria-label="Bowling lane. Use the left and right arrow keys to aim. Press Space to start the power meter, then Space again to roll." />
           <div className="bb-mobile-controls">
             <button className="bb-btn bb-steer" onPointerDown={(event) => { event.currentTarget.setPointerCapture(event.pointerId); keysRef.current.left = true; wakeGameRef.current(); }} onPointerUp={() => { keysRef.current.left = false; wakeGameRef.current(); }} onPointerCancel={() => { keysRef.current.left = false; wakeGameRef.current(); }} aria-label="Aim left">←</button>
             <button className="bb-btn bb-primary bb-roll" disabled={!(["aim", "power"].includes(game.phase))} onClick={toggleAction}>{game.phase === "aim" ? "Set Power" : game.phase === "power" ? "Roll!" : game.phase === "rolling" ? "Rolling…" : game.mode === "card" && game.phase === "cardPick" ? "Choose a card" : game.phase === "cardReveal" ? "Revealing…" : "Next"}</button>
@@ -961,4 +983,5 @@ const STYLES = `
 .bb-canvas{position:absolute;top:50%;left:25%;transform:translate(-50%,-50%);width:auto;height:min(80dvh,800px);max-width:none;background:transparent;border:0;box-shadow:none}
 @media(max-width:760px){.bowling-battle-game.is-welcome,.bowling-battle-game.is-input,.bowling-battle-game.is-menu{height:calc(100dvh - 90px)}.bb-screen.active.bb-welcome,.bb-screen.active.bb-input-screen,.bb-screen.active.bb-menu-screen{height:100%;padding:16px;border-radius:0}.bb-screen.active.bb-input-screen{display:grid;place-items:center}.bb-player-matchup{grid-template-columns:1fr;gap:10px}.bb-player-card{min-height:0;padding:16px}.bb-versus{width:46px;height:46px;margin:0 auto}.bb-ball-choice{width:56px;height:56px}.bowling-battle-game.is-wide{height:calc(100dvh - 90px);min-height:0;max-height:none;padding:0;overflow:auto}.bb-screen.active.bb-game-screen{height:auto;min-height:100%;overflow:visible;background-position:left center}.bb-canvas{position:relative;top:auto;left:auto;transform:none;align-self:center;width:auto;height:min(46dvh,420px);max-width:100%}}
 @media(max-height:500px) and (orientation:landscape) and (min-width:761px){.bb-screen.active.bb-game-screen{padding:4px}.bb-canvas{height:min(63dvh,245px)}.bb-screen.active.bb-game-screen>.bb-side-column{top:4px;right:4px;width:min(258px,31vw);max-height:calc(100% - 8px);overflow:hidden;gap:4px;padding:6px}.bb-frame-status{min-height:38px;gap:10px}.bb-frame-status small{font-size:.48rem}.bb-frame-status strong{font-size:.95rem}.bb-score-display{min-height:54px;gap:2px}.bb-score-display>span{font-size:.5rem}.bb-score-display>strong{font-size:1.8rem}.bb-score-display>small{margin-top:2px;font-size:.42rem}.bb-scorecards{gap:3px}.bb-scorecard{padding:4px}.bb-scorecard-label{gap:3px;margin-bottom:2px;font-size:.56rem}.bb-scorecard-label strong{font-size:.64rem}.bb-scorecard-label span{padding:2px 4px;font-size:.4rem}.bb-scorecard-label .bb-turn-chip{padding:2px 4px;font-size:.4rem}.bb-score-grid{gap:2px}.bb-frame-row,.bb-roll-row,.bb-frame-score-row{gap:2px!important}.bb-frame-row span,.bb-roll-row span,.bb-frame-score-row span{min-height:15px;border-radius:4px;padding:2px 0;font-size:.44rem}.bb-frame-score-row span{min-height:13px}.bb-card-move{right:4px;bottom:4px;width:min(258px,31vw);padding:6px}.bb-card-heading strong{font-size:.58rem}.bb-card-heading span{font-size:.48rem}.bb-pick-card{height:40px;min-height:40px!important}.bb-card-back-mark{width:24px;height:24px;font-size:1.2rem}}
+@media(max-width:760px) and (max-height:500px){.bowling-battle-game.is-wide{align-items:flex-start}.bb-screen.active.bb-game-screen{align-self:flex-start;justify-content:flex-start;min-height:0;padding:8px 12px}.bb-canvas{position:absolute;top:8px;left:25.1%;transform:translateX(-44%);align-self:auto;height:min(63dvh,245px)}}
 `;
