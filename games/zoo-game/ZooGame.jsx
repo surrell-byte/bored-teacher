@@ -30,13 +30,17 @@ export default function ZooGame({ themeId = 'savanna', onComplete }) {
     resetCategory,
     MODE_ORDER,
   } = useZooGame();
+  const [showWelcome, setShowWelcome] = useState(true);
   const [showMenu, setShowMenu] = useState(true);
   const [menuCategory, setMenuCategory] = useState(currentCategory);
   const [menuMode, setMenuMode] = useState(activeTab);
   const completionReportedRef = useRef(false);
 
   useEffect(() => {
-    const openMenu = () => setShowMenu(true);
+    const openMenu = () => {
+      setShowWelcome(false);
+      setShowMenu(true);
+    };
     window.addEventListener('zoo-game:main-menu', openMenu);
     return () => window.removeEventListener('zoo-game:main-menu', openMenu);
   }, []);
@@ -58,8 +62,19 @@ export default function ZooGame({ themeId = 'savanna', onComplete }) {
     const mode = menuMode;
     setCurrentCategory(category);
     setActiveTab(mode);
+    setShowWelcome(false);
     setShowMenu(false);
   };
+
+  if (showWelcome) {
+    return (
+      <div className={`zoogame-root zoo-theme-${themeId} zoo-screen-welcome`}>
+        <div className="zoo-welcome" role="main" aria-label="Zoo Game welcome">
+          <button type="button" className="zoo-welcome-start" aria-label="Start Zoo Game" onClick={() => setShowWelcome(false)} />
+        </div>
+      </div>
+    );
+  }
 
   if (showMenu) {
     return (

@@ -13,9 +13,14 @@ font-family:'DM Sans',sans-serif;background:var(--bg-deep);color:var(--text);hei
 .cc[data-theme="teal"]{--accent1:#00c6ad;--accent2:#37a8c4;--accent3:#b8fff4;--a1-rgb:0,198,173;--a2-rgb:55,168,196;--a3-rgb:184,255,244}
 .cc[data-theme="pink"]{--accent1:#ff5c91;--accent2:#ffad6b;--accent3:#ffd5e4;--a1-rgb:255,92,145;--a2-rgb:255,173,107;--a3-rgb:255,213,228}
 .cc *,.cc *::before,.cc *::after{margin:0;padding:0;box-sizing:border-box}
-.cc::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 50% at 15% 10%,rgba(var(--a1-rgb),0.07) 0%,transparent 60%),radial-gradient(ellipse 50% 60% at 85% 90%,rgba(var(--a2-rgb),0.09) 0%,transparent 60%),radial-gradient(ellipse 40% 50% at 50% 50%,rgba(var(--a3-rgb),0.05) 0%,transparent 70%);pointer-events:none;z-index:0;transition:background .5s ease}
-.cc::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");opacity:.35;pointer-events:none;z-index:0}
+.cc::before,.cc::after{display:none}
 .cc .screen{display:flex;height:100%;min-height:100%;padding:24px 20px;justify-content:center;align-items:center;flex-direction:column;text-align:center;position:relative;z-index:1;animation:ccFadeUp .5s cubic-bezier(.22,1,.36,1)}
+.cc[data-screen="welcome"] .screen{width:100%;height:100%;padding:0;background:url('/assets/games/colour-clash-2/colour-clash-2-welcome-bg.webp') center/cover no-repeat}
+.cc[data-screen="setup"] .screen{background:url('/assets/games/colour-clash-2/colour-clash-2-user-input-bg.webp') center/cover no-repeat}
+.cc[data-screen="how"] .screen{background:url('/assets/games/colour-clash-2/colour-clash-2-main-menu-bg.webp') center/cover no-repeat}
+.cc[data-screen="game"],.cc[data-screen="winner"]{background:#06080f url('/assets/games/colour-clash-2/colour-clash-2-game-screen-bg.webp') center/cover no-repeat}
+.cc .welcome-start-hitbox{position:absolute;left:37%;top:78%;width:26%;height:16%;margin:0;padding:0;border:0;border-radius:999px;background:transparent;cursor:pointer}
+.cc .welcome-start-hitbox:focus-visible{outline:4px solid #fff;outline-offset:5px}
 .cc .game-screen{height:100%;min-height:0;box-sizing:border-box;overflow-y:auto;padding:12px clamp(12px,3vw,40px)}
 .cc .game-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(240px,300px);align-items:center;gap:clamp(16px,3vw,40px);width:min(1280px,100%);height:100%;text-align:left}
 .cc .board-panel{min-width:0}
@@ -370,18 +375,14 @@ export default function ColourClash2() {
   };
 
   return (
-    <div className="cc" data-theme={theme}>
+    <div className="cc" data-theme={theme} data-screen={screen}>
       <style>{CSS}</style>
 
       {banner && <div key={banner.key} className="extra-turn-banner">⭐ {banner.name} gets an EXTRA TURN!</div>}
 
       {screen === "welcome" && (
         <div className="screen">
-          <span className="tag">2-player · Memory &amp; Luck</span>
-          <h1 className="logo">Colour Clash 2.0</h1>
-          <p style={{ fontSize: "1.15rem", marginBottom: 6, color: "#c0c8d8" }}>Find your colour before your opponent does!</p>
-          <p style={{ fontSize: "0.88rem", color: "var(--muted)", marginTop: 4 }}>Power tiles · Streaks · Score swaps</p>
-          <button className="btn btn-primary" onClick={() => setScreen("setup")}>▶ &nbsp;Play Now</button>
+          <button className="welcome-start-hitbox" type="button" aria-label="Start Colour Clash 2.0" onClick={() => setScreen("setup")} />
         </div>
       )}
 

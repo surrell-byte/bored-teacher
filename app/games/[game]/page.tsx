@@ -52,6 +52,7 @@ const GAMES_WITH_WELCOME = new Set([
   'emojisportsquiz',
   'generalknowledgequiz',
   'alphabethunt', 'buildtower', 'whatsmissing', 'angryverbs', 'miniracer',
+  'colourclash2', 'zoogame',
 ]);
 
 // ── Page ──────────────────────────────────────────────────────
@@ -97,11 +98,12 @@ export default function GamePage() {
   useEffect(() => {
     const assets: Record<string, string[]> = {
       buildtower: ['/assets/games/build-the-tower/build-the-tower-welcome-screen.png', '/assets/games/build-the-tower/build-the-tower-floating-islands-bg.png', '/assets/games/build-the-tower/build-the-tower-jungle-bg.png', '/assets/games/build-the-tower/build-the-tower-game-bg.png'],
-      connect4: ['/assets/games/connect-4/connect-4-welcome.webp', '/assets/games/connect-4/connect-4-main-menu.webp', '/assets/games/connect-4/connect-4-user-input.webp', '/assets/games/connect-4/connect-4-game-screen.webp'],
+      connect4: ['/assets/games/connect-4/connect-4-welcome.webp', '/assets/games/connect-4/connect-4-welcome-phone-bg.webp', '/assets/games/connect-4/connect-4-general-phone-bg.webp', '/assets/games/connect-4/connect-4-main-menu.webp', '/assets/games/connect-4/connect-4-user-input.webp', '/assets/games/connect-4/connect-4-game-screen.webp'],
+      colourclash2: ['/assets/games/colour-clash-2/colour-clash-2-welcome-bg.webp', '/assets/games/colour-clash-2/colour-clash-2-main-menu-bg.webp', '/assets/games/colour-clash-2/colour-clash-2-user-input-bg.webp', '/assets/games/colour-clash-2/colour-clash-2-game-screen-bg.webp'],
       emojisportsquiz: ['/assets/games/sports-quiz/sports-quiz-welcome-bg.webp', '/assets/games/sports-quiz/sports-quiz-welcome-phone-bg.webp', '/assets/games/sports-quiz/vocab-game-bg.png', '/assets/games/sports-quiz/spelling-game-bg.png', '/assets/games/sports-quiz/sentence-game-bg.png'],
       tictacroll: ['/assets/images/tic-tac-roll-welcome-page-bg.webp', '/assets/images/tic-tac-roll-user-input-screen-bg.webp', '/assets/images/tic-tac-roll-welcome-bg.webp', '/assets/images/tic-tac-roll-general-phone-bg.webp'],
       weatherwizard: ['/assets/games/weather-wizard/weather-wizards-welcome-bg.webp', '/assets/games/weather-wizard/weather-wizards-classroom-bg.webp', '/assets/games/weather-wizard/weather-wizards-summer-bg.webp', '/assets/games/weather-wizard/weather-wizards-spring-bg.webp', '/assets/games/weather-wizard/weather-wizards-astronomy-tower-bg.webp', '/assets/games/weather-wizard/weather-wizards-autumn-bg.webp', '/assets/games/weather-wizard/weather-wizards-winter-bg.webp', '/assets/games/weather-wizard/weather-wizards-courtyard-bg.webp'],
-      zoogame: ['/assets/games/zoo-game/zoo-game-menu-bg.webp', '/assets/games/zoo-game/zoo-game-game-bg.webp', '/assets/games/zoo-game/zoo-game-user-input-bg.webp'],
+      zoogame: ['/assets/games/zoo-game/zoo-game-welcome-bg.webp', '/assets/games/zoo-game/zoo-game-welcome-phone-bg.webp', '/assets/games/zoo-game/zoo-game-menu-bg.webp', '/assets/games/zoo-game/zoo-game-game-bg.webp', '/assets/games/zoo-game/zoo-game-user-input-bg.webp'],
       snowyslopes: ['/assets/games/snowy-slopes/snowy-slopes-welcome-bg.webp', '/assets/games/snowy-slopes/snowy-slopes-welcome-phone-bg.webp', '/assets/games/snowy-slopes/snowy-slopes-game-screen-bg.webp', '/assets/games/snowy-slopes/snowy-slopes-game-screen-phone-bg.webp'],
     };
     const queue = assets[gameId] || [];

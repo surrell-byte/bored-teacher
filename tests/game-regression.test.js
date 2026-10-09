@@ -67,6 +67,26 @@ test('Connect 4 status cards flank a brighter board with readable cell coordinat
   assert.match(component, /font-size: clamp\(0\.95rem, 1\.35vw, 1\.2rem\); font-weight: 900; color: #fff/);
   assert.match(component, /text-shadow: 0 1px 3px rgba\(0,0,0,0\.98\)/);
   assert.match(component, /padding: screen === "game" \? 0 : "0\.8rem"/);
+  assert.match(component, /@media \(max-width:600px\) and \(orientation:portrait\)/);
+  assert.match(component, /connect-4-welcome-phone-bg\.webp/);
+  assert.match(component, /connect-4-general-phone-bg\.webp/);
+  assert.match(component, /left:15%; top:31%; width:70%; height:10%;/);
+});
+
+test('new game backgrounds follow screen state and reserve phone art for portrait phones', () => {
+  const colourClash = read('games/colour-clash-2/ColourClash2.jsx');
+  const zooGame = read('games/zoo-game/ZooGame.jsx');
+  const zooStyles = read('games/zoo-game/styles/zooGame.css');
+  const gameRoute = read('app/games/[game]/page.tsx');
+
+  assert.match(colourClash, /data-screen="welcome"[\s\S]*colour-clash-2-welcome-bg\.webp/);
+  assert.match(colourClash, /data-screen="setup"[\s\S]*colour-clash-2-user-input-bg\.webp/);
+  assert.match(colourClash, /data-screen="how"[\s\S]*colour-clash-2-main-menu-bg\.webp/);
+  assert.match(colourClash, /data-screen="game"[\s\S]*colour-clash-2-game-screen-bg\.webp/);
+  assert.match(zooGame, /const \[showWelcome, setShowWelcome\] = useState\(true\)/);
+  assert.match(zooGame, /aria-label="Start Zoo Game"/);
+  assert.match(zooStyles, /@media \(max-width: 600px\) and \(orientation: portrait\)[\s\S]*zoo-game-welcome-phone-bg\.webp[\s\S]*top: 34%;[\s\S]*height: 10%/);
+  assert.match(gameRoute, /'colourclash2', 'zoogame'/);
 });
 
 test('Sports Quiz start target follows the full-width artwork placeholder', () => {

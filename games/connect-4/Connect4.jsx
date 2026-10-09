@@ -343,12 +343,12 @@ export default function Connect4({ onComplete, onHudUpdate }) {
       : screen === "game"
         ? "connect-4-game-screen.webp"
         : "connect-4-main-menu.webp";
-
   return (
-    <div className="c4-root" style={{
+    <div className="c4-root" data-screen={screen} style={{
       "--p1-a": t1.a, "--p1-b": t1.b, "--p2-a": t2.a, "--p2-b": t2.b,
+      "--screen-background-default": `url('/assets/games/connect-4/${screenBackground}')`,
       minHeight: "100%", width: "100%", display: "flex", alignItems: "center", justifyContent: "center",
-      background: `url('/assets/games/connect-4/${screenBackground}') center / cover no-repeat, radial-gradient(circle at center, #0d1322 0%, #06080f 70%), #05070d`,
+      background: `var(--screen-background) center / cover no-repeat, radial-gradient(circle at center, #0d1322 0%, #06080f 70%), #05070d`,
       fontFamily: "'DM Sans', sans-serif", color: "#e8edf5", position: "relative", overflow: "hidden", padding: screen === "game" ? 0 : "0.8rem",
     }}>
       {screen === "welcome" && (
@@ -514,9 +514,15 @@ export default function Connect4({ onComplete, onHudUpdate }) {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
 
+        .c4-root { --screen-background:var(--screen-background-default); }
         .c4-root * { box-sizing: border-box; }
         .c4-welcome-start { position:absolute; left:72%; top:66%; z-index:2; width:19%; height:15%; border:0; border-radius:999px; background:transparent; cursor:pointer; }
         .c4-welcome-start:focus-visible { outline:4px solid #fff; outline-offset:5px; }
+        @media (max-width:600px) and (orientation:portrait) {
+          .c4-root[data-screen="welcome"] { --screen-background:url('/assets/games/connect-4/connect-4-welcome-phone-bg.webp'); }
+          .c4-root:not([data-screen="welcome"]) { --screen-background:url('/assets/games/connect-4/connect-4-general-phone-bg.webp'); }
+          .c4-root[data-screen="welcome"] .c4-welcome-start { left:15%; top:31%; width:70%; height:10%; }
+        }
 
         .c4-card {
           background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.015)),

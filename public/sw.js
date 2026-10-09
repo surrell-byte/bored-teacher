@@ -1,9 +1,13 @@
-const CACHE_NAME = 'bored-teacher-runtime-v2';
+const CACHE_NAME = 'bored-teacher-runtime-v3';
+
+self.addEventListener('install', event => {
+  event.waitUntil(self.skipWaiting());
+});
 
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys => Promise.all(
-      keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
+      keys.filter(key => key.startsWith('bored-teacher-runtime-') && key !== CACHE_NAME).map(key => caches.delete(key))
     )).then(() => self.clients.claim())
   );
 });
@@ -20,7 +24,9 @@ self.addEventListener('fetch', event => {
   let preferredRequest = request;
   if (request.destination === 'image' && url.pathname.startsWith('/assets/') && !url.pathname.includes('/.optimized/')) {
     const optimizedUrl = new URL(url);
-    const originalPath = optimizedUrl.pathname.replace(/^\/assets\//, '');
+    const originalPath = optimizedUrl.pathname
+      .replace(/^\/assets\//, '')
+      .replace(/\.(?:png|jpe?g)$/i, '.webp');
     optimizedUrl.pathname = `/assets/.optimized/${originalPath}`;
     optimizedUrl.search = '';
 
