@@ -92,7 +92,7 @@ export default function NumberClouds({ onComplete, onHudUpdate }) {
       <div className="sun">☀️</div>
       <main className="number-clouds-game">
         {screen === 'menu' && <section className="number-clouds-menu">
-          <div className="game-title"><span className="title-cloud">☁️</span><h1>Number Clouds</h1></div>
+          <div className="game-title"><span className="title-cloud">☁️</span><h1>Main Menu</h1></div>
           <p className="game-subtitle">Hop across the clouds!</p>
           <p className="menu-intro">Choose your flight path.</p>
           <div className="menu-levels">{LEVELS.map(item => <button key={item.id} className={`menu-level-card menu-level-${item.id}`} onClick={() => startLevel(item.id)}><span className="menu-level-icon">{item.icon}</span><span className="menu-level-copy"><strong>Level {item.id}: {item.name}</strong><small>{item.description}</small></span><span className="menu-level-difficulty">{item.difficulty}</span></button>)}</div>

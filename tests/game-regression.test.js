@@ -91,7 +91,17 @@ test('Connect 4 status cards flank a brighter board with readable cell coordinat
   assert.match(component, /\.c4-board-frame \{ --cell: min\(10\.5vw, 52px\); \}/);
   assert.match(component, /connect-4-welcome-phone-bg\.webp/);
   assert.match(component, /connect-4-general-phone-bg\.webp/);
-  assert.match(component, /left:15%; top:31%; width:70%; height:10%;/);
+  assert.match(component, /left:20%; top:62%; width:60%; height:14%;/);
+});
+
+test('Number Clouds menu label and game navbar controls stay grouped', () => {
+  const component = read('games/number-clouds/NumberClouds.jsx');
+  const styles = read('app/globals.css');
+
+  assert.match(component, /<h1>Main Menu<\/h1>/);
+  assert.match(styles, /\.game-shell\.game-shell--numberclouds \.game-header-default \{[\s\S]*?justify-content: flex-start/);
+  assert.match(styles, /@media \(max-width: 639px\) \{\s+\.game-shell\.game-shell--numberclouds \.game-header-default \{ gap: 8px; \}/);
+  assert.match(styles, /\.game-shell\.game-shell--numberclouds \.game-header-actions \.game-shell-topbar-stats \{\s+flex: 0 0 auto;\s+width: auto;/);
 });
 
 test('new game backgrounds follow screen state and reserve phone art for portrait phones', () => {

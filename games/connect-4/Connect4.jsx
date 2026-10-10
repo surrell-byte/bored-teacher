@@ -521,7 +521,7 @@ export default function Connect4({ onComplete, onHudUpdate }) {
         @media (max-width:600px) and (orientation:portrait) {
           .c4-root[data-screen="welcome"] { --screen-background:url('/assets/games/connect-4/connect-4-welcome-phone-bg.webp'); }
           .c4-root:not([data-screen="welcome"]) { --screen-background:url('/assets/games/connect-4/connect-4-general-phone-bg.webp'); }
-          .c4-root[data-screen="welcome"] .c4-welcome-start { left:15%; top:31%; width:70%; height:10%; }
+          .c4-root[data-screen="welcome"] .c4-welcome-start { left:20%; top:62%; width:60%; height:14%; }
         }
 
         .c4-card {
