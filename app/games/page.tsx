@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { isCreatorUser, onAuthStateChanged } from '@/lib/firebase';
@@ -174,6 +175,44 @@ export default function GamesPage() {
           👥 Manage Players
         </button>
       </div>
+
+      <section className="hub-section" style={{ marginTop: 8 }}>
+        <Link href="/games/da-rules" style={{ textDecoration: 'none', color: 'inherit' }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'minmax(180px, 240px) 1fr auto',
+              gap: 18,
+              alignItems: 'center',
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.09), rgba(59,130,246,0.12))',
+              border: '1px solid rgba(255,255,255,0.12)',
+              borderRadius: 20,
+              padding: 18,
+              boxShadow: '0 20px 40px rgba(15,23,42,0.18)',
+            }}
+          >
+            <div
+              style={{
+                width: '100%',
+                height: 120,
+                borderRadius: 16,
+                backgroundImage: "url('/assets/covers/quiz-trail-cover.webp')",
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                border: '1px solid rgba(255,255,255,0.18)',
+              }}
+            />
+            <div>
+              <div style={{ fontSize: 12, letterSpacing: 1.2, textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 6 }}>Game Rule Book</div>
+              <h2 style={{ margin: 0, fontSize: 'clamp(1.4rem, 2vw, 2rem)', color: 'var(--text)' }}>Da Rules</h2>
+              <p style={{ margin: '8px 0 0', color: 'var(--muted)', lineHeight: 1.5 }}>
+                A full guide to how each game works, with covers and quick rules for every title.
+              </p>
+            </div>
+            <span className="pill-btn" style={{ justifySelf: 'end' }}>Open Rule Book →</span>
+          </div>
+        </Link>
+      </section>
 
       {/* ── Featured Games ──────────────────────────────────── */}
       {!search && category === 'All Categories' && !playedOnly && (
