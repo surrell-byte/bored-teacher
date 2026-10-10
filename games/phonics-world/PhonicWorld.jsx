@@ -143,7 +143,7 @@ export default function PhonicWorld({ onComplete }) {
     <div style={{
       minHeight:"100vh", display:"flex", flexDirection:"column",
       alignItems:"center", justifyContent:"center",
-      background:"linear-gradient(180deg,#0c4a6e,#075985,#0369a1)",
+      background:"url('/assets/games/phonics-world/phonics-world-welcome-bg.webp') center / cover no-repeat",
       fontFamily:"'Segoe UI', sans-serif", color:"#e0f2fe", padding:24, textAlign:"center",
     }}>
       <div style={{ fontSize:"3rem", marginBottom:8 }}>🗺️</div>

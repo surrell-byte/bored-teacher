@@ -94,15 +94,22 @@ export default function GamePage() {
   const [findMyFoodTheme, setFindMyFoodTheme] = useState('safari');
   const [mathRacingHud, setMathRacingHud] = useState<any>(null);
   const [colourClashHud, setColourClashHud] = useState<ColourClashHud | null>(null);
+  const [sentenceBuilderHud, setSentenceBuilderHud] = useState<{ level: number; score: number }>({ level: 1, score: 0 });
 
   useEffect(() => {
     const assets: Record<string, string[]> = {
+      alphabethunt: ['/assets/games/alphabet-hunt/alphabet-hunt-general-phone-bg.webp'],
       buildtower: ['/assets/games/build-the-tower/build-the-tower-welcome-screen.png', '/assets/games/build-the-tower/build-the-tower-floating-islands-bg.png', '/assets/games/build-the-tower/build-the-tower-jungle-bg.png', '/assets/games/build-the-tower/build-the-tower-game-bg.png'],
       connect4: ['/assets/games/connect-4/connect-4-welcome.webp', '/assets/games/connect-4/connect-4-welcome-phone-bg.webp', '/assets/games/connect-4/connect-4-general-phone-bg.webp', '/assets/games/connect-4/connect-4-main-menu.webp', '/assets/games/connect-4/connect-4-user-input.webp', '/assets/games/connect-4/connect-4-game-screen.webp'],
-      colourclash2: ['/assets/games/colour-clash-2/colour-clash-2-welcome-bg.webp', '/assets/games/colour-clash-2/colour-clash-2-main-menu-bg.webp', '/assets/games/colour-clash-2/colour-clash-2-user-input-bg.webp', '/assets/games/colour-clash-2/colour-clash-2-game-screen-bg.webp'],
+      colourclash2: ['/assets/games/colour-clash-2/colour-clash-2-welcome-bg.webp', '/assets/games/colour-clash-2/colour-clash-2-welcome-phone-bg.webp', '/assets/games/colour-clash-2/colour-clash-2-general-phone-bg.webp', '/assets/games/colour-clash-2/colour-clash-2-main-menu-bg.webp', '/assets/games/colour-clash-2/colour-clash-2-user-input-bg.webp', '/assets/games/colour-clash-2/colour-clash-2-game-screen-bg.webp'],
       emojisportsquiz: ['/assets/games/sports-quiz/sports-quiz-welcome-bg.webp', '/assets/games/sports-quiz/sports-quiz-welcome-phone-bg.webp', '/assets/games/sports-quiz/vocab-game-bg.png', '/assets/games/sports-quiz/spelling-game-bg.png', '/assets/games/sports-quiz/sentence-game-bg.png'],
-      tictacroll: ['/assets/images/tic-tac-roll-welcome-page-bg.webp', '/assets/images/tic-tac-roll-user-input-screen-bg.webp', '/assets/images/tic-tac-roll-welcome-bg.webp', '/assets/images/tic-tac-roll-general-phone-bg.webp'],
-      weatherwizard: ['/assets/games/weather-wizard/weather-wizards-welcome-bg.webp', '/assets/games/weather-wizard/weather-wizards-classroom-bg.webp', '/assets/games/weather-wizard/weather-wizards-summer-bg.webp', '/assets/games/weather-wizard/weather-wizards-spring-bg.webp', '/assets/games/weather-wizard/weather-wizards-astronomy-tower-bg.webp', '/assets/games/weather-wizard/weather-wizards-autumn-bg.webp', '/assets/games/weather-wizard/weather-wizards-winter-bg.webp', '/assets/games/weather-wizard/weather-wizards-courtyard-bg.webp'],
+      familyquest: ['/assets/games/family-quest/family-quest-general-phone-bg.webp'],
+      findmyfood: ['/assets/games/find-my-food/find-my-food-welcome-phone-bg.webp', '/assets/games/find-my-food/find-my-food-general-phone-bg.webp'],
+      numberclouds: ['/assets/games/number-clouds/number-clouds-welcome-bg.webp', '/assets/games/number-clouds/number-clouds-welcome-phone-bg.webp', '/assets/games/number-clouds/number-clouds-general-bg.webp', '/assets/games/number-clouds/number-clouds-general-phone-bg.webp'],
+      phonicsadventure: ['/assets/games/phonics-adventure/phonics-adventure-welcome-phone-bg.webp', '/assets/games/phonics-adventure/phonics-adventure-general-phone-bg.webp'],
+      phonicsworld: ['/assets/games/phonics-world/phonics-world-welcome-bg.webp'],
+      tictacroll: ['/assets/games/tictacroll/tic-tac-roll-welcome-page-bg.webp', '/assets/games/tictacroll/tic-tac-roll-user-input-screen-bg.webp', '/assets/games/tictacroll/tic-tac-roll-welcome-bg.webp', '/assets/games/tictacroll/tic-tac-roll-general-phone-bg.webp', '/assets/games/tictacroll/tic-tac-roll-welcome-phone-bg.webp'],
+      weatherwizard: ['/assets/games/weather-wizard/weather-wizards-welcome-bg.webp', '/assets/games/weather-wizard/weather-wizards-welcome-phone-bg.webp', '/assets/games/weather-wizard/weather-wizards-general-phone-bg.webp', '/assets/games/weather-wizard/weather-wizards-classroom-bg.webp', '/assets/games/weather-wizard/weather-wizards-summer-bg.webp', '/assets/games/weather-wizard/weather-wizards-spring-bg.webp', '/assets/games/weather-wizard/weather-wizards-astronomy-tower-bg.webp', '/assets/games/weather-wizard/weather-wizards-autumn-bg.webp', '/assets/games/weather-wizard/weather-wizards-winter-bg.webp', '/assets/games/weather-wizard/weather-wizards-courtyard-bg.webp'],
       zoogame: ['/assets/games/zoo-game/zoo-game-welcome-bg.webp', '/assets/games/zoo-game/zoo-game-welcome-phone-bg.webp', '/assets/games/zoo-game/zoo-game-menu-bg.webp', '/assets/games/zoo-game/zoo-game-game-bg.webp', '/assets/games/zoo-game/zoo-game-user-input-bg.webp'],
       snowyslopes: ['/assets/games/snowy-slopes/snowy-slopes-welcome-bg.webp', '/assets/games/snowy-slopes/snowy-slopes-welcome-phone-bg.webp', '/assets/games/snowy-slopes/snowy-slopes-game-screen-bg.webp', '/assets/games/snowy-slopes/snowy-slopes-game-screen-phone-bg.webp'],
     };
@@ -182,8 +189,15 @@ export default function GamePage() {
     return () => window.removeEventListener('count-add:hud', handleHud);
   }, [gameId]);
 
+  useEffect(() => {
+    if (gameId !== 'sentencebuilder' && gameId !== 'sentence-builder') return undefined;
+    const handleHud = (event: Event) => setSentenceBuilderHud((event as CustomEvent).detail);
+    window.addEventListener('sentence-builder:hud', handleHud);
+    return () => window.removeEventListener('sentence-builder:hud', handleHud);
+  }, [gameId]);
+
   const gameName  = GAME_NAMES[gameId] ?? 'Game';
-  const gameIcon  = GAME_ICONS[gameId] ?? '🎮';
+  const gameIcon  = gameId === 'fruitwordhunt' ? '' : GAME_ICONS[gameId] ?? '🎮';
   const GameComp  = GAME_COMPONENTS[gameId];
   const isAirPuck = gameId === 'airpuck';
   const isConnect4 = gameId === 'connect4';
@@ -203,6 +217,8 @@ export default function GamePage() {
   const isFindMyFood = gameId === 'findmyfood';
   const isEmojiMatch = gameId === 'emojimatch';
   const isWhatsMissing = gameId === 'whatsmissing';
+  const isMissingFruit = gameId === 'missingfruit';
+  const isSentenceBuilder = gameId === 'sentencebuilder' || gameId === 'sentence-builder';
   const isMoneyBlocks = gameId === 'moneyblocks';
   const isMathRacing = gameId === 'mathracing';
   const isColourClash = gameId === 'colourclash';
@@ -282,6 +298,9 @@ export default function GamePage() {
       window.dispatchEvent(new Event('general-knowledge-quiz:main-menu'));
     } else if (isWhatsMissing) {
       window.dispatchEvent(new Event('whats-missing:main-menu'));
+    } else if (isMissingFruit) {
+      window.dispatchEvent(new Event('missing-fruit:main-menu'));
+      setShowRouteWelcome(false);
     } else if (gameId === 'buildtower') {
       window.dispatchEvent(new Event('build-tower:main-menu'));
     } else if (isFindMyFood || isEmojiMatch) {
@@ -536,6 +555,12 @@ export default function GamePage() {
               </span>
             )}
             {isConnect4 && c4Hud ? <Connect4HeaderActions hud={c4Hud} /> : null}
+            {isSentenceBuilder && sentenceBuilderHud && (
+              <span className="game-shell-topbar-stats" aria-label="Sentence Builder progress">
+                <span className="game-shell-topbar-stat"><b>🎯 {sentenceBuilderHud.level}</b><span>Level</span></span>
+                <span className="game-shell-topbar-stat"><b>⭐ {sentenceBuilderHud.score}</b><span>Score</span></span>
+              </span>
+            )}
             {isTicTacRoll && (
               <>
                 <button className="game-shell-header-action" type="button" onClick={() => window.dispatchEvent(new Event('tictacroll:new-game'))}>
@@ -586,20 +611,20 @@ export default function GamePage() {
                 </div>
               </section>
             ) : isPlantVegetableQuiz ? (
-              <section aria-labelledby="plant-quiz-welcome-title" style={{ minHeight: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '28px 12px' }}>
-                <div style={{ width: 'min(980px, 92vw)', background: 'rgba(255,255,255,0.16)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 30, boxShadow: '0 20px 50px rgba(11,31,26,0.16)', backdropFilter: 'blur(10px)', padding: '26px 24px 30px' }}>
+              <section className="plant-quiz-route-welcome" aria-labelledby="plant-quiz-welcome-title" style={{ minHeight: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '28px 12px' }}>
+                <div className="plant-quiz-route-card" style={{ width: 'min(980px, 92vw)', background: 'rgba(255,255,255,0.16)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 30, boxShadow: '0 20px 50px rgba(11,31,26,0.16)', backdropFilter: 'blur(10px)', padding: '26px 24px 30px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 18, fontWeight: 800, color: '#f7fff4', fontSize: 'clamp(2.2rem, 4vw, 4rem)' }}>
                     <span aria-hidden="true">🌱</span>
-                    <h1 id="plant-quiz-welcome-title" style={{ margin: 0, fontSize: 'inherit', letterSpacing: '-0.04em' }}>Plant &amp; Vegetable Quiz</h1>
+                    <h1 className="plant-quiz-route-title" id="plant-quiz-welcome-title" style={{ margin: 0, fontSize: 'inherit', letterSpacing: '-0.04em' }}>Plant &amp; Vegetable Quiz</h1>
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(240px, 1fr))', gap: 18, maxWidth: 820, margin: '0 auto' }}>
+                  <div className="plant-quiz-route-levels" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 18, maxWidth: 820, margin: '0 auto' }}>
                     {[
                       { label: 'Learn the Words', icon: '📖', tone: '#dff4e6' },
                       { label: 'Choose the Answer', icon: '✅', tone: '#e1f0df' },
                       { label: 'Spell It', icon: '✏️', tone: '#eff7d6' },
                       { label: 'Plant and Veg Trivia', icon: '🧠', tone: '#e5f0ff' },
                     ].map((entry, index) => (
-                      <button key={entry.label} type="button" onClick={() => setShowRouteWelcome(false)} style={{ border: '1px solid rgba(255,255,255,0.6)', background: entry.tone, borderRadius: 22, padding: '18px 18px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, color: '#123d2a', fontWeight: 800, cursor: 'pointer', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.5), 0 8px 24px rgba(14,53,37,0.08)' }}>
+                      <button className="plant-quiz-route-level" key={entry.label} type="button" onClick={() => setShowRouteWelcome(false)} style={{ border: '1px solid rgba(255,255,255,0.6)', background: entry.tone, borderRadius: 22, padding: '18px 18px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, color: '#123d2a', fontWeight: 800, cursor: 'pointer', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.5), 0 8px 24px rgba(14,53,37,0.08)' }}>
                         <span aria-hidden="true" style={{ fontSize: '2.3rem' }}>{entry.icon}</span>
                         <span style={{ fontSize: 'clamp(1.3rem, 2.5vw, 2rem)', letterSpacing: '-0.04em' }}>{entry.label}</span>
                         <small style={{ display: 'block', fontSize: '0.75rem', letterSpacing: '0.12em', textTransform: 'uppercase', opacity: 0.7 }}>{index === 0 ? 'Level 1' : index === 1 ? 'Level 2' : index === 2 ? 'Level 3' : 'Level 4'}</small>

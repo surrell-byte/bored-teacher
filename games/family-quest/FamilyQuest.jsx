@@ -1308,6 +1308,10 @@ mascot("Welcome! Let's explore your family tree 🌳","p","🐻");
   return (
     <>
       <style>{FamilyQuestPremium_CSS}</style>
+      <style>{`@media (max-width:639px) and (orientation:portrait) {
+        .familyquestpremium-root { background-image:url('/assets/games/family-quest/family-quest-general-phone-bg.webp');background-position:center;background-size:cover;background-repeat:no-repeat;background-attachment:scroll; }
+        .familyquestpremium-root::before,.familyquestpremium-root::after { display:none; }
+      }`}</style>
       <div
         ref={containerRef}
         className="familyquestpremium-root"

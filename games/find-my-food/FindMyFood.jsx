@@ -473,6 +473,46 @@ const STYLES = `
   .ff-root.ff-root-game.ff-pairs-8 .ff-tile-back .ff-emoji { font-size:clamp(1.45rem, 5vw, 2.2rem); }
   .ff-root.ff-root-game.ff-pairs-8 .ff-tile-back .ff-word { font-size:.55rem; }
 }
+
+@media (max-width:639px) and (orientation:portrait) {
+  .ff-root:not(.ff-root-emoji) {
+    background-image:url('/assets/games/find-my-food/find-my-food-general-phone-bg.webp') !important;
+    background-attachment:scroll;
+  }
+  .ff-root:not(.ff-root-emoji).ff-food-screen-welcome {
+    background-image:url('/assets/games/find-my-food/find-my-food-welcome-phone-bg.webp') !important;
+  }
+  .ff-root.ff-root-game {
+    height:100%;
+    min-height:100%;
+    padding:6px;
+    overflow-y:auto;
+  }
+  .ff-root.ff-root-game .ff-screen.ff-game-screen {
+    width:100%;
+    min-height:0;
+    margin:0;
+  }
+  .ff-root.ff-root-game .ff-game-card {
+    min-height:0;
+    padding:10px;
+  }
+  .ff-root.ff-root-game .ff-game-layout { min-height:0; gap:8px; }
+  .ff-root.ff-root-game .ff-game-board .ff-grid {
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    max-width:none;
+    gap:6px;
+    margin:0 auto;
+  }
+  .ff-root.ff-root-game .ff-tile { min-height:0; aspect-ratio:1; }
+  .ff-root.ff-root-game .ff-tile-back .ff-emoji { font-size:clamp(1.35rem,7vw,2rem); }
+  .ff-root.ff-root-game .ff-tile-back .ff-word { font-size:clamp(.48rem,2vw,.62rem); }
+  .ff-root.ff-root-game.ff-pairs-8 .ff-game-card { padding:8px; }
+  .ff-root.ff-root-game.ff-pairs-8 .ff-game-board .ff-grid { gap:5px; }
+  .ff-root.ff-root-game.ff-pairs-8 .ff-tile-back .ff-emoji { font-size:clamp(1.2rem,6vw,1.75rem); }
+  .ff-root.ff-root-game.ff-pairs-8 .ff-tile-back .ff-word { font-size:.48rem; }
+  .ff-root.ff-root-emoji.ff-pairs-6 .ff-game-board .ff-grid { grid-template-columns:repeat(4,minmax(0,1fr)); }
+}
 `;
 
 export default function FindMyFood({ onComplete, themeId, variant = "food" }) {

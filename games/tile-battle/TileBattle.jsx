@@ -119,6 +119,24 @@ const FX_STYLE = `
   .tile-battle-screen .tile-battle-board { box-sizing: border-box; flex: 0 1 100% !important; grid-template-columns: repeat(4, minmax(0, 1fr)) !important; grid-auto-rows: auto !important; gap: 8px !important; padding: 10px !important; width: 100%; min-width: 0; max-width: 100%; }
   .tile-battle-screen .tile-battle-board > div { min-width: 0; }
 }
+@media (max-width: 639px) and (orientation: portrait) {
+  .tile-battle-setup { min-height:100% !important; height:auto !important; gap:10px !important; padding:10px 8px !important; overflow-y:auto !important; }
+  .tile-battle-setup > div:first-of-type { gap:10px !important; }
+  .tile-battle-setup > div:first-of-type > div { min-width:0 !important; padding:14px !important; gap:8px !important; }
+  .tile-battle-setup input { min-width:0 !important; }
+  .tile-battle-setup-avatars { display:grid !important; grid-template-columns:repeat(5,minmax(0,1fr)); gap:6px !important; }
+  .tile-battle-setup-avatars > span { width:100% !important; height:38px !important; font-size:20px !important; }
+  .tile-battle-setup-colors { display:grid !important; grid-template-columns:repeat(8,minmax(0,1fr)); gap:5px !important; width:min(100%,280px); }
+  .tile-battle-setup-colors > div { width:100% !important; aspect-ratio:1; height:auto !important; }
+  .tile-battle-game { min-height:100% !important; height:auto !important; gap:10px !important; padding:10px 8px 16px !important; overflow-y:auto !important; }
+  .tile-battle-game .tile-battle-players { display:grid !important; grid-template-columns:repeat(2,minmax(0,1fr)); align-items:start; gap:8px !important; }
+  .tile-battle-game .tile-battle-screen:first-child { grid-row:1; grid-column:1; }
+  .tile-battle-game .tile-battle-screen:last-child { grid-row:1; grid-column:2; }
+  .tile-battle-game .tile-battle-screen { width:auto !important; min-width:0 !important; min-height:0 !important; height:auto !important; gap:6px !important; padding:10px 6px !important; }
+  .tile-battle-game .tile-battle-screen .tb-health { width:100% !important; height:14px !important; flex:0 0 14px !important; }
+  .tile-battle-game .tile-battle-board { grid-row:2; grid-column:1 / -1; flex:initial !important; grid-template-columns:repeat(6,minmax(0,1fr)) !important; grid-auto-rows:auto !important; gap:5px !important; padding:7px !important; }
+  .tile-battle-game .tile-battle-board > div { min-width:0; }
+}
 @keyframes tb-particleFly { 0% { opacity:1; transform:translate(0,0) scale(1); } 100% { opacity:0; transform:translate(var(--tb-x),var(--tb-y)) scale(0); } }
 @keyframes tb-bannerShow { 0% { opacity:0; transform:translateY(25px) scale(.85); } 70% { opacity:1; transform:translateY(-4px) scale(1.04); } 100% { opacity:1; transform:translateY(0) scale(1); } }
 @keyframes tb-bannerHide { to { opacity:0; transform:translateY(-12px) scale(.95); } }
@@ -442,7 +460,6 @@ export default function TileBattle({ onComplete, themeId }) {
   // ── shared styling helpers (glass look — translucent surfaces over a themed gradient backdrop) ──
   const pageBg = {
     background:
-      `linear-gradient(rgba(245,245,247,.25), rgba(245,245,247,.25)), url('/assets/games/tile-battle/tile-battle-general-bg.png') center / cover fixed,` +
       `radial-gradient(circle at top left, ${t.accent}33, transparent 40%),` +
       `radial-gradient(circle at bottom right, ${t.accent2}33, transparent 35%),` +
       `${t.bg}`,
@@ -515,7 +532,7 @@ export default function TileBattle({ onComplete, themeId }) {
 
   // ── SETUP ──
   if (screen === "setup") return (
-    <div style={screenWrap}>
+    <div className="tile-battle-setup" style={screenWrap}>
       {fx}
       <h1 style={{ display: "none" }}>⚔️ Tile Battle</h1>
 
@@ -529,7 +546,7 @@ export default function TileBattle({ onComplete, themeId }) {
               onChange={(e) => setNames((prev) => { const n = [...prev]; n[pi] = e.target.value.trim() || `Player ${pi + 1}`; return n; })}
               style={{ fontSize: 16, fontWeight: 500, color: t.text, textAlign: "center", background: "transparent", border: "none", borderBottom: `2px solid ${t.border2}`, padding: "2px 4px 4px", width: "100%", maxWidth: 320, minWidth: 280, fontFamily: "inherit" }}
             />
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
+            <div className="tile-battle-setup-avatars" style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
               {AVATARS.map((av) => (
                 <span key={av} onClick={() => selectAvatar(pi, av)} style={{
                   width: 44, height: 44, display: "flex", alignItems: "center", justifyContent: "center",
@@ -540,7 +557,7 @@ export default function TileBattle({ onComplete, themeId }) {
               ))}
             </div>
             <p style={{ color: t.text2, fontSize: 13 }}>Health bar colour</p>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
+            <div className="tile-battle-setup-colors" style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
               {COLORS.map((c) => (
                 <div key={c.n} title={c.n} onClick={() => setColors((prev) => { const n = [...prev]; n[pi] = c.v; return n; })} style={{
                   width: 26, height: 26, borderRadius: "50%", background: c.v, cursor: "pointer",
@@ -615,7 +632,7 @@ export default function TileBattle({ onComplete, themeId }) {
     };
 
     return (
-      <div style={{
+      <div className="tile-battle-game" style={{
         minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center",
         gap: "1.2rem", ...pageBg, color: t.text, padding: "1.5rem", fontFamily: "Inter, system-ui, sans-serif",
         position: "relative", overflow: "hidden",

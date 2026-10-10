@@ -727,6 +727,7 @@ export default function BowlingBattle({ onComplete }) {
           <div className="bb-victory-trophy" aria-hidden="true">🏆</div>
           <span className="bb-victory-kicker">FINAL RESULTS</span>
           <h2 className="bb-victory-title">{isTie ? "TIE GAME!" : "VICTORY!"}</h2>
+          {winnerPlayer.strikes > 0 && <img className="bb-victory-strike-art" src="/assets/games/bowling-battle/bowling-battle-victory-strike.webp" alt="A bowling ball knocking down the pins" />}
           <div className="bb-winner-card">
             <span className="bb-winner-label">{isTie ? "🏆 TOP SCORE" : "👑 WINNER"}</span>
             <strong className="bb-winner-name">{winnerPlayer.name}</strong>
@@ -864,6 +865,7 @@ const STYLES = `
 .bb-victory-screen{position:relative;isolation:isolate;box-sizing:border-box;display:flex;width:min(100%,900px);max-height:calc(100dvh - 150px);flex-direction:column;align-items:center;justify-content:center;overflow:auto;padding:clamp(20px,3vh,34px);border:1px solid rgb(100 170 255 / .28);border-radius:28px;background:radial-gradient(ellipse at 50% 0%,rgb(58 111 190 / .2),transparent 52%),linear-gradient(180deg,rgb(8 26 58 / .96),rgb(5 19 43 / .98));box-shadow:0 28px 75px rgb(0 0 0 / .42),inset 0 1px 0 rgb(255 255 255 / .08)}
 .bb-victory-glow{position:absolute;z-index:-1;top:-180px;left:calc(50% - 240px);width:480px;height:480px;border-radius:50%;background:rgb(38 111 255 / .13);filter:blur(65px);pointer-events:none}
 .bb-victory-content{position:relative;z-index:1;width:min(100%,650px);text-align:center}
+.bb-victory-strike-art{display:block;width:min(180px,35vw);max-height:120px;object-fit:contain;margin:4px auto 10px;border-radius:12px;background:#fff}
 .bb-victory-trophy{margin-bottom:4px;font-size:clamp(3rem,6vh,4.2rem);line-height:1;filter:drop-shadow(0 0 18px rgb(255 190 40 / .55));animation:bb-trophy-float 2.5s ease-in-out infinite}
 .bb-victory-kicker{color:#9bb0cf;font-size:.68rem;font-weight:900;letter-spacing:.22em}
 .bb-victory-title{margin:3px 0 16px;color:#fff;font-size:clamp(2.3rem,5vh,3.6rem);font-weight:1000;letter-spacing:-.035em;line-height:1;text-shadow:0 4px 24px rgb(60 150 255 / .34)}

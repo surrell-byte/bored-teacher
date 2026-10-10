@@ -118,6 +118,10 @@ font-family:'DM Sans',sans-serif;background:var(--bg-deep);color:var(--text);hei
 @media(max-width:350px){.cc .grid{gap:5px}.cc .tile{border-radius:12px}.cc .circle{width:20px;height:20px}}
 @media(max-width:900px) and (max-height:600px){.cc .screen{height:auto;min-height:100%;padding:12px 18px}.cc .logo{font-size:clamp(2rem,8vh,3rem);margin-bottom:8px}.cc h2{font-size:clamp(1.1rem,4vh,1.6rem);margin-bottom:10px}.cc .btn{margin-top:10px;padding:10px 26px}.cc .game-screen{height:100%;min-height:0;padding:8px 12px}.cc .game-layout{height:auto;grid-template-columns:minmax(0,1fr) minmax(200px,260px);gap:12px}.cc .grid{margin-top:10px;gap:clamp(5px,1.2vw,10px)}.cc .player-panel{gap:8px}.cc .turn{padding:9px 12px}.cc .scoreboard{padding:8px;gap:6px}.cc .player-score{padding:7px 9px}.cc .grid-wrapper{width:min(100%,calc((100dvh - 130px) * 1.2 + 70px))}}
 @media(max-height:600px){.cc .how-screen{height:100%;min-height:100%;gap:8px;padding:8px 18px}.cc .how-screen h2{font-size:1.2rem}.cc .how-text{gap:6px;padding:12px;font-size:1rem}.cc .power-legend{gap:6px}.cc .power-legend span{min-height:0;padding:7px 10px;font-size:.9rem}.cc[data-screen="how"] .btn-primary{padding:9px 24px;font-size:1rem}}
+@media(max-width:639px) and (orientation:portrait){
+.cc[data-screen="welcome"] .screen{background-image:url('/assets/games/colour-clash-2/colour-clash-2-welcome-phone-bg.webp');background-position:center;background-size:cover}
+.cc[data-screen="setup"] .screen,.cc[data-screen="how"] .screen,.cc[data-screen="game"],.cc[data-screen="winner"]{background-image:url('/assets/games/colour-clash-2/colour-clash-2-general-phone-bg.webp');background-position:center;background-size:cover}
+}
 `;
 
 const COLOR_OPTIONS = [

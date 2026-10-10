@@ -12,8 +12,9 @@ const THEMES = {
 };
 const DIFFICULTIES = [
   { cards: 4, missing: 1, preview: 2200, label: 'Easy' },
-  { cards: 4, missing: 2, preview: 1800, label: 'Medium' },
-  { cards: 5, missing: 3, preview: 1400, label: 'Hard' },
+  { cards: 5, missing: 2, preview: 1800, label: 'Medium' },
+  { cards: 6, missing: 3, preview: 1400, label: 'Hard' },
+  { cards: 8, missing: 4, preview: 1100, label: 'Mastery' },
 ];
 const categories = Object.entries(WHATS_MISSING_CATEGORIES);
 const shuffle = values => [...values].sort(() => Math.random() - 0.5);
@@ -36,7 +37,7 @@ export default function WhatsMissing({ onComplete, onHudUpdate, themeId: externa
   }, [gameStarted, onHudUpdate, round, score, streak]);
   const challenge = useMemo(() => {
     const pool = WHATS_MISSING_CATEGORIES[category] || WHATS_MISSING_CATEGORIES.Fruit;
-    const count = Math.min(DIFFICULTIES[difficulty].cards, Math.max(4, pool.length - 3));
+    const count = DIFFICULTIES[difficulty].cards;
     const chosen = shuffle(pool).slice(0, count);
     const missingIndices = shuffle(chosen.map((_, index) => index)).slice(0, DIFFICULTIES[difficulty].missing);
     const missingItems = missingIndices.map(index => chosen[index]);

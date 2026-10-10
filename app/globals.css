@@ -4510,7 +4510,7 @@ a { color: inherit; }
 .game-shell-play-area > :first-child { width: 100%; }
 .game-shell-play-area > .game-shell-error { flex: 1; width: 100%; min-width: 0; min-height: 100%; }
 .game-shell--tictacroll .game-shell-play-area:has([data-tictacroll-screen="game"]) {
-  background: url("/assets/images/tic-tac-roll-welcome-page-bg.webp") center / cover no-repeat;
+  background: url("/assets/games/tictacroll/tic-tac-roll-welcome-page-bg.webp") center / cover no-repeat;
 }
 .game-shell--colourclash2 .game-shell-play-area,
 .game-shell--colourclash2 .game-shell-play-area > :first-child {
@@ -4697,17 +4697,65 @@ a { color: inherit; }
 
 @media (max-width: 639px) {
   .game-shell .game-layout-header {
-    padding: 12px 14px;
+    padding: 8px 10px;
+  }
+
+  @media (max-width: 600px) and (orientation: portrait) {
+    .game-shell--tictacroll .game-shell-play-area {
+      background: url("/assets/games/tictacroll/tic-tac-roll-general-phone-bg.webp") center / cover no-repeat;
+    }
+  }
+  .game-shell .game-header-default {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 8px;
+    min-width: 0;
   }
   .game-shell .game-header-title {
-    font-size: 1.15rem;
+    flex: 1 1 auto;
+    width: auto;
+    max-width: none;
+    min-width: 0;
+    font-size: clamp(0.85rem, 4vw, 1.05rem);
+  }
+  .game-shell .game-header-actions {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 5px;
+    width: auto;
+    min-width: 0;
+  }
+  .game-shell .game-header-actions .game-shell-topbar-stats {
+    order: 0;
+    flex: 0 1 auto;
+    width: auto;
+    max-width: 42vw;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .game-shell .game-header-actions .game-shell-topbar-stats::-webkit-scrollbar {
+    display: none;
+  }
+  .game-shell .game-header-actions .game-shell-mobile-menu-wrap {
+    position: relative;
+    display: block;
+    flex: 0 0 auto;
   }
   .game-shell-header-action {
     min-width: 44px;
+    width: 44px;
     min-height: 44px;
     padding: 8px 10px;
     font-size: 0.82rem;
   }
+  .game-shell .game-header-actions > :not(.game-shell-topbar-stats):not(.game-shell-mobile-menu-wrap) {
+    display: none;
+  }
+  .game-shell-mobile-menu-toggle { display: inline-flex; }
   .game-shell-topbar-stat {
     min-height: 34px;
     padding: 6px 9px;
@@ -4810,17 +4858,14 @@ a { color: inherit; }
   flex: 0 0 auto;
   width: auto;
 }
+.game-shell--sentencebuilder .sentencebuilder-root .stats-bar,
+.game-shell--sentence-builder .sentencebuilder-root .stats-bar {
+  display: none !important;
+}
 @media (max-width: 639px) {
   .game-shell.game-shell--numberclouds .game-header-default { gap: 8px; }
-  .game-shell.game-shell--numberclouds .game-header-title {
-    flex: 0 0 100%;
-    width: 100%;
-  }
-  .game-shell.game-shell--numberclouds .game-header-actions {
-    width: auto;
-    flex: 0 0 auto;
-    overflow: visible;
-  }
+  .game-shell.game-shell--numberclouds .game-header-title { flex: 1 1 auto; width: auto; }
+  .game-shell.game-shell--numberclouds .game-header-actions { width: auto; flex: 0 0 auto; overflow: visible; }
 }
 
 
@@ -4928,31 +4973,32 @@ a { color: inherit; }
   .game-shell .game-header-default {
     display: flex;
     align-items: center;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 8px;
     min-width: 0;
   }
   .game-shell .game-header-title {
-    flex: 0 0 100%;
-    width: 100%;
+    flex: 1 1 auto;
+    width: auto;
     max-width: none;
-    min-width: 100%;
+    min-width: 0;
     font-size: 1rem;
   }
   .game-shell--colourclash2 .game-header-title { font-size: 0.9rem; }
   .game-shell .game-header-icon { flex: 0 0 auto; }
   .game-shell .game-header-actions {
-    width: 100%;
-    flex: 1 1 100%;
+    width: auto;
+    flex: 0 0 auto;
     flex-wrap: nowrap;
     min-width: 0;
     gap: 5px;
-    overflow: hidden;
+    overflow: visible;
   }
   .game-shell .game-header-actions .game-shell-topbar-stats {
-    flex: 1 1 auto;
+    flex: 0 1 auto;
+    width: auto;
     min-width: 0;
-    max-width: none;
+    max-width: 42vw;
     overflow-x: auto;
     scrollbar-width: none;
   }
@@ -4979,4 +5025,25 @@ a { color: inherit; }
     font-size: 0.82rem;
   }
   .game-shell-topbar-stat { min-height: 34px; padding: 6px 9px; font-size: 0.78rem; }
+}
+
+@media (max-width: 639px) and (orientation: portrait) {
+  .game-shell--plantvegetablequiz .game-shell-play-area {
+    background-image: url('/assets/games/plant-vegetable-quiz/fruit-and-veg-general-bg-phone.webp') !important;
+    background-position: center;
+    background-size: cover;
+  }
+  .plant-quiz-route-welcome {
+    min-height: 100% !important;
+    align-items: flex-start !important;
+    padding: 12px !important;
+  }
+  .plant-quiz-route-card {
+    width: 100% !important;
+    max-width: 100%;
+    padding: 18px 14px !important;
+  }
+  .plant-quiz-route-title { font-size: clamp(1.5rem, 7vw, 2.2rem) !important; }
+  .plant-quiz-route-levels { grid-template-columns: minmax(0, 1fr) !important; gap: 12px !important; }
+  .plant-quiz-route-level { min-width: 0; }
 }

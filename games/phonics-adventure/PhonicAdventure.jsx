@@ -86,6 +86,10 @@ function PhonicStyles() {
       }
       .phonic-root--welcome { background-image:linear-gradient(rgba(18,47,85,.24),rgba(23,59,104,.38)),url('/assets/games/phonics-adventure/phonics-adventure-welcome-bg.webp');background-position:center;background-size:cover; }
       .phonic-root--menu { background-image:linear-gradient(rgba(18,47,85,.24),rgba(23,59,104,.38)),url('/assets/games/phonics-adventure/phonics-adventure-main-menu-bg.webp');background-position:center;background-size:cover; }
+      @media(max-width:639px) and (orientation:portrait) {
+        .phonic-root { background-image:url('/assets/games/phonics-adventure/phonics-adventure-general-phone-bg.webp');background-position:center;background-size:cover;background-attachment:scroll; }
+        .phonic-root--welcome { background-image:url('/assets/games/phonics-adventure/phonics-adventure-welcome-phone-bg.webp'); }
+      }
       .phonic-find-word-layout { display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:stretch;gap:clamp(18px,3vw,36px);margin-top:20px; }
       .phonic-find-word-layout .question-card { min-height:100%;display:flex;flex-direction:column;justify-content:center;margin:0!important; }
       .phonic-find-word-layout .answers { align-content:center; }

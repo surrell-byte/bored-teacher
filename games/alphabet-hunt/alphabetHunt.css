@@ -846,3 +846,12 @@
     padding: 12px 10px;
   }
 }
+
+@media (max-width: 639px) and (orientation: portrait) {
+  .alphabet-hunt.ah-screen {
+    background-image: url('/assets/games/alphabet-hunt/alphabet-hunt-general-phone-bg.webp');
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+  }
+}

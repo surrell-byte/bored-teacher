@@ -924,6 +924,7 @@ export default function SentenceBuilder() {
                     level++;
                     scoreEl.textContent = score;
                     levelEl.textContent = level;
+                    window.dispatchEvent(new CustomEvent('sentence-builder:hud', { detail: { level, score } }));
                     spawnConfetti();
                     setTimeout(loadLevel, 1600);
                 } else {
@@ -1170,6 +1171,7 @@ export default function SentenceBuilder() {
                     levelEl.textContent = level;
                     levelEl.classList.add('pop');
                     setTimeout(() => levelEl.classList.remove('pop'), 500);
+                    window.dispatchEvent(new CustomEvent('sentence-builder:hud', { detail: { level, score } }));
 
                     if (streak >= 3) {
                         streakCountEl.textContent = streak;
@@ -1303,6 +1305,7 @@ export default function SentenceBuilder() {
             // ─────────────────────────────────────
             loadLevel();
             updateProgress();
+            window.dispatchEvent(new CustomEvent('sentence-builder:hud', { detail: { level, score } }));
             console.log('🏆 Sentence Builder Pro ready!');
             console.log('💡 Tips: Drag & drop words OR click a word then click a slot.');
             console.log('⌨️  Press Enter to check, Escape to clear, Ctrl+H for hint.');

@@ -13,9 +13,6 @@ const FruitWordHunt_HTML = `<div id="correctPopup" class="popup"></div>
 <div id="victoryPopup" class="victory-popup"></div>
 
 <div class="game-box">
-  <div class="header">
-    <h1>🍎 FRUIT WORD HUNT 🍍</h1>
-  </div>
   <div class="progress-info" id="progressInfo">⭐ Solve 5 fruits to unlock Medium!</div>
   
   <div class="level-bar">
@@ -31,7 +28,7 @@ const FruitWordHunt_HTML = `<div id="correctPopup" class="popup"></div>
 
   <div class="controls">
     <button class="btn btn-del" id="deleteBtn">⌫ DELETE</button>
-    <button class="btn btn-reset" id="resetGameBtn">🏆 RESET GAME</button>
+    <button class="btn btn-reset" id="resetGameBtn">RESET GAME</button>
   </div>
 </div>`;
 
@@ -48,13 +45,7 @@ const FruitWordHunt_CSS = `/* Base Styling */
       border: 4px solid #ffd89a;
     }
     
-    /* Header & Progress */
-    .header {
-      background: linear-gradient(120deg, #ff9f3d, #f7b05e);
-      padding: clamp(10px, 1.5vh, 20px);
-      color: white;
-      font-size: clamp(1.05rem, 2.2vh, 1.4rem);
-    }
+    /* Progress */
     .progress-info {
       background: #fff0cf;
       padding: 12px;
@@ -357,7 +348,7 @@ export default function FruitWordHunt({ onComplete }) {
     const hardDone = remainingFruits[2]?.length === 0;
     if (easyDone && mediumDone && hardDone) {
       gameComplete = true;
-      setStatusText(victoryPopupDiv, '🏆🎉 GRAND VICTORY! 🎉🏆 🍎🍌🍓 You completed ALL 3 levels! 🍒🥝🍍 ⭐ Fruit Word Master! ⭐ Press "RESET GAME" to play again!');
+      setStatusText(victoryPopupDiv, '🎉 GRAND VICTORY! You completed ALL 3 levels! Fruit Word Master! Press "RESET GAME" to play again!');
       victoryPopupDiv.classList.add('show');
       const totalCorrect = score.reduce((sum, value) => sum + value, 0);
       const totalQuestions = levels.reduce((sum, level) => sum + level.fruits.length, 0);
@@ -392,20 +383,18 @@ export default function FruitWordHunt({ onComplete }) {
     
     // Update progress info text
     const currentReq = levels[currentLevelIdx].required;
-    const currentScore = score[currentLevelIdx];
-    const questionsLeft = Math.max(0, (remainingFruits[currentLevelIdx]?.length || 0) + (isLocked ? 0 : 1));
     if (currentLevelIdx < 2 && !unlocked[currentLevelIdx + 1]) {
-      setStatusText(progressInfo, \`⭐ Level \${levels[currentLevelIdx].name}: \${currentScore}/\${currentReq} correct → Unlock \${levels[currentLevelIdx + 1].name}! ⭐\`);
+      setStatusText(progressInfo, \`⭐ Level \${levels[currentLevelIdx].name}: spell \${currentReq} fruits to unlock \${levels[currentLevelIdx + 1].name}! ⭐\`);
     } else {
-      setStatusText(progressInfo, \`🌟 Level \${levels[currentLevelIdx].name}: \${questionsLeft} questions left · \${currentScore} fruits spelled 🌟\`);
+      setStatusText(progressInfo, \`🌟 Level \${levels[currentLevelIdx].name}: keep spelling fruits! 🌟\`);
     }
-    if (gameComplete) setStatusText(progressInfo, '🏆 ALL LEVELS COMPLETE! VICTORY! 🏆');
+    if (gameComplete) setStatusText(progressInfo, 'ALL LEVELS COMPLETE! VICTORY!');
   }
 
   // Load a new random fruit from current level
   function loadNewFruit() {
     if (gameComplete) {
-      wordDisplaySpan.textContent = "🏆 VICTORY! Press RESET";
+      wordDisplaySpan.textContent = "VICTORY! Press RESET";
       tilesGrid.replaceChildren();
       return;
     }
@@ -475,7 +464,7 @@ export default function FruitWordHunt({ onComplete }) {
       tileBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         if (gameComplete) {
-          showPopupMessage("🏆 Game complete! Press RESET to play again.", false);
+          showPopupMessage("Game complete! Press RESET to play again.", false);
           return;
         }
         if (isLocked) {
@@ -519,7 +508,7 @@ export default function FruitWordHunt({ onComplete }) {
 
   function checkSpelling() {
     if (gameComplete) {
-      showPopupMessage("🏆 You already won! Press RESET GAME to play again.", false);
+      showPopupMessage("You already won! Press RESET GAME to play again.", false);
       return;
     }
     if (isLocked) {
@@ -542,7 +531,7 @@ export default function FruitWordHunt({ onComplete }) {
       if (allCompleted && !gameComplete) {
         checkVictory();  // triggers victory popup and sets gameComplete
         renderTiles();   // disable tiles visually
-        wordDisplaySpan.textContent = "🏆 VICTORY! 🏆";
+        wordDisplaySpan.textContent = "VICTORY!";
       } else {
         // Re-render tiles to disable them
         renderTiles();

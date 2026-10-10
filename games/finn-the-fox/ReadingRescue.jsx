@@ -239,7 +239,7 @@ export default function ReadingRescue({ onComplete, onHudUpdate, profileName }) 
   }
 
   if (phase === 'welcome') {
-    return <div className={backgroundClass()}><style>{CSS}</style><main className="ff-welcome-screen"><button className="ff-welcome-start" type="button" onClick={() => setPhase('user-info')}>Start Reading Rescue</button></main></div>;
+    return <div className={backgroundClass()}><style>{CSS}</style><main className="ff-welcome-screen"><section className="ff-welcome-copy"><h1>Reading Rescue</h1><p>Read stories, explore clues, and help Finn on every adventure.</p></section><button className="ff-welcome-start" type="button" onClick={() => setPhase('user-info')}>Start Reading Rescue</button></main></div>;
   }
 
   if (phase === 'story') {
@@ -723,6 +723,36 @@ const CSS = `
 }
 .ff-welcome-start:hover { filter: brightness(1.08); transform: translate(-50%, -52%); }
 .ff-welcome-start:focus-visible { outline: 4px solid #fff8d9; outline-offset: 2px; }
+.ff-welcome-copy {
+  position:absolute;
+  top:24%;
+  left:50%;
+  width:min(90%, 560px);
+  padding:clamp(14px, 2.2vw, 24px);
+  transform:translateX(-50%);
+  border:1px solid rgba(255,255,255,.9);
+  border-radius:22px;
+  background:#fffaf0;
+  color:var(--rr-ink);
+  text-align:center;
+  box-shadow:0 16px 38px rgba(23,19,47,.2);
+}
+.ff-welcome-copy h1 { margin:0 0 6px; color:var(--rr-plum); font-size:clamp(1.8rem,5vw,3rem); line-height:1.05; }
+.ff-welcome-copy p { margin:0; color:var(--rr-brown); font-size:clamp(.9rem,2vw,1.1rem); line-height:1.45; }
+.finn-fox--story .ff-story-layout,
+.finn-fox--story.finn-fox--tanya .ff-story-layout,
+.finn-fox--story.finn-fox--rabbit .ff-story-layout { align-items:stretch; }
+.finn-fox--story .ff-story-layout .ff-story-illustration,
+.finn-fox--story.finn-fox--tanya .ff-story-layout .ff-story-illustration,
+.finn-fox--story.finn-fox--rabbit .ff-story-layout .ff-story-illustration {
+  width:100%;
+  height:100%;
+  min-height:100%;
+  max-height:none;
+  aspect-ratio:auto;
+  object-fit:cover;
+  border-radius:20px;
+}
 
 .finn-fox--story {
   display: flex;
@@ -795,6 +825,20 @@ const CSS = `
   .finn-fox--story .ff-story p,
   .finn-fox--story.finn-fox--tanya .ff-story p,
   .finn-fox--story.finn-fox--rabbit .ff-story p { margin-bottom: 6px; font-size: 1rem; line-height: 1.42; }
+  .finn-fox--story .ff-story-layout,
+  .finn-fox--story.finn-fox--tanya .ff-story-layout,
+  .finn-fox--story.finn-fox--rabbit .ff-story-layout { align-items:stretch; }
+  .finn-fox--story .ff-story-layout .ff-story-illustration,
+  .finn-fox--story.finn-fox--tanya .ff-story-layout .ff-story-illustration,
+  .finn-fox--story.finn-fox--rabbit .ff-story-layout .ff-story-illustration {
+    width:100%;
+    height:auto;
+    min-height:clamp(210px,30vh,300px);
+    max-height:none;
+    aspect-ratio:4 / 3;
+    object-fit:cover;
+    border-radius:20px;
+  }
 }
 
 `;

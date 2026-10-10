@@ -353,8 +353,13 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
     padding: "clamp(1.2rem, 2vw, 2.5rem)",
   };
 
-  const welcomeBackground = "/assets/images/tic-tac-roll-welcome-bg.webp";
-  const inputBackground = window.innerWidth <= 600 ? "/assets/images/tic-tac-roll-general-phone-bg.webp" : "/assets/images/tic-tac-roll-user-input-screen-bg.webp";
+  const isPortraitPhone = window.matchMedia("(max-width: 600px) and (orientation: portrait)").matches;
+  const welcomeBackground = isPortraitPhone
+    ? "/assets/games/tictacroll/tic-tac-roll-welcome-phone-bg.webp"
+    : "/assets/games/tictacroll/tic-tac-roll-welcome-bg.webp";
+  const inputBackground = isPortraitPhone
+    ? "/assets/games/tictacroll/tic-tac-roll-general-phone-bg.webp"
+    : "/assets/games/tictacroll/tic-tac-roll-user-input-screen-bg.webp";
   return (
     <div data-tictacroll-screen={screen} style={{ width: "100%", height: "100%", minHeight: 0, boxSizing: "border-box", backgroundColor: "transparent", color: theme.text, fontFamily: "'DM Sans', 'Segoe UI', sans-serif", transition: "color 0.4s" }}>
 
