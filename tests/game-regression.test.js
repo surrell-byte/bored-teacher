@@ -16,6 +16,20 @@ test('Look and Say validates question data and has a visible empty-state guard',
   assert.match(styles, /\.look-and-say-game \.finish .*display: flex/);
 });
 
+test('portrait game controls and start actions remain visible and usable', () => {
+  const lookAndSay = read('games/look-and-say/LookAndSay.css');
+  const findMyFood = read('games/find-my-food/FindMyFood.jsx');
+  const miniRacer = read('games/mini-racer/MiniRacer.jsx');
+  const mobileShell = read('app/globals.css');
+
+  assert.match(lookAndSay, /\.start-hotspot[\s\S]*background: #075985;[\s\S]*color: #fff/);
+  assert.match(findMyFood, /className="ff-welcome-start-hotspot"/);
+  assert.match(findMyFood, /className="ff-welcome-start-hotspot"[\s\S]*?>Start Game<\/button>/);
+  assert.match(miniRacer, /aria-label="Steer left"[\s\S]*onPointerDown/);
+  assert.match(miniRacer, /aria-label="Accelerate"[\s\S]*onPointerDown/);
+  assert.match(mobileShell, /game-shell-topbar-stats > label\.game-shell-header-action[\s\S]*width: 116px/);
+});
+
 test('Alphabet Hunt merges incomplete future themes with a complete fallback', () => {
   const component = read('games/alphabet-hunt/AlphabetHunt.jsx');
 
@@ -63,11 +77,18 @@ test('Connect 4 status cards flank a brighter board with readable cell coordinat
   const component = read('games/connect-4/Connect4.jsx');
 
   assert.match(component, /display: grid; align-items: center; justify-content: stretch;[\s\S]*grid-template-columns: minmax\(0, 1fr\) auto minmax\(0, 1fr\)/);
-  assert.match(component, /rgba\(38,112,184,0\.98\)/);
+  assert.match(component, /linear-gradient\(145deg, #24558A 0%, #16385F 38%, #102744 100%\)/);
+  assert.match(component, /border: 1px solid rgba\(101,207,255,0\.75\)/);
+  assert.match(component, /linear-gradient\(145deg, #355D83 0%, #1C3B5D 45%, #10243D 100%\)/);
+  assert.match(component, /#FF365F/);
+  assert.match(component, /#FFC247/);
+  assert.match(component, /\.c4-board-frame\.turn-p1, \.c4-board-frame\.turn-p2/);
+  assert.match(component, /\.c4-cell\.win \{ animation: c4WinBurst 0\.45s ease-out forwards, c4WinPulse 0\.45s 0\.45s ease-in-out 1; \}/);
   assert.match(component, /font-size: clamp\(0\.95rem, 1\.35vw, 1\.2rem\); font-weight: 900; color: #fff/);
   assert.match(component, /text-shadow: 0 1px 3px rgba\(0,0,0,0\.98\)/);
   assert.match(component, /padding: screen === "game" \? 0 : "0\.8rem"/);
   assert.match(component, /@media \(max-width:600px\) and \(orientation:portrait\)/);
+  assert.match(component, /\.c4-board-frame \{ --cell: min\(10\.5vw, 52px\); \}/);
   assert.match(component, /connect-4-welcome-phone-bg\.webp/);
   assert.match(component, /connect-4-general-phone-bg\.webp/);
   assert.match(component, /left:15%; top:31%; width:70%; height:10%;/);
@@ -87,6 +108,45 @@ test('new game backgrounds follow screen state and reserve phone art for portrai
   assert.match(zooGame, /aria-label="Start Zoo Game"/);
   assert.match(zooStyles, /@media \(max-width: 600px\) and \(orientation: portrait\)[\s\S]*zoo-game-welcome-phone-bg\.webp[\s\S]*top: 34%;[\s\S]*height: 10%/);
   assert.match(gameRoute, /'colourclash2', 'zoogame'/);
+});
+
+test('Colour Clash uses the approved palette and responsive high-visibility instructions', () => {
+  const colourClash = read('games/colour-clash-2/ColourClash2.jsx');
+  const allowedColours = [
+    '#FF0000', '#FF7F00', '#FFFF00', '#00C853', '#00FFFF', '#0000FF',
+    '#8000FF', '#FF00FF', '#FF69B4', '#8B4513', '#FFFFFF', '#000000',
+  ];
+  const usedHexColours = [...new Set(colourClash.match(/#[0-9A-Fa-f]{6}/g))];
+
+  assert.deepEqual(usedHexColours.sort(), allowedColours.slice().sort());
+  assert.match(colourClash, /const COLOR_OPTIONS = \[[\s\S]*?"#FF69B4", "Hot Pink"[\s\S]*?"#8B4513", "Brown"[\s\S]*?"#FFFFFF", "White"[\s\S]*?"#000000", "Black"/);
+  assert.match(colourClash, /\.cc \.how-content\{[^}]*grid-template-columns:minmax\(0,1\.35fr\) minmax\(240px,\.85fr\)/);
+  assert.match(colourClash, /\.cc \.how-text\{[^}]*font-size:clamp\(1\.15rem,1\.8vw,1\.5rem\)/);
+  assert.match(colourClash, /\.cc \.power-legend\{display:flex;flex-direction:column/);
+  assert.match(colourClash, /\.cc\[data-screen="how"\] \.btn-primary\{[^}]*width:auto/);
+  assert.match(colourClash, /\.cc\[data-screen="setup"\] \.btn-primary\{width:min\(664px,100%\)/);
+  assert.match(colourClash, /\.cc\[data-screen="winner"\] \.btn\{width:min\(208px,100%\);justify-content:center\}/);
+  assert.match(colourClash, /THEME_OPTIONS\.map\(\(\[id, name, swatch\]\) => <option[^>]*>\{swatch\} \{name\}<\/option>\)/);
+  assert.match(colourClash, /\{COLOR_SWATCHES\[v\]\} \{l\}/);
+  assert.match(colourClash, /\.cc \.tile\{[^}]*background:#000000/);
+  assert.match(colourClash, /\.cc \.tile::before\{display:none\}/);
+  assert.match(colourClash, /\.cc \.scoreboard\{[^}]*background:#000000/);
+  assert.match(colourClash, /\.cc \.turn\{[^}]*background:#000000/);
+  assert.match(colourClash, /\.cc \.how-screen h2\{[^}]*background:#000000/);
+  assert.match(colourClash, /className="screen how-screen"/);
+});
+
+test('Sentence Builder removes the hero banner and keeps sentence rows within the viewport', () => {
+  const sentenceBuilder = read('games/sentence-builder/SentenceBuilder.jsx');
+
+  assert.doesNotMatch(sentenceBuilder, /<h1>Sentence Builder Pro<\/h1>/);
+  assert.doesNotMatch(sentenceBuilder, /Master the Language/);
+  assert.match(sentenceBuilder, /@scope \(\.sentencebuilder-root\)/);
+  assert.doesNotMatch(sentenceBuilder, /(?:^|\n)\s*body(?:\s*::before)?\s*\{/);
+  assert.match(sentenceBuilder, /width: min\(100%, 900px\);[\s\S]*max-height: calc\(100dvh - 80px\);[\s\S]*overflow-y: auto;/);
+  assert.match(sentenceBuilder, /grid-template-columns: 22px auto minmax\(64px, 1fr\) auto minmax\(64px, 1fr\) auto minmax\(64px, 1fr\) auto/);
+  assert.match(sentenceBuilder, /class="challenge-phrase">jumped out of a/);
+  assert.match(sentenceBuilder, /class="challenge-phrase">and ate a/);
 });
 
 test('Sports Quiz start target follows the full-width artwork placeholder', () => {

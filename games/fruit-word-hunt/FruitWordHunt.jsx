@@ -202,6 +202,24 @@ const FruitWordHunt_CSS = `/* Base Styling */
     @media (max-width: 550px) {
       .tile { width: 55px; height: 55px; font-size: 1.5rem; }
       .current-word { font-size: 1.3rem; letter-spacing: 5px; }
+    }
+    @media (max-height: 760px) {
+      .fruitwordhunt-root { padding-block: 6px; }
+      .game-box { border-width: 3px; border-radius: 30px; }
+      .progress-info { padding: 7px; }
+      .level-bar { padding: 8px; gap: 8px; }
+      .level-btn { padding: 7px 15px; }
+      .fruit-card { margin: 4px 0; }
+      .current-word { min-height: 40px; padding: 6px; }
+      .tiles-grid { margin-block: 8px; padding: 9px; gap: 7px; }
+      .tile { width: 54px; height: 54px; border-radius: 15px; }
+      .controls { padding: 6px 10px 10px; }
+    }
+    @media (max-height: 620px) and (min-width: 551px) {
+      .fruit-card { font-size: 3rem; }
+      .tile { width: 46px; height: 46px; font-size: 1.35rem; }
+      .tiles-grid { margin-block: 5px; padding: 6px; }
+      .btn { padding: 8px 18px; }
     }`;
 
 export default function FruitWordHunt({ onComplete }) {
@@ -266,24 +284,6 @@ export default function FruitWordHunt({ onComplete }) {
       ], 
       extra: 4, 
       required: 4 
-    }
-    @media (max-height: 760px) {
-      .fruitwordhunt-root { padding-block: 6px; }
-      .game-box { border-width: 3px; border-radius: 30px; }
-      .progress-info { padding: 7px; }
-      .level-bar { padding: 8px; gap: 8px; }
-      .level-btn { padding: 7px 15px; }
-      .fruit-card { margin: 4px 0; }
-      .current-word { min-height: 40px; padding: 6px; }
-      .tiles-grid { margin-block: 8px; padding: 9px; gap: 7px; }
-      .tile { width: 54px; height: 54px; border-radius: 15px; }
-      .controls { padding: 6px 10px 10px; }
-    }
-    @media (max-height: 620px) and (min-width: 551px) {
-      .fruit-card { font-size: 3rem; }
-      .tile { width: 46px; height: 46px; font-size: 1.35rem; }
-      .tiles-grid { margin-block: 5px; padding: 6px; }
-      .btn { padding: 8px 18px; }
     }
   ];
 

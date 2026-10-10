@@ -45,16 +45,17 @@
   position: absolute;
   z-index: 5;
   left: 50%;
-  top: 94.5%;
-  width: min(32%, 440px);
-  height: 10%;
-  min-height: 48px;
-  padding: 0;
-  border: 0;
+  bottom: clamp(16px, 4vh, 40px);
+  width: min(58%, 280px);
+  min-height: 52px;
+  padding: 12px 24px;
+  border: 2px solid #fff;
   border-radius: 999px;
-  background: transparent;
-  box-shadow: none;
-  color: transparent;
+  background: #075985;
+  box-shadow: 0 5px 0 #053b58, 0 8px 24px rgba(0,0,0,.35);
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 900;
   transform: translate(-50%, -50%);
   cursor: pointer;
 }
@@ -80,7 +81,7 @@
   .look-and-say-game .picture-card { height: 250px; }
   .look-and-say-game .top { align-items: flex-start; }
   .look-and-say-game .score { font-size: 16px; padding: 9px 12px; }
-  .look-and-say-game .start-hotspot { width: 58%; top: 94%; height: 10%; }
+  .look-and-say-game .start-hotspot { width: min(72%, 280px); }
 }
 
 @media (prefers-reduced-motion: reduce) {

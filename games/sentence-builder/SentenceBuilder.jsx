@@ -12,13 +12,6 @@ import React, { useEffect, useRef } from 'react';
 const SentenceBuilder_HTML = `<canvas id="confettiCanvas"></canvas>
 
     <div class="main-container">
-        <!-- Header -->
-        <div class="header">
-            <span class="logo-icon">🏆</span>
-            <h1>Sentence Builder Pro</h1>
-            <p class="subtitle">Master the Language</p>
-        </div>
-
         <!-- Stats -->
         <div class="stats-bar">
             <div class="stat-pill">
@@ -71,7 +64,8 @@ const SentenceBuilder_HTML = `<canvas id="confettiCanvas"></canvas>
         <div id="message"></div>
     </div>`;
 
-const SentenceBuilder_CSS = `:root {
+const SentenceBuilder_CSS = `@scope (.sentencebuilder-root) {
+        :scope {
             --bg: #0f0c1d;
             --surface: #1a1640;
             --surface2: #231e55;
@@ -95,21 +89,18 @@ const SentenceBuilder_CSS = `:root {
             --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        * {
+        :scope, :scope * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        body {
+        :scope {
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             text-align: center;
-            background: var(--bg);
-            background-image:
-                radial-gradient(ellipse at 20% 20%, rgba(124, 92, 252, 0.08) 0%, transparent 55%),
-                radial-gradient(ellipse at 80% 70%, rgba(212, 168, 67, 0.06) 0%, transparent 55%),
-                radial-gradient(ellipse at 50% 50%, rgba(14, 165, 185, 0.04) 0%, transparent 60%);
-            min-height: 100vh;
+            background: transparent;
+            width: 100%;
+            min-height: 100%;
             padding: 20px;
             display: flex;
             align-items: center;
@@ -119,7 +110,7 @@ const SentenceBuilder_CSS = `:root {
         }
 
         /* Subtle animated background particles */
-        body::before {
+        :scope::before {
             content: '';
             position: fixed;
             inset: 0;
@@ -150,11 +141,12 @@ const SentenceBuilder_CSS = `:root {
         .main-container {
             position: relative;
             z-index: 1;
-            width: 100%;
-            max-width: 680px;
+            width: min(100%, 900px);
+            max-height: calc(100dvh - 80px);
+            overflow-y: auto;
             background: var(--surface);
             border-radius: 28px;
-            padding: 36px 28px 30px;
+            padding: clamp(16px, 3vh, 30px) clamp(14px, 3vw, 28px);
             box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255, 255, 255, 0.06) inset;
             border: 1px solid rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(10px);
@@ -463,8 +455,8 @@ const SentenceBuilder_CSS = `:root {
         }
 
         .challenge-row {
-            display: flex;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: 22px auto minmax(64px, 1fr) auto minmax(64px, 1fr) auto minmax(64px, 1fr) auto;
             align-items: center;
             justify-content: center;
             gap: 8px;
@@ -472,7 +464,8 @@ const SentenceBuilder_CSS = `:root {
             color: var(--text-muted);
         }
         .challenge-row .challenge-slot {
-            min-width: 96px;
+            width: 100%;
+            min-width: 0;
             min-height: 44px;
             padding: 8px 12px;
             border: 2px dashed rgba(255,255,255,.25);
@@ -484,6 +477,7 @@ const SentenceBuilder_CSS = `:root {
         .challenge-row .challenge-slot.filled { border-style: solid; border-color: var(--gold); }
         .challenge-row .challenge-number { width: 22px; color: var(--gold-light); font-weight: 700; }
         .challenge-row.active { outline: 2px solid rgba(240,214,138,.35); outline-offset: 6px; border-radius: 10px; }
+        .challenge-row .challenge-phrase { font-size: clamp(0.65rem, 1.2vw, 0.95rem); }
         .challenge-instructions { color: var(--text-muted); margin: 10px 0 18px; }
 
         button {
@@ -627,7 +621,8 @@ const SentenceBuilder_CSS = `:root {
         /* Responsive */
         @media (max-width: 500px) {
             .main-container {
-                padding: 24px 14px 20px;
+                max-height: calc(100dvh - 24px);
+                padding: 16px 12px;
                 border-radius: 22px;
             }
             h1 {
@@ -657,6 +652,17 @@ const SentenceBuilder_CSS = `:root {
             .stat-value {
                 font-size: 1.2rem;
             }
+            .challenge-row {
+                grid-template-columns: 18px auto minmax(42px, 1fr) auto minmax(42px, 1fr) auto minmax(42px, 1fr) auto;
+                gap: 4px;
+                font-size: 0.8rem;
+            }
+            .challenge-row .challenge-slot {
+                padding: 6px 4px;
+                min-height: 38px;
+                font-size: 0.75rem;
+            }
+        }
         }`;
 
 export default function SentenceBuilder() {
@@ -863,9 +869,9 @@ export default function SentenceBuilder() {
                             }
                         });
                         line.appendChild(slot);
-                        if (index === 0) line.insertAdjacentHTML('beforeend', ' jumped out of a ');
-                        if (index === 1) line.insertAdjacentHTML('beforeend', ' and ate a ');
-                        if (index === 2) line.insertAdjacentHTML('beforeend', '.');
+                        if (index === 0) line.insertAdjacentHTML('beforeend', '<span class="challenge-phrase">jumped out of a</span>');
+                        if (index === 1) line.insertAdjacentHTML('beforeend', '<span class="challenge-phrase">and ate a</span>');
+                        if (index === 2) line.insertAdjacentHTML('beforeend', '<span class="challenge-phrase">.</span>');
                     });
                     line.addEventListener('click', (event) => {
                         if (event.target.classList.contains('challenge-slot')) return;

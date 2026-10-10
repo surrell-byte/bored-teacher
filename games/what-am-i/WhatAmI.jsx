@@ -380,11 +380,21 @@ const WhatAmI_CSS = `.whatami-root{
   }
 
   @media (max-width:600px){
-    .screen{ padding:18px; }
-    .answer-row{ flex-direction:column; }
-    .submit-btn{ width:100%; height:60px; }
-    .card-stage{ max-width:220px; }
-    .emoji-layer{ font-size:120px; }
+    .whatami-root{ min-height:100%; padding:10px; }
+    .whatami-root .app{ width:100%; overflow:visible; }
+    .screen{ padding:12px; }
+    .game-grid{ grid-template-columns:minmax(0,1fr); gap:12px; }
+    .notes-panel,.specimen-panel{ min-width:0; padding:12px; }
+    .specimen-panel{ min-height:0; }
+    .answer-row{ flex-direction:row; }
+    #answerInput{ min-width:0; height:54px; padding:10px; font-size:20px; }
+    .submit-btn{ flex:0 0 58px; width:58px; height:54px; padding:0; }
+    .hint-display{ font-size:20px; letter-spacing:4px; }
+    .clue-line{ font-size:18px; line-height:1.45; }
+    .prompt{ margin-top:14px; font-size:26px; }
+    .card-stage{ width:min(100%,190px); max-width:190px; margin-top:12px; }
+    .emoji-layer{ font-size:clamp(80px,25vw,110px); }
+    .name-tag{ min-width:0; width:100%; min-height:44px; font-size:18px; }
   }`;
 
 export default function WhatAmI() {

@@ -111,7 +111,8 @@ const STYLES = `
 .ff-root:not(.ff-root-emoji) { background-color:#18231f;background-image:linear-gradient(rgba(9,20,17,.25),rgba(9,20,17,.4)),url('/assets/games/find-my-food/find-my-food-general-bg.webp');background-position:center;background-size:cover;background-attachment:fixed; }
 .ff-root:not(.ff-root-emoji).ff-food-screen-welcome { background-image:linear-gradient(rgba(9,20,17,.18),rgba(9,20,17,.32)),url('/assets/games/find-my-food/find-my-food-welcome-bg.webp'); }
 .ff-root:not(.ff-root-emoji).ff-food-screen-welcome { position:relative; min-height:100%; height:100%; padding:0; }
-.ff-welcome-start-hotspot { position:absolute; z-index:20; left:68%; top:65%; width:27%; height:25%; border:0; border-radius:50%; background:transparent; cursor:pointer; }
+.ff-welcome-start-hotspot { position:absolute; z-index:20; left:50%; bottom:clamp(18px,5vh,48px); transform:translateX(-50%); min-width:190px; min-height:54px; padding:12px 24px; border:2px solid #fff; border-radius:999px; background:#00C853; box-shadow:0 5px 0 #063B2A,0 8px 24px rgba(0,0,0,.38); color:#000; font:800 1.1rem/1.2 system-ui,sans-serif; cursor:pointer; }
+.ff-welcome-start-hotspot:hover { background:#00FFFF; }
 .ff-welcome-start-hotspot:focus-visible { outline:4px solid #fff; outline-offset:4px; }
 .ff-root:not(.ff-root-emoji).ff-food-screen-player-info { background-image:linear-gradient(rgba(9,20,17,.24),rgba(9,20,17,.42)),url('/assets/games/find-my-food/find-my-food-user-input-bg.webp'); }
 .ff-root:not(.ff-root-emoji).ff-food-screen-game,.ff-root:not(.ff-root-emoji).ff-food-screen-mode,.ff-root:not(.ff-root-emoji).ff-food-screen-end { background-image:linear-gradient(rgba(9,20,17,.22),rgba(9,20,17,.38)),url('/assets/games/find-my-food/find-my-food-game-screen-bg.webp'); }
@@ -598,7 +599,7 @@ export default function FindMyFood({ onComplete, themeId, variant = "food" }) {
   if (screen === "welcome" && variant !== "emoji") return (
     <div className={rootClass} data-ff-theme={selectedTheme.key} style={cssVarOverrides}>
       <style>{STYLES}</style>
-      <button type="button" className="ff-welcome-start-hotspot" aria-label="Start Find My Food" onClick={() => setScreen("player-info")} />
+      <button type="button" className="ff-welcome-start-hotspot" onClick={() => setScreen("player-info")}>Start Game</button>
     </div>
   );
 

@@ -64,20 +64,6 @@ const PhonicsWorld_HTML = `<!-- LANDING PAGE -->
     </div>
 </div>`;
 
-function setSafeText(node, value) {
-    if (!node) return;
-    node.textContent = String(value ?? '');
-}
-
-function setMultilineText(node, lines) {
-    if (!node) return;
-    node.replaceChildren();
-    lines.forEach((line, index) => {
-        if (index > 0) node.appendChild(document.createElement('br'));
-        node.appendChild(document.createTextNode(String(line ?? '')));
-    });
-}
-
 const PhonicsWorld_CSS = `* {
             box-sizing: border-box;
             margin: 0;
@@ -427,6 +413,21 @@ const PhonicsWorld_CSS = `* {
             text-decoration: line-through;
         }
 
+        .phonicsworld-root .question-card {
+            background: #ffffff;
+            color: #172033;
+            border: 2px solid #52617a;
+            backdrop-filter: none;
+        }
+        .phonicsworld-root .question-text { color: #172033; }
+        .phonicsworld-root .option-btn {
+            min-width: 0;
+            color: #172033;
+            background: #ffffff;
+            border-color: #52617a;
+        }
+        .phonicsworld-root .feedback { color: #172033; }
+
         @keyframes pop {
             0% { transform: scale(1); }
             50% { transform: scale(1.07); }
@@ -493,7 +494,11 @@ const PhonicsWorld_CSS = `* {
             text-align: center;
         }
         @media (max-width: 550px) {
-            .options-grid { gap: 12px; }
+            .quiz-container { padding: 14px 12px 20px; border-radius: 24px; }
+            .question-card { padding: 14px; margin: 12px 0; border-radius: 22px; }
+            .question-text { padding: 18px 12px; font-size: 1.2rem; border-radius: 24px; }
+            .options-grid { grid-template-columns: 1fr; gap: 10px; }
+            .option-btn { height: auto; min-height: 56px; padding: 12px; }
             .option-btn { height: 60px; font-size: 1rem; }
             .top-bar { flex-direction: column; align-items: stretch; }
             .world-map { gap: 8px; }
@@ -513,6 +518,20 @@ export default function PhonicsWorld() {
     const script = document.createElement('script');
     script.type = 'text/javascript';
     script.text = `(function() {
+    function setSafeText(node, value) {
+        if (!node) return;
+        node.textContent = String(value ?? '');
+    }
+
+    function setMultilineText(node, lines) {
+        if (!node) return;
+        node.replaceChildren();
+        lines.forEach((line, index) => {
+            if (index > 0) node.appendChild(document.createElement('br'));
+            node.appendChild(document.createTextNode(String(line ?? '')));
+        });
+    }
+
 // ----------------------------- ALL PHONICS DATA (5 islands x ~30 questions) -----------------------------
     // CH Island (18 original + extra to make 30)
     const chData = [

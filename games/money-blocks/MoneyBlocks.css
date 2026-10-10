@@ -973,6 +973,8 @@
 }
 
 @media (max-width: 600px) {
+  .money-blocks { height: auto; min-height: 100%; overflow-y: auto; }
+  .money-blocks .game { height: auto; min-height: 100%; max-height: none; padding-bottom: 16px; }
   .screen-overlay {
     align-items: flex-start;
     overflow-y: auto;
@@ -1024,7 +1026,8 @@
   .side-buttons { gap: 8px; }
   .side-btn { font-size: 11px; padding: 12px 8px; border-radius: 12px; }
   .turn-pill { font-size: 13px; padding: 12px 8px; border-radius: 12px; }
-  .side-panels { display: flex; flex-direction: column; gap: 8px; }
+  .side-panels { display: flex; flex-direction: column; gap: 8px; overflow: visible; }
+  .side-panels .account-card { flex: 0 0 auto; min-height: 116px; }
   .account-card { padding: 12px 14px; gap: 8px; border-radius: 14px; }
   .avatar { width: 36px; height: 36px; font-size: 18px; }
   .account-name { font-size: 13px; }

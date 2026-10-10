@@ -33,6 +33,10 @@ export default function MiniRacer() {
     },
   });
 
+  const setControl = (control, pressed) => {
+    keysRef.current[control] = pressed;
+  };
+
   const drawGame = (ctx, width, height) => {
     const game = gameRef.current;
     const car = game.car;
@@ -306,9 +310,21 @@ export default function MiniRacer() {
         </div>
 
         <div className="controls">
-          <div className="key">←</div>
-          <div className="key">→</div>
-          <div className="key">↑</div>
+          <button className="key" type="button" aria-label="Steer left"
+            onPointerDown={(event) => { event.preventDefault(); setControl("left", true); }}
+            onPointerUp={() => setControl("left", false)}
+            onPointerCancel={() => setControl("left", false)}
+            onLostPointerCapture={() => setControl("left", false)}>←</button>
+          <button className="key" type="button" aria-label="Steer right"
+            onPointerDown={(event) => { event.preventDefault(); setControl("right", true); }}
+            onPointerUp={() => setControl("right", false)}
+            onPointerCancel={() => setControl("right", false)}
+            onLostPointerCapture={() => setControl("right", false)}>→</button>
+          <button className="key" type="button" aria-label="Accelerate"
+            onPointerDown={(event) => { event.preventDefault(); setControl("up", true); }}
+            onPointerUp={() => setControl("up", false)}
+            onPointerCancel={() => setControl("up", false)}
+            onLostPointerCapture={() => setControl("up", false)}>↑</button>
         </div>
 
         {message && <div className="message">{message}</div>}
@@ -436,10 +452,14 @@ export default function MiniRacer() {
           bottom: 16px;
           display: flex;
           gap: 8px;
-          pointer-events: none;
+          pointer-events: auto;
+          z-index: 2;
         }
 
         .key {
+          padding: 0;
+          color: white;
+          touch-action: none;
           width: 40px;
           height: 40px;
           border-radius: 10px;

@@ -4897,32 +4897,43 @@ a { color: inherit; }
   .game-shell .game-header-default {
     display: flex;
     align-items: center;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     gap: 8px;
     min-width: 0;
   }
   .game-shell .game-header-title {
-    flex: 1 1 auto;
-    width: auto;
+    flex: 0 0 100%;
+    width: 100%;
     max-width: none;
-    min-width: 0;
+    min-width: 100%;
     font-size: 1rem;
   }
   .game-shell--colourclash2 .game-header-title { font-size: 0.9rem; }
   .game-shell .game-header-icon { flex: 0 0 auto; }
   .game-shell .game-header-actions {
-    width: auto;
-    flex: 0 0 auto;
+    width: 100%;
+    flex: 1 1 100%;
     flex-wrap: nowrap;
     min-width: 0;
     gap: 5px;
+    overflow: hidden;
   }
   .game-shell .game-header-actions .game-shell-topbar-stats {
-    flex: 0 1 auto;
+    flex: 1 1 auto;
     min-width: 0;
-    max-width: 38vw;
+    max-width: none;
     overflow-x: auto;
     scrollbar-width: none;
+  }
+  .game-shell .game-header-actions .game-shell-topbar-stats > label.game-shell-header-action {
+    flex: 0 0 116px;
+    width: 116px;
+    min-width: 116px;
+    justify-content: flex-start;
+  }
+  .game-shell .game-header-actions .game-shell-topbar-stats > label.game-shell-header-action select {
+    flex: 1;
+    min-width: 0;
   }
   .game-shell .game-header-actions .game-shell-topbar-stats::-webkit-scrollbar { display: none; }
   .game-shell-mobile-secondary { display: none; }

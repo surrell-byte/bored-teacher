@@ -113,9 +113,10 @@ function applyOutcome(type, actor, target, currentHp, names) {
 // one-time global stylesheet for keyframe animations (can't express these as inline style objects)
 const FX_STYLE = `
 @media (max-width: 639px) {
-  .tile-battle-screen { min-height: 100%; height: auto; justify-content: flex-start; overflow: auto; padding: 12px; }
+  .tile-battle-screen { box-sizing: border-box; width: 100%; max-width: 100%; min-width: 0; min-height: 100%; height: auto; justify-content: flex-start; overflow: auto; padding: 12px; }
+  .tile-battle-players { min-width: 0; }
   .tile-battle-screen .tile-battle-players { gap: 12px; }
-  .tile-battle-screen .tile-battle-board { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; grid-auto-rows: auto !important; gap: 8px !important; padding: 10px !important; width: 100%; }
+  .tile-battle-screen .tile-battle-board { box-sizing: border-box; flex: 0 1 100% !important; grid-template-columns: repeat(4, minmax(0, 1fr)) !important; grid-auto-rows: auto !important; gap: 8px !important; padding: 10px !important; width: 100%; min-width: 0; max-width: 100%; }
   .tile-battle-screen .tile-battle-board > div { min-width: 0; }
 }
 @keyframes tb-particleFly { 0% { opacity:1; transform:translate(0,0) scale(1); } 100% { opacity:0; transform:translate(var(--tb-x),var(--tb-y)) scale(0); } }

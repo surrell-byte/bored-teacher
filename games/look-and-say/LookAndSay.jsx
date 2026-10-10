@@ -92,7 +92,7 @@ export default function LookAndSay() {
           type="button"
           aria-label="Start Look and Say"
           onClick={startGame}
-        />
+        >Start Game</button>
       )}
 
       {started && !finished && !item && (

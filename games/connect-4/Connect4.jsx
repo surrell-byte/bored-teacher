@@ -5,8 +5,8 @@ import { useGame } from "@/lib/gameState";
 const ROWS = 6, COLS = 7;
 
 const THEMES = {
-  crimson: { a: "#e8445a", b: "#8b1a2a", label: "Crimson" },
-  amber:   { a: "#f5c842", b: "#a86d0a", label: "Amber" },
+  crimson: { a: "#FF365F", b: "#B80F3B", label: "Crimson" },
+  amber:   { a: "#FFC247", b: "#C7820A", label: "Amber" },
   cobalt:  { a: "#4d9aff", b: "#1a4db5", label: "Cobalt" },
   jade:    { a: "#3de8a0", b: "#0a7a4a", label: "Jade" },
   violet:  { a: "#b87dff", b: "#5c1fb5", label: "Violet" },
@@ -458,7 +458,7 @@ export default function Connect4({ onComplete, onHudUpdate }) {
         <div className="c4-game-row" style={{ position: "relative", zIndex: 1, width: "100%", height: "100%" }}>
           <SidePanel name={p1Name} avatar={p1Avatar} theme={t1} score={scores.p1} active={active && current === 1} side="left" />
 
-          <div className={`c4-board-frame${!active ? " over" : ""}`}>
+          <div className={`c4-board-frame${!active ? " over" : active ? ` turn-p${current}` : ""}`}>
             <div className="c4-board-grid">
               {board.map((row, r) => row.map((cell, c) => {
                 const win_ = isWin(r, c);
@@ -686,12 +686,19 @@ export default function Connect4({ onComplete, onHudUpdate }) {
           --gap-y: calc(var(--cell) * 0.14);
           --pad-x: calc(var(--cell) * 0.42);
           --pad-y: calc(var(--cell) * 0.28);
-          background: linear-gradient(145deg, rgba(38,112,184,0.98), rgba(12,54,112,0.99));
-          border: 1px solid rgba(194,226,255,0.7);
-          border-radius: 28px;
+          background: linear-gradient(145deg, #24558A 0%, #16385F 38%, #102744 100%);
+          border: 1px solid rgba(101,207,255,0.75);
+          border-radius: 22px;
           padding: var(--pad-y) var(--pad-x);
-          box-shadow: 0 30px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -10px 30px rgba(0,0,0,0.5);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -12px 28px rgba(3,15,35,0.25),
+            0 12px 35px rgba(0,0,20,0.42), 0 0 16px rgba(57,141,224,0.16);
           position: relative; margin: 0; flex-shrink: 0;
+          transition: border-color 220ms ease, box-shadow 220ms ease;
+        }
+        .c4-board-frame.turn-p1, .c4-board-frame.turn-p2 {
+          border-color: rgba(101,207,255,0.9);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -12px 28px rgba(3,15,35,0.25),
+            0 12px 35px rgba(0,0,20,0.42), 0 0 20px rgba(57,141,224,0.24);
         }
         .c4-board-grid {
           display: grid;
@@ -702,20 +709,22 @@ export default function Connect4({ onComplete, onHudUpdate }) {
         }
         .c4-cell {
           width: var(--cell); height: var(--cell); border-radius: 50%;
-          background: radial-gradient(circle at 35% 30%, rgba(211,239,255,0.42), rgba(9,38,82,0.9));
-          box-shadow: inset 0 5px 10px rgba(255,255,255,0.2), inset 0 -8px 15px rgba(0,0,0,0.62), 0 0 0 1px rgba(225,243,255,0.35);
+          background: linear-gradient(145deg, #355D83 0%, #1C3B5D 45%, #10243D 100%);
+          border: 1px solid rgba(160,210,255,0.38);
+          box-shadow: inset 0 4px 9px rgba(3,15,35,0.55), inset 0 -2px 4px rgba(160,220,255,0.12),
+            0 2px 4px rgba(0,0,0,0.2);
           position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;
-          cursor: pointer; transition: background 0.08s;
+          cursor: pointer; transition: background 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
         }
-        .c4-cell.colhover { background: #0b1020; }
-        .c4-cell.preview { background: rgba(255,255,255,0.06); box-shadow: inset 0 3px 8px rgba(0,0,0,0.7), 0 0 12px rgba(255,255,255,0.04); }
-        .c4-cell.p1 { background: radial-gradient(circle at 35% 30%, #ff6b7f, var(--p1-a) 50%, var(--p1-b)); box-shadow: 0 0 12px var(--p1-a), inset 0 6px 10px rgba(255,255,255,0.35), inset 0 -10px 18px rgba(0,0,0,0.45); animation: c4DropIn 0.28s cubic-bezier(0.25,1.4,0.5,1); }
-        .c4-cell.p2 { background: radial-gradient(circle at 35% 30%, #ffd966, var(--p2-a) 50%, var(--p2-b)); box-shadow: 0 0 12px var(--p2-a), inset 0 6px 10px rgba(255,255,255,0.35), inset 0 -10px 18px rgba(0,0,0,0.45); animation: c4DropIn 0.28s cubic-bezier(0.25,1.4,0.5,1); }
+        .c4-cell.colhover { background: linear-gradient(145deg, #24476B, #10243D); }
+        .c4-cell.preview { background: linear-gradient(145deg, #24476B, #10243D); border-color: rgba(165,223,255,0.68); box-shadow: inset 0 4px 9px rgba(3,15,35,0.55), 0 0 10px rgba(101,207,255,0.2); }
+        .c4-cell.p1 { background: radial-gradient(circle at 32% 25%, color-mix(in srgb, var(--p1-a) 55%, white), var(--p1-a) 42%, var(--p1-b) 100%); box-shadow: inset 0 2px 4px rgba(255,255,255,0.4), 0 0 12px color-mix(in srgb, var(--p1-a) 30%, transparent); animation: c4DropIn 0.28s cubic-bezier(0.25,1.4,0.5,1); }
+        .c4-cell.p2 { background: radial-gradient(circle at 32% 25%, color-mix(in srgb, var(--p2-a) 55%, white), var(--p2-a) 42%, var(--p2-b) 100%); box-shadow: inset 0 2px 4px rgba(255,255,255,0.45), 0 0 12px color-mix(in srgb, var(--p2-a) 28%, transparent); animation: c4DropIn 0.28s cubic-bezier(0.25,1.4,0.5,1); }
         .c4-cell.p1::before, .c4-cell.p2::before {
           content: ''; position: absolute; top: 14%; left: 18%; width: 38%; height: 38%; border-radius: 50%;
           background: radial-gradient(circle, rgba(255,255,255,0.95), transparent 70%); filter: blur(4px); pointer-events: none;
         }
-        .c4-cell.win { animation: c4WinBurst 0.6s ease-out forwards, c4WinPulse 1s 0.6s ease-in-out infinite; }
+        .c4-cell.win { animation: c4WinBurst 0.45s ease-out forwards, c4WinPulse 0.45s 0.45s ease-in-out 1; }
         .c4-board-frame.over .c4-cell:not(.p1):not(.p2) { opacity: 0.4; }
         .c4-board-frame.over .c4-col-overlay { pointer-events: none !important; }
 
@@ -758,7 +767,7 @@ export default function Connect4({ onComplete, onHudUpdate }) {
           .c4-side-turn { margin-left: auto; }
         }
         @media (max-width: 520px) {
-          .c4-board-frame { --cell: min(12vw, 52px); }
+          .c4-board-frame { --cell: min(10.5vw, 52px); }
         }
       `}</style>
     </div>

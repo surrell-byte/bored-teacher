@@ -53,4 +53,4 @@
 .quiz-match-card h2 { margin: 12px 0 0; color: #064e2c; font-size: clamp(1.3rem, 3vw, 2rem); font-weight: 900; }
 @keyframes plantFloat { 0%,100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-6px) rotate(1deg); } }
 @keyframes feedbackIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-@media (max-width: 640px) { .quiz-page { min-height: 100%; background-attachment: scroll; } .quiz-question-card { padding: 20px 14px; } .quiz-emoji { width: 118px; height: 118px; font-size: 74px; } }
+@media (max-width: 640px) { .quiz-page { min-height: 100%; background-attachment: scroll; } .quiz-shell { min-width: 0; padding: 16px; } .quiz-shell > .text-center > .grid { grid-template-columns: minmax(0, 1fr); } .game-level-card { width: 100%; min-width: 0; } .quiz-question-card { padding: 20px 14px; } .quiz-emoji { width: 118px; height: 118px; font-size: 74px; } }
