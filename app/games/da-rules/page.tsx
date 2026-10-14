@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { GAME_COVERS, GAME_DESC, GAME_DIFFICULTY, GAME_KEYS, GAME_NAMES, GAME_TAGS } from '@/constants/index';
+import { isPublicGame } from '@/config/game-access';
 
 const QUICK_RULES: Partial<Record<string, string>> = {
   alphabethunt: 'Flip tiles in turns, find your own target, and score points before the other player does.',
@@ -27,7 +28,6 @@ const QUICK_RULES: Partial<Record<string, string>> = {
   animalclass: 'Sort animals into the correct groups and build science and vocabulary knowledge.',
   colourclash: 'Match colours, build patterns, and outsmart the other player with smart choices.',
   colourclash2: 'Use streaks, power tiles, and strategy to beat the other player.',
-  hiddencolours: 'Reveal tiles, find your colour, and use clever moves to win.',
   crimsonduel: 'Compete head-to-head to name colours faster and beat the rival.',
   archersduel: 'Aim, score, and race to 200 points in a classroom archery battle.',
   deepseaReveal: 'Answer vocabulary questions correctly to reveal hidden sea creatures.',
@@ -114,18 +114,23 @@ export default function DaRulesPage() {
   const [category, setCategory] = useState('All');
   const [search, setSearch] = useState('');
 
+  const publicGameKeys = useMemo(
+    () => GAME_KEYS.filter((gameId) => isPublicGame(gameId)),
+    []
+  );
+
   const categories = useMemo(() => {
     const set = new Set(['All']);
-    for (const gameId of GAME_KEYS) {
+    for (const gameId of publicGameKeys) {
       const label = GAME_TAGS[gameId]?.label;
       if (label) set.add(label);
     }
     return [...set].sort();
-  }, []);
+  }, [publicGameKeys]);
 
   const filteredGames = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return GAME_KEYS.filter((gameId) => {
+    return publicGameKeys.filter((gameId) => {
       const label = GAME_TAGS[gameId]?.label || '';
       const name = GAME_NAMES[gameId] || '';
       const desc = GAME_DESC[gameId] || '';
@@ -133,7 +138,7 @@ export default function DaRulesPage() {
       const matchesSearch = !q || name.toLowerCase().includes(q) || desc.toLowerCase().includes(q) || label.toLowerCase().includes(q);
       return matchesCategory && matchesSearch;
     });
-  }, [category, search]);
+  }, [category, publicGameKeys, search]);
 
   return (
     <main style={{ maxWidth: 1400, margin: '0 auto', padding: '32px 20px 64px' }}>

@@ -1,7 +1,6 @@
 export const COMING_SOON_GAME_IDS = new Set([
   'animalAdventureRace',
   'archersduel',
-  'blockfight',
   'bubblepop',
   'crimsonduel',
   'deepseaReveal',
@@ -9,7 +8,6 @@ export const COMING_SOON_GAME_IDS = new Set([
   'feedmonster',
   'fishingnumbers',
   'swampjump',
-  'hiddencolours',
   'lakersracer',
   'monkeytree',
   'monsterbound',
@@ -51,4 +49,8 @@ export const TEACHER_PRO_GAME_IDS = new Set([
 
 export function canAccessGame(gameId: string) {
   return !COMING_SOON_GAME_IDS.has(gameId);
+}
+
+export function isPublicGame(gameId: string) {
+  return canAccessGame(gameId) && !TEACHER_PRO_GAME_IDS.has(gameId);
 }

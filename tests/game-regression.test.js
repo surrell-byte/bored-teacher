@@ -6,6 +6,17 @@ const test = require('node:test');
 const root = process.cwd();
 const read = relativePath => fs.readFileSync(path.join(root, relativePath), 'utf8');
 
+test('Know It All offers optional Chinese translations for all questions', () => {
+  const component = read('games/know-it-all/KnowItAll.jsx');
+  const translations = component.split('const QUESTION_TRANSLATIONS = [')[1].split('\n];')[0];
+
+  assert.equal((translations.match(/\{ question:/g) || []).length, 25);
+  assert.match(component, /const \[translatorMode, setTranslatorMode\] = useState\(false\)/);
+  assert.match(component, /aria-pressed=\{translatorMode\}/);
+  assert.match(component, /QUESTION_TRANSLATIONS\[current\]\.question/);
+  assert.match(component, /QUESTION_TRANSLATIONS\[current\]\.options\[index\]/);
+});
+
 test('Look and Say validates question data and has a visible empty-state guard', () => {
   const component = read('games/look-and-say/LookAndSay.jsx');
   const styles = read('games/look-and-say/LookAndSay.css');

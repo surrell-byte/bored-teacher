@@ -39,9 +39,14 @@ interface AirPuckHud {
   turn: string;
 }
 
+interface BlockFightHud {
+  round: number;
+  wins: [number, number];
+}
+
 const GAMES_WITH_WELCOME = new Set([
-  'airpuck', 'animalAdventureRace', 'connect4', 'farmgame', 'findmyfood', 'flagmaster', 'emojimatch',
-  'finnthefox', 'hiddencolours', 'oceanquest', 'parachutedrop', 'weatherwizard',
+  'airpuck', 'animalAdventureRace', 'blockfight', 'connect4', 'farmgame', 'findmyfood', 'flagmaster', 'emojimatch',
+  'finnthefox', 'oceanquest', 'parachutedrop', 'weatherwizard',
   'phonicsadventure', 'riddlebombs', 'tictacroll', 'tornado', 'wordfusion', 'weatherwizard', 'victoryvet',
   'turbodash',
   'lookandsay',
@@ -64,6 +69,7 @@ export default function GamePage() {
   const [result, setResult]   = useState<GameResult | null>(null);
   const [gameSession, setGameSession] = useState(0);
   const [airPuckHud, setAirPuckHud] = useState<AirPuckHud | null>(null);
+  const [blockFightHud, setBlockFightHud] = useState<BlockFightHud | null>(null);
   // Connect 4 hands its in-match HUD (player badges + reset/home) up here so
   // it can render inside the GameShell navbar instead of the play area.
   const [c4Hud, setC4Hud] = useState<any>(null);
@@ -200,6 +206,7 @@ export default function GamePage() {
   const gameIcon  = gameId === 'fruitwordhunt' ? '' : GAME_ICONS[gameId] ?? '🎮';
   const GameComp  = GAME_COMPONENTS[gameId];
   const isAirPuck = gameId === 'airpuck';
+  const isBlockFight = gameId === 'blockfight';
   const isConnect4 = gameId === 'connect4';
   const isReadingRescue = gameId === 'finnthefox';
   const isTicTacRoll = gameId === 'tictacroll';
@@ -273,6 +280,7 @@ export default function GamePage() {
     setResult(null);
     setC4Hud(null);
     setAirPuckHud(null);
+    setBlockFightHud(null);
     setGameSession(session => session + 1);
   }
 
@@ -282,6 +290,9 @@ export default function GamePage() {
     if (isAirPuck) {
       setAirPuckHud(null);
       window.dispatchEvent(new Event('air-puck:main-menu'));
+    } else if (isBlockFight) {
+      setBlockFightHud(null);
+      window.dispatchEvent(new Event('block-fight:main-menu'));
     } else if (gameId === 'connect4') {
       setShowRouteWelcome(false);
       window.dispatchEvent(new Event('connect4:main-menu'));
@@ -462,6 +473,25 @@ export default function GamePage() {
                 </button>
               </span>
             )}
+            {isBlockFight && blockFightHud && (
+              <>
+                <span className="game-shell-topbar-stats" aria-label="Block Fight card duel score">
+                  <span className="game-shell-topbar-stat"><b>Round {blockFightHud.round}</b></span>
+                  <span className="game-shell-topbar-stat"><b className="bf-p1c">P1 {blockFightHud.wins[0]}</b><span>Wins</span></span>
+                  <span className="game-shell-topbar-stat"><b className="bf-p2c">P2 {blockFightHud.wins[1]}</b><span>Wins</span></span>
+                  <button
+                    className="game-shell-header-action"
+                    type="button"
+                    onClick={() => window.dispatchEvent(new Event('block-fight:restart-duel'))}
+                    aria-label="Restart Block Fight duel"
+                    title="Restart match"
+                    style={{ minHeight: 34, minWidth: 36, width: 36, padding: 5 }}
+                  >
+                    <span aria-hidden="true">↻</span>
+                  </button>
+                </span>
+              </>
+            )}
             {isColourClash && colourClashHud && (
               <span className="game-shell-topbar-stats" aria-label="Colour Tunes game progress" style={{ flexWrap: 'wrap' }}>
                 <span className="game-shell-topbar-stat"><b>Round {colourClashHud.round}</b></span>
@@ -577,7 +607,7 @@ export default function GamePage() {
             {isFlagmaster && <button className="game-shell-header-action" type="button" onClick={() => setFlagDarkMode(value => !value)} aria-label="Toggle Flagmaster theme" title="Toggle Flagmaster theme"><span aria-hidden="true">{flagDarkMode ? '☀️' : '🌙'}</span><span className="game-shell-action-label">{flagDarkMode ? 'Light' : 'Dark'}</span></button>}
           </>
         }
-        stats={isNumberClouds || isAirPuck ? [] : [
+        stats={isNumberClouds || isAirPuck || isBlockFight ? [] : [
           { label: 'Best', value: state.games[gameId]?.highScore ?? 0, icon: '⭐' },
           { label: 'Coins', value: state.coins, icon: '🪙' },
         ]}
@@ -656,7 +686,9 @@ export default function GamePage() {
           ) : (
             <GameComp
               key={gameSession}
-              onComplete={handleComplete}
+              onComplete={isBlockFight
+                ? (gameResult: { score: number; accuracy: number }) => handleComplete(gameResult.score, gameResult.accuracy)
+                : handleComplete}
               profileName={auth?.currentUser ? state.name : ''}
               {...(gameId === 'riddlebombs' ? { onHudUpdate: setRiddleBombsHud } : {})}
               {...(isTicTacRoll ? { themeId: ticTheme.id, onThemeChange: setTicTheme } : {})}
@@ -669,6 +701,7 @@ export default function GamePage() {
               {...(isMathRacing ? { onHudUpdate: setMathRacingHud } : {})}
               {...(isColourClash ? { onHudUpdate: setColourClashHud } : {})}
               {...(isAirPuck ? { onHudUpdate: setAirPuckHud } : {})}
+              {...(isBlockFight ? { onHudUpdate: setBlockFightHud } : {})}
               {...(isAnimalClass ? { onHudUpdate: setAnimalClassHud } : {})}
               {...(isFlagmaster ? { darkMode: flagDarkMode, isCreator } : {})}
               {...(isZooGame ? { themeId: zooTheme } : {})}

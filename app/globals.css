@@ -2428,6 +2428,80 @@ a { color: inherit; }
   contain: layout style;
 }
 
+.games-rulebook-link {
+  display: block;
+  width: 100%;
+}
+
+.games-rulebook-card {
+  display: grid;
+  grid-template-columns: minmax(180px, 240px) minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: center;
+  background: linear-gradient(135deg, rgba(255,255,255,0.09), rgba(59,130,246,0.12));
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 20px;
+  padding: 18px;
+  box-shadow: 0 20px 40px rgba(15,23,42,0.18);
+}
+
+.games-rulebook-visual {
+  width: 100%;
+  height: 120px;
+  border-radius: 16px;
+  background-image: url('/assets/covers/quiz-trail-cover.webp');
+  background-size: cover;
+  background-position: center;
+  border: 1px solid rgba(255,255,255,0.18);
+}
+
+.games-rulebook-meta {
+  min-width: 0;
+}
+
+.games-rulebook-kicker {
+  font-size: 12px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.games-rulebook-title {
+  margin: 0;
+  font-size: clamp(1.4rem, 2vw, 2rem);
+  color: var(--text);
+}
+
+.games-rulebook-copy {
+  margin: 8px 0 0;
+  color: var(--muted);
+  line-height: 1.5;
+  min-width: 0;
+}
+
+.games-rulebook-button {
+  justify-self: end;
+}
+
+@media (max-width: 640px) {
+  .games-rulebook-card {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 16px;
+  }
+
+  .games-rulebook-visual {
+    height: 140px;
+  }
+
+  .games-rulebook-button {
+    justify-self: stretch;
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 .games-view-toggle {
   display: inline-flex;
   align-items: center;
@@ -5046,4 +5120,19 @@ a { color: inherit; }
   .plant-quiz-route-title { font-size: clamp(1.5rem, 7vw, 2.2rem) !important; }
   .plant-quiz-route-levels { grid-template-columns: minmax(0, 1fr) !important; gap: 12px !important; }
   .plant-quiz-route-level { min-width: 0; }
+}
+
+@media (max-width: 760px) {
+  .game-shell--blockfight .game-header-default { flex-wrap: wrap; }
+  .game-shell--blockfight .game-header-title { flex: 0 0 100%; width: 100%; }
+  .game-shell--blockfight .game-header-actions { width: 100%; justify-content: flex-start; }
+  .game-shell--blockfight .game-header-actions .game-shell-topbar-stats {
+    flex: 1 1 auto;
+    max-width: calc(100% - 50px);
+    overflow: visible;
+  }
+  .game-shell--blockfight .game-header-actions .game-shell-topbar-stat {
+    min-height: 34px;
+    padding: 4px 8px;
+  }
 }
