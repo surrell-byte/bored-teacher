@@ -387,13 +387,15 @@ const FarmGameV1_CSS = `.farmgamev1-root, .farmgamev1-root * {
       .farmgamev1-root .message { font-size: 0.8rem; padding: 6px; }
     }`;
 
-export default function FarmGameV1({ onComplete }) {
+export default function FarmGameV1({ onComplete, profileName = '' }) {
   const containerRef = useRef(null);
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
     window.__farmGameComplete = onComplete;
+    const nameInput = container.querySelector('#playerName');
+    if (nameInput && profileName) nameInput.value = profileName;
 
     // Run the original game script in this component's DOM scope.
     // Wrapped in a function so its top-level `const`/`let` declarations
@@ -741,7 +743,7 @@ export default function FarmGameV1({ onComplete }) {
       document.head.querySelectorAll('style[data-farmgamev1-shake="true"]').forEach(el => el.remove());
       delete window.__farmGameComplete;
     };
-  }, [onComplete]);
+  }, [onComplete, profileName]);
 
   return (
     <>

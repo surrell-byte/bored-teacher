@@ -268,11 +268,11 @@ function HowToPlay({ onClose }) {
   );
 }
 
-export default function MoneyBlocks({ themeId = "black" }) {
+export default function MoneyBlocks({ themeId = "black", profileName = '' }) {
   const [theme, setTheme] = useState(themeId || "black");
   const [screen, setScreen] = useState("welcome");
   const [showHowTo, setShowHowTo] = useState(false);
-  const [playerNames, setPlayerNames] = useState({ 1: "", 2: "" });
+  const [playerNames, setPlayerNames] = useState({ 1: profileName, 2: "" });
   const [playerAvatars, setPlayerAvatars] = useState({ 1: AVATARS[0], 2: AVATARS[1] });
   const [players, setPlayers] = useState({
     1: { money: 100000, shields: 0 },

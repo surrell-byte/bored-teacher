@@ -330,11 +330,11 @@ select.fm-field-input { cursor:pointer; }
 
 const Style = () => <style>{THEME_CSS}</style>;
 
-export default function Flagmaster({ onComplete, darkMode = false, isCreator = false }) {
+export default function Flagmaster({ onComplete, darkMode = false, isCreator = false, profileName = '' }) {
   const [screen, setScreen] = useState("welcome"); // welcome | title | worldMap | levelSelect | game
 
   // Passport
-  const [nameInput, setNameInput] = useState("");
+  const [nameInput, setNameInput] = useState(profileName);
   const [ageInput, setAgeInput] = useState("");
   const [countryCode, setCountryCode] = useState("");
   const [shakeField, setShakeField] = useState(null); // 'name' | 'age' | 'country'
@@ -372,8 +372,10 @@ export default function Flagmaster({ onComplete, darkMode = false, isCreator = f
   useEffect(() => {
     if (profile) {
       setNameInput(profile.name); setAgeInput(String(profile.age)); setCountryCode(profile.country);
+    } else if (profileName) {
+      setNameInput(current => current || profileName);
     }
-  }, [profile]);
+  }, [profile, profileName]);
 
   // Unmount cleanup for the pending "advance to next question" timeout.
   useEffect(() => {

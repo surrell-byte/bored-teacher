@@ -175,7 +175,7 @@ function SidePanel({ name, avatar, theme, score, active, side }) {
   );
 }
 
-export default function Connect4({ onComplete, onHudUpdate }) {
+export default function Connect4({ onComplete, onHudUpdate, profileName = '' }) {
   const { completeGame } = useGame();
   const [screen, setScreen] = useState("welcome"); // welcome | players | setup | game | celeb
   const [mode, setMode] = useState("pvp");
@@ -184,7 +184,7 @@ export default function Connect4({ onComplete, onHudUpdate }) {
   const [p2Theme, setP2Theme] = useState("amber");
   const [p1Avatar, setP1Avatar] = useState(AVATARS[0]);
   const [p2Avatar, setP2Avatar] = useState(AVATARS[1]);
-  const [p1Name, setP1Name] = useState("Crimson");
+  const [p1Name, setP1Name] = useState(profileName || "Crimson");
   const [p2Name, setP2Name] = useState("Amber");
 
   const [board, setBoard] = useState(emptyBoard());

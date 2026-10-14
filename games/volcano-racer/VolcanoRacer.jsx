@@ -45,10 +45,10 @@ function Track({ players }) {
   );
 }
 
-export default function VolcanoRacer({ onComplete }) {
+export default function VolcanoRacer({ onComplete, profileName = '' }) {
   const [screen, setScreen] = useState('welcome');
   const [mode, setMode] = useState('solo');
-  const [names, setNames] = useState(['', '']);
+  const [names, setNames] = useState([profileName, '']);
   const [selectedCars, setSelectedCars] = useState([CARS[0], CARS[1]]);
   const [players, setPlayers] = useState([]);
   const [current, setCurrent] = useState(0);
@@ -159,7 +159,7 @@ export default function VolcanoRacer({ onComplete }) {
   function reset() {
     setScreen('welcome');
     setPlayers([]);
-    setNames(['', '']);
+    setNames([profileName, '']);
     setBusy(false);
     setWinner(null);
   }

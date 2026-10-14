@@ -118,7 +118,7 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     name: "Know It All",
     icon: "🧠",
     desc: "Answer 25 curiosity-packed multiple-choice questions across animals, space, science, geography, and history.",
-    cover: "/assets/covers/general-knowledge-quiz-cover.webp",
+    cover: "/assets/covers/know-it-all-cover.webp",
     tag: { label: "General Knowledge", color: "tag-bio" },
     badge: "25 Facts",
     difficulty: "Mixed Skills",
@@ -268,7 +268,7 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     name: "Colour Tunes",
     icon: "🎵",
     desc: "Listen to colour sequences, repeat the pattern, and build memory and reaction speed.",
-    cover: "/assets/covers/colour-clash-cover.webp",
+    cover: "/assets/covers/colour-tunes-cover.webp",
     tag: { label: "Vocabulary", color: "tag-vocab" },
     badge: "Colours",
     difficulty: "Starter",
@@ -1038,7 +1038,12 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
 export const GAME_KEYS = Object.keys(GAME_CATALOG);
 export type GameKey = string;
 export const GAME_ORDER = [...GAME_KEYS];
-export const NEW_GAME_KEYS = GAME_KEYS.filter((id) => GAME_CATALOG[id].isNew);
+// Append newly added catalog entries so insertion order records their age.
+export const NEW_GAME_KEYS = GAME_KEYS.filter((id) => GAME_CATALOG[id].isNew).reverse();
+export function getLatestGameKeys(availableGameIds: readonly string[] = GAME_KEYS) {
+  const available = new Set(availableGameIds);
+  return GAME_KEYS.filter((id) => available.has(id)).slice(-4).reverse();
+}
 
 // Derived flat lookups — kept so existing imports (GAME_NAMES, GAME_ICONS, etc.)
 // don't need to change everywhere at once. These are 100% generated from

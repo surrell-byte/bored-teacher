@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { isCreatorUser, onAuthStateChanged } from '@/lib/firebase';
 import { useGame } from '@/providers/GameProvider';
 import {
-  FEATURED_GAME_IDS, GAME_KEYS, NEW_GAME_KEYS, GAME_NAMES, GAME_TAGS,
+  FEATURED_GAME_IDS, GAME_KEYS, NEW_GAME_KEYS, getLatestGameKeys, GAME_NAMES, GAME_TAGS,
   GAME_DIFFICULTY, GAME_DESC,
 } from '@/constants/index';
 import GameCard from '@/components/cards/GameCard';
@@ -44,6 +44,10 @@ export default function GamesPage() {
   const [viewMode, setViewMode] = useState<'alpha' | 'category'>('alpha');
   const [showManage, setShowManage] = useState(false);
   const [isCreator, setIsCreator] = useState(false);
+  const availableGameIds = useMemo(
+    () => GAME_KEYS.filter(gameId => isCreator || !COMING_SOON_GAME_IDS.has(gameId)),
+    [isCreator],
+  );
 
   useEffect(() => {
     const isGuest = localStorage.getItem('guestUser') === 'true';
@@ -63,7 +67,7 @@ export default function GamesPage() {
 
   const filteredGames = useMemo(() => {
     const q = search.toLowerCase().trim();
-    let games = [...GAME_KEYS].filter(gameId => isCreator || !COMING_SOON_GAME_IDS.has(gameId));
+    let games = [...availableGameIds];
     if (playedOnly) games = games.filter(k => (state.games[k]?.completions ?? 0) > 0);
     if (category !== 'All Categories') games = games.filter(k => GAME_TAGS[k]?.label === category);
     if (difficulty !== 'All Difficulties') games = games.filter(k => GAME_DIFFICULTY[k] === difficulty);
@@ -76,14 +80,14 @@ export default function GamesPage() {
       });
     }
     if (sort === 'newest') {
-      const newSet = new Set(NEW_GAME_KEYS as readonly string[]);
-      games.sort((a, b) => Number(newSet.has(b)) - Number(newSet.has(a)));
+      const newOrder = new Map([...GAME_KEYS].reverse().map((id, index) => [id, index]));
+      games.sort((a, b) => (newOrder.get(a) ?? Number.MAX_SAFE_INTEGER) - (newOrder.get(b) ?? Number.MAX_SAFE_INTEGER));
     }
     if (sort === 'score')  games.sort((a, b) => (state.games[b]?.highScore ?? 0) - (state.games[a]?.highScore ?? 0));
     if (sort === 'played') games.sort((a, b) => (state.games[b]?.completions ?? 0) - (state.games[a]?.completions ?? 0));
     if (sort === 'alpha')  games.sort((a, b) => (GAME_NAMES[a] ?? '').localeCompare(GAME_NAMES[b] ?? ''));
     return games;
-  }, [search, category, difficulty, sort, playedOnly, state.games, isCreator]);
+  }, [search, category, difficulty, sort, playedOnly, state.games, availableGameIds]);
 
   const totalPlayed = GAME_KEYS.filter(k => (state.games[k]?.completions ?? 0) > 0).length;
   const totalScore  = Object.values(state.games).reduce((a, g) => a + (g.highScore ?? 0), 0);
@@ -96,6 +100,7 @@ export default function GamesPage() {
   }, [likelyNextGame, router]);
 
   const hasActiveFilters = category !== 'All Categories' || difficulty !== 'All Difficulties' || !!search || playedOnly;
+  const advertisedNewGames = getLatestGameKeys(availableGameIds);
 
   const alphabeticalGroups = useMemo(() => {
     if (sort !== 'alpha') return [] as Array<[string, string[]]>;
@@ -205,6 +210,15 @@ export default function GamesPage() {
           </div>
         </section>
       )}
+
+      <section className="hub-section" aria-labelledby="games-latest-heading">
+        <h2 className="hub-section-title" id="games-latest-heading">🆕 New Games</h2>
+        <div className="hub-featured-grid">
+          {advertisedNewGames.map(gameId => (
+            <GameCard key={gameId} gameId={gameId} onClick={handlePlay} />
+          ))}
+        </div>
+      </section>
 
       {/* ── All Games ────────────────────────────────────────── */}
       <section className="hub-section">

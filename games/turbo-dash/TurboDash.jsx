@@ -55,9 +55,9 @@ function PlayerCard({ player, index, active }) {
   );
 }
 
-export default function TurboDash({ onComplete }) {
+export default function TurboDash({ onComplete, profileName = '' }) {
   const [screen, setScreen] = useState('title');
-  const [names, setNames] = useState(['', '']);
+  const [names, setNames] = useState([profileName, '']);
   const [players, setPlayers] = useState([
     { name: 'P1', avatar: AVATARS[0], position: 0, status: '' },
     { name: 'P2', avatar: AVATARS[1], position: 0, status: '' },
@@ -158,7 +158,7 @@ export default function TurboDash({ onComplete }) {
     setWinner(null);
     setRolling(false);
     setScreen('title');
-    setNames(['', '']);
+    setNames([profileName, '']);
     setMoveMode('dice');
     setPlayers((previous) => previous.map((player, index) => ({ ...player, name: `P${index + 1}`, position: 0, status: '' })));
   }

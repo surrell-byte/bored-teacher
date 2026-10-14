@@ -161,7 +161,7 @@ const FX_STYLE = `
 .tb-floating-number.heal { color:#22C55E; }
 `;
 
-export default function TileBattle({ onComplete, themeId }) {
+export default function TileBattle({ onComplete, themeId, profileName = '' }) {
   const { completeGame } = useGame();
 
   const [screen, setScreen] = useState("setup"); // setup | howto | game | end
@@ -170,7 +170,7 @@ export default function TileBattle({ onComplete, themeId }) {
   const themeKey = themeId && THEMES[themeId] ? themeId : localThemeKey;
   const t = THEMES[themeKey];
 
-  const [names, setNames] = useState(["Player 1", "Player 2"]);
+  const [names, setNames] = useState([profileName || "Player 1", "Player 2"]);
   const [avatars, setAvatars] = useState(["🧙", "🧝"]);
   const [colors, setColors] = useState([COLORS[0].v, COLORS[2].v]);
 

@@ -7,6 +7,12 @@ import GameHeader from './GameHeader';
 import { type GameStat } from './GameSidebar';
 import ErrorBoundary from '@/engine/errors/ErrorBoundary';
 import { isSoundEnabled, setSoundEnabled } from '@/lib/sound/beep';
+import {
+  getGameHelpTranslation,
+  GameTranslationProvider,
+  translateGameShellText,
+  type GameHelpLanguage,
+} from './GameTranslationContext';
 
 export type GameSessionEvent = 'started' | 'paused' | 'resumed' | 'completed' | 'exited' | 'restarted';
 
@@ -29,6 +35,8 @@ export interface GameShellProps {
   controls?: ReactNode;
   /** Extra buttons rendered inline in the top bar, alongside stats/Pause/Full screen/Exit. */
   headerExtra?: ReactNode;
+  /** Controls also available from the compact mobile game menu. */
+  mobileMenuExtra?: ReactNode;
   themeOptions?: GameThemeOption[];
   themeValue?: string;
   onThemeChange?: (themeId: string) => void;
@@ -59,7 +67,7 @@ export interface GameShellProps {
  * while each game remains responsible only for its own mechanics and UI.
  */
 export default function GameShell({
-  gameId, title, icon, stats, controls, headerExtra, children, sessionKey = 0,
+  gameId, title, icon, stats, controls, headerExtra, mobileMenuExtra, children, sessionKey = 0,
   completion, onContinue, onRestart, onMainMenu, onSessionEvent, themeVars, hidePauseControl = false, hideExitControl = false, hideMainMenuButton = false, hideHeader = false,
   themeOptions, themeValue, onThemeChange,
 }: GameShellProps) {
@@ -68,7 +76,30 @@ export default function GameShell({
   const [soundOn, setSoundOn] = useState(true);
   const [showExitNotice, setShowExitNotice] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [helpLanguage, setHelpLanguage] = useState<GameHelpLanguage>('off');
   const shellRef = useRef<HTMLDivElement>(null);
+  const shellText = (text: string) => translateGameShellText(text, helpLanguage);
+  const shellLabel = (english: string) => {
+    const translation = getGameHelpTranslation(english, helpLanguage);
+    return (
+      <>
+        <span>{english}</span>
+        {translation && (
+          <small
+            className="game-shell-help-translation"
+            lang={helpLanguage}
+            style={{ display: 'block', fontSize: '0.62rem', fontWeight: 700, lineHeight: 1.1 }}
+          >
+            {translation}
+          </small>
+        )}
+      </>
+    );
+  };
+  const shellOption = (english: string) => {
+    const translation = getGameHelpTranslation(english, helpLanguage);
+    return translation ? `${english} / ${translation}` : english;
+  };
 
   const emit = useCallback((event: GameSessionEvent) => {
     onSessionEvent?.(event);
@@ -86,6 +117,18 @@ export default function GameShell({
 
   useEffect(() => {
     setSoundOn(isSoundEnabled());
+  }, []);
+
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('gameHelpLanguage');
+    if (savedLanguage === 'off' || savedLanguage === 'zh-CN' || savedLanguage === 'th') {
+      setHelpLanguage(savedLanguage);
+    }
+  }, []);
+
+  const changeHelpLanguage = useCallback((language: GameHelpLanguage) => {
+    setHelpLanguage(language);
+    localStorage.setItem('gameHelpLanguage', language);
   }, []);
 
   useEffect(() => {
@@ -164,6 +207,7 @@ export default function GameShell({
         background: themeVars.background,
       } as React.CSSProperties : undefined}
     >
+      <GameTranslationProvider value={{ language: helpLanguage, setLanguage: changeHelpLanguage }}>
       <GameLayout
         header={!hideHeader && (
           <>
@@ -196,29 +240,46 @@ export default function GameShell({
                       </select>
                     </label>
                   )}
+                  <label className="game-shell-header-action game-shell-mobile-secondary game-shell-help-language" style={{ gap: 6 }}>
+                    <span aria-hidden="true">🌐</span>
+                    <span className="game-shell-action-label">{shellLabel('Help')}</span>
+                    <select
+                      value={helpLanguage}
+                      onChange={event => {
+                        const language = event.target.value;
+                        if (language === 'off' || language === 'zh-CN' || language === 'th') changeHelpLanguage(language);
+                      }}
+                      aria-label={shellText('Choose game help language')}
+                      style={{ border: 0, background: 'transparent', color: 'inherit', font: 'inherit', fontWeight: 800, outline: 0, cursor: 'pointer' }}
+                    >
+                      <option value="off">{shellOption('Off')}</option>
+                      <option value="zh-CN">{shellOption('Chinese 🇨🇳')}</option>
+                      <option value="th">{shellOption('Thai 🇹🇭')}</option>
+                    </select>
+                  </label>
                   {headerExtra}
                   <button
                     type="button"
                     className="game-shell-header-action game-shell-mobile-secondary"
                     onClick={() => setSoundOn(value => !value)}
-                    aria-label={soundOn ? 'Mute sound' : 'Enable sound'}
-                    title={soundOn ? 'Mute sound' : 'Enable sound'}
+                    aria-label={shellText(soundOn ? 'Mute sound' : 'Enable sound')}
+                    title={shellText(soundOn ? 'Mute sound' : 'Enable sound')}
                   >
                     <span aria-hidden="true">{soundOn ? '🔊' : '🔇'}</span>
-                    <span className="game-shell-action-label">{soundOn ? 'Sound' : 'Sound off'}</span>
+                    <span className="game-shell-action-label">{shellLabel(soundOn ? 'Sound' : 'Sound off')}</span>
                   </button>
-                  {!hidePauseControl && <button type="button" className="game-shell-header-action game-shell-mobile-secondary" onClick={paused ? resume : pause} aria-pressed={paused} aria-label={paused ? 'Resume game' : 'Pause game'} title={paused ? 'Resume game' : 'Pause game'}>
+                  {!hidePauseControl && <button type="button" className="game-shell-header-action game-shell-mobile-secondary" onClick={paused ? resume : pause} aria-pressed={paused} aria-label={shellText(paused ? 'Resume game' : 'Pause game')} title={shellText(paused ? 'Resume game' : 'Pause game')}>
                     <span aria-hidden="true">{paused ? '▶' : '⏸'}</span>
-                    <span className="game-shell-action-label">{paused ? 'Resume' : 'Pause'}</span>
+                    <span className="game-shell-action-label">{shellLabel(paused ? 'Resume' : 'Pause')}</span>
                   </button>}
-                  <button type="button" className="game-shell-header-action game-shell-mobile-secondary" onClick={toggleFullscreen} aria-label={isFullscreen ? 'Exit full screen' : 'Enter full screen'} title={isFullscreen ? 'Exit full screen' : 'Enter full screen'}>
+                  <button type="button" className="game-shell-header-action game-shell-mobile-secondary" onClick={toggleFullscreen} aria-label={shellText(isFullscreen ? 'Exit full screen' : 'Full screen')} title={shellText(isFullscreen ? 'Exit full screen' : 'Full screen')}>
                     <span aria-hidden="true">⛶</span>
-                    <span className="game-shell-action-label">{isFullscreen ? 'Exit full screen' : 'Full screen'}</span>
+                    <span className="game-shell-action-label">{shellLabel(isFullscreen ? 'Exit full screen' : 'Full screen')}</span>
                   </button>
                   {!hideMainMenuButton && onMainMenu && (
-                    <button type="button" className="game-shell-header-action game-shell-mobile-secondary" onClick={onMainMenu} aria-label="Main menu" title="Main menu">
+                    <button type="button" className="game-shell-header-action game-shell-mobile-secondary" onClick={onMainMenu} aria-label={shellText('Main menu')} title={shellText('Main menu')}>
                       <span aria-hidden="true">⌂</span>
-                      <span className="game-shell-action-label">Main menu</span>
+                      <span className="game-shell-action-label">{shellLabel('Main menu')}</span>
                     </button>
                   )}
                   {!hideExitControl && (
@@ -226,11 +287,11 @@ export default function GameShell({
                       type="button"
                       className="game-shell-header-action game-shell-mobile-secondary"
                       onClick={() => setShowExitNotice(true)}
-                      aria-label="Exit game"
-                      title="Exit game"
+                      aria-label={shellText('Exit game')}
+                      title={shellText('Exit game')}
                     >
                       <span aria-hidden="true">✕</span>
-                      <span className="game-shell-action-label">Exit</span>
+                      <span className="game-shell-action-label">{shellLabel('Exit')}</span>
                     </button>
                   )}
                   <div className="game-shell-mobile-menu-wrap">
@@ -238,7 +299,7 @@ export default function GameShell({
                       type="button"
                       className="game-shell-header-action game-shell-mobile-menu-toggle"
                       onClick={() => setMobileMenuOpen(open => !open)}
-                      aria-label="Game menu"
+                      aria-label={shellText('Game menu')}
                       aria-expanded={mobileMenuOpen}
                       title="Game menu"
                     >
@@ -246,33 +307,50 @@ export default function GameShell({
                     </button>
                     {mobileMenuOpen && (
                       <div className="game-shell-mobile-menu" role="menu">
+                        {mobileMenuExtra}
+                        <label className="game-shell-mobile-menu-theme">
+                          <span aria-hidden="true">🌐</span>
+                          <span>{shellText('Help language')}</span>
+                          <select
+                            value={helpLanguage}
+                            onChange={event => {
+                              const language = event.target.value;
+                              if (language === 'off' || language === 'zh-CN' || language === 'th') changeHelpLanguage(language);
+                            }}
+                            aria-label={shellText('Choose game help language')}
+                          >
+                            <option value="off">{shellOption('Off')}</option>
+                            <option value="zh-CN">{shellOption('Chinese 🇨🇳')}</option>
+                            <option value="th">{shellOption('Thai 🇹🇭')}</option>
+                          </select>
+                        </label>
                         {themeOptions && themeValue && onThemeChange && <label className="game-shell-mobile-menu-theme">
                           <span aria-hidden="true">🎨</span>
-                          <span>Theme</span>
+                          <span>{shellText('Theme')}</span>
                           <select value={themeValue} onChange={event => onThemeChange(event.target.value)} aria-label={`Choose ${title} theme`}>
                             {themeOptions.map(theme => <option key={theme.id} value={theme.id}>{theme.name}</option>)}
                           </select>
                         </label>}
                         <button type="button" role="menuitem" onClick={() => setSoundOn(value => !value)}>
                           <span aria-hidden="true">{soundOn ? '🔊' : '🔇'}</span>
-                          <span>Sound</span>
-                          <small>{soundOn ? 'On' : 'Off'}</small>
+                          <span>{shellLabel('Sound')}</span>
+                          <small>{shellLabel(soundOn ? 'On' : 'Off')}</small>
                         </button>
                         {!hidePauseControl && <button type="button" role="menuitem" onClick={() => { setMobileMenuOpen(false); paused ? resume() : pause(); }}>
                           <span aria-hidden="true">{paused ? '▶' : '⏸'}</span>
-                          <span>{paused ? 'Resume' : 'Pause'}</span>
+                          <span>{shellLabel(paused ? 'Resume' : 'Pause')}</span>
                         </button>}
                         <button type="button" role="menuitem" onClick={() => { setMobileMenuOpen(false); void toggleFullscreen(); }}>
                           <span aria-hidden="true">⛶</span>
-                          <span>{isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}</span>
+                          <span>{shellLabel(isFullscreen ? 'Exit fullscreen' : 'Fullscreen')}</span>
                         </button>
                         {onMainMenu && !hideMainMenuButton && <button type="button" role="menuitem" onClick={() => { setMobileMenuOpen(false); onMainMenu(); }}>
                           <span aria-hidden="true">⌂</span>
-                          <span>Main menu</span>
+                          <span>{shellLabel('Main menu')}</span>
                         </button>}
                         {!hideExitControl && <button type="button" role="menuitem" className="danger" onClick={() => { setMobileMenuOpen(false); setShowExitNotice(true); }}>
                           <span aria-hidden="true">✕</span>
-                          <span>Exit game</span>
+                          <span>{shellLabel('Exit game')}</span>
                         </button>}
                       </div>
                     )}
@@ -295,11 +373,11 @@ export default function GameShell({
               <section className="game-shell-overlay" role="dialog" aria-modal="true" aria-labelledby="game-paused-title">
                 <div className="game-shell-overlay-card">
                   <span aria-hidden="true" className="game-shell-overlay-icon">⏸</span>
-                  <h2 id="game-paused-title">Game paused</h2>
-                  <p>Your progress in this round is still here.</p>
+                  <h2 id="game-paused-title">{shellLabel('Game paused')}</h2>
+                  <p>{shellLabel('Your progress in this round is still here.')}</p>
                   <div className="game-shell-overlay-actions">
-                    <button type="button" className="game-shell-primary-action" onClick={resume}>Resume game</button>
-                    <button type="button" className="game-shell-secondary-action" onClick={restart}>Restart round</button>
+                    <button type="button" className="game-shell-primary-action" onClick={resume}>{shellLabel('Resume game')}</button>
+                    <button type="button" className="game-shell-secondary-action" onClick={restart}>{shellLabel('Restart round')}</button>
                   </div>
                 </div>
               </section>
@@ -308,11 +386,11 @@ export default function GameShell({
               <section className="game-shell-overlay game-shell-exit-notice" role="dialog" aria-modal="true" aria-labelledby="game-exit-title">
                 <div className="game-shell-overlay-card">
                   <span aria-hidden="true" className="game-shell-overlay-icon">🚪</span>
-                  <h2 id="game-exit-title">Leave this game?</h2>
-                  <p>Your current round will end and you will return to the games list.</p>
+                  <h2 id="game-exit-title">{shellLabel('Leave this game?')}</h2>
+                  <p>{shellLabel('Your current round will end and you will return to the games list.')}</p>
                   <div className="game-shell-overlay-actions">
-                    <button type="button" className="game-shell-primary-action" onClick={() => window.location.assign('/games')}>Leave game</button>
-                    <button type="button" className="game-shell-secondary-action" onClick={() => setShowExitNotice(false)}>Keep playing</button>
+                    <button type="button" className="game-shell-primary-action" onClick={() => window.location.assign('/games')}>{shellLabel('Leave game')}</button>
+                    <button type="button" className="game-shell-secondary-action" onClick={() => setShowExitNotice(false)}>{shellLabel('Keep playing')}</button>
                   </div>
                 </div>
               </section>
@@ -320,6 +398,7 @@ export default function GameShell({
           </div>
         </ErrorBoundary>
       </GameLayout>
+      </GameTranslationProvider>
     </div>
   );
 }

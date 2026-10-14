@@ -11,6 +11,7 @@ export {
   GAME_KEYS,
   GAME_ORDER,
   NEW_GAME_KEYS,
+  getLatestGameKeys,
   GAME_NAMES,
   GAME_ICONS,
   GAME_DESC,
@@ -32,6 +33,7 @@ export const FEATURED_GAME_IDS = [
   'zoogame',
   'tictacroll',
   'connect4',
+  'knowitall',
 ] as const;
 
 // ── Non-game constants (unrelated to the registry, stay here) ──

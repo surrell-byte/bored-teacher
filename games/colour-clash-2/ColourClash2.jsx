@@ -205,10 +205,10 @@ const sfxStar = () => { beep(880, 0.1, "triangle", 0.07); T(() => beep(1100, 0.1
 const sfxPeek = () => { beep(1200, 0.06, "sine", 0.05); T(() => beep(900, 0.08, "sine", 0.04), 80); };
 const sfxVictory = () => [523, 659, 784, 1047].forEach((f, i) => T(() => beep(f, 0.18, "triangle", 0.09), i * 160));
 
-export default function ColourClash2() {
+export default function ColourClash2({ profileName = '' }) {
   const [screen, setScreen] = useState("welcome");
   const [theme, setTheme] = useState("yellow");
-  const [form, setForm] = useState({ n1: "", n2: "", a1: AV1[0], a2: AV2[0], c1: "#FF0000", c2: "#0000FF" });
+  const [form, setForm] = useState({ n1: profileName, n2: "", a1: AV1[0], a2: AV2[0], c1: "#FF0000", c2: "#0000FF" });
   const [warn, setWarn] = useState(false);
   const [banner, setBanner] = useState(null);
   const [winner, setWinner] = useState(null);
@@ -234,7 +234,7 @@ export default function ColourClash2() {
   const playAgain = () => {
     clearTimers();
     G.current = blankGame();
-    setForm({ n1: "", n2: "", a1: AV1[0], a2: AV2[0], c1: "#FF0000", c2: "#0000FF" });
+    setForm({ n1: profileName, n2: "", a1: AV1[0], a2: AV2[0], c1: "#FF0000", c2: "#0000FF" });
     setBanner(null); setWinner(null); setConfetti([]); setWarn(false);
     setScreen("welcome");
   };

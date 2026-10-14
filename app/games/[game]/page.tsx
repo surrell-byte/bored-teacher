@@ -107,6 +107,7 @@ export default function GamePage() {
       alphabethunt: ['/assets/games/alphabet-hunt/alphabet-hunt-general-phone-bg.webp'],
       buildtower: ['/assets/games/build-the-tower/build-the-tower-welcome-screen.png', '/assets/games/build-the-tower/build-the-tower-floating-islands-bg.png', '/assets/games/build-the-tower/build-the-tower-jungle-bg.png', '/assets/games/build-the-tower/build-the-tower-game-bg.png'],
       connect4: ['/assets/games/connect-4/connect-4-welcome.webp', '/assets/games/connect-4/connect-4-welcome-phone-bg.webp', '/assets/games/connect-4/connect-4-general-phone-bg.webp', '/assets/games/connect-4/connect-4-main-menu.webp', '/assets/games/connect-4/connect-4-user-input.webp', '/assets/games/connect-4/connect-4-game-screen.webp'],
+      colourclash: ['/assets/games/colour-clash/colour-tunes-welcome-bg.webp', '/assets/games/colour-clash/colour-tunes-general-bg.webp'],
       colourclash2: ['/assets/games/colour-clash-2/colour-clash-2-welcome-bg.webp', '/assets/games/colour-clash-2/colour-clash-2-welcome-phone-bg.webp', '/assets/games/colour-clash-2/colour-clash-2-general-phone-bg.webp', '/assets/games/colour-clash-2/colour-clash-2-main-menu-bg.webp', '/assets/games/colour-clash-2/colour-clash-2-user-input-bg.webp', '/assets/games/colour-clash-2/colour-clash-2-game-screen-bg.webp'],
       emojisportsquiz: ['/assets/games/sports-quiz/sports-quiz-welcome-bg.webp', '/assets/games/sports-quiz/sports-quiz-welcome-phone-bg.webp', '/assets/games/sports-quiz/vocab-game-bg.png', '/assets/games/sports-quiz/spelling-game-bg.png', '/assets/games/sports-quiz/sentence-game-bg.png'],
       familyquest: ['/assets/games/family-quest/family-quest-general-phone-bg.webp'],
@@ -205,6 +206,10 @@ export default function GamePage() {
   const gameName  = GAME_NAMES[gameId] ?? 'Game';
   const gameIcon  = gameId === 'fruitwordhunt' ? '' : GAME_ICONS[gameId] ?? '🎮';
   const GameComp  = GAME_COMPONENTS[gameId];
+  const isKnowItAll = gameId === 'knowitall';
+  const profileName = auth?.currentUser
+    ? (state.name.trim() && state.name !== 'Explorer' ? state.name.trim() : auth.currentUser.displayName?.trim() ?? '')
+    : '';
   const isAirPuck = gameId === 'airpuck';
   const isBlockFight = gameId === 'blockfight';
   const isConnect4 = gameId === 'connect4';
@@ -664,17 +669,41 @@ export default function GamePage() {
                 </div>
               </section>
             ) : (
-              <section className="route-game-welcome" aria-labelledby="route-game-welcome-title">
-                <div className="route-game-welcome-card">
-                  <div className="route-game-welcome-icon" aria-hidden="true">{gameIcon}</div>
-                  <p className="route-game-welcome-kicker">Welcome to</p>
-                  <h1 id="route-game-welcome-title">{gameName}</h1>
-                  <p>Get ready to play, learn, and build your best score.</p>
-                  <button type="button" className="game-shell-primary-action" onClick={() => setShowRouteWelcome(false)}>
+              isKnowItAll ? (
+                <section className="route-game-welcome know-it-all-route-welcome" aria-label="Know It All welcome screen">
+                  <button
+                    type="button"
+                    className="know-it-all-welcome-start"
+                    onClick={() => setShowRouteWelcome(false)}
+                    aria-label="Start Know It All"
+                  >
                     Start Game
                   </button>
-                </div>
-              </section>
+                </section>
+              ) : isColourClash ? (
+                <section className="route-game-welcome colour-tunes-route-welcome" aria-label="Colour Tunes welcome screen">
+                  <button
+                    type="button"
+                    className="colour-tunes-welcome-start"
+                    onClick={() => setShowRouteWelcome(false)}
+                    aria-label="Start Colour Tunes"
+                  >
+                    Start Colour Tunes
+                  </button>
+                </section>
+              ) : (
+                <section className="route-game-welcome" aria-labelledby="route-game-welcome-title">
+                  <div className="route-game-welcome-card">
+                    <div className="route-game-welcome-icon" aria-hidden="true">{gameIcon}</div>
+                    <p className="route-game-welcome-kicker">Welcome to</p>
+                    <h1 id="route-game-welcome-title">{gameName}</h1>
+                    <p>Get ready to play, learn, and build your best score.</p>
+                    <button type="button" className="game-shell-primary-action" onClick={() => setShowRouteWelcome(false)}>
+                      Start Game
+                    </button>
+                  </div>
+                </section>
+              )
             )
           ) : !clientReady ? (
             <div role="status" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)' }}>
@@ -689,7 +718,7 @@ export default function GamePage() {
               onComplete={isBlockFight
                 ? (gameResult: { score: number; accuracy: number }) => handleComplete(gameResult.score, gameResult.accuracy)
                 : handleComplete}
-              profileName={auth?.currentUser ? state.name : ''}
+              profileName={profileName}
               {...(gameId === 'riddlebombs' ? { onHudUpdate: setRiddleBombsHud } : {})}
               {...(isTicTacRoll ? { themeId: ticTheme.id, onThemeChange: setTicTheme } : {})}
               {...(isConnect4 ? { onHudUpdate: setC4Hud } : {})}

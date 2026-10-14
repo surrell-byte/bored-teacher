@@ -9,6 +9,8 @@ import AchievementToast from '@/features/achievements/components/AchievementToas
 import { GameContext } from '@/providers/GameProvider';
 import { isCreatorUser, loadUserState, onAuthStateChanged } from '@/lib/firebase';
 import { useEffect, useState } from 'react';
+import { GAME_BAR_COLOR } from '@/constants/index';
+import type { CSSProperties } from 'react';
 
 const NO_SHELL_PATHS = ['/', '/auth'];
 
@@ -16,6 +18,10 @@ export default function AppShell({ children }: { children: ReactNode }) {
   const pathname   = usePathname() ?? '';
   const router = useRouter();
   const isGameRoute = pathname.startsWith('/games/');
+  const gameId = isGameRoute ? pathname.split('/')[2] : '';
+  const shellStyle = isGameRoute
+    ? { '--game-toast-accent': GAME_BAR_COLOR[gameId] ?? 'var(--purple)' } as CSSProperties
+    : undefined;
   const showShell  = !NO_SHELL_PATHS.includes(pathname) && !isGameRoute;
   
   // Safely get game context without throwing
@@ -44,7 +50,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
   }, [pathname, router]);
 
   return (
-    <div className={`app-shell-wrap${showShell ? '' : ' no-shell'}${isGameRoute ? ' game-route-wrap' : ''}`}>
+    <div className={`app-shell-wrap${showShell ? '' : ' no-shell'}${isGameRoute ? ' game-route-wrap' : ''}`} style={shellStyle}>
       <a href="#main-content" className="skip-to-content">
         Skip to content
       </a>

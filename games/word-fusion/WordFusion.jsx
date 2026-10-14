@@ -432,8 +432,16 @@ const WordFusion_CSS = `* {
       100% { transform: scale(1); }
     }`;
 
-export default function WordFusion() {
+export default function WordFusion({ profileName = '' }) {
   const containerRef = useRef(null);
+
+  useEffect(() => {
+    if (!profileName) return;
+    const nameInput = containerRef.current?.querySelector('#playerNameInput');
+    if (nameInput instanceof HTMLInputElement && !nameInput.value.trim()) {
+      nameInput.value = profileName;
+    }
+  }, [profileName]);
 
   useEffect(() => {
     const container = containerRef.current;

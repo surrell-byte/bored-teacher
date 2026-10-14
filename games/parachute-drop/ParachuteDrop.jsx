@@ -41,10 +41,10 @@ function dealCards() {
   }));
 }
 
-export default function ParachuteDrop({ onComplete }) {
+export default function ParachuteDrop({ onComplete, profileName = '' }) {
   const [screen, setScreen] = useState('welcome');
   const [players, setPlayers] = useState({
-    left: { name: 'Leo', character: CHARACTER_OPTIONS[0] },
+    left: { name: profileName || 'Leo', character: CHARACTER_OPTIONS[0] },
     right: { name: 'Mia', character: CHARACTER_OPTIONS[1] },
   });
   const [current, setCurrent] = useState('left');
@@ -52,7 +52,7 @@ export default function ParachuteDrop({ onComplete }) {
   const [score, setScore] = useState({ left: 0, right: 0 });
   const [face, setFace] = useState(1);
   const [rolling, setRolling] = useState(false);
-  const [status, setStatus] = useState("Leo's turn - roll, then stop whenever you dare!");
+  const [status, setStatus] = useState(`${profileName || 'Leo'}'s turn - roll, then stop whenever you dare!`);
   const [modal, setModal] = useState(null);
   const [soundOn, setSoundOn] = useState(true);
   const [cards, setCards] = useState([]);

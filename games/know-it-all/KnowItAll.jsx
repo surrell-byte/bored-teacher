@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { GameHelpText, useGameTranslation } from "@/engine/layout/GameTranslationContext";
 
 const QUESTIONS = [
   { category: "Animals & Nature", q: "How many hearts does an octopus have?", options: ["One", "Two", "Three", "Four"], answer: 2, explanation: "Two hearts pump blood to the gills, while the third pumps blood to the rest of the body." },
@@ -26,6 +27,57 @@ const QUESTIONS = [
   { category: "History & Inventions", q: "Who is strongly associated with the spread of movable-type printing in 15th-century Europe?", options: ["Leonardo da Vinci", "Johannes Gutenberg", "Isaac Newton", "Marco Polo"], answer: 1, explanation: "Johannes Gutenberg’s printing system helped books be reproduced more efficiently in Europe." },
   { category: "History & Inventions", q: "What is the core of an ordinary pencil mainly made from?", options: ["Lead", "Graphite and clay", "Charcoal and wax", "Iron and carbon"], answer: 1, explanation: "Pencil cores are mainly graphite mixed with clay. The name ‘lead pencil’ comes from an old misunderstanding about graphite." },
   { category: "History & Inventions", q: "Which statement about fruit is botanically correct?", options: ["Strawberries are true berries, bananas are not", "Both strawberries and bananas are true berries", "Bananas are berries, but strawberries are not true berries", "Neither fruit grows from a flower"], answer: 2, explanation: "Botanically, bananas are berries, while strawberries are not true berries. Classification depends on how a fruit develops from a flower." },
+];
+
+function shuffle(values) {
+  const shuffled = [...values];
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const otherIndex = Math.floor(Math.random() * (index + 1));
+    [shuffled[index], shuffled[otherIndex]] = [shuffled[otherIndex], shuffled[index]];
+  }
+  return shuffled;
+}
+
+function createOptionOrders() {
+  const correctSlots = shuffle(Array.from({ length: QUESTIONS.length }, (_, index) => index % 4));
+  return QUESTIONS.map((question, questionIndex) => {
+    const correctSlot = correctSlots[questionIndex];
+    const otherOptions = shuffle(question.options.map((_, optionIndex) => optionIndex).filter(optionIndex => optionIndex !== question.answer));
+    const order = [];
+    let otherOptionIndex = 0;
+    for (let slot = 0; slot < question.options.length; slot += 1) {
+      order.push(slot === correctSlot ? question.answer : otherOptions[otherOptionIndex++]);
+    }
+    return order;
+  });
+}
+
+const QUESTION_VISUALS = [
+  { question: { src: "/assets/games/know-it-all/octopus.webp", alt: "An octopus swimming underwater" }, answer: { src: "/assets/games/know-it-all/octopus.webp", alt: "An octopus swimming underwater" } },
+  { question: { src: "/assets/games/know-it-all/honeybee-question.webp", alt: "A honeybee gathering nectar from a flower" }, answer: { src: "/assets/games/know-it-all/honeybee-answer.webp", alt: "Honeybees gathering around a flower" } },
+  { question: { src: "/assets/games/know-it-all/flamingo-question.webp", alt: "Flamingos with bright pink plumage" }, answer: { src: "/assets/games/know-it-all/flamingo-answer.webp", alt: "Flamingos feeding in shallow water" } },
+  { question: { src: "/assets/games/know-it-all/wombat.webp", alt: "A wombat standing on grass" }, answer: { src: "/assets/games/know-it-all/wombat-answer.webp", alt: "A wombat in its natural habitat" } },
+  { question: { src: "/assets/games/know-it-all/dive-question.webp", alt: "A person diving from a platform into water" }, answer: { src: "/assets/games/know-it-all/dive-answer.webp", alt: "A peregrine falcon diving through the sky" } },
+  { question: { src: "/assets/games/know-it-all/planets-question.webp", alt: "Planets in the Solar System" }, answer: { src: "/assets/games/know-it-all/planets-question.webp", alt: "Planets in the Solar System" } },
+  { question: { src: "/assets/games/know-it-all/earth-spheres-question.webp", alt: "A comparison showing how many Earth-sized spheres fit inside the Sun" }, answer: { src: "/assets/games/know-it-all/earth-spheres-question.webp", alt: "A comparison showing how many Earth-sized spheres fit inside the Sun" } },
+  { question: { src: "/assets/games/know-it-all/saturn-question.webp", alt: "Saturn depicted floating in water" }, answer: { src: "/assets/games/know-it-all/saturn-answer.webp", alt: "Saturn shown with its rings" } },
+  { question: { src: "/assets/games/know-it-all/sun-earth.webp", alt: "The Sun and Earth shown side by side" }, answer: { src: "/assets/games/know-it-all/sun-earth.webp", alt: "The Sun and Earth shown side by side" } },
+  { question: { src: "/assets/games/know-it-all/olympus-mons-question.webp", alt: "Olympus Mons rising above the surface of Mars" }, answer: { src: "/assets/games/know-it-all/olympus-mons-answer.webp", alt: "A view of Olympus Mons on Mars" } },
+  { question: { src: "/assets/games/know-it-all/lightning-question.webp", alt: "A lightning bolt illuminating the sky" }, answer: { src: "/assets/games/know-it-all/lightning-answer.webp", alt: "A close view of a lightning strike" } },
+  { question: { src: "/assets/games/know-it-all/dna-question.webp", alt: "A glowing DNA double helix" }, answer: { src: "/assets/games/know-it-all/dna-answer.webp", alt: "A diagram of the DNA double helix" } },
+  { question: { src: "/assets/games/know-it-all/states-of-water-question.webp", alt: "Water shown in its solid, liquid, and gas states" }, answer: { src: "/assets/games/know-it-all/states-of-water-answer.webp", alt: "A diagram of water changing between three states" } },
+  { question: { src: "/assets/games/know-it-all/blue-whale-question.webp", alt: "A blue whale swimming underwater" }, answer: { src: "/assets/games/know-it-all/blue-whale-answer.webp", alt: "A blue whale shown beside a diver" } },
+  { question: { src: "/assets/games/know-it-all/onions-question.webp", alt: "A selection of whole and cut onions" }, answer: { src: "/assets/games/know-it-all/onions-answer.webp", alt: "Onions being prepared for cooking" } },
+  { question: { src: "/assets/games/know-it-all/antarctic-desert-question.webp", alt: "A camel caravan crossing a desert" }, answer: { src: "/assets/games/know-it-all/antarctic-desert-answer.webp", alt: "A vast snowy landscape in Antarctica" } },
+  { question: { src: "/assets/games/know-it-all/nile-question.webp", alt: "The Nile River flowing through Egypt" }, answer: { src: "/assets/games/know-it-all/nile-answer.webp", alt: "A map tracing the Nile through Egypt" } },
+  { question: { src: "/assets/games/know-it-all/lake-baikal-question.webp", alt: "Lake Baikal surrounded by mountains" }, answer: { src: "/assets/games/know-it-all/lake-baikal-answer.webp", alt: "Lake Baikal beneath a winter landscape" } },
+  { question: { src: "/assets/games/know-it-all/everest-question.webp", alt: "Climbers ascending Mount Everest" }, answer: { src: "/assets/games/know-it-all/everest-answer.webp", alt: "Mount Everest rising above surrounding peaks" } },
+  { question: { src: "/assets/games/know-it-all/sahara.webp", alt: "A camel caravan crossing the Sahara Desert" }, answer: { src: "/assets/games/know-it-all/sahara-answer.webp", alt: "The sandy dunes of the Sahara Desert" } },
+  { question: { src: "/assets/games/know-it-all/cleopatra-question.webp", alt: "An artistic portrait of Cleopatra" }, answer: { src: "/assets/games/know-it-all/moon-landing-answer.webp", alt: "An astronaut standing on the Moon" } },
+  { question: { src: "/assets/games/know-it-all/colosseum-question.webp", alt: "The Colosseum in Rome" }, answer: { src: "/assets/games/know-it-all/colosseum-answer.webp", alt: "The Colosseum illuminated at sunset" } },
+  { question: { src: "/assets/games/know-it-all/movable-type-printing.webp", alt: "A historical illustration of a movable-type printing press" }, answer: { src: "/assets/games/know-it-all/movable-type-printing-answer.webp", alt: "A historical illustration of Gutenberg's printing press" } },
+  { question: { src: "/assets/games/know-it-all/pencil-question.webp", alt: "Pencils being held in different grips" }, answer: { src: "/assets/games/know-it-all/pencil-answer.webp", alt: "A close view of a pencil and its graphite core" } },
+  { question: { src: "/assets/games/know-it-all/fruit-question.webp", alt: "A colourful assortment of fruit" }, answer: { src: "/assets/games/know-it-all/fruit-answer.webp", alt: "A selection of fruit including bananas and strawberries" } },
 ];
 
 const QUESTION_TRANSLATIONS = [
@@ -56,12 +108,48 @@ const QUESTION_TRANSLATIONS = [
   { question: "下面哪种关于水果的说法符合植物学定义？", options: ["草莓是真浆果，香蕉不是", "草莓和香蕉都是真浆果", "香蕉是浆果，但草莓不是真浆果", "这两种水果都不是由花发育而来"], explanation: "从植物学角度看，香蕉是浆果，而草莓不是真浆果。分类取决于果实如何从花发育而来。" },
 ];
 
+const THAI_QUESTION_TRANSLATIONS = [
+  { question: "ปลาหมึกยักษ์มีหัวใจกี่ดวง?", options: ["หนึ่งดวง", "สองดวง", "สามดวง", "สี่ดวง"], explanation: "หัวใจสองดวงสูบฉีดเลือดไปยังเหงือก ส่วนหัวใจดวงที่สามสูบฉีดเลือดไปยังส่วนอื่น ๆ ของร่างกาย" },
+  { question: "ผึ้งสามารถเรียนรู้ทักษะการมองเห็นที่น่าทึ่งข้อใด?", options: ["จดจำรูปแบบที่คล้ายใบหน้ามนุษย์", "อ่านตัวอักษรที่พิมพ์ไว้", "มองเห็นได้ในความมืดสนิท", "แยกแยะสีได้ทุกสีที่มนุษย์มองเห็น"], explanation: "แม้สมองจะมีขนาดเล็ก ผึ้งก็สามารถเรียนรู้ที่จะแยกแยะรูปแบบที่คล้ายใบหน้าได้" },
+  { question: "ทำไมฟลามิงโกจึงมีสีชมพู?", options: ["พวกมันเกิดมามีสีนี้", "ขนของพวกมันมีหมึกสีชมพู", "พวกมันดูดซับสีจากท้องฟ้า", "รงควัตถุในอาหารทำให้ขนเป็นสีชมพู"], explanation: "รงควัตถุแคโรทีนอยด์ในสาหร่ายและสัตว์ตัวเล็ก ๆ ที่ฟลามิงโกกิน ทำให้ขนของพวกมันมีสีชมพู" },
+  { question: "สัตว์ชนิดใดขึ้นชื่อเรื่องการถ่ายมูลเป็นรูปลูกบาศก์?", options: ["โคอาลา", "วอมแบต", "จิงโจ้", "แบดเจอร์"], explanation: "รูปร่างนี้ก่อตัวขึ้นภายในลำไส้ของวอมแบต และช่วยให้เครื่องหมายอาณาเขตที่มันทิ้งไว้ไม่กลิ้งหายไป" },
+  { question: "สัตว์ชนิดใดขึ้นชื่อว่าดิ่งตัวได้เร็วที่สุด?", options: ["เสือชีตาห์", "ปลากระโทงดาบ", "เหยี่ยวเพเรกริน", "นกกระจอกเทศ"], explanation: "เหยี่ยวเพเรกรินอาจดิ่งตัวด้วยความเร็วมากกว่า 300 กิโลเมตรต่อชั่วโมง (186 ไมล์ต่อชั่วโมง) เพื่อจับเหยื่อ" },
+  { question: "ดาวเคราะห์ดวงใดใช้เวลาหมุนรอบตัวเองนานกว่าการโคจรรอบดวงอาทิตย์หนึ่งรอบ?", options: ["ดาวอังคาร", "ดาวศุกร์", "ดาวพฤหัสบดี", "ดาวเนปจูน"], explanation: "ดาวศุกร์ใช้เวลาหมุนรอบตัวเองประมาณ 243 วันโลก แต่ใช้เวลาโคจรรอบดวงอาทิตย์ประมาณ 225 วันโลก" },
+  { question: "หากเทียบตามปริมาตร ดวงอาทิตย์จุทรงกลมขนาดเท่าโลกได้ประมาณกี่ลูก?", options: ["1,300 ลูก", "13,000 ลูก", "130,000 ลูก", "1.3 ล้านลูก"], explanation: "ดวงอาทิตย์มีขนาดใหญ่มาก หากเทียบตามปริมาตรจะจุทรงกลมขนาดเท่าโลกได้ประมาณ 1.3 ล้านลูก" },
+  { question: "เหตุใดดาวเสาร์จึงอาจลอยน้ำได้ในทางทฤษฎี?", options: ["ดาวเสาร์ประกอบด้วยแก๊สทั้งหมด", "ความหนาแน่นเฉลี่ยต่ำกว่าน้ำ", "ดาวเสาร์ไม่มีแรงโน้มถ่วง", "วงแหวนช่วยพยุงดาวไว้"], explanation: "ความหนาแน่นเฉลี่ยของดาวเสาร์ต่ำกว่าน้ำ แต่ในความเป็นจริงไม่มีมหาสมุทรที่ใหญ่พอให้ดาวเสาร์ลอยได้" },
+  { question: "แสงอาทิตย์ใช้เวลาเดินทางมายังโลกประมาณเท่าไร?", options: ["ประมาณ 8 วินาที", "ประมาณ 8 นาที 20 วินาที", "ประมาณ 8 ชั่วโมง", "ประมาณ 8 วัน"], explanation: "แสงเดินทางด้วยความเร็วที่มีขีดจำกัด จึงใช้เวลาประมาณ 8 นาที 20 วินาทีกว่าจะมาถึงโลก" },
+  { question: "ภูเขาไฟที่สูงที่สุดเท่าที่รู้จักในระบบสุริยะมีชื่อว่าอะไร?", options: ["ยอดเขาเอเวอเรสต์", "ภูเขาไฟเมานาโลอา", "ภูเขาโอลิมปัสมอนส์", "ยอดเขาเอลิเซียม"], explanation: "โอลิมปัสมอนส์บนดาวอังคารสูงประมาณ 22 กิโลเมตร (14 ไมล์) เมื่อวัดจากภูมิประเทศโดยรอบ" },
+  { question: "ช่องสายฟ้าแลบอาจมีอุณหภูมิสูงถึงเท่าไร?", options: ["ประมาณ 300°C", "ประมาณ 3,000°C", "ประมาณ 30,000°C", "ประมาณ 300,000°C"], explanation: "ช่องสายฟ้าแลบอาจมีอุณหภูมิประมาณ 30,000°C ซึ่งร้อนกว่าพื้นผิวที่มองเห็นได้ของดวงอาทิตย์ซึ่งมีอุณหภูมิประมาณ 5,500°C" },
+  { question: "DNA ทำหน้าที่เก็บข้อมูลอะไร?", options: ["คำสั่งทางพันธุกรรม", "ออกซิเจนในเลือด", "อาหารที่เคลื่อนผ่านกระเพาะ", "พลังงานไฟฟ้าสำหรับกล้ามเนื้อ"], explanation: "DNA เก็บคำสั่งทางพันธุกรรมที่ช่วยกำหนดการเจริญเติบโตและการทำงานของสิ่งมีชีวิต เม็ดเลือดแดงที่เจริญเต็มที่เป็นข้อยกเว้นของกฎทั่วไปที่ว่าเซลล์มี DNA" },
+  { question: "ข้อใดระบุสถานะทั้งสามแบบที่น้ำพบได้ตามธรรมชาติบนโลก?", options: ["โลหะ หิน และแก๊ส", "น้ำแข็ง น้ำสถานะของเหลว และไอน้ำ", "ไอน้ำ ไฟ และน้ำแข็ง", "มีเพียงเมฆ ฝน และหิมะ"], explanation: "น้ำพบได้ในสถานะของแข็ง (น้ำแข็ง) ของเหลว (น้ำ) และแก๊ส (ไอน้ำ)" },
+  { question: "สัตว์ที่ใหญ่ที่สุดเท่าที่เคยมีชีวิตอยู่บนโลกคืออะไร?", options: ["ช้างแอฟริกา", "เมกาโลดอน", "วาฬสีน้ำเงิน", "หมึกยักษ์"], explanation: "วาฬสีน้ำเงินอาจมีความยาวประมาณ 30 เมตร (98 ฟุต) และเป็นสัตว์ที่ใหญ่ที่สุดเท่าที่รู้จัก" },
+  { question: "ทำไมหั่นหัวหอมแล้วน้ำตาจึงไหล?", options: ["หัวหอมปล่อยก๊าซที่ทำให้ระคายเคือง", "หัวหอมดูดความชื้นจากดวงตา", "สีของหัวหอมสะท้อนแสงจ้า", "หัวหอมทำให้อากาศเย็นลง"], explanation: "เมื่อเซลล์ของหัวหอมถูกตัด สารประกอบที่ปล่อยออกมาจะทำปฏิกิริยาจนเกิดก๊าซระคายเคืองและกระตุ้นให้น้ำตาไหล" },
+  { question: "ทะเลทรายที่มีพื้นที่ใหญ่ที่สุดในโลกคือที่ใด?", options: ["ทะเลทรายซาฮารา", "ทะเลทรายโกบี", "ทวีปแอนตาร์กติกา", "ทะเลทรายอาหรับ"], explanation: "ทะเลทรายนิยามจากปริมาณฝนที่น้อย ไม่ใช่ความร้อน แอนตาร์กติกาเป็นทะเลทรายที่ใหญ่ที่สุดและเป็นทวีปที่หนาวที่สุด" },
+  { question: "แม่น้ำไนล์ไหลลงสู่แหล่งน้ำใด?", options: ["มหาสมุทรอินเดีย", "ทะเลเมดิเตอร์เรเนียน", "ทะเลแดง", "มหาสมุทรแอตแลนติก"], explanation: "แม่น้ำไนล์ไหลไปทางเหนือผ่านแอฟริกาตะวันออกเฉียงเหนือและไหลลงสู่ทะเลเมดิเตอร์เรเนียน" },
+  { question: "ทะเลสาบไบคาล หนึ่งในทะเลสาบน้ำจืดที่ลึกที่สุดในโลก อยู่ที่ใด?", options: ["แคนาดา", "รัสเซีย", "บราซิล", "อินเดีย"], explanation: "ทะเลสาบไบคาลอยู่ในรัสเซีย ลึกประมาณ 1,642 เมตร และมีน้ำจืดผิวดินที่ยังไม่กลายเป็นน้ำแข็งประมาณหนึ่งในห้าของโลก" },
+  { question: "ภูเขาลูกใดมีความสูงเหนือระดับน้ำทะเลมากที่สุด?", options: ["เคทู (K2)", "คิลิมันจาโร", "ยอดเขาเอเวอเรสต์", "เดนาลี"], explanation: "ความสูงที่ได้รับการรับรองอย่างเป็นทางการของยอดเขาเอเวอเรสต์คือ 8,848.86 เมตร (29,031.7 ฟุต) เหนือระดับน้ำทะเล" },
+  { question: "ทะเลทรายร้อนที่ใหญ่ที่สุดในโลกคือที่ใด?", options: ["ทะเลทรายซาฮารา", "ทะเลทรายโมฮาวี", "ทะเลทรายคาลาฮารี", "ทะเลทรายเกรตวิกตอเรีย"], explanation: "ทะเลทรายซาฮาราครอบคลุมพื้นที่ส่วนใหญ่ของแอฟริกาเหนือ และมีพื้นที่ใกล้เคียงกับประเทศสหรัฐอเมริกา" },
+  { question: "คลีโอพัตราอยู่ใกล้กับเหตุการณ์ใดมากกว่าเมื่อเทียบตามเวลา?", options: ["การสร้างมหาพีระมิด", "การลงจอดบนดวงจันทร์ครั้งแรก", "การประดิษฐ์วงล้อ", "จุดเริ่มต้นของอียิปต์โบราณ"], explanation: "คลีโอพัตราเสียชีวิตในปี 30 ก่อนคริสตกาล มหาพีระมิดสร้างขึ้นราว 2560 ปีก่อนคริสตกาล ส่วนมนุษย์ลงจอดบนดวงจันทร์ในปี 1969" },
+  { question: "โคลอสเซียมแห่งกรุงโรมเปิดใช้งานประมาณปีใด?", options: ["ค.ศ. 80", "500 ปีก่อนคริสตกาล", "ค.ศ. 1066", "ค.ศ. 1492"], explanation: "โคลอสเซียมเปิดใช้งานประมาณ ค.ศ. 80 และเคยใช้จัดการแสดงสาธารณะในกรุงโรมโบราณ" },
+  { question: "ใครมีความเกี่ยวข้องอย่างมากกับการเผยแพร่แท่นพิมพ์ตัวเรียงในยุโรปช่วงคริสต์ศตวรรษที่ 15?", options: ["เลโอนาร์โด ดา วินชี", "โยฮันเนส กูเทนแบร์ก", "ไอแซก นิวตัน", "มาร์โค โปโล"], explanation: "ระบบการพิมพ์ของโยฮันเนส กูเทนแบร์กช่วยให้ทำสำเนาหนังสือในยุโรปได้อย่างมีประสิทธิภาพมากขึ้น" },
+  { question: "ไส้ดินสอทั่วไปทำจากอะไรเป็นหลัก?", options: ["ตะกั่ว", "แกรไฟต์และดินเหนียว", "ถ่านและขี้ผึ้ง", "เหล็กและคาร์บอน"], explanation: "ไส้ดินสอส่วนใหญ่ทำจากแกรไฟต์ผสมดินเหนียว คำว่า “ดินสอไส้ตะกั่ว” มาจากความเข้าใจผิดในอดีตว่าแกรไฟต์คือตะกั่ว" },
+  { question: "ข้อใดเกี่ยวกับผลไม้ถูกต้องตามหลักพฤกษศาสตร์?", options: ["สตรอว์เบอร์รีเป็นเบอร์รีแท้ แต่กล้วยไม่ใช่", "ทั้งสตรอว์เบอร์รีและกล้วยเป็นเบอร์รีแท้", "กล้วยเป็นเบอร์รี แต่สตรอว์เบอร์รีไม่ใช่เบอร์รีแท้", "ผลไม้ทั้งสองชนิดไม่ได้เติบโตมาจากดอก"], explanation: "ตามหลักพฤกษศาสตร์ กล้วยเป็นเบอร์รี แต่สตรอว์เบอร์รีไม่ใช่เบอร์รีแท้ การจำแนกขึ้นอยู่กับวิธีที่ผลพัฒนามาจากดอก" },
+];
+
 const CATEGORY_TRANSLATIONS = {
   "Animals & Nature": "动物与自然",
   "Space & the Universe": "太空与宇宙",
   "Science & the Human Body": "科学与人体",
   "Geography & Earth": "地理与地球",
   "History & Inventions": "历史与发明",
+};
+
+const THAI_CATEGORY_TRANSLATIONS = {
+  "Animals & Nature": "สัตว์และธรรมชาติ",
+  "Space & the Universe": "อวกาศและจักรวาล",
+  "Science & the Human Body": "วิทยาศาสตร์และร่างกายมนุษย์",
+  "Geography & Earth": "ภูมิศาสตร์และโลก",
+  "History & Inventions": "ประวัติศาสตร์และสิ่งประดิษฐ์",
 };
 
 const LETTERS = ["A", "B", "C", "D"];
@@ -102,20 +190,29 @@ function getResultCopy(pct) {
   };
 }
 
-export default function KnowItAll({ onComplete }) {
-  const [screen, setScreen] = useState("start");
+export default function KnowItAll({ onComplete, profileName = "" }) {
+  const [screen, setScreen] = useState("player-info");
+  const [playerName, setPlayerName] = useState(profileName || "Player 1");
+  const [optionOrders, setOptionOrders] = useState(createOptionOrders);
   const [current, setCurrent] = useState(0);
   const [selected, setSelected] = useState(null);
   const [answered, setAnswered] = useState(false);
   const [responses, setResponses] = useState([]);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [score, setScore] = useState(0);
-  const [translatorMode, setTranslatorMode] = useState(false);
   const reviewRef = useRef(null);
+  const { language: helpLanguage } = useGameTranslation();
 
   const item = QUESTIONS[current];
+  const selectedOption = selected === null ? null : optionOrders[current][selected];
   const total = QUESTIONS.length;
-  const isCorrect = answered && selected !== null && selected === item.answer;
+  const isCorrect = answered && selectedOption === item.answer;
+  const showHelp = helpLanguage !== "off";
+  const translations = helpLanguage === "th" ? THAI_QUESTION_TRANSLATIONS : QUESTION_TRANSLATIONS;
+  const categoryTranslations = helpLanguage === "th" ? THAI_CATEGORY_TRANSLATIONS : CATEGORY_TRANSLATIONS;
+  const translationLang = helpLanguage === "th" ? "th" : "zh-CN";
+  const visual = QUESTION_VISUALS[current];
+  const activeVisual = answered ? visual.answer : visual.question;
 
   useEffect(() => {
     if (screen === "result" && reviewRef.current) {
@@ -130,6 +227,7 @@ export default function KnowItAll({ onComplete }) {
   };
 
   function startQuiz() {
+    setOptionOrders(createOptionOrders());
     setCurrent(0);
     setSelected(null);
     setAnswered(false);
@@ -147,11 +245,11 @@ export default function KnowItAll({ onComplete }) {
 
   function checkAnswer() {
     if (selected === null || answered) return;
-    const correct = selected === item.answer;
+    const correct = selectedOption === item.answer;
     setAnswered(true);
     setResponses((prev) => {
       const next = [...prev];
-      next[current] = { selected, correct };
+      next[current] = { selected: selectedOption, correct };
       return next;
     });
     if (correct) {
@@ -168,7 +266,7 @@ export default function KnowItAll({ onComplete }) {
       return;
     }
 
-    const finalScore = score + (selected === item.answer ? 1 : 0);
+    const finalScore = score + (selectedOption === item.answer ? 1 : 0);
     onComplete?.(finalScore, Math.round((finalScore / total) * 100));
     setReviewOpen(false);
     setScreen("result");
@@ -211,12 +309,29 @@ export default function KnowItAll({ onComplete }) {
       --shadow: 0 24px 60px rgba(17, 33, 57, 0.14);
       font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
       color: var(--ink);
-      background:
-        radial-gradient(circle at top left, rgba(111, 170, 255, 0.15), transparent 30%),
-        radial-gradient(circle at top right, rgba(255, 195, 92, 0.14), transparent 26%),
-        linear-gradient(180deg, #eef5ff 0%, #f8f5ff 100%);
+      background-color: #eef5ff;
+      background-image: url("/assets/games/know-it-all/know-it-all-welcome-bg.webp");
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
       min-height: 100vh;
       padding: 24px 16px 48px;
+    }
+    .kq-root[data-screen="player-info"] {
+      background-image: url("/assets/games/know-it-all/know-it-all-user-input-bg.webp");
+    }
+    .kq-root[data-screen="start"] {
+      background-image: url("/assets/games/know-it-all/know-it-all-main-menu-bg.webp");
+    }
+    .kq-root[data-screen="how-to"] {
+      background-image: url("/assets/games/know-it-all/know-it-all-main-menu-bg.webp");
+    }
+    .kq-root[data-screen="quiz"] {
+      background-image: url("/assets/games/know-it-all/know-it-all-game-bg.webp");
+      background-attachment: fixed;
+    }
+    .kq-root[data-screen="result"] {
+      background-image: url("/assets/games/know-it-all/know-it-all-victory-bg.webp");
     }
     .kq-root * { box-sizing: border-box; }
     .kq-root .app {
@@ -225,7 +340,27 @@ export default function KnowItAll({ onComplete }) {
       display: grid;
       gap: 20px;
     }
-    .kq-root .topline,
+    .kq-root[data-screen="player-info"] .app {
+      min-height: calc(100vh - 72px);
+      align-content: center;
+    }
+    .kq-root[data-screen="player-info"] .quiz-card {
+      width: min(560px, 100%);
+      justify-self: center;
+    }
+    .kq-root[data-screen="start"] .app {
+      min-height: calc(100vh - 72px);
+      align-content: center;
+    }
+    .kq-root[data-screen="start"] .quiz-card {
+      width: min(980px, 100%);
+      justify-self: center;
+    }
+    .kq-root[data-screen="how-to"] .app {
+      min-height: calc(100vh - 72px);
+      align-content: center;
+    }
+    .kq-root[data-screen="how-to"] .quiz-card { display: none; }
     .kq-root .hero,
     .kq-root .quiz-card {
       background: rgba(255,255,255,0.72);
@@ -233,64 +368,6 @@ export default function KnowItAll({ onComplete }) {
       border: 1px solid var(--line);
       border-radius: 26px;
       box-shadow: var(--shadow);
-    }
-    .kq-root .topline {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 18px 22px;
-      border-radius: 22px;
-    }
-    .kq-root .brand {
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      font-weight: 800;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      font-size: 0.82rem;
-    }
-    .kq-root .brand-icon {
-      width: 34px;
-      height: 34px;
-      border-radius: 10px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, var(--gold), #ffd782);
-      color: #3b2b00;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
-    }
-    .kq-root .pill {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 9px 14px;
-      border-radius: 999px;
-      background: rgba(74, 183, 195, 0.12);
-      color: var(--teal-deep);
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-    .kq-root .translator-toggle {
-      appearance: none;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      background: #fff;
-      color: var(--ink);
-      padding: 9px 14px;
-      font: inherit;
-      font-size: 0.82rem;
-      font-weight: 700;
-      cursor: pointer;
-    }
-    .kq-root .translator-toggle[aria-pressed="true"] {
-      color: #fff;
-      background: var(--teal-deep);
-      border-color: var(--teal-deep);
     }
     .kq-root .translation {
       display: block;
@@ -303,6 +380,23 @@ export default function KnowItAll({ onComplete }) {
     .kq-root .question-translation {
       margin-top: -10px;
       font-size: 1rem;
+    }
+    .kq-root .question-visual {
+      display: grid;
+      place-items: center;
+      min-width: 0;
+      margin: 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: rgba(255,255,255,0.55);
+    }
+    .kq-root .question-visual img {
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      height: clamp(240px, 48vh, 560px);
+      object-fit: contain;
     }
     .kq-root .hero {
       padding: 26px 26px 20px;
@@ -392,12 +486,16 @@ export default function KnowItAll({ onComplete }) {
       display: block;
     }
     .kq-root .start-panel,
-    .kq-root .result-panel {
+    .kq-root .result-panel,
+    .kq-root .player-info-panel {
       display: grid;
       place-items: center;
       text-align: center;
       gap: 16px;
       padding: 18px 10px 8px;
+    }
+    .kq-root .player-info-panel {
+      justify-items: center;
     }
     .kq-root .big-emoji {
       width: 90px;
@@ -416,12 +514,33 @@ export default function KnowItAll({ onComplete }) {
       letter-spacing: -0.04em;
     }
     .kq-root .start-panel p,
-    .kq-root .result-panel p {
+    .kq-root .result-panel p,
+    .kq-root .player-info-panel p {
       margin: 0;
       color: var(--muted);
       line-height: 1.6;
       max-width: 700px;
       font-size: 1.02rem;
+    }
+    .kq-root .player-info-panel label {
+      display: grid;
+      gap: 8px;
+      width: min(360px, 100%);
+      text-align: left;
+      color: var(--ink);
+      font-weight: 700;
+    }
+    .kq-root .player-info-panel .btn {
+      width: min(360px, 100%);
+    }
+    .kq-root .player-info-panel input {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 13px 15px;
+      color: var(--ink);
+      background: #fff;
+      font: inherit;
     }
     .kq-root .start-details {
       display: flex;
@@ -522,10 +641,29 @@ export default function KnowItAll({ onComplete }) {
       background: linear-gradient(90deg, #2fb7c7 0%, #f4b942 100%);
       transition: width 0.2s ease;
     }
-    .kq-root .question-area {
+    .kq-root .question-layout {
       display: grid;
-      gap: 18px;
+      grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+      align-items: stretch;
+      gap: 24px;
       padding: 10px 4px 2px;
+    }
+    .kq-root .question-content { grid-column: 1; grid-row: 1; }
+    .kq-root .question-layout > .question-visual { grid-column: 2; grid-row: 1; }
+    .kq-root .question-visual { align-self: stretch; }
+    .kq-root .question-visual img { height: clamp(200px, 58vh, 680px); }
+    .kq-root .question-content {
+      display: grid;
+      align-content: start;
+      gap: 18px;
+      min-width: 0;
+    }
+    .kq-root .question-intro,
+    .kq-root .question-answers {
+      display: grid;
+      align-content: start;
+      gap: 18px;
+      min-width: 0;
     }
     .kq-root .category {
       display: inline-flex;
@@ -716,10 +854,6 @@ export default function KnowItAll({ onComplete }) {
     .kq-root .your { color: #c97922; }
     .kq-root .explain { font-style: italic; }
     @media (max-width: 700px) {
-      .kq-root .topline {
-        flex-direction: column;
-        align-items: flex-start;
-      }
       .kq-root .stats {
         grid-template-columns: 1fr;
       }
@@ -742,58 +876,121 @@ export default function KnowItAll({ onComplete }) {
         width: 100%;
       }
     }
+    @media (max-width: 760px) and (orientation: portrait) {
+      .kq-root {
+        background-image: url("/assets/games/know-it-all/know-it-all-welcome-phone-bg.webp");
+      }
+      .kq-root[data-screen="player-info"] {
+        background-image: url("/assets/games/know-it-all/know-it-all-user-input-phone-bg.webp");
+      }
+      .kq-root[data-screen="start"] {
+        background-image: url("/assets/games/know-it-all/know-it-all-main-menu-phone-bg.webp");
+      }
+      .kq-root[data-screen="how-to"] {
+        background-image: url("/assets/games/know-it-all/know-it-all-main-menu-phone-bg.webp");
+      }
+      .kq-root[data-screen="quiz"] {
+        background-image: url("/assets/games/know-it-all/know-it-all-game-phone-bg.webp");
+      }
+      .kq-root[data-screen="result"] {
+        background-image: url("/assets/games/know-it-all/know-it-all-victory-phone-bg.webp");
+      }
+      .kq-root .question-layout {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .kq-root .question-content {
+        display: contents;
+      }
+      .kq-root .question-intro {
+        grid-row: 1;
+      }
+      .kq-root .question-layout > .question-visual {
+        grid-column: 1;
+        grid-row: 2;
+      }
+      .kq-root .question-answers {
+        grid-row: 3;
+      }
+      .kq-root .question-visual img {
+        height: clamp(160px, 26vh, 320px);
+      }
+    }
   `;
 
   return (
-    <div className="kq-root">
+    <div className="kq-root" data-screen={screen}>
       <style>{CSS}</style>
       <main className="app">
-        <header className="topline">
-          <div className="brand">
-            <div className="brand-icon">✦</div>
-            <span>KNOW IT ALL?</span>
-          </div>
-          <div className="pill">GENERAL KNOWLEDGE • QUIZ</div>
-          <button
-            type="button"
-            className="translator-toggle"
-            aria-pressed={translatorMode}
-            onClick={() => setTranslatorMode((enabled) => !enabled)}
-          >
-            中文翻译 / Chinese help: {translatorMode ? "On" : "Off"}
-          </button>
-        </header>
-
-        <section className="hero">
-          <div className="eyebrow">⚡ Curious minds welcome</div>
-          <h1>
-            25 <span className="shine">Amazing Facts</span>
-          </h1>
-          <p className="subtitle">
-            Explore the weird, wonderful world around you. Challenge yourself with 25 multiple-choice questions about animals, space, science, geography and history.
-          </p>
-          <div className="stats">
-            <div className="stat"><strong>25</strong><span>Questions</span></div>
-            <div className="stat"><strong>4</strong><span>Choices each</span></div>
-            <div className="stat"><strong>∞</strong><span>Things to learn</span></div>
-          </div>
-        </section>
+        {screen === "how-to" && (
+          <section className="hero">
+            <div className="eyebrow">⚡ <GameHelpText english="How to play" /> · <GameHelpText english="Curious minds welcome" /></div>
+            <h1><GameHelpText english="How to Play 25 Amazing Facts" as="span" /></h1>
+            <GameHelpText
+              english="Answer 25 multiple-choice questions about animals, space, science, geography, and history. Choose an answer to see instant feedback and an explanation, then review your results at the end."
+              as="p"
+              className="subtitle"
+            />
+            <div className="stats">
+              <div className="stat"><strong>25</strong><GameHelpText english="Questions" as="span" /></div>
+              <div className="stat"><strong>4</strong><GameHelpText english="Choices each" as="span" /></div>
+              <div className="stat"><strong>∞</strong><GameHelpText english="Things to learn" as="span" /></div>
+            </div>
+            <div className="start-details">
+              <div className="detail-chip">🎯 <GameHelpText english="Choose the best answer" /></div>
+              <div className="detail-chip">💡 <GameHelpText english="Learn with instant feedback" /></div>
+              <div className="detail-chip">🔁 <GameHelpText english="Review every answer" /></div>
+            </div>
+            <button type="button" className="btn btn-primary" onClick={() => setScreen("start")}><GameHelpText english="Continue to main menu →" /></button>
+          </section>
+        )}
 
         <section className="quiz-card">
+          {screen === "player-info" && (
+            <div className="screen active">
+              <form
+                className="player-info-panel"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  if (playerName.trim()) setScreen("how-to");
+                }}
+              >
+                <div className="big-emoji" aria-hidden="true">👋</div>
+                <h2><GameHelpText english="Who’s taking the challenge?" /></h2>
+                <GameHelpText english="Enter your name to personalize your Know It All game." as="p" />
+                <label htmlFor="know-it-all-player-name">
+                  <GameHelpText english="Player 1 name" />
+                  <input
+                    id="know-it-all-player-name"
+                    autoComplete="given-name"
+                    maxLength={24}
+                    required
+                    value={playerName}
+                    onChange={(event) => setPlayerName(event.target.value)}
+                    placeholder="Enter your name"
+                  />
+                </label>
+                <button type="submit" className="btn btn-primary" disabled={!playerName.trim()}>
+                  <GameHelpText english="Continue →" />
+                </button>
+              </form>
+            </div>
+          )}
+
           {screen === "start" && (
             <div className="screen active">
               <div className="start-panel">
                 <div className="big-emoji">🧠</div>
-                <h2>Ready to test your knowledge?</h2>
-                <p>
-                  Choose the best answer for each question. You’ll get instant feedback and a quick explanation after you answer. Your final screen includes your score and a review of every question.
-                </p>
+                <h2>Ready, {playerName.trim()}?</h2>
+                <GameHelpText
+                  english="Choose the best answer for each question. Choices appear in a different order each time. You’ll get instant feedback and a quick explanation, then review your score at the end."
+                  as="p"
+                />
                 <div className="start-details">
-                  <div className="detail-chip">🎯 1 point per correct answer</div>
-                  <div className="detail-chip">💡 Learn as you go</div>
-                  <div className="detail-chip">🔁 Replay any time</div>
+                  <div className="detail-chip">🎯 <GameHelpText english="1 point per correct answer" /></div>
+                  <div className="detail-chip">💡 <GameHelpText english="Learn as you go" /></div>
+                  <div className="detail-chip">🔁 <GameHelpText english="Replay any time" /></div>
                 </div>
-                <button type="button" className="btn btn-primary" onClick={startQuiz}>Start the quiz →</button>
+                <button type="button" className="btn btn-primary" onClick={startQuiz}><GameHelpText english="Start the quiz →" /></button>
               </div>
             </div>
           )}
@@ -811,51 +1008,67 @@ export default function KnowItAll({ onComplete }) {
                 </div>
               </div>
 
-              <div className="question-area">
-                <div className="category">
-                  {item.category.toUpperCase()}
-                  {translatorMode && <span className="translation">{CATEGORY_TRANSLATIONS[item.category]}</span>}
-                </div>
-                <h2>{item.q}</h2>
-                {translatorMode && <p className="translation question-translation" lang="zh-CN">{QUESTION_TRANSLATIONS[current].question}</p>}
+              <div className="question-layout">
+                <div className="question-content">
+                  <div className="question-intro">
+                    <div className="category">
+                      {item.category.toUpperCase()}
+                      {showHelp && <span className="translation" lang={translationLang}>{categoryTranslations[item.category]}</span>}
+                    </div>
+                    <h2>{item.q}</h2>
+                    {showHelp && <p className="translation question-translation" lang={translationLang}>{translations[current].question}</p>}
+                  </div>
 
-                <div className="options">
-                  {item.options.map((option, index) => {
-                    let state = "";
-                    if (answered) {
-                      if (index === item.answer) state = " correct";
-                      else if (index === selected) state = " incorrect";
-                    } else if (index === selected) {
-                      state = " selected";
-                    }
+                  <div className="question-answers">
+                    <div className="options">
+                      {item.options.map((_, index) => {
+                        const originalIndex = optionOrders[current][index];
+                        let state = "";
+                        if (answered) {
+                          if (originalIndex === item.answer) state = " correct";
+                          else if (index === selected) state = " incorrect";
+                        } else if (index === selected) {
+                          state = " selected";
+                        }
 
-                    return (
-                      <button
-                        key={index}
-                        type="button"
-                        className={`option${state}`}
-                        disabled={answered}
-                        onClick={() => selectOption(index)}
-                      >
-                        <span className="letter">{LETTERS[index]}</span>
-                        <span>
-                          {option}
-                          {translatorMode && <span className="translation" lang="zh-CN">{QUESTION_TRANSLATIONS[current].options[index]}</span>}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
+                        return (
+                          <button
+                            key={index}
+                            type="button"
+                            className={`option${state}`}
+                            disabled={answered}
+                            onClick={() => selectOption(index)}
+                          >
+                            <span className="letter">{LETTERS[index]}</span>
+                            <span>
+                              {item.options[originalIndex]}
+                              {showHelp && <span className="translation" lang={translationLang}>{translations[current].options[originalIndex]}</span>}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
 
-                <div className={answered ? `feedback show ${isCorrect ? "good" : "bad"}` : "feedback"} role="status">
-                  {answered && (
-                    <>
-                      <strong>{isCorrect ? "✓ That’s correct!" : "✕ Not quite."}</strong>{" "}
-                      {item.explanation}
-                      {translatorMode && <span className="translation" lang="zh-CN">{QUESTION_TRANSLATIONS[current].explanation}</span>}
-                    </>
-                  )}
+                    <div className={answered ? `feedback show ${isCorrect ? "good" : "bad"}` : "feedback"} role="status">
+                      {answered && (
+                        <>
+                          <strong>{isCorrect ? "✓ That’s correct!" : "✕ Not quite."}</strong>{" "}
+                          {item.explanation}
+                          {showHelp && <span className="translation" lang={translationLang}>{translations[current].explanation}</span>}
+                        </>
+                      )}
+                    </div>
+                  </div>
                 </div>
+                <figure className="question-visual" aria-label={answered ? "Answer context image" : "Question context image"}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={activeVisual.src}
+                    alt={activeVisual.alt}
+                    loading={current === 0 ? "eager" : "lazy"}
+                    decoding="async"
+                  />
+                </figure>
               </div>
 
               <div className="card-foot">
@@ -867,14 +1080,14 @@ export default function KnowItAll({ onComplete }) {
                     disabled={selected === null}
                     onClick={checkAnswer}
                   >
-                    Check answer
+                    <GameHelpText english="Check answer" />
                   </button>
                   <button
                     type="button"
                     className={`btn btn-primary${answered ? "" : " hidden"}`}
                     onClick={nextQuestion}
                   >
-                    {current === total - 1 ? "See my results →" : "Next question →"}
+                    <GameHelpText english={current === total - 1 ? "See my results →" : "Next question →"} />
                   </button>
                 </div>
               </div>
@@ -900,6 +1113,7 @@ export default function KnowItAll({ onComplete }) {
                   <button type="button" className="btn btn-secondary" onClick={toggleReview}>
                     {reviewOpen ? "Hide review ↑" : "Review answers ↓"}
                   </button>
+                  <button type="button" className="btn btn-primary" onClick={() => setScreen("start")}>Main menu</button>
                   <button type="button" className="btn btn-primary" onClick={startQuiz}>Play again ↻</button>
                 </div>
 
@@ -914,18 +1128,18 @@ export default function KnowItAll({ onComplete }) {
                         <div className="review-item" key={index}>
                           <div className="q">
                             {index + 1}. {question.q}
-                            {translatorMode && <span className="translation" lang="zh-CN">{QUESTION_TRANSLATIONS[index].question}</span>}
+                            {showHelp && <span className="translation" lang={translationLang}>{translations[index].question}</span>}
                           </div>
                           <div className="answer">
                             Correct answer: {question.options[question.answer]}
-                            {translatorMode && <span className="translation" lang="zh-CN">{QUESTION_TRANSLATIONS[index].options[question.answer]}</span>}
+                            {showHelp && <span className="translation" lang={translationLang}>{translations[index].options[question.answer]}</span>}
                           </div>
                           {response && !response.correct && <div className="your">
                             Your answer: {yourAnswer}
-                            {translatorMode && <span className="translation" lang="zh-CN">{QUESTION_TRANSLATIONS[index].options[response.selected]}</span>}
+                            {showHelp && <span className="translation" lang={translationLang}>{translations[index].options[response.selected]}</span>}
                           </div>}
                           <div className="explain">{question.explanation}</div>
-                          {translatorMode && <div className="explain translation" lang="zh-CN">{QUESTION_TRANSLATIONS[index].explanation}</div>}
+                          {showHelp && <div className="explain translation" lang={translationLang}>{translations[index].explanation}</div>}
                         </div>
                       );
                     })}

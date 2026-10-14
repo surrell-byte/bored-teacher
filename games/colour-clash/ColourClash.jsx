@@ -22,6 +22,14 @@ const GAME_OPTIONS = [
   { id:"memory", label:"🧠 Memory Pattern", desc:"Classic reminder mode" },
 ];
 
+const GENERAL_BACKGROUND_STYLE = {
+  backgroundImage: "url('/assets/games/colour-clash/colour-tunes-general-bg.webp')",
+  backgroundPosition: "center",
+  backgroundSize: "cover",
+  backgroundRepeat: "no-repeat",
+  backgroundAttachment: "fixed",
+};
+
 export default function ColourClash({ onComplete, onHudUpdate }) {
   const { completeGame } = useGame();
   const [screen, setScreen] = useState("menu");
@@ -182,26 +190,19 @@ export default function ColourClash({ onComplete, onHudUpdate }) {
   if (screen === "menu") {
     return (
       <div style={{
-        minHeight:"100vh",
+        height:"100%",
+        minHeight:"100%",
         display:"flex",
         flexDirection:"column",
         alignItems:"center",
         justifyContent:"center",
-        background:"radial-gradient(circle at top, #1e293b 0%, #0f172a 42%, #020817 100%)",
+        ...GENERAL_BACKGROUND_STYLE,
         fontFamily:"'Segoe UI',sans-serif",
         color:"#fff",
         padding:24,
         textAlign:"center",
       }}>
         <div style={{ fontSize:"3.5rem", marginBottom:8 }}>🎨</div>
-        <h1 style={{
-          fontSize:"clamp(2.4rem, 5vw, 4rem)",
-          margin:"0 0 4px",
-          letterSpacing:3,
-          background:"linear-gradient(90deg,#ef4444,#3b82f6,#22c55e,#fbbf24)",
-          WebkitBackgroundClip:"text",
-          WebkitTextFillColor:"transparent",
-        }}>COLOUR CLASH</h1>
         <p style={{ color:"#cbd5e1", marginBottom:30, fontSize:"1rem" }}>
           Match the pattern, keep the streak alive, and pick your challenge.
         </p>
@@ -279,12 +280,13 @@ export default function ColourClash({ onComplete, onHudUpdate }) {
   if (phase === "gameover") {
     return (
       <div style={{
-        minHeight:"100vh",
+        height:"100%",
+        minHeight:"100%",
         display:"flex",
         flexDirection:"column",
         alignItems:"center",
         justifyContent:"center",
-        background:"radial-gradient(circle at top, #1e293b 0%, #0f172a 42%, #020817 100%)",
+        ...GENERAL_BACKGROUND_STYLE,
         fontFamily:"'Segoe UI',sans-serif",
         color:"#fff",
         padding:24,
@@ -313,7 +315,7 @@ export default function ColourClash({ onComplete, onHudUpdate }) {
       flexDirection:"column",
       alignItems:"center",
       justifyContent:"center",
-      background:"radial-gradient(circle at top, #1e293b 0%, #0f172a 42%, #020817 100%)",
+      ...GENERAL_BACKGROUND_STYLE,
       fontFamily:"'Segoe UI',sans-serif",
       color:"#fff",
       padding:"clamp(12px, 2.2vh, 28px) clamp(16px, 3vw, 48px)",

@@ -20,11 +20,12 @@ interface Props {
   onComplete: (score: number, accuracy: number) => void;
   themeId?: string;
   onThemeChange?: (theme: TicTacRollTheme) => void;
+  profileName?: string;
 }
 
-export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeChange }: Props) {
+export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeChange, profileName = '' }: Props) {
   const [screen, setScreen] = useState<Screen>("welcome");
-  const [profile, setProfile] = useState({ name: "Player", avatar: "🎮", theme: themeId });
+  const [profile, setProfile] = useState({ name: profileName || "Player", avatar: "🎮", theme: themeId });
   const [player2, setPlayer2] = useState({ name: "Player 2", avatar: "🐺" });
   const [playerCount, setPlayerCount] = useState<1 | 2 | null>(null);
   const [burst, setBurst] = useState<{ id: number; x: number; y: number; color: string }[]>([]);

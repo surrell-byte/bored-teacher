@@ -515,12 +515,12 @@ const STYLES = `
 }
 `;
 
-export default function FindMyFood({ onComplete, themeId, variant = "food" }) {
+export default function FindMyFood({ onComplete, themeId, variant = "food", profileName = '' }) {
   const { completeGame } = useGame();
   const [screen, setScreen] = useState("welcome");
   const selectedTheme = THEMES.find(item => item.key === themeId) || THEMES[0];
   const theme = Math.max(0, THEMES.indexOf(selectedTheme));
-  const [p1, setP1] = useState({ name:"Player 1", avatar:"🐶" });
+  const [p1, setP1] = useState({ name: profileName || "Player 1", avatar:"🐶" });
   const [p2, setP2] = useState({ name:"Player 2", avatar:"🐼" });
   const [cards, setCards] = useState([]);
   const [flipped, setFlipped] = useState([]);

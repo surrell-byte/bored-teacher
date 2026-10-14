@@ -4,6 +4,8 @@
 import { Children, Fragment, isValidElement, useEffect, useMemo, useState } from 'react';
 import { READING_RESCUE_QUIZZES } from './readingRescueData';
 import { readingRescueStories as READING_RESCUE_STORIES } from './readingRescueStories';
+import { READING_RESCUE_TRANSLATIONS } from './readingRescueTranslations';
+import { useGameTranslation } from '@/engine/layout/GameTranslationContext';
 import FindTheLetter from '../shared/FindTheLetter';
 import ProfileNameAutofill from '../shared/ProfileNameAutofill';
 
@@ -122,9 +124,10 @@ function countWords(node) {
   return 0;
 }
 
-function paginateStoryPages(sourcePages) {
+function paginateStoryPages(sourcePages, level) {
   return sourcePages.flatMap((sourcePage, sourceIndex) => {
     const normalized = normalizePage(sourcePage);
+    const translation = READING_RESCUE_TRANSLATIONS['zh-CN'][level]?.[sourceIndex];
     const fragmentChildren = isValidElement(normalized.text) && normalized.text.type === Fragment
       ? Children.toArray(normalized.text.props.children).filter((child) => countWords(child) > 0)
       : null;
@@ -134,7 +137,7 @@ function paginateStoryPages(sourcePages) {
     const totalWords = blocks.reduce((total, block) => total + countWords(block), 0);
 
     if (blocks.length <= 1 || (totalWords <= MAX_STORY_PAGE_WORDS && blocks.length <= MAX_STORY_PAGE_PARAGRAPHS)) {
-      return [{ ...normalized, imageIndex: sourceImageIndex }];
+      return [{ ...normalized, imageIndex: sourceImageIndex, translation, translationIndex: sourceIndex }];
     }
 
     const groups = [];
@@ -157,6 +160,8 @@ function paginateStoryPages(sourcePages) {
       title: groupIndex === 0 ? normalized.title : `${normalized.title} (continued)`,
       text: <>{group}</>,
       imageIndex: sourceImageIndex,
+      translation,
+      translationIndex: sourceIndex,
     }));
   });
 }
@@ -167,6 +172,8 @@ export default function ReadingRescue({ onComplete, onHudUpdate, profileName }) 
   const [userName, setUserName] = useState(profileName || '');
   const [userGrade, setUserGrade] = useState('');
   const [page, setPage] = useState(0);
+  const { language: helpLanguage } = useGameTranslation();
+  const storyLanguage = helpLanguage === 'off' ? null : helpLanguage;
   const [quizIndex, setQuizIndex] = useState(0);
   const [quizAnswers, setQuizAnswers] = useState([]);
   const [selectedBlank, setSelectedBlank] = useState(null);
@@ -175,7 +182,7 @@ export default function ReadingRescue({ onComplete, onHudUpdate, profileName }) 
   const [revealed, setRevealed] = useState(false);
 
   const story = READING_RESCUE_STORIES.find((item) => item.level === level) || LEGACY_STORIES[level];
-  const pages = useMemo(() => paginateStoryPages(story.pages), [story.pages]);
+  const pages = useMemo(() => paginateStoryPages(story.pages, level), [story.pages, level]);
   const quiz = normalizeQuiz(level);
   const activity = RETELL_ACTIVITIES[level];
   const blanks = activity.answers;
@@ -244,7 +251,10 @@ export default function ReadingRescue({ onComplete, onHudUpdate, profileName }) 
 
   if (phase === 'story') {
     const currentPage = normalizePage(pages[page]);
-    return <div className={backgroundClass()}><style>{CSS}</style><div className="ff-progress"><i style={{ width: `${((page + 1) / pages.length) * 33}%` }} /></div><main><section className="ff-story-layout"><img className="ff-story-illustration" src={getStoryImage(level, currentPage.imageIndex ?? page)} alt={`${story.title}, page ${page + 1}`} /><div><article className="ff-story"><small>Page {page + 1} - {currentPage.title}</small>{storyText(currentPage.text)}</article><div className="ff-actions"><button className="ff-secondary" disabled={!page} onClick={() => setPage((value) => value - 1)}>Previous</button><button className="ff-primary" onClick={() => page < pages.length - 1 ? setPage((value) => value + 1) : setPhase('quiz')}>{page < pages.length - 1 ? 'Next' : 'Take the Quiz'}</button></div></div></section></main></div>;
+    const activeTranslation = storyLanguage && currentPage.translation
+      ? READING_RESCUE_TRANSLATIONS[storyLanguage][level][currentPage.translationIndex]
+      : null;
+    return <div className={backgroundClass()}><style>{CSS}</style><div className="ff-progress"><i style={{ width: `${((page + 1) / pages.length) * 33}%` }} /></div><main><section className="ff-story-layout"><img className="ff-story-illustration" src={getStoryImage(level, currentPage.imageIndex ?? page)} alt={`${story.title}, page ${page + 1}`} /><div><article className="ff-story"><small>Page {page + 1} - {currentPage.title}</small>{storyText(currentPage.text)}{storyLanguage && currentPage.translation && <div className="ff-story-translation" lang={storyLanguage}><small>{storyLanguage === 'zh-CN' ? '中文翻译' : 'คำแปลภาษาไทย'} · {activeTranslation?.title ?? currentPage.translation.title}</small><p>{activeTranslation?.text ?? currentPage.translation.text}</p></div>}</article><div className="ff-actions"><button className="ff-secondary" disabled={!page} onClick={() => setPage((value) => value - 1)}>Previous</button><button className="ff-primary" onClick={() => page < pages.length - 1 ? setPage((value) => value + 1) : setPhase('quiz')}>{page < pages.length - 1 ? 'Next' : 'Take the Quiz'}</button></div></div></section></main></div>;
   }
 
   if (phase === 'quiz') {
@@ -840,5 +850,39 @@ const CSS = `
     border-radius:20px;
   }
 }
-
+.finn-fox .ff-translation-controls {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin: 0 0 10px;
+}
+.finn-fox .ff-translation-controls button {
+  min-width: 62px;
+  padding: 8px 12px;
+  border: 1px solid var(--rr-border);
+  border-radius: 999px;
+  background: var(--rr-ivory);
+  color: var(--rr-plum);
+  font: 700 0.95rem system-ui, sans-serif;
+  cursor: pointer;
+}
+.finn-fox .ff-translation-controls button[aria-pressed="true"] {
+  border-color: var(--rr-violet);
+  background: var(--rr-plum);
+  color: #fff;
+}
+.finn-fox .ff-story-translation {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--rr-border);
+  font-family: system-ui, sans-serif;
+}
+.finn-fox .ff-story-translation small {
+  margin-bottom: 8px;
+  color: var(--rr-violet);
+  font: 800 0.88rem system-ui, sans-serif;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.finn-fox .ff-story-translation p { font-family: system-ui, sans-serif; }
 `;

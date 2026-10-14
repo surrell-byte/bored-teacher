@@ -344,7 +344,7 @@ function drawMessage(ctx, game) {
   ctx.restore();
 }
 
-export default function BowlingBattle({ onComplete }) {
+export default function BowlingBattle({ onComplete, profileName = '' }) {
   const canvasRef = useRef(null);
   const gameRef = useRef(null);
   const keysRef = useRef({ left: false, right: false });
@@ -353,8 +353,8 @@ export default function BowlingBattle({ onComplete }) {
   const onCompleteRef = useRef(onComplete);
   const spritesRef = useRef({ pin: null, balls: {} });
   const [screen, setScreen] = useState("welcome");
-  const [names, setNames] = useState(["", ""]);
-  const [savedNames, setSavedNames] = useState(["Player 1", "Player 2"]);
+  const [names, setNames] = useState([profileName, ""]);
+  const [savedNames, setSavedNames] = useState([profileName || "Player 1", "Player 2"]);
   const [ballSelections, setBallSelections] = useState(["blue", "red"]);
   const [selectedMode, setSelectedMode] = useState("aim");
   const [, setHudTick] = useState(0);

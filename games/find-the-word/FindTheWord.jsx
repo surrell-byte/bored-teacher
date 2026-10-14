@@ -108,11 +108,11 @@ const shuffle = (array) => {
   return arr;
 };
 
-export default function FindTheWord() {
+export default function FindTheWord({ profileName = '' }) {
   const [screen, setScreen] = useState("welcome");
 
   const [player, setPlayer] = useState({
-    name: "",
+    name: profileName,
     age: "",
     avatar: null,
     colorIdx: null,

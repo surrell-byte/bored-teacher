@@ -42,9 +42,9 @@ const QUESTIONS_DB = {
 
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
 
-export default function UnicornRun({ onComplete }) {
+export default function UnicornRun({ onComplete, profileName = '' }) {
   const [screen, setScreen] = useState("start");
-  const [playerName, setPlayerName] = useState("");
+  const [playerName, setPlayerName] = useState(profileName);
   const [level, setLevel] = useState(1);
   const [unlocked, setUnlocked] = useStorage("unicorn-run-v1", { 1:true, 2:false, 3:false });
   const [questions, setQuestions] = useState([]);

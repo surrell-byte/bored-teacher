@@ -48,10 +48,10 @@ function tileStyle(idx) {
   return { bg:"#1e293b", label:String(idx) };
 }
 
-export default function LakersShowtimeRacer({ onComplete }) {
+export default function LakersShowtimeRacer({ onComplete, profileName = '' }) {
   const [screen, setScreen] = useState("setup");
   const [numPlayers, setNumPlayers] = useState(2);
-  const [playerNames, setPlayerNames] = useState(["Player 1","Player 2","Player 3","Player 4"]);
+  const [playerNames, setPlayerNames] = useState([profileName || "Player 1","Player 2","Player 3","Player 4"]);
   const [positions, setPositions] = useState([]);
   const [currentP, setCurrentP] = useState(0);
   const [rolling, setRolling] = useState(false);

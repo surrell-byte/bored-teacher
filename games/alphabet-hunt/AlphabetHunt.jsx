@@ -17,10 +17,10 @@ const EFFECTS = ['💥 -300 points', '💰 +500 points', '🥷 Steal 100 points'
 const QWERTY_KEYS = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'].join('').split('');
 const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 
-export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
+export default function AlphabetHunt({ onComplete, themeId = 'classroom', profileName = '' }) {
   const [screen, setScreen] = useState('welcome');
   const [gameMode, setGameMode] = useState('emoji');
-  const [name1, setName1] = useState('');
+  const [name1, setName1] = useState(profileName || '');
   const [name2, setName2] = useState('');
   const [av1, setAv1] = useState(null);
   const [av2, setAv2] = useState(null);
@@ -302,7 +302,7 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom' }) {
   const handleRestart = () => {
     if (lock) return;
     if (window.confirm('Restart this game?')) {
-      setName1('');
+      setName1(profileName || '');
       setName2('');
       setAv1(null);
       setAv2(null);
