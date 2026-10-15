@@ -43,6 +43,25 @@ export interface ReviewItem {
   createdAt?: unknown;
 }
 
+export function hasPublicReviewIdentity(
+  review: Pick<ReviewItem, 'userId' | 'userName' | 'avatar'>,
+) {
+  const name = review.userName?.trim() ?? '';
+  const normalizedName = name.toLowerCase();
+  const avatar = review.avatar?.trim() ?? '';
+  const letterCount = name.match(/\p{L}/gu)?.length ?? 0;
+
+  return Boolean(
+    review.userId?.trim()
+    && letterCount >= 2
+    && !['explorer', 'guest', 'creator'].includes(normalizedName)
+    && !name.includes('@')
+    && avatar
+    && avatar !== '👤'
+    && avatar !== '🙂',
+  );
+}
+
 export interface CreatorNotificationItem {
   id?: string;
   type: 'review-comment' | 'feedback' | 'system';
@@ -592,35 +611,24 @@ export async function submitReview(data: {
 }
 
 export async function loadReviews() {
-  const fallbackReviews: ReviewItem[] = [
-    { id: 'fallback-1', userName: 'Mina', userEmail: 'teacher@example.com', avatar: '👩🏽‍🏫', age: 29, countryCode: 'GB', rating: 5, comment: 'The new learning path feels calm, joyful, and classroom friendly.', page: '/hub', createdAt: Date.now() },
-    { id: 'fallback-2', userName: 'Kai', userEmail: 'coach@example.com', avatar: '🧑🏻‍💻', age: 34, countryCode: 'CA', rating: 4, comment: 'Loved the game choices and the helpful classroom flow.', page: '/hub', createdAt: Date.now() - 3600000 },
-    { id: 'fallback-3', userName: 'Ari', userEmail: 'family@example.com', avatar: '🧑🏾‍🎨', age: 27, countryCode: 'AU', rating: 5, comment: 'The activities are bright, easy to understand, and fun to revisit.', page: '/hub', createdAt: Date.now() - 7200000 },
-    { id: 'fallback-4', userName: 'Sam', userEmail: 'school@example.com', avatar: '🧑🏼‍🏫', age: 41, countryCode: 'US', rating: 5, comment: 'A thoughtful learning space with games children actually want to play.', page: '/hub', createdAt: Date.now() - 10800000 },
-  ];
-  if (!db) {
-    return fallbackReviews;
-  }
+  if (!db) return [];
 
-  try {
-    const snapshot = await getDocs(collection(db, 'reviews'));
-    const items = snapshot.docs
-      .map(docSnap => ({ id: docSnap.id, ...(docSnap.data() as Record<string, unknown>) } as ReviewItem))
-      .filter(item => Number(item.rating) >= 4)
-      .sort((left, right) => {
-        const leftTime = left.createdAt && typeof (left.createdAt as { toMillis?: () => number }).toMillis === 'function'
-          ? (left.createdAt as { toMillis: () => number }).toMillis()
-          : new Date(String(left.createdAt ?? 0)).getTime();
-        const rightTime = right.createdAt && typeof (right.createdAt as { toMillis?: () => number }).toMillis === 'function'
-          ? (right.createdAt as { toMillis: () => number }).toMillis()
-          : new Date(String(right.createdAt ?? 0)).getTime();
-        return rightTime - leftTime;
-      });
+  const snapshot = await getDocs(collection(db, 'reviews'));
+  return snapshot.docs
+    .map(docSnap => ({ id: docSnap.id, ...(docSnap.data() as Record<string, unknown>) } as ReviewItem))
+    .filter(item => Number(item.rating) >= 4 && hasPublicReviewIdentity(item))
+    .sort((left, right) => {
+      const leftTime = left.createdAt && typeof (left.createdAt as { toMillis?: () => number }).toMillis === 'function'
+        ? (left.createdAt as { toMillis: () => number }).toMillis()
+        : new Date(String(left.createdAt ?? 0)).getTime();
+      const rightTime = right.createdAt && typeof (right.createdAt as { toMillis?: () => number }).toMillis === 'function'
+        ? (right.createdAt as { toMillis: () => number }).toMillis()
+        : new Date(String(right.createdAt ?? 0)).getTime();
+      return rightTime - leftTime;
+    })
+    .slice(0, 4)
+    .map(item => ({ ...item, rating: Number(item.rating) }));
 
-    return [...items, ...fallbackReviews.filter(fallback => !items.some(item => item.comment === fallback.comment))].slice(0, 4).map(item => ({ ...item, rating: Number(item.rating) }));
-  } catch {
-    return fallbackReviews;
-  }
 }
 
 export async function loadNotificationsForCreator() {

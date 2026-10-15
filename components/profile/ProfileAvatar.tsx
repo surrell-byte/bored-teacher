@@ -14,7 +14,7 @@ type ProfileAvatarProps = {
 
 export default function ProfileAvatar({ value, size, alt = '', className, style }: ProfileAvatarProps) {
 	if (!isImageAvatar(value)) {
-		return <span className={className} style={{ fontSize: size ? size * 0.55 : undefined, lineHeight: 1, ...style }}>{value}</span>;
+		return <span className={className} style={{ display: 'inline-grid', placeItems: 'center', fontSize: size ? size * 0.55 : undefined, lineHeight: 1, ...style }}>{value}</span>;
 	}
 
 	return (

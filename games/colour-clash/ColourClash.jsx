@@ -65,6 +65,13 @@ export default function ColourClash({ onComplete, onHudUpdate }) {
 
   const activeColours = gameType === "memory" ? (memoryMode === "hard" ? COLOURS : COLOURS.slice(0, 4)) : COLOURS;
   const startLives = gameType === "memory" ? (memoryMode === "hard" ? 1 : 3) : 3;
+  const sequenceLength = Math.max(sequence.length, 1);
+  const firstIncorrectIndex = playerSeq.findIndex((colour, index) => colour !== sequence[index]);
+  const sequenceProgress = phase === "showing"
+    ? 0
+    : firstIncorrectIndex === -1
+      ? Math.min(playerSeq.length, sequenceLength)
+      : firstIncorrectIndex;
 
   const showSequence = useCallback((seq) => {
     setPhase("showing");
@@ -101,9 +108,6 @@ export default function ColourClash({ onComplete, onHudUpdate }) {
   }, [clearGameTimers]);
 
   useEffect(() => {
-    const sequenceLength = Math.max(sequence.length, 1);
-    const sequenceProgress = phase === "showing" ? 0 : Math.min(playerSeq.length, sequenceLength);
-
     onHudUpdate?.(screen === "game" ? {
       round,
       score,
@@ -113,7 +117,7 @@ export default function ColourClash({ onComplete, onHudUpdate }) {
       sequenceLength,
       sequenceProgress,
     } : null);
-  }, [lives, onHudUpdate, phase, playerSeq.length, round, score, screen, sequence.length, startLives]);
+  }, [lives, onHudUpdate, phase, playerSeq.length, round, score, screen, sequence.length, sequenceLength, sequenceProgress, startLives]);
 
   const startGame = useCallback(() => {
     clearGameTimers();
@@ -192,6 +196,7 @@ export default function ColourClash({ onComplete, onHudUpdate }) {
       <div style={{
         height:"100%",
         minHeight:"100%",
+        boxSizing:"border-box",
         display:"flex",
         flexDirection:"column",
         alignItems:"center",
@@ -202,8 +207,8 @@ export default function ColourClash({ onComplete, onHudUpdate }) {
         padding:24,
         textAlign:"center",
       }}>
-        <div style={{ fontSize:"3.5rem", marginBottom:8 }}>🎨</div>
-        <p style={{ color:"#cbd5e1", marginBottom:30, fontSize:"1rem" }}>
+        <div style={{ fontSize:"5rem", marginBottom:16 }}>🎨</div>
+        <p style={{ maxWidth:760, color:"#f0f6ff", marginBottom:36, fontSize:"clamp(1.2rem, 2vw, 1.5rem)", lineHeight:1.5 }}>
           Match the pattern, keep the streak alive, and pick your challenge.
         </p>
 
@@ -214,19 +219,19 @@ export default function ColourClash({ onComplete, onHudUpdate }) {
               type="button"
               onClick={() => setGameType(option.id)}
               style={{
-                padding:"16px 22px",
-                borderRadius:18,
+                padding:"24px 30px",
+                borderRadius:22,
                 border:`2px solid ${gameType === option.id ? '#a78bfa' : 'rgba(255,255,255,0.12)'}`,
                 background: gameType === option.id ? "rgba(124, 58, 237, 0.28)" : "rgba(15,23,42,0.55)",
                 color:"#f8fafc",
                 fontWeight:800,
-                minWidth:180,
+                minWidth:250,
                 cursor:"pointer",
                 boxShadow: gameType === option.id ? "0 10px 25px rgba(167,139,250,0.35)" : "none",
               }}
             >
-              <div>{option.label}</div>
-              <div style={{ fontSize:"0.72rem", opacity:0.75, marginTop:4 }}>{option.desc}</div>
+              <div style={{ fontSize:"1.2rem" }}>{option.label}</div>
+              <div style={{ fontSize:"0.92rem", opacity:0.85, marginTop:8 }}>{option.desc}</div>
             </button>
           ))}
         </div>
@@ -260,13 +265,13 @@ export default function ColourClash({ onComplete, onHudUpdate }) {
           type="button"
           onClick={startGame}
           style={{
-            padding:"18px 52px",
+            padding:"24px 68px",
             borderRadius:999,
             border:"none",
             background:"linear-gradient(135deg,#8b5cf6,#6366f1)",
             color:"#fff",
             fontWeight:800,
-            fontSize:"1.2rem",
+            fontSize:"clamp(1.25rem, 2vw, 1.6rem)",
             cursor:"pointer",
             boxShadow:"0 10px 30px rgba(99,102,241,0.4)",
           }}
@@ -323,7 +328,7 @@ export default function ColourClash({ onComplete, onHudUpdate }) {
       <div style={{ width:"100%", maxWidth:900, display:"grid", gap:16 }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:12, flexWrap:"wrap", padding:"12px 16px", borderRadius:16, background:"rgba(15,23,42,0.5)", border:"1px solid rgba(148,163,184,0.2)" }}>
           <span style={{ fontWeight:800, letterSpacing:1.2 }}>MODE {gameType === "memory" ? "MEMORY" : "CLASH"}</span>
-          <span style={{ fontWeight:700, color:"#a5f3fc" }}>Sequence {Math.min(playerSeq.length, sequence.length)}/{Math.max(sequence.length, 1)}</span>
+          <span style={{ fontWeight:700, color:"#a5f3fc" }}>Sequence {sequenceProgress}/{sequenceLength}</span>
         </div>
 
         <div style={{

@@ -461,3 +461,47 @@ test('Tile Lanes is registered as a Teacher Pro game', () => {
   assert.match(access, /tilelanes/);
   assert.match(component, /tilelanes/);
 });
+
+test('Colour Tunes start target, menu controls, and sequence counter stay usable', () => {
+  const styles = read('app/globals.css');
+  const component = read('games/colour-clash/ColourClash.jsx');
+
+  assert.match(styles, /\.colour-tunes-welcome-start \{[^}]*top: 42%;[^}]*left: 50%;[^}]*width: min\(24vw, 280px\)/);
+  assert.match(styles, /@media \(max-width: 760px\)\s*\{\s*\.colour-tunes-welcome-start \{ width: min\(62vw, 280px\); \}/);
+  assert.match(component, /fontSize:"5rem"/);
+  assert.match(component, /padding:"24px 30px"/);
+  assert.match(component, /padding:"24px 68px"/);
+  assert.match(component, /const firstIncorrectIndex = playerSeq\.findIndex\(\(colour, index\) => colour !== sequence\[index\]\)/);
+  assert.match(component, /const sequenceProgress = phase === "showing"[\s\S]*?firstIncorrectIndex === -1[\s\S]*?firstIncorrectIndex/);
+  assert.match(component, /Sequence \{sequenceProgress\}\/\{sequenceLength\}/);
+});
+
+test('Hub avatar is enlarged and public reviews require an attributed profile', () => {
+  const hub = read('app/hub/page.tsx');
+  const firebase = read('lib/firebase.ts');
+  const reviewPanel = read('components/reviews/ReviewPanel.tsx');
+
+  assert.match(hub, /<ProfileAvatar value=\{state\.avatar\} size=\{56\} className="hub-welcome-avatar" \/>/);
+  assert.match(firebase, /export function hasPublicReviewIdentity/);
+  assert.match(firebase, /review\.userId\?\.trim\(\)/);
+  assert.match(firebase, /letterCount >= 2/);
+  assert.match(firebase, /!\\?\['explorer', 'guest', 'creator'\]\.includes\(normalizedName\)/);
+  assert.match(firebase, /\.filter\(item => Number\(item\.rating\) >= 4 && hasPublicReviewIdentity\(item\)\)/);
+  assert.match(reviewPanel, /hasPublicReviewIdentity\(reviewer\)/);
+  assert.match(reviewPanel, /No verified reviews yet\./);
+  assert.match(reviewPanel, /<ProfileAvatar value=\{review\.avatar \?\? ''\} size=\{34\} alt="" className="hub-review-avatar" \/>/);
+  assert.match(reviewPanel, /<strong>\{review\.userName\}<\/strong>/);
+});
+
+test('Profile editing opens the dedicated page and centers the avatar glyph', () => {
+  const navbar = read('components/Navbar.tsx');
+  const profileAvatar = read('components/profile/ProfileAvatar.tsx');
+  const profilePage = read('app/profile/page.tsx');
+
+  assert.match(navbar, /<Link\s+className="dropdown-item"\s+role="menuitem"\s+href="\/profile"/);
+  assert.match(navbar, /<Link href="\/profile" className="mobile-nav-item"/);
+  assert.doesNotMatch(navbar, /ProfileModal|setShowProfile\(|showProfile &&/);
+  assert.match(profileAvatar, /display: 'inline-grid', placeItems: 'center'/);
+  assert.match(profilePage, /className="profile-preview-avatar"/);
+  assert.match(profilePage, /profile-avatar-option\$\{/);
+});

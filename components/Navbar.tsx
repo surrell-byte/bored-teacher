@@ -6,7 +6,6 @@ import { useState, useEffect, useRef } from 'react';
 import { useGame, logOut } from '@/providers/GameProvider';
 import { GAME_CATALOG, THEMES } from '@/constants/index';
 import { usePathname, useRouter } from 'next/navigation';
-import ProfileModal from '@/features/profiles/components/ProfileModal';
 import { useResponsive } from '@/hooks/useResponsive';
 import { isSoundEnabled, setSoundEnabled } from '@/lib/sound/beep';
 import { isCreatorUser, onAuthStateChanged } from '@/lib/firebase';
@@ -31,7 +30,6 @@ export default function Navbar() {
   const { state, applyTheme, earnedAchievementIds } = useGame();
   const router = useRouter();
   const pathname = usePathname() ?? '';
-  const [showProfile, setShowProfile] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -254,13 +252,14 @@ export default function Navbar() {
                   minWidth: 220,
                 }}
               >
-                <button
+                <Link
                   className="dropdown-item"
                   role="menuitem"
-                  onClick={() => { setShowProfile(true); setShowProfileMenu(false); }}
+                  href="/profile"
+                  onClick={() => setShowProfileMenu(false)}
                 >
                   ✏️ Edit Profile
-                </button>
+                </Link>
 
                 <button
                   className="dropdown-item"
@@ -400,8 +399,6 @@ export default function Navbar() {
           </section>
         </div>
       )}
-
-      {showProfile && <ProfileModal onClose={() => setShowProfile(false)} />}
     </>
   );
 }

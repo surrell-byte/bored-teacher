@@ -4662,8 +4662,11 @@ a { color: inherit; }
 .game-shell--pizzafractions .route-game-welcome { background: linear-gradient(rgba(35,14,5,.16),rgba(35,14,5,.16)), url('/games/pizza-fractions/welcome-screen-bg.png') center / cover fixed; }
 .game-shell--knowitall .route-game-welcome.know-it-all-route-welcome { position: relative; display: block; min-height: 100%; height: 100%; padding: 0; background: url('/assets/games/know-it-all/know-it-all-welcome-bg.webp') center / cover no-repeat; }
 .game-shell--colourclash .route-game-welcome.colour-tunes-route-welcome { position: relative; display: block; min-height: 100%; height: 100%; padding: 0; background: url('/assets/games/colour-clash/colour-tunes-welcome-bg.webp') center / cover no-repeat; }
-.colour-tunes-welcome-start { position: absolute; inset-inline: 0; bottom: 0; width: 100%; height: 9%; border: 0; background: transparent; color: transparent; cursor: pointer; }
+.colour-tunes-welcome-start { position: absolute; top: 42%; left: 50%; width: min(24vw, 280px); height: 12%; padding: 0; transform: translateX(-50%); border: 0; border-radius: 999px; background: transparent; color: transparent; cursor: pointer; }
 .colour-tunes-welcome-start:focus-visible { outline: 3px solid #fff; outline-offset: -5px; }
+@media (max-width: 760px) {
+  .colour-tunes-welcome-start { width: min(62vw, 280px); }
+}
 .know-it-all-welcome-start { position: absolute; top: 76%; left: 36%; width: 28%; height: 18%; border: 0; border-radius: 999px; background: transparent; color: transparent; cursor: pointer; }
 .know-it-all-welcome-start:focus-visible { outline: 4px solid #fff; outline-offset: 4px; }
 .finn-fox { min-height: 100%; background: #fffdf7; }
@@ -4678,6 +4681,18 @@ a { color: inherit; }
   border-color: var(--game-toast-accent, var(--border-bright));
   color: #fff;
 }
+.hub-welcome-avatar {
+  display: inline-grid;
+  width: 56px;
+  height: 56px;
+  place-items: center;
+  overflow: hidden;
+  vertical-align: middle;
+  border: 2px solid var(--border-bright);
+  border-radius: 50%;
+  background: var(--surface-strong);
+}
+.hub-welcome-avatar:is(img) { object-fit: cover; }
 .lb-league-feature p:not(.suggestions-kicker) { margin: 0; color: var(--muted); }
 .ff-retell-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(240px, .85fr); gap: 28px; align-items: center; }
 .ff-retell-copy { min-width: 0; }
@@ -4999,6 +5014,7 @@ a { color: inherit; }
   .hub-dashboard > .hub-reviews-panel { margin-top: 22px; }
   .hub-reviews-panel { padding: 16px; }
   .hub-review-grid { grid-template-columns: 1fr; }
+  .hub-welcome-avatar { width: 48px; height: 48px; }
   .hub-mini-avatar { display: grid; width: 34px; height: 34px; place-items: center; overflow: hidden; }
   .hub-mini-avatar-image { display: block; width: 34px; height: 34px; object-fit: contain; }
   .hub-mini-avatar-emoji { font-size: 1.35rem; }
