@@ -133,4 +133,6 @@ export const GAME_COMPONENTS: Partial<Record<string, React.LazyExoticComponent<R
   pluralquest: lazyGame('pluralquest', () => import('@/games/plural-quest/PluralQuest.jsx')),
   victoryvet: lazyGame('victoryvet', () => import('@/games/victory-vet/VictoryVet.jsx')),
   whatsmissing: lazyGame('whatsmissing', () => import('@/games/whats-missing/WhatsMissing.jsx')),
+  wordquest: lazyGame('wordquest', () => import('@/games/word-quest/WordQuest.jsx')),
+  burgerrun: lazyGame('burgerrun', () => import('@/games/burger-run/BurgerRun.jsx')),
 };

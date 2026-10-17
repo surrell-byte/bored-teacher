@@ -6,18 +6,43 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function userIsInClass(classId) {
-      return signedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.classId == classId;
+    function teacherOwnsClass(classId) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/classCodes/$(classId))
+        && get(/databases/$(database)/documents/classCodes/$(classId)).data.teacherUid == request.auth.uid;
     }
 
-    function teacherOwnsClass(classId) {
-      return signedIn() && get(/databases/$(database)/documents/classCodes/$(classId)).data.teacherUid == request.auth.uid;
+    function classIdCanBeSet(classId) {
+      return classId == '' || (classId is string && teacherOwnsClass(classId));
+    }
+
+    function usernameIndexMatchesAfter(userId, username) {
+      let usernamePath = /databases/$(database)/documents/usernames/$(username);
+      let userPath = /databases/$(database)/documents/users/$(userId);
+      return username is string
+        && existsAfter(usernamePath)
+        && existsAfter(userPath)
+        && getAfter(usernamePath).data.uid == userId
+        && getAfter(usernamePath).data.email == getAfter(userPath).data.email;
+    }
+
+    function usernameEntryMatchesProfile(username, userId) {
+      let userPath = /databases/$(database)/documents/users/$(userId);
+      return existsAfter(userPath)
+        && getAfter(userPath).data.usernameLower == username
+        && getAfter(userPath).data.email == request.resource.data.email;
     }
 
     match /usernames/{username} {
-      allow read: if true;
-      allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
-      allow update: if signedIn() && resource.data.uid == request.auth.uid && request.resource.data.uid == request.auth.uid;
+      allow read: if false;
+      allow create: if signedIn()
+        && request.resource.data.uid == request.auth.uid
+        && usernameEntryMatchesProfile(username, request.auth.uid);
+      // Username changes must update their private index and profile atomically.
+      allow update: if signedIn()
+        && resource.data.uid == request.auth.uid
+        && request.resource.data.uid == request.auth.uid
+        && usernameEntryMatchesProfile(username, request.auth.uid);
       allow delete: if signedIn() && resource.data.uid == request.auth.uid;
     }
 
@@ -68,7 +93,9 @@ service cloud.firestore {
         && request.auth.uid == userId
         && request.resource.data.email == request.auth.token.email
         && request.resource.data.teacherPro == false
-        && request.resource.data.emailVerified == false;
+        && request.resource.data.emailVerified == false
+        && (!('classId' in request.resource.data) || classIdCanBeSet(request.resource.data.classId))
+        && usernameIndexMatchesAfter(userId, request.resource.data.usernameLower);
 
       allow read: if request.auth != null && (
         request.auth.uid == userId ||
@@ -84,6 +111,10 @@ service cloud.firestore {
           'welcomeGiftClaimed', 'welcomeGiftId', 'ownedItems', 'lastLogin',
           'isActive', 'updatedAt'
         ]))
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['classId'])
+          || classIdCanBeSet(request.resource.data.classId))
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['usernameLower'])
+          || usernameIndexMatchesAfter(userId, request.resource.data.usernameLower))
       );
 
       allow delete: if request.auth != null
@@ -91,7 +122,7 @@ service cloud.firestore {
     }
 
     match /classCodes/{classCode} {
-      allow get: if signedIn();
+      allow get: if teacherOwnsClass(classCode);
       allow list: if signedIn() && resource.data.teacherUid == request.auth.uid;
       allow create: if request.auth != null
         && request.resource.data.teacherUid == request.auth.uid;
@@ -105,12 +136,11 @@ service cloud.firestore {
 
     match /studentScores/{studentId} {
       allow create, update: if signedIn() && request.auth.uid == studentId
-        && (userIsInClass(request.resource.data.classId) || teacherOwnsClass(request.resource.data.classId));
+        && teacherOwnsClass(request.resource.data.classId);
       allow get: if signedIn() && (request.auth.uid == studentId
-        || userIsInClass(resource.data.classId)
         || teacherOwnsClass(resource.data.classId));
       allow list: if signedIn()
-        && (userIsInClass(resource.data.classId) || teacherOwnsClass(resource.data.classId));
+        && teacherOwnsClass(resource.data.classId);
       allow delete: if signedIn() && request.auth.uid == studentId;
     }
 

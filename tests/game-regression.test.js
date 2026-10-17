@@ -505,3 +505,68 @@ test('Profile editing opens the dedicated page and centers the avatar glyph', ()
   assert.match(profilePage, /className="profile-preview-avatar"/);
   assert.match(profilePage, /profile-avatar-option\$\{/);
 });
+
+test('Word Quest is registered and reports its completed three-round score', () => {
+  const component = read('games/word-quest/WordQuest.jsx');
+  const catalog = read('games/catalog.data.ts');
+  const registry = read('games/catalog.components.tsx');
+
+  assert.match(catalog, /wordquest:\s*\{[\s\S]*?name: "Word Quest"[\s\S]*?hasComponent: true,[\s\S]*?isNew: true/);
+  assert.match(registry, /wordquest: lazyGame\('wordquest', \(\) => import\('@\/games\/word-quest\/WordQuest\.jsx'\)\)/);
+  assert.match(component, /const MULTIPLE_CHOICE = \[/);
+  assert.match(component, /const UNSCRAMBLE = \[/);
+  assert.match(component, /const STORY = \{/);
+  assert.match(component, /onComplete\?\.\(total, Math\.round\(\(total \/ 15\) \* 100\)\)/);
+  assert.match(component, /if \(!completedRef\.current\)/);
+  assert.match(component, /Play again/);
+});
+
+test('Tic Tac Roll uses a pip die beside turn status and keeps replay in the status card', () => {
+  const component = read('games/tictacroll/TicTacRoll.tsx');
+  const statusStart = component.indexOf('{/* Status Card */}');
+  const boardStart = component.indexOf('{/* MAIN BOARD AREA */}', statusStart);
+  const statusMarkup = component.slice(statusStart, boardStart);
+
+  assert.match(component, /function Die\(\{ value, rolling, theme \}/);
+  assert.match(component, /role="img" aria-label=\{`Die showing \$\{value\}`\}/);
+  assert.match(component, /transformStyle: "preserve-3d"/);
+  assert.match(component, /setRollVal\(Math\.floor\(Math\.random\(\) \* 6\) \+ 1\); \}, 125\)/);
+  assert.match(statusMarkup, /<Die value=\{rollVal\} rolling=\{rolling\} theme=\{theme\} \/>/);
+  assert.match(statusMarkup, /↻ Play Again/);
+  assert.doesNotMatch(component.slice(boardStart), /Play Again/);
+  assert.match(component, /animation: rolling \? "diceRoll 1s linear infinite"/);
+  assert.match(component, /@keyframes diceRoll/);
+});
+
+test('Burger Run is registered with the catalog and reports game completion', () => {
+  const component = read('games/burger-run/BurgerRun.jsx');
+  const sprite = read('games/burger-run/burger-sprite.ts');
+  const fullscreenShell = read('engine/layout/GameShell.tsx');
+  const manifest = read('app/manifest.ts');
+  const rootLayout = read('app/layout.tsx');
+  const catalog = read('games/catalog.data.ts');
+  const registry = read('games/catalog.components.tsx');
+  const route = read('app/games/[game]/page.tsx');
+
+  assert.match(catalog, /burgerrun:\s*\{[\s\S]*?name: "Burger Run"[\s\S]*?hasComponent: true,[\s\S]*?isNew: true/);
+  assert.match(registry, /burgerrun: lazyGame\('burgerrun', \(\) => import\('@\/games\/burger-run\/BurgerRun\.jsx'\)\)/);
+  assert.match(component, /export default function BurgerRun\(\{ onComplete \}\)/);
+  assert.match(component, /drawBurger\(context, 16, 62/);
+  assert.match(component, /<BurgerPic bun=\{P\.bun\} size=\{160\} \/>/);
+  assert.doesNotMatch(component, /🍔/);
+  for (const color of ['Black', 'Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Pink', 'Orange']) {
+    assert.match(component, new RegExp(`name: "${color}"`));
+  }
+  assert.match(sprite, /pixel\(bun, 2, -40, 38, 8\)/);
+  assert.match(component, /reportCompletion\(100, 100\)/);
+  assert.match(component, /completionRef\.current\?\.\(sc\(l\), Math\.round\(\(sc\(l\) \/ GOAL\) \* 100\)\)/);
+  assert.match(route, /<BurgerSprite bun="#e8a24a" size=\{48\} \/>/);
+  assert.match(route, /'miniracer', 'burgerrun'/);
+  assert.match(fullscreenShell, /webkitRequestFullscreen/);
+  assert.match(fullscreenShell, /navigationUI: 'hide'/);
+  assert.match(fullscreenShell, /cannot hide its controls/);
+  assert.match(manifest, /display: 'fullscreen'/);
+  assert.match(manifest, /app-icon-512\.png/);
+  assert.match(rootLayout, /viewportFit: 'cover'/);
+  assert.match(rootLayout, /appleWebApp:\s*\{\s*capable: true/);
+});

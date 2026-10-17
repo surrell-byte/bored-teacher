@@ -1033,6 +1033,30 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     hasComponent: true,
     isNew: true,
   },
+  wordquest: {
+    name: "Word Quest",
+    icon: "🧠",
+    desc: "Build vocabulary through multiple-choice questions, word unscrambles, and a story-completion challenge.",
+    cover: "/assets/covers/word-match-cover.webp",
+    tag: { label: "Vocabulary", color: "tag-vocab" },
+    badge: "3 Rounds",
+    difficulty: "Starter",
+    barColor: "var(--purple)",
+    hasComponent: true,
+    isNew: true,
+  },
+  burgerrun: {
+    name: "Burger Run",
+    icon: "🍔",
+    desc: "Jump over cacti, dodge birds, and race to the finish in solo runs and two-player modes.",
+    cover: "/assets/covers/food-word-hunt-cover.webp",
+    tag: { label: "Arcade", color: "tag-bio" },
+    badge: "4 Modes",
+    difficulty: "Arcade",
+    barColor: "var(--gold)",
+    hasComponent: true,
+    isNew: true,
+  },
 };
 
 export const GAME_KEYS = Object.keys(GAME_CATALOG);

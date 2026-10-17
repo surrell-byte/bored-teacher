@@ -32,7 +32,13 @@ For a manual smoke test, verify:
 
 ## Firebase setup
 
-Create separate Firebase projects for staging and production. Configure the six `NEXT_PUBLIC_FIREBASE_*` values as deployment secrets in both environments. The production build fails when any required key is missing.
+Create separate Firebase projects for staging and production. Configure the six `NEXT_PUBLIC_FIREBASE_*` values as deployment secrets in both environments. Configure `FIREBASE_ADMIN_SERVICE_ACCOUNT_JSON` as a server-only secret for username sign-in and password reset; its service account must belong to the matching Firebase project. Never commit this credential or expose it through a `NEXT_PUBLIC_*` variable. Username authentication reports a configuration error when the secret is missing. The production build fails when any required public Firebase key is missing.
+
+Class rosters, class scores, and class leaderboard queries are restricted to the owning teacher until a server-verified student membership flow is implemented. Do not loosen these rules based only on a client-controlled `classId`.
+
+## Mobile fullscreen games
+
+Game pages use the browser Fullscreen API where available. On browsers that do not allow ordinary web pages to hide browser controls, install the site from the browser's **Add to Home Screen** option and launch the installed app; the web manifest requests fullscreen display. Test both the in-browser control and installed-app launch on iOS Safari and Android browsers over HTTPS.
 
 Deploy Firestore rules deliberately:
 

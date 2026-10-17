@@ -12,6 +12,7 @@ import { GameShell } from '@/engine';
 import Connect4HeaderActions from '@/components/ui/controls/Connect4HeaderActions';
 import { TIC_TAC_ROLL_THEMES, type TicTacRollTheme } from '@/games/tictacroll/themes';
 import { canAccessGame, COMING_SOON_GAME_IDS, TEACHER_PRO_GAME_IDS } from '@/config/game-access';
+import BurgerSprite from '@/games/burger-run/BurgerSprite';
 
 // ── Types ─────────────────────────────────────────────────────
 interface GameResult {
@@ -56,7 +57,7 @@ const GAMES_WITH_WELCOME = new Set([
   'moneyblocks',
   'emojisportsquiz',
   'generalknowledgequiz',
-  'alphabethunt', 'buildtower', 'whatsmissing', 'angryverbs', 'miniracer',
+  'alphabethunt', 'buildtower', 'whatsmissing', 'angryverbs', 'miniracer', 'burgerrun',
   'colourclash2', 'zoogame',
 ]);
 
@@ -204,7 +205,9 @@ export default function GamePage() {
   }, [gameId]);
 
   const gameName  = GAME_NAMES[gameId] ?? 'Game';
-  const gameIcon  = gameId === 'fruitwordhunt' ? '' : GAME_ICONS[gameId] ?? '🎮';
+  const gameIcon  = gameId === 'burgerrun'
+    ? <BurgerSprite bun="#e8a24a" size={48} />
+    : gameId === 'fruitwordhunt' ? '' : GAME_ICONS[gameId] ?? '🎮';
   const GameComp  = GAME_COMPONENTS[gameId];
   const isKnowItAll = gameId === 'knowitall';
   const profileName = auth?.currentUser

@@ -7,6 +7,8 @@ import {
   getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  signInWithCustomToken,
+  deleteUser,
   signOut as firebaseSignOut,
   onAuthStateChanged as _onAuthStateChanged,
   updateProfile,
@@ -27,6 +29,7 @@ import {
   where,
   updateDoc,
   serverTimestamp,
+  writeBatch,
 } from 'firebase/firestore';
 
 export interface ReviewItem {
@@ -178,54 +181,6 @@ export function isUserActive(user: Partial<Record<string, unknown>>): boolean {
   return lastLogin.getTime() >= thirtyDaysAgo;
 }
 
-export async function findUserByUsername(username: string) {
-  if (!db) return null;
-
-  const normalized = normalizeUsername(username);
-  if (!normalized) return null;
-
-  try {
-    const index = await getDoc(doc(db, 'usernames', normalized));
-    if (index.exists()) {
-      const data = index.data() as { uid?: string; email?: string };
-      return { email: data.email, usernameLower: normalized };
-    }
-  } catch {
-    // Continue to the legacy lookup for older profiles without an index entry.
-  }
-
-  try {
-    const q = query(collection(db, 'users'), where('usernameLower', '==', normalized));
-    const snap = await getDocs(q);
-    if (!snap.empty) {
-      return snap.docs[0].data() as Record<string, unknown> & { email?: string };
-    }
-  } catch {
-    // Fall back to a full scan for legacy users whose records were created before usernameLower existed.
-  }
-
-  try {
-    const snap = await getDocs(collection(db, 'users'));
-    for (const docSnap of snap.docs) {
-      const data = docSnap.data() as Record<string, unknown> & { email?: string; username?: string; name?: string };
-      const candidate = normalizeUsername(String(data.username ?? data.name ?? ''));
-      if (candidate === normalized) {
-        return data;
-      }
-    }
-  } catch {
-    return null;
-  }
-
-  return null;
-}
-
-async function resolveUsernameToEmail(username: string): Promise<string | null> {
-  const record = await findUserByUsername(username);
-  if (!record?.email) return null;
-  return String(record.email).trim().toLowerCase();
-}
-
 async function markUserLoggedIn(uid: string) {
   if (!uid || !db) return;
   await setDoc(doc(db, 'users', uid), {
@@ -257,14 +212,27 @@ export async function signUp(email: string, password: string, displayName: strin
     throw new Error('Username must be 3+ characters, contain no spaces, and use only letters, numbers, dots, underscores, or hyphens.');
   }
 
-  const usernameTaken = await findUserByUsername(cleanUsername);
-  if (usernameTaken) {
-    throw new Error('That username is already taken. Please choose a different one.');
-  }
-
   const cred = await createUserWithEmailAndPassword(auth, cleanEmail, password);
-  await updateProfile(cred.user, { displayName: cleanUsername });
-  await createUserProfile(cred.user.uid, cleanUsername, cleanEmail, role);
+  try {
+    await updateProfile(cred.user, { displayName: cleanUsername });
+    await createUserProfile(cred.user.uid, cleanUsername, cleanEmail, role);
+  } catch (error) {
+    try {
+      await deleteUser(cred.user);
+    } catch (cleanupError) {
+      console.error('Failed to remove an incomplete account after profile setup failed.', cleanupError);
+      throw new Error('Account setup failed and could not be rolled back. Please contact support.');
+    }
+    if (
+      typeof error === 'object'
+      && error !== null
+      && 'code' in error
+      && error.code === 'permission-denied'
+    ) {
+      throw new Error('That username is already taken. Please choose a different one.');
+    }
+    throw error;
+  }
   return cred.user;
 }
 
@@ -278,27 +246,24 @@ export async function signIn(identifier: string, password: string) {
     throw new Error('Email or username is required.');
   }
 
-  const normalizedIdentifier = rawIdentifier.toLowerCase();
-  let loginEmail = normalizedIdentifier;
-
-  if (!rawIdentifier.includes('@')) {
-    const usernameMatch = await resolveUsernameToEmail(rawIdentifier);
-    if (!usernameMatch) {
-      throw new Error('No account was found for that username. Please use your email or create the account first.');
+  let user: User;
+  if (rawIdentifier.includes('@')) {
+    user = (await signInWithEmailAndPassword(auth, rawIdentifier.toLowerCase(), password)).user;
+  } else {
+    const response = await fetch('/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'usernameSignIn', username: rawIdentifier, password }),
+    });
+    const result = await response.json() as { customToken?: unknown; error?: unknown };
+    if (!response.ok || typeof result.customToken !== 'string') {
+      throw new Error(typeof result.error === 'string' ? result.error : 'Invalid username or password.');
     }
-    loginEmail = usernameMatch;
+    user = (await signInWithCustomToken(auth, result.customToken)).user;
   }
 
-  try {
-    const cred = await signInWithEmailAndPassword(auth, loginEmail, password);
-    await markUserLoggedIn(cred.user.uid);
-    return cred.user;
-  } catch (error) {
-    if (!rawIdentifier.includes('@')) {
-      throw new Error('That username exists, but the password is incorrect, or the account was not yet created in Firebase.');
-    }
-    throw error;
-  }
+  await markUserLoggedIn(user.uid);
+  return user;
 }
 
 export async function signOut() {
@@ -314,7 +279,7 @@ export async function resetPassword(email: string) {
 }
 
 export async function resetPasswordByUsername(usernameOrEmail: string) {
-  if (!auth || !db) {
+  if (!auth) {
     throw new Error('Firebase is not configured. Set NEXT_PUBLIC_FIREBASE_* values in your environment before resetting passwords.');
   }
 
@@ -323,17 +288,15 @@ export async function resetPasswordByUsername(usernameOrEmail: string) {
     throw new Error('Enter your email or username first.');
   }
 
-  if (raw.includes('@')) {
-    await sendPasswordResetEmail(auth, raw.toLowerCase());
-    return;
+  const response = await fetch('/api/auth', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'passwordReset', identifier: raw }),
+  });
+  const result = await response.json() as { message?: unknown; error?: unknown };
+  if (!response.ok) {
+    throw new Error(typeof result.error === 'string' ? result.error : 'Password reset is temporarily unavailable.');
   }
-
-  const record = await findUserByUsername(raw);
-  if (!record?.email) {
-    throw new Error('No account was found for that username.');
-  }
-
-  await sendPasswordResetEmail(auth, String(record.email).trim().toLowerCase());
 }
 
 export async function setDisplayName(user: User, name: string) {
@@ -342,10 +305,22 @@ export async function setDisplayName(user: User, name: string) {
   }
 
   const cleanName = normalizeUsername(name);
+  if (!isValidUsername(cleanName)) {
+    throw new Error('Username must be 3+ characters and use only letters, numbers, dots, underscores, or hyphens.');
+  }
+  const email = user.email?.trim().toLowerCase();
+  if (!email) throw new Error('An email address is required to update the username.');
+
+  const batch = writeBatch(db);
+  batch.update(doc(db, 'users', user.uid), {
+    name: cleanName,
+    username: cleanName,
+    usernameLower: cleanName,
+    updatedAt: serverTimestamp(),
+  });
+  batch.set(doc(db, 'usernames', cleanName), { uid: user.uid, email }, { merge: true });
+  await batch.commit();
   await updateProfile(user, { displayName: cleanName });
-  try {
-    await updateDoc(doc(db, 'users', user.uid), { name: cleanName, username: cleanName, usernameLower: cleanName, updatedAt: serverTimestamp() });
-  } catch (_) {}
 }
 
 // ── Firestore helpers ────────────────────────────────────────
@@ -369,38 +344,40 @@ interface UserState {
 }
 
 async function createUserProfile(uid: string, name: string, email: string, role: AccountRole) {
-  if (!db) return;
+  if (!db) {
+    throw new Error('Firebase is not configured. Set NEXT_PUBLIC_FIREBASE_* values in your environment before creating an account.');
+  }
 
   const username = normalizeUsername(name);
-  try {
-    await setDoc(doc(db, 'users', uid), {
-      name: username,
-      username,
-      usernameLower: username,
-      email: email.toLowerCase(),
-      avatar: '👤',
-      theme: 'chalkboard',
-      xp: 0,
-      level: 1,
-      coins: 0,
-      lastGame: null,
-      lastLogin: serverTimestamp(),
-      isActive: true,
-      sound: true,
-      teacherPro: false,
-      emailVerified: false,
-      emailVerificationCode: '',
-      emailVerificationSentAt: 0,
-      welcomeGiftClaimed: false,
-      welcomeGiftId: null,
-      games: {},
-      classId: '',
-      role,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    }, { merge: true });
-    await setDoc(doc(db, 'usernames', username), { uid, email: email.toLowerCase() }, { merge: true });
-  } catch (_) {}
+  const batch = writeBatch(db);
+  batch.set(doc(db, 'users', uid), {
+    name: username,
+    username,
+    usernameLower: username,
+    email: email.toLowerCase(),
+    avatar: '👤',
+    theme: 'chalkboard',
+    xp: 0,
+    level: 1,
+    coins: 0,
+    lastGame: null,
+    lastLogin: serverTimestamp(),
+    isActive: true,
+    sound: true,
+    teacherPro: false,
+    emailVerified: false,
+    emailVerificationCode: '',
+    emailVerificationSentAt: 0,
+    welcomeGiftClaimed: false,
+    welcomeGiftId: null,
+    games: {},
+    classId: '',
+    role,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  batch.set(doc(db, 'usernames', username), { uid, email: email.toLowerCase() });
+  await batch.commit();
 }
 
 export async function saveUserState(uid: string, state: Partial<UserState>) {
@@ -411,11 +388,21 @@ export async function saveUserState(uid: string, state: Partial<UserState>) {
     'emailVerified', 'welcomeGiftClaimed', 'welcomeGiftId', 'ownedItems', 'lastLogin', 'isActive'
   ].includes(key)));
   try {
-    await setDoc(doc(db, 'users', uid), { ...writableState, updatedAt: serverTimestamp() }, { merge: true });
     const username = typeof writableState.usernameLower === 'string' ? writableState.usernameLower : '';
-    const email = auth?.currentUser?.email?.toLowerCase();
-    if (username && email) await setDoc(doc(db, 'usernames', username), { uid, email }, { merge: true });
-  } catch (_) {}
+    const email = auth?.currentUser?.email?.trim().toLowerCase();
+    const profile = { ...writableState, updatedAt: serverTimestamp() };
+
+    if (username && email) {
+      const batch = writeBatch(db);
+      batch.set(doc(db, 'users', uid), profile, { merge: true });
+      batch.set(doc(db, 'usernames', username), { uid, email }, { merge: true });
+      await batch.commit();
+    } else {
+      await setDoc(doc(db, 'users', uid), profile, { merge: true });
+    }
+  } catch (error) {
+    if (typeof writableState.usernameLower === 'string') throw error;
+  }
 }
 
 export async function loadUserState(uid: string): Promise<UserState | null> {

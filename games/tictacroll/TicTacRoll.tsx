@@ -15,6 +15,80 @@ function computeWinLines(n: number, w: number) {
   return lines;
 }
 
+const DIE_FACES = [
+  { value: 1, transform: "translateZ(26px)" },
+  { value: 6, transform: "rotateY(180deg) translateZ(26px)" },
+  { value: 3, transform: "rotateY(90deg) translateZ(26px)" },
+  { value: 4, transform: "rotateY(-90deg) translateZ(26px)" },
+  { value: 2, transform: "rotateX(90deg) translateZ(26px)" },
+  { value: 5, transform: "rotateX(-90deg) translateZ(26px)" },
+];
+
+const DIE_ORIENTATIONS: Record<number, string> = {
+  1: "rotateX(0deg) rotateY(0deg)",
+  2: "rotateX(90deg) rotateY(0deg)",
+  3: "rotateX(0deg) rotateY(-90deg)",
+  4: "rotateX(0deg) rotateY(90deg)",
+  5: "rotateX(-90deg) rotateY(0deg)",
+  6: "rotateX(0deg) rotateY(180deg)",
+};
+
+const DIE_PIPS: Record<number, Array<[string, string]>> = {
+  1: [["50%", "50%"]],
+  2: [["25%", "25%"], ["75%", "75%"]],
+  3: [["25%", "25%"], ["50%", "50%"], ["75%", "75%"]],
+  4: [["25%", "25%"], ["75%", "25%"], ["25%", "75%"], ["75%", "75%"]],
+  5: [["25%", "25%"], ["75%", "25%"], ["50%", "50%"], ["25%", "75%"], ["75%", "75%"]],
+  6: [["25%", "25%"], ["75%", "25%"], ["25%", "50%"], ["75%", "50%"], ["25%", "75%"], ["75%", "75%"]],
+};
+
+function Die({ value, rolling, theme }: { value: number; rolling: boolean; theme: TicTacRollTheme }) {
+  return (
+    <div role="img" aria-label={`Die showing ${value}`} style={{ width: 56, height: 56, perspective: 260, flexShrink: 0 }}>
+      <div style={{
+        position: "relative",
+        width: "100%",
+        height: "100%",
+        transformStyle: "preserve-3d",
+        transform: `${DIE_ORIENTATIONS[value] || DIE_ORIENTATIONS[1]} rotateX(-18deg) rotateY(24deg)`,
+        animation: rolling ? "diceRoll 1s linear infinite" : "none",
+        transition: "transform 0.35s ease",
+        filter: "drop-shadow(0 3px 5px rgba(0,0,0,0.18))",
+      }}>
+        {DIE_FACES.map(face => (
+          <div key={face.value} aria-hidden="true" style={{
+            position: "absolute",
+            inset: 0,
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gridTemplateRows: "repeat(3, 1fr)",
+            borderRadius: 10,
+            border: `1px solid color-mix(in srgb, ${theme.text} 28%, transparent)`,
+            boxSizing: "border-box",
+            background: theme.surface,
+            boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.35), inset 0 -3px 5px rgba(0,0,0,0.08)",
+            backfaceVisibility: "hidden",
+            transform: face.transform,
+          }}>
+            {DIE_PIPS[face.value].map(([left, top], index) => (
+              <span key={index} style={{
+                position: "absolute",
+                left,
+                top,
+                width: 8,
+                height: 8,
+                borderRadius: "50%",
+                background: theme.text,
+                transform: "translate(-50%, -50%)",
+              }} />
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 type Screen = "welcome" | "setup" | "menu" | "difficulty" | "game" | "howtoplay";
 interface Props {
   onComplete: (score: number, accuracy: number) => void;
@@ -273,7 +347,7 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
   function startRoll() {
     if (!gameActive || phase !== "roll" || rolling) return;
     setRolling(true); tone(860, 0.04, 0.06);
-    rollTimer.current = window.setInterval(() => { setRollVal(Math.floor(Math.random() * 6) + 1); }, 65);
+    rollTimer.current = window.setInterval(() => { setRollVal(Math.floor(Math.random() * 6) + 1); }, 125);
   }
   function stopRoll() {
     if (!rolling) return;
@@ -507,18 +581,18 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
             {/* Status Card */}
             <div style={{ gridColumn: window.innerWidth < 700 ? "1 / -1" : undefined, padding: "clamp(1rem, 2vw, 1.5rem)", background: theme.card, borderRadius: "clamp(12px, 2vw, 16px)", border: `1px solid ${theme.border}`, boxShadow: theme.shadow }}>
               <div style={{ fontSize: "0.65rem", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", color: theme.muted, marginBottom: "0.5rem" }}>Status</div>
-              <div style={{ fontWeight: 600, marginBottom: "0.25rem" }}>{status.main}</div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem", marginBottom: "0.25rem" }}>
+                <div style={{ fontWeight: 600 }}>{status.main}</div>
+                {gameMode === "roll" && phase === "roll" && gameActive && <Die value={rollVal} rolling={rolling} theme={theme} />}
+              </div>
               <div style={{ fontSize: "0.85rem", color: theme.muted }}>{status.hint}</div>
               {lastMove && <div style={{ fontSize: "0.75rem", color: theme.muted, marginTop: "0.5rem", fontStyle: "italic" }}>Last move: {lastMove}</div>}
               {gameMode === "roll" && phase === "roll" && gameActive && (
                 <div style={{ marginTop: "0.75rem" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.75rem" }}>
-                    <div style={{ width: "clamp(40px, 10vw, 56px)", height: "clamp(40px, 10vw, 56px)", background: theme.surface, borderRadius: "clamp(8px, 2vw, 12px)", border: `1px solid ${theme.border}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "clamp(1.2rem, 4vw, 1.8rem)", fontWeight: 700, boxShadow: "inset 0 2px 4px rgba(0,0,0,0.05)", animation: rolling ? "diceRoll 0.15s linear infinite" : "none" }}>{rollVal}</div>
-                    <div><div style={{ fontSize: "0.65rem", color: theme.muted, textTransform: "uppercase", letterSpacing: "0.1em" }}>Last Roll</div><div style={{ fontSize: "clamp(1.2rem, 3vw, 1.5rem)", fontWeight: 700 }}>{rollVal}</div></div>
-                  </div>
                   <button onClick={rolling ? stopRoll : startRoll} disabled={!gameActive || phase !== "roll"} style={{ width: "100%", padding: "0.9rem", borderRadius: 50, border: "none", background: rolling ? `linear-gradient(160deg, #e8a090, #c04030)` : `linear-gradient(160deg, ${theme.accent}, ${theme.accent}dd)`, color: "#fff", fontWeight: 600, fontSize: "0.9rem", cursor: rolling ? "pointer" : "pointer", boxShadow: "0 3px 0 rgba(0,0,0,0.15)", opacity: (!gameActive || phase !== "roll") ? 0.5 : 1 }}>{rolling ? "■ Stop" : "▶ Start"}</button>
                 </div>
               )}
+              {phase === "over" && <button type="button" onClick={playAgain} style={{ marginTop: "0.9rem", width: "100%", padding: "0.85rem 2rem", border: "none", borderRadius: 999, background: `linear-gradient(160deg, ${theme.accent}, ${theme.accent2 || theme.accent})`, color: "#fff", fontWeight: 700, cursor: "pointer", boxShadow: `0 4px 15px ${theme.glow}` }}>↻ Play Again</button>}
             </div>
           </div>
 
@@ -593,14 +667,13 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
                 </div>
               ))}
             </div>
-            {phase === "over" && <button type="button" onClick={playAgain} style={{ position: "relative", zIndex: 10, alignSelf: "center", padding: "0.85rem 2rem", border: "none", borderRadius: 999, background: `linear-gradient(160deg, ${theme.accent}, ${theme.accent2 || theme.accent})`, color: "#fff", fontWeight: 700, cursor: "pointer", boxShadow: `0 4px 15px ${theme.glow}` }}>↻ Play Again</button>}
           </div>
         </div>
       )}
 
       <style>{`
         @keyframes winPulse { 0%,100% { box-shadow: 0 0 0 3px ${theme.glow}, inset 0 2px 4px rgba(0,0,0,0.05); } 50% { box-shadow: 0 0 0 8px ${theme.glow.replace("0.15","0.08")}, 0 0 20px ${theme.glow}; } }
-        @keyframes diceRoll { 0% { transform: rotate(0deg) scale(1); } 25% { transform: rotate(6deg) scale(1.04); } 75% { transform: rotate(-6deg) scale(1.04); } 100% { transform: rotate(0deg) scale(1); } }
+        @keyframes diceRoll { 0% { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); } 100% { transform: rotateX(720deg) rotateY(720deg) rotateZ(360deg); } }
         @keyframes pieceIn { 0% { transform: scale(0.3); opacity: 0; } 60% { transform: scale(1.15); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
         @keyframes dustFly { 0% { transform: translate(-50%,-50%) translate(0,0) scale(1); opacity: 1; } 100% { transform: translate(-50%,-50%) translate(var(--dx), var(--dy)) scale(0.2); opacity: 0; } }
       `}</style>

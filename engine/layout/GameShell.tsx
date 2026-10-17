@@ -26,6 +26,15 @@ export interface GameThemeOption {
   name: string;
 }
 
+type LegacyFullscreenDocument = Document & {
+  webkitFullscreenElement?: Element | null;
+  webkitExitFullscreen?: () => Promise<void> | void;
+};
+
+type LegacyFullscreenElement = HTMLDivElement & {
+  webkitRequestFullscreen?: () => Promise<void> | void;
+};
+
 export interface GameShellProps {
   /** Stable catalogue id used by session and analytics listeners. */
   gameId: string;
@@ -73,6 +82,7 @@ export default function GameShell({
 }: GameShellProps) {
   const [paused, setPaused] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [fullscreenMessage, setFullscreenMessage] = useState('');
   const [soundOn, setSoundOn] = useState(true);
   const [showExitNotice, setShowExitNotice] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -145,9 +155,19 @@ export default function GameShell({
   }, [mobileMenuOpen]);
 
   useEffect(() => {
-    const syncFullscreen = () => setIsFullscreen(document.fullscreenElement === shellRef.current);
+    const syncFullscreen = () => {
+      const fullscreenDocument = document as LegacyFullscreenDocument;
+      const activeElement = document.fullscreenElement ?? fullscreenDocument.webkitFullscreenElement;
+      const active = activeElement === shellRef.current;
+      setIsFullscreen(active);
+      if (active) setFullscreenMessage('');
+    };
     document.addEventListener('fullscreenchange', syncFullscreen);
-    return () => document.removeEventListener('fullscreenchange', syncFullscreen);
+    document.addEventListener('webkitfullscreenchange', syncFullscreen);
+    return () => {
+      document.removeEventListener('fullscreenchange', syncFullscreen);
+      document.removeEventListener('webkitfullscreenchange', syncFullscreen);
+    };
   }, []);
 
   const resume = useCallback(() => {
@@ -165,7 +185,8 @@ export default function GameShell({
       if (event.key !== 'Escape' && event.key.toLowerCase() !== 'p') return;
       const target = event.target as HTMLElement | null;
       if (target?.matches('input, textarea, select, [contenteditable="true"]')) return;
-      if (event.key === 'Escape' && document.fullscreenElement) return;
+      const fullscreenDocument = document as LegacyFullscreenDocument;
+      if (event.key === 'Escape' && (document.fullscreenElement || fullscreenDocument.webkitFullscreenElement)) return;
       event.preventDefault();
       paused ? resume() : pause();
     };
@@ -180,11 +201,25 @@ export default function GameShell({
   }, [emit, onRestart]);
 
   const toggleFullscreen = useCallback(async () => {
+    const fullscreenDocument = document as LegacyFullscreenDocument;
+    const activeElement = document.fullscreenElement ?? fullscreenDocument.webkitFullscreenElement;
     try {
-      if (document.fullscreenElement) await document.exitFullscreen();
-      else await shellRef.current?.requestFullscreen();
-    } catch {
-      // Some embedded browsers disallow fullscreen; play remains available.
+      if (activeElement) {
+        if (document.exitFullscreen) await document.exitFullscreen();
+        else if (fullscreenDocument.webkitExitFullscreen) await fullscreenDocument.webkitExitFullscreen();
+        else throw new Error('This browser does not provide a fullscreen exit method.');
+        return;
+      }
+
+      const shell = shellRef.current as LegacyFullscreenElement | null;
+      if (shell?.requestFullscreen) await shell.requestFullscreen({ navigationUI: 'hide' });
+      else if (shell?.webkitRequestFullscreen) await shell.webkitRequestFullscreen();
+      else {
+        setFullscreenMessage('This browser cannot hide its controls on a web page. Use “Add to Home Screen” in your browser to launch the installed app without browser chrome.');
+      }
+    } catch (error) {
+      console.error('Could not change game fullscreen mode.', error);
+      setFullscreenMessage('Fullscreen was blocked by the browser. Try again from its game menu, or use “Add to Home Screen” for a browser-free launch.');
     }
   }, []);
 
@@ -398,6 +433,12 @@ export default function GameShell({
           </div>
         </ErrorBoundary>
       </GameLayout>
+      {fullscreenMessage && (
+        <div className="game-shell-fullscreen-message" role="status">
+          <span>{fullscreenMessage}</span>
+          <button type="button" onClick={() => setFullscreenMessage('')} aria-label="Dismiss fullscreen message">×</button>
+        </div>
+      )}
       </GameTranslationProvider>
     </div>
   );

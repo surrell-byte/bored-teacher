@@ -1,5 +1,5 @@
 // app/layout.tsx
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { type ReactNode } from 'react';
 import './globals.css';
 import { GameProvider } from '@/providers/GameProvider';
@@ -46,7 +46,19 @@ export const metadata: Metadata = {
     follow: true,
     googleBot: { index: true, follow: true, 'max-image-preview': 'large' },
   },
-  icons: { icon: '/favicon.ico' },
+  icons: { icon: '/favicon.ico', apple: '/icons/app-icon-192.png' },
+  appleWebApp: {
+    capable: true,
+    title: 'Bored Teacher',
+    statusBarStyle: 'black-translucent',
+  },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  themeColor: '#101827',
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

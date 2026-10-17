@@ -94,7 +94,7 @@ function AuthPageInner() {
     setError(''); setInfo(''); setResetLoading(true);
     try {
       await resetPasswordByUsername(email);
-      setInfo('✅ Reset email sent — check your inbox.');
+      setInfo('If an account matches those details, password reset instructions will be sent.');
     } catch (err: unknown) {
       setError(friendlyError(err));
     } finally {
@@ -169,10 +169,11 @@ function AuthPageInner() {
             )}
 
             <div className="field">
-              <label htmlFor="email">Email or username</label>
+              <label htmlFor="email">{tab === 'login' ? 'Email or username' : 'Email'}</label>
               <input id="email" type="text" value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="you@school.com or myusername" autoComplete="username" required />
+                placeholder={tab === 'login' ? 'you@school.com or myusername' : 'you@school.com'}
+                autoComplete={tab === 'login' ? 'username' : 'email'} required />
             </div>
             <div className="field">
               <label htmlFor="password">Password</label>

@@ -1,7 +1,11 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
 const { normalizeUsername, isValidUsername } = require('../lib/auth-utils.js');
 const { estimateTeacherProRevenue, buildCreatorMonetisationSnapshot, buildCreatorRevenueTrend, buildCreatorConversionFunnel, buildCreatorCohortSummary } = require('../lib/monetisation-utils.js');
+
+const read = relativePath => fs.readFileSync(path.join(process.cwd(), relativePath), 'utf8');
 
 test('normalizeUsername strips spaces and lowercases', () => {
   assert.equal(normalizeUsername(' Tanya Chiraya '), 'tanyachiraya');
@@ -17,6 +21,38 @@ test('invalid usernames reject short or unsafe input', () => {
   assert.equal(isValidUsername('ta'), false);
   assert.equal(isValidUsername('bad name'), false);
   assert.equal(isValidUsername('bad@name'), false);
+});
+
+test('username email mappings are private and username login uses a custom token', () => {
+  const rules = read('firestore.rules');
+  const firebase = read('lib/firebase.ts');
+  const authRoute = read('app/api/auth/route.ts');
+  const usernameRules = rules.split('match /usernames/{username}')[1].split('match /feedback')[0];
+
+  assert.match(usernameRules, /allow read: if false/);
+  assert.doesNotMatch(firebase, /findUserByUsername|resolveUsernameToEmail/);
+  assert.match(firebase, /signInWithCustomToken\(auth, result\.customToken\)/);
+  assert.match(authRoute, /createCustomToken\(authResponse\.result\.localId\)/);
+  assert.match(authRoute, /profileUsername === username/);
+  assert.match(authRoute, /hasSameOrigin\(request\)/);
+  assert.match(authRoute, /jsonResponse\(\{ message: RESET_MESSAGE \}\)/);
+  assert.doesNotMatch(authRoute, /jsonResponse\(\{\s*email\s*[,}]/);
+});
+
+test('class leaderboard access requires trusted class ownership', () => {
+  const rules = read('firestore.rules');
+  const userRules = rules.split('match /users/{userId}')[1].split('match /classCodes')[0];
+  const classRules = rules.split('match /classCodes/{classCode}')[1].split('match /leaderboards')[0];
+  const scoreRules = rules.split('match /studentScores/{studentId}')[1].split('match /leagues')[0];
+
+  assert.match(rules, /function classIdCanBeSet\(classId\)[\s\S]*teacherOwnsClass\(classId\)/);
+  assert.match(rules, /usernameEntryMatchesProfile\(username, request\.auth\.uid\)/);
+  assert.match(rules, /getAfter\(usernamePath\)\.data\.email == getAfter\(userPath\)\.data\.email/);
+  assert.match(userRules, /classIdCanBeSet\(request\.resource\.data\.classId\)/);
+  assert.match(userRules, /usernameIndexMatchesAfter\(userId, request\.resource\.data\.usernameLower\)/);
+  assert.match(classRules, /allow get: if teacherOwnsClass\(classCode\)/);
+  assert.match(scoreRules, /allow list: if signedIn\(\)\s*&& teacherOwnsClass\(resource\.data\.classId\)/);
+  assert.doesNotMatch(scoreRules, /userIsInClass/);
 });
 
 test('estimateTeacherProRevenue calculates monthly and annualized growth', () => {
