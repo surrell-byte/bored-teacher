@@ -1049,7 +1049,7 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     name: "Burger Run",
     icon: "🍔",
     desc: "Jump over cacti, dodge birds, and race to the finish in solo runs and two-player modes.",
-    cover: "/assets/covers/food-word-hunt-cover.webp",
+    cover: "/assets/covers/burger-run-cover.webp",
     tag: { label: "Arcade", color: "tag-bio" },
     badge: "4 Modes",
     difficulty: "Arcade",

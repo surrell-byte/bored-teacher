@@ -69,6 +69,7 @@ export default function GamePage() {
 
   const [result, setResult]   = useState<GameResult | null>(null);
   const [gameSession, setGameSession] = useState(0);
+  const [burgerRunStartAtMenu, setBurgerRunStartAtMenu] = useState(false);
   const [airPuckHud, setAirPuckHud] = useState<AirPuckHud | null>(null);
   const [blockFightHud, setBlockFightHud] = useState<BlockFightHud | null>(null);
   // Connect 4 hands its in-match HUD (player badges + reset/home) up here so
@@ -106,6 +107,7 @@ export default function GamePage() {
   useEffect(() => {
     const assets: Record<string, string[]> = {
       alphabethunt: ['/assets/games/alphabet-hunt/alphabet-hunt-general-phone-bg.webp'],
+      burgerrun: ['/assets/games/burger-run/burger-run-welcome-bg.webp', '/assets/games/burger-run/burger-run-victory-bg.webp', '/assets/games/burger-run/burger-run-general-bg.webp'],
       buildtower: ['/assets/games/build-the-tower/build-the-tower-welcome-screen.png', '/assets/games/build-the-tower/build-the-tower-floating-islands-bg.png', '/assets/games/build-the-tower/build-the-tower-jungle-bg.png', '/assets/games/build-the-tower/build-the-tower-game-bg.png'],
       connect4: ['/assets/games/connect-4/connect-4-welcome.webp', '/assets/games/connect-4/connect-4-welcome-phone-bg.webp', '/assets/games/connect-4/connect-4-general-phone-bg.webp', '/assets/games/connect-4/connect-4-main-menu.webp', '/assets/games/connect-4/connect-4-user-input.webp', '/assets/games/connect-4/connect-4-game-screen.webp'],
       colourclash: ['/assets/games/colour-clash/colour-tunes-welcome-bg.webp', '/assets/games/colour-clash/colour-tunes-general-bg.webp'],
@@ -286,6 +288,7 @@ export default function GamePage() {
 
   function handleContinue() {
     setResult(null);
+    setBurgerRunStartAtMenu(false);
     setC4Hud(null);
     setAirPuckHud(null);
     setBlockFightHud(null);
@@ -366,6 +369,10 @@ export default function GamePage() {
     } else if (gameId === 'phonicsworld') {
       setShowRouteWelcome(false);
       window.dispatchEvent(new Event('phonics-world:main-menu'));
+    } else if (gameId === 'burgerrun') {
+      setShowRouteWelcome(false);
+      setBurgerRunStartAtMenu(true);
+      setGameSession(session => session + 1);
     } else {
       setShowRouteWelcome(true);
       setGameSession(session => session + 1);
@@ -721,6 +728,7 @@ export default function GamePage() {
               onComplete={isBlockFight
                 ? (gameResult: { score: number; accuracy: number }) => handleComplete(gameResult.score, gameResult.accuracy)
                 : handleComplete}
+              {...(gameId === 'burgerrun' ? { startAtMenu: burgerRunStartAtMenu } : {})}
               profileName={profileName}
               {...(gameId === 'riddlebombs' ? { onHudUpdate: setRiddleBombsHud } : {})}
               {...(isTicTacRoll ? { themeId: ticTheme.id, onThemeChange: setTicTheme } : {})}
