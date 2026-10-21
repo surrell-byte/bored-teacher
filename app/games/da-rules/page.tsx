@@ -113,6 +113,15 @@ export default function DaRulesPage() {
   const [mode, setMode] = useState<'quick' | 'full'>('quick');
   const [category, setCategory] = useState('All');
   const [search, setSearch] = useState('');
+  const [translationLanguage, setTranslationLanguage] = useState('th');
+
+  function translatePage() {
+    const translatorUrl = new URL('https://translate.google.com/translate');
+    translatorUrl.searchParams.set('sl', 'en');
+    translatorUrl.searchParams.set('tl', translationLanguage);
+    translatorUrl.searchParams.set('u', window.location.href);
+    window.open(translatorUrl.toString(), '_blank', 'noopener,noreferrer');
+  }
 
   const publicGameKeys = useMemo(
     () => GAME_KEYS.filter((gameId) => isPublicGame(gameId)),
@@ -147,9 +156,31 @@ export default function DaRulesPage() {
           <div style={{ fontSize: 12, letterSpacing: 1.2, textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 6 }}>Game Rule Book</div>
           <h1 style={{ margin: 0, fontSize: 'clamp(2rem, 4vw, 3.2rem)' }}>Da Rules</h1>
         </div>
-        <Link href="/games" style={{ color: 'var(--text)', textDecoration: 'none', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 999, padding: '10px 16px', fontWeight: 600 }}>
-          ← Back to games
-        </Link>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 999, padding: 6, background: 'rgba(15,23,42,0.35)' }}>
+            <label htmlFor="da-rules-language" style={{ paddingLeft: 8, fontSize: 13, fontWeight: 600 }}>Translate:</label>
+            <select
+              id="da-rules-language"
+              value={translationLanguage}
+              onChange={(event) => setTranslationLanguage(event.target.value)}
+              style={{ border: '1px solid rgba(255,255,255,0.16)', borderRadius: 999, padding: '8px 10px', background: '#111b31', color: 'var(--text)', fontSize: 14 }}
+            >
+              <option value="th">Thai</option>
+              <option value="zh-CN">Chinese</option>
+              <option value="es">Spanish</option>
+            </select>
+            <button
+              type="button"
+              onClick={translatePage}
+              style={{ border: 'none', borderRadius: 999, padding: '9px 14px', background: 'linear-gradient(135deg, #7c3aed, #2563eb)', color: '#fff', fontWeight: 700, cursor: 'pointer' }}
+            >
+              Translate page
+            </button>
+          </div>
+          <Link href="/games" style={{ color: 'var(--text)', textDecoration: 'none', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 999, padding: '10px 16px', fontWeight: 600 }}>
+            ← Back to games
+          </Link>
+        </div>
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, flexWrap: 'wrap', marginBottom: 20 }}>

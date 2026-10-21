@@ -107,7 +107,16 @@ export default function GamePage() {
   useEffect(() => {
     const assets: Record<string, string[]> = {
       alphabethunt: ['/assets/games/alphabet-hunt/alphabet-hunt-general-phone-bg.webp'],
-      burgerrun: ['/assets/games/burger-run/burger-run-welcome-bg.webp', '/assets/games/burger-run/burger-run-victory-bg.webp', '/assets/games/burger-run/burger-run-general-bg.webp'],
+      burgerrun: [
+        '/assets/games/burger-run/burger-run-welcome-bg.webp',
+        '/assets/games/burger-run/burger-run-welcome-phone-bg.webp',
+        '/assets/games/burger-run/burger-run-victory-bg.webp',
+        '/assets/games/burger-run/burger-run-general-bg.webp',
+        '/assets/games/burger-run/burger-run-game-bg-p1.webp',
+        '/assets/games/burger-run/burger-run-game-2p-bg.webp',
+        '/assets/games/burger-run/burger-run-game-phone-bg.webp',
+        '/assets/games/burger-run/burger-run-game-bg-phone.webp',
+      ],
       buildtower: ['/assets/games/build-the-tower/build-the-tower-welcome-screen.png', '/assets/games/build-the-tower/build-the-tower-floating-islands-bg.png', '/assets/games/build-the-tower/build-the-tower-jungle-bg.png', '/assets/games/build-the-tower/build-the-tower-game-bg.png'],
       connect4: ['/assets/games/connect-4/connect-4-welcome.webp', '/assets/games/connect-4/connect-4-welcome-phone-bg.webp', '/assets/games/connect-4/connect-4-general-phone-bg.webp', '/assets/games/connect-4/connect-4-main-menu.webp', '/assets/games/connect-4/connect-4-user-input.webp', '/assets/games/connect-4/connect-4-game-screen.webp'],
       colourclash: ['/assets/games/colour-clash/colour-tunes-welcome-bg.webp', '/assets/games/colour-clash/colour-tunes-general-bg.webp'],

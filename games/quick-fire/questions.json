@@ -1,0 +1,2012 @@
+{
+  "General Knowledge": [
+    {
+      "question": "Which ocean is the largest?",
+      "options": [
+        "Atlantic",
+        "Indian",
+        "Pacific",
+        "Arctic"
+      ],
+      "answer": "Pacific"
+    },
+    {
+      "question": "What is the capital of Japan?",
+      "options": [
+        "Seoul",
+        "Tokyo",
+        "Beijing",
+        "Bangkok"
+      ],
+      "answer": "Tokyo"
+    },
+    {
+      "question": "How many days are there in a leap year?",
+      "options": [
+        "364",
+        "365",
+        "366",
+        "367"
+      ],
+      "answer": "366"
+    },
+    {
+      "question": "Which is the largest planet in our solar system?",
+      "options": [
+        "Earth",
+        "Saturn",
+        "Jupiter",
+        "Neptune"
+      ],
+      "answer": "Jupiter"
+    },
+    {
+      "question": "How many sides does a hexagon have?",
+      "options": [
+        "Five",
+        "Six",
+        "Seven",
+        "Eight"
+      ],
+      "answer": "Six"
+    },
+    {
+      "question": "Which instrument has black and white keys?",
+      "options": [
+        "Piano",
+        "Flute",
+        "Drum",
+        "Trumpet"
+      ],
+      "answer": "Piano"
+    },
+    {
+      "question": "What is the name of the line around the middle of Earth?",
+      "options": [
+        "Equator",
+        "Prime Meridian",
+        "Tropic of Cancer",
+        "Orbit"
+      ],
+      "answer": "Equator"
+    },
+    {
+      "question": "Which month has the fewest days?",
+      "options": [
+        "January",
+        "February",
+        "June",
+        "September"
+      ],
+      "answer": "February"
+    },
+    {
+      "question": "Which country is home to the pyramids of Giza?",
+      "options": [
+        "Egypt",
+        "Greece",
+        "India",
+        "Mexico"
+      ],
+      "answer": "Egypt"
+    },
+    {
+      "question": "How many continents are commonly taught in the seven-continent model?",
+      "options": [
+        "Five",
+        "Six",
+        "Seven",
+        "Eight"
+      ],
+      "answer": "Seven"
+    },
+    {
+      "question": "Which language is mainly spoken in Brazil?",
+      "options": [
+        "Spanish",
+        "Portuguese",
+        "French",
+        "Italian"
+      ],
+      "answer": "Portuguese"
+    },
+    {
+      "question": "What is the currency of Japan?",
+      "options": [
+        "Euro",
+        "Yen",
+        "Peso",
+        "Rupee"
+      ],
+      "answer": "Yen"
+    },
+    {
+      "question": "What do we call a shape with three sides?",
+      "options": [
+        "Square",
+        "Triangle",
+        "Pentagon",
+        "Circle"
+      ],
+      "answer": "Triangle"
+    },
+    {
+      "question": "In which direction does the Sun appear to rise?",
+      "options": [
+        "North",
+        "South",
+        "East",
+        "West"
+      ],
+      "answer": "East"
+    },
+    {
+      "question": "How many minutes are there in one hour?",
+      "options": [
+        "30",
+        "45",
+        "60",
+        "100"
+      ],
+      "answer": "60"
+    },
+    {
+      "question": "Which planet is often called the Red Planet?",
+      "options": [
+        "Venus",
+        "Mars",
+        "Mercury",
+        "Uranus"
+      ],
+      "answer": "Mars"
+    },
+    {
+      "question": "What is the capital of France?",
+      "options": [
+        "Rome",
+        "Madrid",
+        "Paris",
+        "Lisbon"
+      ],
+      "answer": "Paris"
+    },
+    {
+      "question": "Which metal is commonly attracted to a magnet?",
+      "options": [
+        "Iron",
+        "Gold",
+        "Silver",
+        "Copper"
+      ],
+      "answer": "Iron"
+    },
+    {
+      "question": "Which day comes after Friday?",
+      "options": [
+        "Thursday",
+        "Saturday",
+        "Sunday",
+        "Monday"
+      ],
+      "answer": "Saturday"
+    },
+    {
+      "question": "How many months are there in a year?",
+      "options": [
+        "10",
+        "11",
+        "12",
+        "13"
+      ],
+      "answer": "12"
+    },
+    {
+      "question": "Which month comes first in the calendar year?",
+      "options": [
+        "December",
+        "March",
+        "January",
+        "July"
+      ],
+      "answer": "January"
+    },
+    {
+      "question": "Which device is used to take photographs?",
+      "options": [
+        "Camera",
+        "Compass",
+        "Kettle",
+        "Printer"
+      ],
+      "answer": "Camera"
+    },
+    {
+      "question": "Which is a primary colour in traditional painting?",
+      "options": [
+        "Blue",
+        "Pink",
+        "Brown",
+        "Grey"
+      ],
+      "answer": "Blue"
+    },
+    {
+      "question": "What is the money paid to travel on a bus called?",
+      "options": [
+        "Rent",
+        "Fare",
+        "Fine",
+        "Prize"
+      ],
+      "answer": "Fare"
+    },
+    {
+      "question": "On which continent is Kenya?",
+      "options": [
+        "Asia",
+        "Africa",
+        "Europe",
+        "South America"
+      ],
+      "answer": "Africa"
+    },
+    {
+      "question": "Which is the world's largest hot desert?",
+      "options": [
+        "Sahara Desert",
+        "Gobi Desert",
+        "Kalahari Desert",
+        "Mojave Desert"
+      ],
+      "answer": "Sahara Desert"
+    },
+    {
+      "question": "Which object is designed to measure or show the time?",
+      "options": [
+        "Clock",
+        "Ruler",
+        "Thermometer",
+        "Compass"
+      ],
+      "answer": "Clock"
+    },
+    {
+      "question": "How many wheels does a standard bicycle have?",
+      "options": [
+        "One",
+        "Two",
+        "Three",
+        "Four"
+      ],
+      "answer": "Two"
+    },
+    {
+      "question": "Which animal is the tallest in the world?",
+      "options": [
+        "Elephant",
+        "Giraffe",
+        "Ostrich",
+        "Camel"
+      ],
+      "answer": "Giraffe"
+    },
+    {
+      "question": "What section of a book lists its chapters and page numbers?",
+      "options": [
+        "Index card",
+        "Table of contents",
+        "Caption",
+        "Glossary"
+      ],
+      "answer": "Table of contents"
+    },
+    {
+      "question": "Which shape has four equal sides and four right angles?",
+      "options": [
+        "Rectangle",
+        "Triangle",
+        "Square",
+        "Oval"
+      ],
+      "answer": "Square"
+    },
+    {
+      "question": "What do we call a person who designs buildings?",
+      "options": [
+        "Architect",
+        "Dentist",
+        "Pilot",
+        "Chef"
+      ],
+      "answer": "Architect"
+    },
+    {
+      "question": "Which tool is commonly used to cut paper?",
+      "options": [
+        "Spoon",
+        "Scissors",
+        "Paintbrush",
+        "Comb"
+      ],
+      "answer": "Scissors"
+    },
+    {
+      "question": "At which time of day do people usually eat breakfast?",
+      "options": [
+        "Morning",
+        "Midnight",
+        "Late evening",
+        "Afternoon only"
+      ],
+      "answer": "Morning"
+    },
+    {
+      "question": "Which tool helps you find directions such as north and south?",
+      "options": [
+        "Compass",
+        "Ruler",
+        "Telescope",
+        "Stopwatch"
+      ],
+      "answer": "Compass"
+    },
+    {
+      "question": "How many letters are in the English alphabet?",
+      "options": [
+        "24",
+        "25",
+        "26",
+        "27"
+      ],
+      "answer": "26"
+    },
+    {
+      "question": "What do we call water when it freezes?",
+      "options": [
+        "Steam",
+        "Ice",
+        "Rain",
+        "Mist"
+      ],
+      "answer": "Ice"
+    },
+    {
+      "question": "Which country is especially famous for wild kangaroos?",
+      "options": [
+        "Canada",
+        "Australia",
+        "Norway",
+        "Japan"
+      ],
+      "answer": "Australia"
+    },
+    {
+      "question": "Which room in a house is usually used for cooking?",
+      "options": [
+        "Bedroom",
+        "Kitchen",
+        "Garage",
+        "Bathroom"
+      ],
+      "answer": "Kitchen"
+    },
+    {
+      "question": "How many days are there in a week?",
+      "options": [
+        "Five",
+        "Six",
+        "Seven",
+        "Eight"
+      ],
+      "answer": "Seven"
+    }
+  ],
+  "Science": [
+    {
+      "question": "Which gas do plants take in from the air?",
+      "options": [
+        "Oxygen",
+        "Carbon dioxide",
+        "Helium",
+        "Hydrogen"
+      ],
+      "answer": "Carbon dioxide"
+    },
+    {
+      "question": "What force pulls objects toward Earth?",
+      "options": [
+        "Magnetism",
+        "Friction",
+        "Gravity",
+        "Electricity"
+      ],
+      "answer": "Gravity"
+    },
+    {
+      "question": "What is H₂O better known as?",
+      "options": [
+        "Salt",
+        "Water",
+        "Oxygen",
+        "Sugar"
+      ],
+      "answer": "Water"
+    },
+    {
+      "question": "Which part of the body pumps blood?",
+      "options": [
+        "Lungs",
+        "Brain",
+        "Heart",
+        "Stomach"
+      ],
+      "answer": "Heart"
+    },
+    {
+      "question": "What is the closest star to Earth?",
+      "options": [
+        "Sirius",
+        "The Sun",
+        "Polaris",
+        "Vega"
+      ],
+      "answer": "The Sun"
+    },
+    {
+      "question": "At what temperature does water freeze in Celsius?",
+      "options": [
+        "0°",
+        "10°",
+        "32°",
+        "100°"
+      ],
+      "answer": "0°"
+    },
+    {
+      "question": "Which state of matter has a fixed shape?",
+      "options": [
+        "Solid",
+        "Liquid",
+        "Gas",
+        "Vapour"
+      ],
+      "answer": "Solid"
+    },
+    {
+      "question": "Which organ helps you breathe?",
+      "options": [
+        "Kidneys",
+        "Lungs",
+        "Liver",
+        "Heart"
+      ],
+      "answer": "Lungs"
+    },
+    {
+      "question": "Which planet is closest to the Sun?",
+      "options": [
+        "Mercury",
+        "Earth",
+        "Mars",
+        "Jupiter"
+      ],
+      "answer": "Mercury"
+    },
+    {
+      "question": "Which part of most plants makes food using sunlight?",
+      "options": [
+        "Leaves",
+        "Roots",
+        "Bark",
+        "Seeds"
+      ],
+      "answer": "Leaves"
+    },
+    {
+      "question": "Which material is strongly attracted to a magnet?",
+      "options": [
+        "Iron",
+        "Glass",
+        "Rubber",
+        "Wood"
+      ],
+      "answer": "Iron"
+    },
+    {
+      "question": "At what temperature does water boil at sea level in Celsius?",
+      "options": [
+        "0°C",
+        "50°C",
+        "100°C",
+        "150°C"
+      ],
+      "answer": "100°C"
+    },
+    {
+      "question": "What is the central part of an atom called?",
+      "options": [
+        "Nucleus",
+        "Shell",
+        "Cell wall",
+        "Muscle"
+      ],
+      "answer": "Nucleus"
+    },
+    {
+      "question": "What kind of energy do we get from sunlight?",
+      "options": [
+        "Solar energy",
+        "Sound energy",
+        "Nuclear waste",
+        "Elastic energy"
+      ],
+      "answer": "Solar energy"
+    },
+    {
+      "question": "Which sense organ detects sound?",
+      "options": [
+        "Eye",
+        "Ear",
+        "Nose",
+        "Tongue"
+      ],
+      "answer": "Ear"
+    },
+    {
+      "question": "Which bone structure protects the brain?",
+      "options": [
+        "Rib cage",
+        "Skull",
+        "Pelvis",
+        "Kneecap"
+      ],
+      "answer": "Skull"
+    },
+    {
+      "question": "How many legs does an insect have?",
+      "options": [
+        "Four",
+        "Six",
+        "Eight",
+        "Ten"
+      ],
+      "answer": "Six"
+    },
+    {
+      "question": "What is the change from liquid water into water vapour called?",
+      "options": [
+        "Freezing",
+        "Evaporation",
+        "Melting",
+        "Condensation"
+      ],
+      "answer": "Evaporation"
+    },
+    {
+      "question": "Which gas do humans need to breathe to survive?",
+      "options": [
+        "Oxygen",
+        "Helium",
+        "Carbon monoxide",
+        "Neon"
+      ],
+      "answer": "Oxygen"
+    },
+    {
+      "question": "Which planet is famous for its large ring system?",
+      "options": [
+        "Saturn",
+        "Mercury",
+        "Earth",
+        "Mars"
+      ],
+      "answer": "Saturn"
+    },
+    {
+      "question": "Which blood cells carry most of the oxygen around the body?",
+      "options": [
+        "Red blood cells",
+        "Platelets",
+        "White blood cells",
+        "Skin cells"
+      ],
+      "answer": "Red blood cells"
+    },
+    {
+      "question": "What do we call animals that eat only plants?",
+      "options": [
+        "Carnivores",
+        "Herbivores",
+        "Omnivores",
+        "Predators"
+      ],
+      "answer": "Herbivores"
+    },
+    {
+      "question": "Which instrument measures temperature?",
+      "options": [
+        "Barometer",
+        "Thermometer",
+        "Speedometer",
+        "Odometer"
+      ],
+      "answer": "Thermometer"
+    },
+    {
+      "question": "What is the hardest naturally occurring mineral commonly listed on the Mohs scale?",
+      "options": [
+        "Quartz",
+        "Diamond",
+        "Gypsum",
+        "Calcite"
+      ],
+      "answer": "Diamond"
+    },
+    {
+      "question": "Where does digestion begin as food is chewed and mixed with saliva?",
+      "options": [
+        "Mouth",
+        "Stomach",
+        "Small intestine",
+        "Lungs"
+      ],
+      "answer": "Mouth"
+    },
+    {
+      "question": "What type of energy is stored in food?",
+      "options": [
+        "Chemical energy",
+        "Sound energy",
+        "Light energy",
+        "Magnetic energy"
+      ],
+      "answer": "Chemical energy"
+    },
+    {
+      "question": "What is the main source of energy that drives Earth's weather?",
+      "options": [
+        "The Sun",
+        "The Moon",
+        "Volcanoes",
+        "Ocean tides"
+      ],
+      "answer": "The Sun"
+    },
+    {
+      "question": "What do we call a push or a pull?",
+      "options": [
+        "Force",
+        "Shadow",
+        "Temperature",
+        "Volume"
+      ],
+      "answer": "Force"
+    },
+    {
+      "question": "What is the change from a solid into a liquid called?",
+      "options": [
+        "Freezing",
+        "Melting",
+        "Condensation",
+        "Boiling"
+      ],
+      "answer": "Melting"
+    },
+    {
+      "question": "Which simple machine is a seesaw an example of?",
+      "options": [
+        "Lever",
+        "Pulley",
+        "Screw",
+        "Wedge"
+      ],
+      "answer": "Lever"
+    },
+    {
+      "question": "Which part of the eye is the opening that lets light enter?",
+      "options": [
+        "Pupil",
+        "Eyelash",
+        "Cornea only",
+        "Optic nerve"
+      ],
+      "answer": "Pupil"
+    },
+    {
+      "question": "What is Earth's natural satellite called?",
+      "options": [
+        "The Moon",
+        "The Sun",
+        "Mars",
+        "Venus"
+      ],
+      "answer": "The Moon"
+    },
+    {
+      "question": "What is the path a planet follows around a star called?",
+      "options": [
+        "Orbit",
+        "Axis",
+        "Crater",
+        "Cloud"
+      ],
+      "answer": "Orbit"
+    },
+    {
+      "question": "How many bones are usually found in an adult human skeleton?",
+      "options": [
+        "106",
+        "206",
+        "306",
+        "406"
+      ],
+      "answer": "206"
+    },
+    {
+      "question": "Which vitamin can the body make when skin is exposed to sunlight?",
+      "options": [
+        "Vitamin A",
+        "Vitamin B12",
+        "Vitamin C",
+        "Vitamin D"
+      ],
+      "answer": "Vitamin D"
+    },
+    {
+      "question": "What type of rock forms when magma or lava cools?",
+      "options": [
+        "Igneous",
+        "Sedimentary",
+        "Metamorphic",
+        "Chalk"
+      ],
+      "answer": "Igneous"
+    },
+    {
+      "question": "Which tiny particle has a negative electric charge?",
+      "options": [
+        "Proton",
+        "Neutron",
+        "Electron",
+        "Photon"
+      ],
+      "answer": "Electron"
+    },
+    {
+      "question": "What do we call a scientist who studies weather?",
+      "options": [
+        "Meteorologist",
+        "Astronomer",
+        "Botanist",
+        "Geologist"
+      ],
+      "answer": "Meteorologist"
+    },
+    {
+      "question": "Which organs filter waste from blood and help produce urine?",
+      "options": [
+        "Kidneys",
+        "Lungs",
+        "Ears",
+        "Pancreas"
+      ],
+      "answer": "Kidneys"
+    },
+    {
+      "question": "What is the standard unit of electric current called?",
+      "options": [
+        "Ampere",
+        "Watt",
+        "Volt",
+        "Ohm"
+      ],
+      "answer": "Ampere"
+    }
+  ],
+  "Nature": [
+    {
+      "question": "What is the fastest land animal?",
+      "options": [
+        "Lion",
+        "Cheetah",
+        "Horse",
+        "Gazelle"
+      ],
+      "answer": "Cheetah"
+    },
+    {
+      "question": "What do caterpillars turn into?",
+      "options": [
+        "Bees",
+        "Butterflies",
+        "Spiders",
+        "Dragonflies"
+      ],
+      "answer": "Butterflies"
+    },
+    {
+      "question": "What is a baby frog called?",
+      "options": [
+        "Cub",
+        "Tadpole",
+        "Calf",
+        "Kit"
+      ],
+      "answer": "Tadpole"
+    },
+    {
+      "question": "Which part of a plant absorbs water from soil?",
+      "options": [
+        "Flower",
+        "Leaf",
+        "Root",
+        "Stem"
+      ],
+      "answer": "Root"
+    },
+    {
+      "question": "Which mammal can fly?",
+      "options": [
+        "Flying squirrel",
+        "Bat",
+        "Lemur",
+        "Sugar glider"
+      ],
+      "answer": "Bat"
+    },
+    {
+      "question": "What do bees collect from flowers to make honey?",
+      "options": [
+        "Nectar",
+        "Dew",
+        "Sap",
+        "Seeds"
+      ],
+      "answer": "Nectar"
+    },
+    {
+      "question": "Which animal is known for its black-and-white stripes?",
+      "options": [
+        "Zebra",
+        "Giraffe",
+        "Tiger",
+        "Panda"
+      ],
+      "answer": "Zebra"
+    },
+    {
+      "question": "What is the largest animal on Earth?",
+      "options": [
+        "African elephant",
+        "Blue whale",
+        "Giraffe",
+        "Whale shark"
+      ],
+      "answer": "Blue whale"
+    },
+    {
+      "question": "Which animal has a long trunk?",
+      "options": [
+        "Elephant",
+        "Rhino",
+        "Hippo",
+        "Buffalo"
+      ],
+      "answer": "Elephant"
+    },
+    {
+      "question": "What do giant pandas mainly eat in the wild?",
+      "options": [
+        "Bamboo",
+        "Fish",
+        "Grasshoppers",
+        "Seaweed"
+      ],
+      "answer": "Bamboo"
+    },
+    {
+      "question": "Which bird is well known for mimicking sounds and human speech?",
+      "options": [
+        "Parrot",
+        "Penguin",
+        "Ostrich",
+        "Kiwi"
+      ],
+      "answer": "Parrot"
+    },
+    {
+      "question": "What is a group of lions called?",
+      "options": [
+        "A pride",
+        "A school",
+        "A flock",
+        "A colony"
+      ],
+      "answer": "A pride"
+    },
+    {
+      "question": "Which animal carries its young in a pouch?",
+      "options": [
+        "Kangaroo",
+        "Horse",
+        "Cow",
+        "Goat"
+      ],
+      "answer": "Kangaroo"
+    },
+    {
+      "question": "Which lizard is famous for changing colour?",
+      "options": [
+        "Chameleon",
+        "Gecko only",
+        "Komodo dragon",
+        "Iguana"
+      ],
+      "answer": "Chameleon"
+    },
+    {
+      "question": "What do we call animals that are active mainly at night?",
+      "options": [
+        "Nocturnal",
+        "Aquatic",
+        "Domestic",
+        "Diurnal"
+      ],
+      "answer": "Nocturnal"
+    },
+    {
+      "question": "Which type of tree produces acorns?",
+      "options": [
+        "Oak",
+        "Palm",
+        "Pine",
+        "Willow"
+      ],
+      "answer": "Oak"
+    },
+    {
+      "question": "After pollination and fertilisation, what can a flower's ovary develop into?",
+      "options": [
+        "Fruit",
+        "Root",
+        "Bark",
+        "Thorn"
+      ],
+      "answer": "Fruit"
+    },
+    {
+      "question": "Which animal is often called the 'ship of the desert'?",
+      "options": [
+        "Camel",
+        "Donkey",
+        "Llama",
+        "Yak"
+      ],
+      "answer": "Camel"
+    },
+    {
+      "question": "What do earthworms help improve in garden soil?",
+      "options": [
+        "Soil quality",
+        "Sunlight",
+        "Wind speed",
+        "Moonlight"
+      ],
+      "answer": "Soil quality"
+    },
+    {
+      "question": "In which region do polar bears live naturally?",
+      "options": [
+        "Arctic",
+        "Sahara",
+        "Amazon rainforest",
+        "Antarctica"
+      ],
+      "answer": "Arctic"
+    },
+    {
+      "question": "What is the seasonal movement of animals from one region to another called?",
+      "options": [
+        "Migration",
+        "Hibernation",
+        "Pollination",
+        "Camouflage"
+      ],
+      "answer": "Migration"
+    },
+    {
+      "question": "Which insect produces the silk used to make some fabrics?",
+      "options": [
+        "Silkworm",
+        "Mosquito",
+        "Ant",
+        "Housefly"
+      ],
+      "answer": "Silkworm"
+    },
+    {
+      "question": "Which Australian marsupial mainly eats eucalyptus leaves?",
+      "options": [
+        "Koala",
+        "Meerkat",
+        "Otter",
+        "Badger"
+      ],
+      "answer": "Koala"
+    },
+    {
+      "question": "Which slow-moving reptile has a hard shell on its back?",
+      "options": [
+        "Tortoise",
+        "Snake",
+        "Frog",
+        "Salamander"
+      ],
+      "answer": "Tortoise"
+    },
+    {
+      "question": "Which small bird can hover while feeding on flower nectar?",
+      "options": [
+        "Hummingbird",
+        "Eagle",
+        "Flamingo",
+        "Albatross"
+      ],
+      "answer": "Hummingbird"
+    },
+    {
+      "question": "Which of these animals is a reptile?",
+      "options": [
+        "Crocodile",
+        "Dolphin",
+        "Frog",
+        "Sparrow"
+      ],
+      "answer": "Crocodile"
+    },
+    {
+      "question": "What do we call an animal that hunts other animals for food?",
+      "options": [
+        "Predator",
+        "Producer",
+        "Pollinator",
+        "Herbivore"
+      ],
+      "answer": "Predator"
+    },
+    {
+      "question": "What do plant roots usually absorb from the soil?",
+      "options": [
+        "Water and minerals",
+        "Sunlight and wind",
+        "Seeds and flowers",
+        "Oxygen only"
+      ],
+      "answer": "Water and minerals"
+    },
+    {
+      "question": "Which large flightless bird is native to Africa?",
+      "options": [
+        "Ostrich",
+        "Eagle",
+        "Swan",
+        "Puffin"
+      ],
+      "answer": "Ostrich"
+    },
+    {
+      "question": "Which sea animal has eight arms?",
+      "options": [
+        "Octopus",
+        "Dolphin",
+        "Seal",
+        "Seahorse"
+      ],
+      "answer": "Octopus"
+    },
+    {
+      "question": "Which animal is known for building dams in rivers?",
+      "options": [
+        "Beaver",
+        "Fox",
+        "Gazelle",
+        "Peacock"
+      ],
+      "answer": "Beaver"
+    },
+    {
+      "question": "Which mammal uses a long sticky tongue to catch ants and termites?",
+      "options": [
+        "Anteater",
+        "Deer",
+        "Dolphin",
+        "Zebra"
+      ],
+      "answer": "Anteater"
+    },
+    {
+      "question": "What are baby dogs called?",
+      "options": [
+        "Kittens",
+        "Puppies",
+        "Calves",
+        "Foals"
+      ],
+      "answer": "Puppies"
+    },
+    {
+      "question": "What do we call the natural home of a plant or animal?",
+      "options": [
+        "Habitat",
+        "Machine",
+        "Weather",
+        "Footprint"
+      ],
+      "answer": "Habitat"
+    },
+    {
+      "question": "What is a young sheep called?",
+      "options": [
+        "Lamb",
+        "Foal",
+        "Kid",
+        "Chick"
+      ],
+      "answer": "Lamb"
+    },
+    {
+      "question": "What kingdom do mushrooms belong to?",
+      "options": [
+        "Fungi",
+        "Plants",
+        "Animals",
+        "Insects"
+      ],
+      "answer": "Fungi"
+    },
+    {
+      "question": "Which animal is known for spinning webs?",
+      "options": [
+        "Spider",
+        "Earthworm",
+        "Snail",
+        "Crab"
+      ],
+      "answer": "Spider"
+    },
+    {
+      "question": "Which body parts do most birds use to fly?",
+      "options": [
+        "Wings",
+        "Fins",
+        "Hooves",
+        "Antennae"
+      ],
+      "answer": "Wings"
+    },
+    {
+      "question": "Which water habitat usually contains salt water?",
+      "options": [
+        "Ocean",
+        "Pond",
+        "Lake",
+        "Freshwater stream"
+      ],
+      "answer": "Ocean"
+    },
+    {
+      "question": "Which sea creature can regrow a lost arm in many species?",
+      "options": [
+        "Starfish",
+        "Penguin",
+        "Tuna",
+        "Sea turtle"
+      ],
+      "answer": "Starfish"
+    }
+  ],
+  "English": [
+    {
+      "question": "Which word is a noun?",
+      "options": [
+        "Quickly",
+        "Happiness",
+        "Run",
+        "Blue"
+      ],
+      "answer": "Happiness"
+    },
+    {
+      "question": "What is the plural of 'child'?",
+      "options": [
+        "Childs",
+        "Children",
+        "Childes",
+        "Childrens"
+      ],
+      "answer": "Children"
+    },
+    {
+      "question": "Which word means the opposite of 'ancient'?",
+      "options": [
+        "Old",
+        "Modern",
+        "Historic",
+        "Past"
+      ],
+      "answer": "Modern"
+    },
+    {
+      "question": "Which punctuation mark ends a question?",
+      "options": [
+        "Full stop",
+        "Comma",
+        "Question mark",
+        "Apostrophe"
+      ],
+      "answer": "Question mark"
+    },
+    {
+      "question": "What is the past tense of 'go'?",
+      "options": [
+        "Goed",
+        "Gone",
+        "Went",
+        "Going"
+      ],
+      "answer": "Went"
+    },
+    {
+      "question": "Which word is spelled correctly?",
+      "options": [
+        "Becaus",
+        "Because",
+        "Beacause",
+        "Becouse"
+      ],
+      "answer": "Because"
+    },
+    {
+      "question": "What do we call a word that describes a noun?",
+      "options": [
+        "Adjective",
+        "Verb",
+        "Pronoun",
+        "Adverb"
+      ],
+      "answer": "Adjective"
+    },
+    {
+      "question": "Which word rhymes with 'light'?",
+      "options": [
+        "Late",
+        "Lift",
+        "Night",
+        "Lot"
+      ],
+      "answer": "Night"
+    },
+    {
+      "question": "Which word is a verb?",
+      "options": [
+        "Jump",
+        "Table",
+        "Blue",
+        "Softly"
+      ],
+      "answer": "Jump"
+    },
+    {
+      "question": "What is the opposite of 'generous'?",
+      "options": [
+        "Selfish",
+        "Helpful",
+        "Kind",
+        "Patient"
+      ],
+      "answer": "Selfish"
+    },
+    {
+      "question": "Which word is an adverb?",
+      "options": [
+        "Slowly",
+        "Rainbow",
+        "Speak",
+        "Tall"
+      ],
+      "answer": "Slowly"
+    },
+    {
+      "question": "What is the plural of 'mouse'?",
+      "options": [
+        "Mouses",
+        "Mice",
+        "Mousees",
+        "Meese"
+      ],
+      "answer": "Mice"
+    },
+    {
+      "question": "Which sentence uses capital letters correctly?",
+      "options": [
+        "my friend lives in harare.",
+        "My friend lives in Harare.",
+        "My Friend lives in harare.",
+        "My friend Lives in Harare."
+      ],
+      "answer": "My friend lives in Harare."
+    },
+    {
+      "question": "Which punctuation mark is used in contractions such as 'don't'?",
+      "options": [
+        "Apostrophe",
+        "Colon",
+        "Question mark",
+        "Hyphen"
+      ],
+      "answer": "Apostrophe"
+    },
+    {
+      "question": "What is the comparative form of 'tall'?",
+      "options": [
+        "Tallest",
+        "Taller",
+        "More tall",
+        "Talling"
+      ],
+      "answer": "Taller"
+    },
+    {
+      "question": "Which word is a pronoun?",
+      "options": [
+        "She",
+        "Garden",
+        "Bright",
+        "Jump"
+      ],
+      "answer": "She"
+    },
+    {
+      "question": "Complete the sentence: 'They ___ playing outside.'",
+      "options": [
+        "is",
+        "am",
+        "are",
+        "be"
+      ],
+      "answer": "are"
+    },
+    {
+      "question": "What is the past tense of 'eat'?",
+      "options": [
+        "Eated",
+        "Ate",
+        "Eating",
+        "Eaten"
+      ],
+      "answer": "Ate"
+    },
+    {
+      "question": "Which word is closest in meaning to 'happy'?",
+      "options": [
+        "Joyful",
+        "Angry",
+        "Sleepy",
+        "Afraid"
+      ],
+      "answer": "Joyful"
+    },
+    {
+      "question": "Which spelling of 'beautiful' is correct?",
+      "options": [
+        "Beautifull",
+        "Beutiful",
+        "Beautiful",
+        "Beautyful"
+      ],
+      "answer": "Beautiful"
+    },
+    {
+      "question": "How many syllables are in the word 'banana'?",
+      "options": [
+        "One",
+        "Two",
+        "Three",
+        "Four"
+      ],
+      "answer": "Three"
+    },
+    {
+      "question": "Which option is a complete sentence?",
+      "options": [
+        "Under the table.",
+        "Because it was raining.",
+        "The dog barked.",
+        "After lunch."
+      ],
+      "answer": "The dog barked."
+    },
+    {
+      "question": "Which word is an adjective?",
+      "options": [
+        "Bright",
+        "Carefully",
+        "Sing",
+        "They"
+      ],
+      "answer": "Bright"
+    },
+    {
+      "question": "When you give something to another person temporarily, what is the opposite of 'borrow'?",
+      "options": [
+        "Lend",
+        "Keep",
+        "Hide",
+        "Lose"
+      ],
+      "answer": "Lend"
+    },
+    {
+      "question": "What is the plural of 'tooth'?",
+      "options": [
+        "Tooths",
+        "Teeth",
+        "Toothes",
+        "Tooth"
+      ],
+      "answer": "Teeth"
+    },
+    {
+      "question": "Which word is a preposition?",
+      "options": [
+        "Under",
+        "Laugh",
+        "Green",
+        "Beautiful"
+      ],
+      "answer": "Under"
+    },
+    {
+      "question": "Choose the correct article: '___ apple a day can be a healthy snack.'",
+      "options": [
+        "A",
+        "An",
+        "Thee",
+        "No article ever"
+      ],
+      "answer": "An"
+    },
+    {
+      "question": "Which sentence is a question?",
+      "options": [
+        "I enjoy reading.",
+        "Please close the door.",
+        "Where are you going?",
+        "What a lovely day!"
+      ],
+      "answer": "Where are you going?"
+    },
+    {
+      "question": "What is the superlative form of 'good'?",
+      "options": [
+        "Gooder",
+        "Best",
+        "Better",
+        "Most good"
+      ],
+      "answer": "Best"
+    },
+    {
+      "question": "Which word is a conjunction?",
+      "options": [
+        "Because",
+        "Pencil",
+        "Quickly",
+        "Blue"
+      ],
+      "answer": "Because"
+    },
+    {
+      "question": "Which is the correct possessive form for a bag belonging to one girl?",
+      "options": [
+        "The girls bag",
+        "The girl's bag",
+        "The girls' bag",
+        "The girl bag's"
+      ],
+      "answer": "The girl's bag"
+    },
+    {
+      "question": "What is the prefix in the word 'unhappy'?",
+      "options": [
+        "Un-",
+        "-happy",
+        "-ness",
+        "Re-"
+      ],
+      "answer": "Un-"
+    },
+    {
+      "question": "Which suffix turns 'kind' into the noun 'kindness'?",
+      "options": [
+        "-ness",
+        "-ful",
+        "-ly",
+        "-ed"
+      ],
+      "answer": "-ness"
+    },
+    {
+      "question": "What type of word is 'and'?",
+      "options": [
+        "Conjunction",
+        "Adjective",
+        "Noun",
+        "Interjection"
+      ],
+      "answer": "Conjunction"
+    },
+    {
+      "question": "Which spelling of 'definitely' is correct?",
+      "options": [
+        "Definately",
+        "Definitly",
+        "Definitely",
+        "Definatly"
+      ],
+      "answer": "Definitely"
+    },
+    {
+      "question": "What is the contraction for 'they are'?",
+      "options": [
+        "Their",
+        "They're",
+        "There",
+        "Theyre's"
+      ],
+      "answer": "They're"
+    },
+    {
+      "question": "Which word is an antonym of 'empty'?",
+      "options": [
+        "Full",
+        "Hollow",
+        "Blank",
+        "Open"
+      ],
+      "answer": "Full"
+    },
+    {
+      "question": "What is the subject in the sentence 'The little bird sang.'?",
+      "options": [
+        "Sang",
+        "The little bird",
+        "Little",
+        "The"
+      ],
+      "answer": "The little bird"
+    },
+    {
+      "question": "What is the plural of 'leaf'?",
+      "options": [
+        "Leafs",
+        "Leaves",
+        "Leafes",
+        "Leavs"
+      ],
+      "answer": "Leaves"
+    },
+    {
+      "question": "Complete the sentence: 'Yesterday, we ___ to the park.'",
+      "options": [
+        "Go",
+        "Gone",
+        "Went",
+        "Going"
+      ],
+      "answer": "Went"
+    }
+  ],
+  "Sports": [
+    {
+      "question": "How many players are on a soccer team on the field?",
+      "options": [
+        "9",
+        "10",
+        "11",
+        "12"
+      ],
+      "answer": "11"
+    },
+    {
+      "question": "In which sport do players score a touchdown?",
+      "options": [
+        "Basketball",
+        "American football",
+        "Tennis",
+        "Hockey"
+      ],
+      "answer": "American football"
+    },
+    {
+      "question": "What colour card sends a soccer player off the field?",
+      "options": [
+        "Blue",
+        "Yellow",
+        "Green",
+        "Red"
+      ],
+      "answer": "Red"
+    },
+    {
+      "question": "How many rings are on the Olympic flag?",
+      "options": [
+        "Four",
+        "Five",
+        "Six",
+        "Seven"
+      ],
+      "answer": "Five"
+    },
+    {
+      "question": "Which sport uses a racket and a shuttlecock?",
+      "options": [
+        "Badminton",
+        "Baseball",
+        "Golf",
+        "Rugby"
+      ],
+      "answer": "Badminton"
+    },
+    {
+      "question": "What is the object hit in baseball called?",
+      "options": [
+        "Puck",
+        "Ball",
+        "Shuttlecock",
+        "Disc"
+      ],
+      "answer": "Ball"
+    },
+    {
+      "question": "How many points is a free throw worth in basketball?",
+      "options": [
+        "One",
+        "Two",
+        "Three",
+        "Four"
+      ],
+      "answer": "One"
+    },
+    {
+      "question": "Which sport is played at Wimbledon?",
+      "options": [
+        "Cricket",
+        "Tennis",
+        "Golf",
+        "Rugby"
+      ],
+      "answer": "Tennis"
+    },
+    {
+      "question": "In American football, how many points is a touchdown worth before an extra point?",
+      "options": [
+        "Three",
+        "Five",
+        "Six",
+        "Seven"
+      ],
+      "answer": "Six"
+    },
+    {
+      "question": "Which sport uses a bat, a ball and wickets?",
+      "options": [
+        "Cricket",
+        "Volleyball",
+        "Swimming",
+        "Golf"
+      ],
+      "answer": "Cricket"
+    },
+    {
+      "question": "In which athletics event do competitors jump over a high bar?",
+      "options": [
+        "High jump",
+        "Marathon",
+        "Shot put",
+        "Relay"
+      ],
+      "answer": "High jump"
+    },
+    {
+      "question": "How many points is a basketball shot worth when made from beyond the three-point line?",
+      "options": [
+        "One",
+        "Two",
+        "Three",
+        "Four"
+      ],
+      "answer": "Three"
+    },
+    {
+      "question": "Which team sport is played in a swimming pool with goals at each end?",
+      "options": [
+        "Water polo",
+        "Rugby",
+        "Handball",
+        "Field hockey"
+      ],
+      "answer": "Water polo"
+    },
+    {
+      "question": "On what kind of routes is the Tour de France mainly raced?",
+      "options": [
+        "Roads",
+        "Ice rinks",
+        "Running tracks",
+        "Ski slopes"
+      ],
+      "answer": "Roads"
+    },
+    {
+      "question": "Which sport features a scrum?",
+      "options": [
+        "Rugby",
+        "Tennis",
+        "Golf",
+        "Badminton"
+      ],
+      "answer": "Rugby"
+    },
+    {
+      "question": "Which gymnastics apparatus has handles and is shaped like a horse?",
+      "options": [
+        "Pommel horse",
+        "Balance beam",
+        "Uneven bars",
+        "Trampoline"
+      ],
+      "answer": "Pommel horse"
+    },
+    {
+      "question": "How many players from one team are normally on court in volleyball?",
+      "options": [
+        "Five",
+        "Six",
+        "Seven",
+        "Eight"
+      ],
+      "answer": "Six"
+    },
+    {
+      "question": "Which sport uses a puck and often has a goalkeeper?",
+      "options": [
+        "Ice hockey",
+        "Cricket",
+        "Tennis",
+        "Basketball"
+      ],
+      "answer": "Ice hockey"
+    },
+    {
+      "question": "What line do runners aim to cross at the end of a race?",
+      "options": [
+        "Finish line",
+        "Sideline",
+        "Service line",
+        "Baseline"
+      ],
+      "answer": "Finish line"
+    },
+    {
+      "question": "In which country did the ancient Olympic Games begin?",
+      "options": [
+        "Greece",
+        "Brazil",
+        "China",
+        "Canada"
+      ],
+      "answer": "Greece"
+    },
+    {
+      "question": "Which sport is played using clubs and a series of holes?",
+      "options": [
+        "Golf",
+        "Boxing",
+        "Swimming",
+        "Volleyball"
+      ],
+      "answer": "Golf"
+    },
+    {
+      "question": "Which sport uses pins and scores strikes and spares?",
+      "options": [
+        "Bowling",
+        "Fencing",
+        "Cycling",
+        "Rowing"
+      ],
+      "answer": "Bowling"
+    },
+    {
+      "question": "What is hit back and forth over the net in table tennis?",
+      "options": [
+        "A small ball",
+        "A puck",
+        "A shuttlecock",
+        "A rugby ball"
+      ],
+      "answer": "A small ball"
+    },
+    {
+      "question": "In tennis, what word means a score of zero?",
+      "options": [
+        "Love",
+        "Nilby",
+        "Blanket",
+        "Deuce"
+      ],
+      "answer": "Love"
+    },
+    {
+      "question": "In which race do team members pass a baton to one another?",
+      "options": [
+        "Relay race",
+        "Marathon",
+        "High jump",
+        "Long jump"
+      ],
+      "answer": "Relay race"
+    },
+    {
+      "question": "Which sport includes an event performed on a narrow raised beam?",
+      "options": [
+        "Gymnastics",
+        "Cricket",
+        "Cycling",
+        "Rowing"
+      ],
+      "answer": "Gymnastics"
+    },
+    {
+      "question": "Which cue sport involves potting coloured balls on a table?",
+      "options": [
+        "Snooker",
+        "Rugby",
+        "Sprinting",
+        "Archery"
+      ],
+      "answer": "Snooker"
+    },
+    {
+      "question": "In baseball, how many strikes normally make a batter out?",
+      "options": [
+        "One",
+        "Two",
+        "Three",
+        "Four"
+      ],
+      "answer": "Three"
+    },
+    {
+      "question": "What protective headgear should a cyclist wear?",
+      "options": [
+        "Helmet",
+        "Scarf",
+        "Knee pad",
+        "Wristwatch"
+      ],
+      "answer": "Helmet"
+    },
+    {
+      "question": "What is a running race of about 42.195 kilometres called?",
+      "options": [
+        "Marathon",
+        "Sprint",
+        "Hurdles",
+        "Relay"
+      ],
+      "answer": "Marathon"
+    },
+    {
+      "question": "What is the official who enforces the rules in a soccer match called?",
+      "options": [
+        "Referee",
+        "Captain",
+        "Commentator",
+        "Spectator"
+      ],
+      "answer": "Referee"
+    },
+    {
+      "question": "Which sport involves riding waves on a board?",
+      "options": [
+        "Surfing",
+        "Fencing",
+        "Bowling",
+        "Weightlifting"
+      ],
+      "answer": "Surfing"
+    },
+    {
+      "question": "How many bases are there on a standard baseball diamond?",
+      "options": [
+        "Three",
+        "Four",
+        "Five",
+        "Six"
+      ],
+      "answer": "Four"
+    },
+    {
+      "question": "Which sport uses a foil, épée or sabre?",
+      "options": [
+        "Fencing",
+        "Archery",
+        "Rowing",
+        "Skiing"
+      ],
+      "answer": "Fencing"
+    },
+    {
+      "question": "Which multi-sport event combines swimming, cycling and running?",
+      "options": [
+        "Triathlon",
+        "Pentathlon",
+        "Decathlon",
+        "Biathlon"
+      ],
+      "answer": "Triathlon"
+    },
+    {
+      "question": "Which sport features hoops and slam dunks?",
+      "options": [
+        "Basketball",
+        "Cricket",
+        "Tennis",
+        "Rugby"
+      ],
+      "answer": "Basketball"
+    },
+    {
+      "question": "What do we call a person who trains an athlete or a team?",
+      "options": [
+        "Coach",
+        "Umpire",
+        "Supporter",
+        "Reporter"
+      ],
+      "answer": "Coach"
+    },
+    {
+      "question": "Which sport uses a board with wheels for riding and performing tricks?",
+      "options": [
+        "Skateboarding",
+        "Sailing",
+        "Ice hockey",
+        "Badminton"
+      ],
+      "answer": "Skateboarding"
+    },
+    {
+      "question": "In rugby union, how many points is a try worth?",
+      "options": [
+        "Three",
+        "Four",
+        "Five",
+        "Six"
+      ],
+      "answer": "Five"
+    },
+    {
+      "question": "The 100-metre and 200-metre sprints are events in which sport category?",
+      "options": [
+        "Athletics",
+        "Golf",
+        "Swimming only",
+        "Gymnastics"
+      ],
+      "answer": "Athletics"
+    }
+  ]
+}

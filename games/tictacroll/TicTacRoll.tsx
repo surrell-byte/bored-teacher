@@ -15,74 +15,39 @@ function computeWinLines(n: number, w: number) {
   return lines;
 }
 
-const DIE_FACES = [
-  { value: 1, transform: "translateZ(26px)" },
-  { value: 6, transform: "rotateY(180deg) translateZ(26px)" },
-  { value: 3, transform: "rotateY(90deg) translateZ(26px)" },
-  { value: 4, transform: "rotateY(-90deg) translateZ(26px)" },
-  { value: 2, transform: "rotateX(90deg) translateZ(26px)" },
-  { value: 5, transform: "rotateX(-90deg) translateZ(26px)" },
-];
-
-const DIE_ORIENTATIONS: Record<number, string> = {
-  1: "rotateX(0deg) rotateY(0deg)",
-  2: "rotateX(90deg) rotateY(0deg)",
-  3: "rotateX(0deg) rotateY(-90deg)",
-  4: "rotateX(0deg) rotateY(90deg)",
-  5: "rotateX(-90deg) rotateY(0deg)",
-  6: "rotateX(0deg) rotateY(180deg)",
-};
-
-const DIE_PIPS: Record<number, Array<[string, string]>> = {
-  1: [["50%", "50%"]],
-  2: [["25%", "25%"], ["75%", "75%"]],
-  3: [["25%", "25%"], ["50%", "50%"], ["75%", "75%"]],
-  4: [["25%", "25%"], ["75%", "25%"], ["25%", "75%"], ["75%", "75%"]],
-  5: [["25%", "25%"], ["75%", "25%"], ["50%", "50%"], ["25%", "75%"], ["75%", "75%"]],
-  6: [["25%", "25%"], ["75%", "25%"], ["25%", "50%"], ["75%", "50%"], ["25%", "75%"], ["75%", "75%"]],
+const DIE_PIPS: Record<number, number[]> = {
+  1: [4],
+  2: [0, 8],
+  3: [0, 4, 8],
+  4: [0, 2, 6, 8],
+  5: [0, 2, 4, 6, 8],
+  6: [0, 2, 3, 5, 6, 8],
 };
 
 function Die({ value, rolling, theme }: { value: number; rolling: boolean; theme: TicTacRollTheme }) {
   return (
-    <div role="img" aria-label={`Die showing ${value}`} style={{ width: 56, height: 56, perspective: 260, flexShrink: 0 }}>
-      <div style={{
-        position: "relative",
+    <div role="img" aria-label={`Die showing ${value}`} style={{ width: 64, height: 64, flexShrink: 0 }}>
+      <div aria-hidden="true" style={{
         width: "100%",
         height: "100%",
-        transformStyle: "preserve-3d",
-        transform: `${DIE_ORIENTATIONS[value] || DIE_ORIENTATIONS[1]} rotateX(-18deg) rotateY(24deg)`,
-        animation: rolling ? "diceRoll 1s linear infinite" : "none",
-        transition: "transform 0.35s ease",
-        filter: "drop-shadow(0 3px 5px rgba(0,0,0,0.18))",
+        boxSizing: "border-box",
+        display: "grid",
+        gridTemplateColumns: "repeat(3, 1fr)",
+        gridTemplateRows: "repeat(3, 1fr)",
+        gap: "8%",
+        padding: "16%",
+        borderRadius: 16,
+        border: `1px solid color-mix(in srgb, ${theme.text} 35%, transparent)`,
+        background: `linear-gradient(145deg, ${theme.surface}, ${theme.card})`,
+        boxShadow: "inset 2px 2px 4px rgba(255,255,255,0.75), inset -3px -4px 7px rgba(0,0,0,0.12), 0 5px 10px rgba(0,0,0,0.2)",
+        animation: rolling ? "diceTumble 0.32s ease-in-out infinite" : "diceSettle 0.25s ease-out",
       }}>
-        {DIE_FACES.map(face => (
-          <div key={face.value} aria-hidden="true" style={{
-            position: "absolute",
-            inset: 0,
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gridTemplateRows: "repeat(3, 1fr)",
-            borderRadius: 10,
-            border: `1px solid color-mix(in srgb, ${theme.text} 28%, transparent)`,
-            boxSizing: "border-box",
-            background: theme.surface,
-            boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.35), inset 0 -3px 5px rgba(0,0,0,0.08)",
-            backfaceVisibility: "hidden",
-            transform: face.transform,
-          }}>
-            {DIE_PIPS[face.value].map(([left, top], index) => (
-              <span key={index} style={{
-                position: "absolute",
-                left,
-                top,
-                width: 8,
-                height: 8,
-                borderRadius: "50%",
-                background: theme.text,
-                transform: "translate(-50%, -50%)",
-              }} />
-            ))}
-          </div>
+        {Array.from({ length: 9 }, (_, index) => (
+          <span key={index} style={{
+            borderRadius: "50%",
+            background: DIE_PIPS[value]?.includes(index) ? theme.text : "transparent",
+            boxShadow: DIE_PIPS[value]?.includes(index) ? `0 1px 2px ${theme.text}66` : "none",
+          }} />
         ))}
       </div>
     </div>
@@ -124,6 +89,8 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
   const [wonLine, setWonLine] = useState<number[] | null>(null);
   const [htpTab, setHtpTab] = useState("classic");
   const rollTimer = useRef<number | null>(null);
+  const rollTimeout = useRef<number | null>(null);
+  const turnTimeout = useRef<number | null>(null);
   const audioCtx = useRef<AudioContext | null>(null);
 
   const theme = TIC_TAC_ROLL_THEMES.find(t => t.id === profile.theme) || TIC_TAC_ROLL_THEMES[0];
@@ -134,6 +101,11 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
   const canContinue = playerCount === 1
     ? profile.name.trim().length > 0
     : playerCount === 2 && profile.name.trim().length > 0 && player2.name.trim().length > 0;
+  const clearGameTimers = useCallback(() => {
+    if (rollTimer.current) { clearInterval(rollTimer.current); rollTimer.current = null; }
+    if (rollTimeout.current) { clearTimeout(rollTimeout.current); rollTimeout.current = null; }
+    if (turnTimeout.current) { clearTimeout(turnTimeout.current); turnTimeout.current = null; }
+  }, []);
 
   function getCtx() {
     if (!soundOn) return null;
@@ -161,14 +133,20 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
 
   useEffect(() => {
     const handleNewGame = () => { if (screen === "game") startNewGame(); };
-    const handleMainMenu = () => setScreen("menu");
+    const handleMainMenu = () => {
+      clearGameTimers();
+      setRolling(false);
+      setScreen("menu");
+    };
     window.addEventListener("tictacroll:new-game", handleNewGame);
     window.addEventListener("tictacroll:main-menu", handleMainMenu);
     return () => {
       window.removeEventListener("tictacroll:new-game", handleNewGame);
       window.removeEventListener("tictacroll:main-menu", handleMainMenu);
     };
-  }, [screen, gameMode, aiDiff, playerSymbol]);
+  }, [screen, gameMode, aiDiff, playerSymbol, clearGameTimers]);
+
+  useEffect(() => clearGameTimers, [clearGameTimers]);
 
   const getName = (p: string) => gameMode === "ai" && p === (playerSymbol === "X" ? "O" : "X") ? "AI" : p === "X" ? profile.name : player2.name;
 
@@ -178,7 +156,7 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
     setWonLine(null);
   }
   function resetGame(mode: "classic" | "roll" | "ai" = gameMode) {
-    if (rollTimer.current) { clearInterval(rollTimer.current); rollTimer.current = null; }
+    clearGameTimers();
     setRolling(false);
     const b = Array(totalCells).fill(null);
     setBoard(b);
@@ -216,7 +194,14 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
     const wl = getWinner(newBoard);
     if (wl) { setWonLine(wl); setGameActive(false); setPhase("over"); endGame("win", wl); return; }
     if (newBoard.every(v => v !== null)) { setGameActive(false); setPhase("over"); endGame("draw", null); return; }
-    if (extraTurn) { setExtraTurn(false); setStatus({ main: `${getName(player)} earned another turn!`, hint: "Roll again" }); return; }
+    if (extraTurn) {
+      setExtraTurn(false);
+      setCanConvert(false);
+      setPhase("roll");
+      setRollVal(1);
+      setStatus({ main: `${getName(player)} earned another turn!`, hint: "Roll again" });
+      return;
+    }
     nextTurn(player);
   }
 
@@ -228,7 +213,10 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
       const newSkip = { ...pendingSkips }; newSkip[next]--; setSkipNext(newSkip);
       setStatus({ main: `Player ${next} loses this turn`, hint: "Skipped by a roll of 2" });
       snd.skip();
-      setTimeout(() => { if (gameActive) nextTurn(next, newSkip); }, 900);
+      turnTimeout.current = window.setTimeout(() => {
+        turnTimeout.current = null;
+        if (gameActive) nextTurn(next, newSkip);
+      }, 900);
       return;
     }
     if (gameMode === "roll") {
@@ -248,13 +236,13 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
   function handleCellClick(idx: number) {
     if (!gameActive || phase === "over" || phase === "roll") return;
     if (gameMode === "ai" && currentPlayer === (playerSymbol === "X" ? "O" : "X")) return;
-    if (board[idx] !== null) return;
     if (gameMode === "roll" && canConvert) {
       if (board[idx] !== (currentPlayer === "X" ? "O" : "X")) return;
       setCanConvert(false);
       placeMove(idx, currentPlayer);
       return;
     }
+    if (board[idx] !== null) return;
     placeMove(idx, currentPlayer);
   }
 
@@ -344,16 +332,12 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
     return best !== -1 ? best : empty[Math.floor(Math.random() * empty.length)];
   }
 
-  function startRoll() {
-    if (!gameActive || phase !== "roll" || rolling) return;
-    setRolling(true); tone(860, 0.04, 0.06);
-    rollTimer.current = window.setInterval(() => { setRollVal(Math.floor(Math.random() * 6) + 1); }, 125);
-  }
-  function stopRoll() {
-    if (!rolling) return;
+  function settleRoll(val: number) {
     if (rollTimer.current) { clearInterval(rollTimer.current); rollTimer.current = null; }
-    setRolling(false); tone(640, 0.06, 0.07);
-    const val = rollVal;
+    if (rollTimeout.current) { clearTimeout(rollTimeout.current); rollTimeout.current = null; }
+    setRolling(false);
+    setRollVal(val);
+    tone(640, 0.06, 0.07);
     switch (val) {
       case 1: case 3: case 5:
         setPhase("play"); setStatus({ main: `Player ${currentPlayer} rolled ${val}`, hint: "Place your mark" }); break;
@@ -361,17 +345,35 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
         const skippedPlayer = currentPlayer === "X" ? "O" : "X";
         const pendingSkips = { ...skipNext, [skippedPlayer]: skipNext[skippedPlayer] + 1 };
         setSkipNext(pendingSkips);
-        setStatus({ main: `Player ${currentPlayer} rolled 2`, hint: "Opponent skips next turn" });
-        snd.skip(); setTimeout(() => { if (gameActive) nextTurn(currentPlayer, pendingSkips); }, 900);
+        setPhase("play");
+        setStatus({ main: `Player ${currentPlayer} rolled 2`, hint: "Place your mark; opponent skips next turn" });
+        snd.skip();
         break;
       }
-      case 4:
-        setCanConvert(true); setPhase("play");
-        setStatus({ main: `Player ${currentPlayer} rolled 4`, hint: "Convert an opponent tile" }); break;
+      case 4: {
+        const hasOpponentTile = board.some(mark => mark === (currentPlayer === "X" ? "O" : "X"));
+        setCanConvert(hasOpponentTile);
+        setPhase("play");
+        setStatus({
+          main: `Player ${currentPlayer} rolled 4`,
+          hint: hasOpponentTile ? "Convert an opponent tile" : "No opponent tile to convert; place your mark",
+        });
+        break;
+      }
       case 6:
         setExtraTurn(true); setPhase("play");
-        setStatus({ main: `Player ${currentPlayer} rolled 6`, hint: "Extra turn!" }); break;
+        setStatus({ main: `Player ${currentPlayer} rolled 6`, hint: "Extra turn after placing your mark" }); break;
     }
+  }
+
+  function startRoll() {
+    if (!gameActive || phase !== "roll" || rolling) return;
+    setRolling(true); tone(860, 0.04, 0.06);
+    const result = Math.floor(Math.random() * 6) + 1;
+    rollTimer.current = window.setInterval(() => {
+      setRollVal(value => value === 6 ? 1 : value + 1);
+    }, 90);
+    rollTimeout.current = window.setTimeout(() => settleRoll(result), 900);
   }
 
   function launchGame(mode: "classic" | "roll" | "ai", opts?: { difficulty?: string; symbol?: "X" | "O" }) {
@@ -384,7 +386,7 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
   }
 
   function startNewGame() {
-    if (rollTimer.current) { clearInterval(rollTimer.current); rollTimer.current = null; }
+    clearGameTimers();
     setRolling(false);
     setScores({ X: 0, O: 0, draw: 0 });
     buildBoard();
@@ -392,14 +394,15 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
   }
 
   function playAgain() {
-    if (rollTimer.current) { clearInterval(rollTimer.current); rollTimer.current = null; }
+    clearGameTimers();
     setRolling(false);
     setTimeout(() => resetGame(), 0);
   }
 
   const boardDisplay = board.map((v, i) => {
     const isWin = wonLine ? wonLine.includes(i) : false;
-    return { idx: i, val: v, isWin, num: i + 1 };
+    const convertible = gameMode === "roll" && canConvert && v === (currentPlayer === "X" ? "O" : "X");
+    return { idx: i, val: v, isWin, num: i + 1, convertible };
   });
 
   const responsiveBoardStyle: React.CSSProperties = {
@@ -489,7 +492,7 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
           <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.5rem, 4vw, 2.5rem)", margin: "0 0 1.5rem" }}>Choose Your <em style={{ color: theme.accent }}>Mode</em></h2>
           <div style={{ display: "grid", gridTemplateColumns: window.innerWidth >= 600 ? "repeat(2, 1fr)" : "1fr", gap: "1rem", marginBottom: "1.5rem" }}>
             <button onClick={() => { tone(500, 0.08, 0.07); launchGame("classic"); }} style={{ padding: "1.5rem", borderRadius: 16, border: `1px solid ${theme.border}`, background: theme.card, cursor: "pointer", textAlign: "left", transition: "all 0.15s" }}><div style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>◈</div><div style={{ fontWeight: 600 }}>Classic</div><div style={{ fontSize: "0.8rem", color: theme.muted }}>Standard tic-tac-toe</div></button>
-            <button onClick={() => { tone(500, 0.08, 0.07); launchGame("roll"); }} style={{ padding: "1.5rem", borderRadius: 16, border: `1px solid ${theme.border}`, background: theme.card, cursor: "pointer", textAlign: "left" }}><div style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>⚄</div><div style={{ fontWeight: 600 }}>Roll Mode</div><div style={{ fontSize: "0.8rem", color: theme.muted }}>Roll dice — odd plays, even skips</div></button>
+            <button onClick={() => { tone(500, 0.08, 0.07); launchGame("roll"); }} style={{ padding: "1.5rem", borderRadius: 16, border: `1px solid ${theme.border}`, background: theme.card, cursor: "pointer", textAlign: "left" }}><div style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>⚄</div><div style={{ fontWeight: 600 }}>Roll Mode</div><div style={{ fontSize: "0.8rem", color: theme.muted }}>Roll for special turn effects</div></button>
             <button onClick={() => { tone(500, 0.08, 0.07); setScreen("difficulty"); }} style={{ padding: "1.5rem", borderRadius: 16, border: `1px solid ${theme.border}`, background: theme.card, cursor: "pointer", textAlign: "left" }}><div style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>🤖</div><div style={{ fontWeight: 600 }}>vs AI</div><div style={{ fontSize: "0.8rem", color: theme.muted }}>Challenge the computer</div></button>
           </div>
           <div style={{ display: "flex", gap: "0.75rem", marginBottom: "1rem" }}>
@@ -543,7 +546,7 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
           </div>
           <div style={{ fontSize: "0.9rem", lineHeight: 1.7, color: theme.muted }}>
             {htpTab === "classic" && <><p>Take turns placing your mark on empty tiles. First player to get the required number in a row — horizontally, vertically, or diagonally — wins the round.</p><p style={{ marginTop: "0.75rem" }}>On 3×3, get 3 in a row. On larger grids, get 4 in a row.</p></>}
-            {htpTab === "roll" && <><p>Each turn you roll the dice before placing your mark. The number determines what happens: 1,3,5 = play; 2 = skip opponent; 4 = convert tile; 6 = extra turn.</p></>}
+            {htpTab === "roll" && <><p>Roll before each turn. On 1, 3, or 5, place a mark. On 2, place a mark and your opponent skips their next turn. On 4, convert an opponent tile; if there is no opponent tile yet, place a normal mark. On 6, place a mark, then roll again for an extra turn.</p></>}
             {htpTab === "ai" && <><p>Play solo against the computer. Easy = mostly random moves. Normal = blocks and seeks openings. Hard = unbeatable on 3×3, strong heuristics on larger grids.</p></>}
             {htpTab === "grid" && <><p>Choose from 3×3 (classic, need 3), 5×5 (medium, need 4), 6×6 (large, need 4), or 7×7 (epic, need 4) in the main menu before starting.</p></>}
           </div>
@@ -583,13 +586,13 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
               <div style={{ fontSize: "0.65rem", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", color: theme.muted, marginBottom: "0.5rem" }}>Status</div>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem", marginBottom: "0.25rem" }}>
                 <div style={{ fontWeight: 600 }}>{status.main}</div>
-                {gameMode === "roll" && phase === "roll" && gameActive && <Die value={rollVal} rolling={rolling} theme={theme} />}
+                {gameMode === "roll" && gameActive && <Die value={rollVal} rolling={rolling} theme={theme} />}
               </div>
               <div style={{ fontSize: "0.85rem", color: theme.muted }}>{status.hint}</div>
               {lastMove && <div style={{ fontSize: "0.75rem", color: theme.muted, marginTop: "0.5rem", fontStyle: "italic" }}>Last move: {lastMove}</div>}
               {gameMode === "roll" && phase === "roll" && gameActive && (
                 <div style={{ marginTop: "0.75rem" }}>
-                  <button onClick={rolling ? stopRoll : startRoll} disabled={!gameActive || phase !== "roll"} style={{ width: "100%", padding: "0.9rem", borderRadius: 50, border: "none", background: rolling ? `linear-gradient(160deg, #e8a090, #c04030)` : `linear-gradient(160deg, ${theme.accent}, ${theme.accent}dd)`, color: "#fff", fontWeight: 600, fontSize: "0.9rem", cursor: rolling ? "pointer" : "pointer", boxShadow: "0 3px 0 rgba(0,0,0,0.15)", opacity: (!gameActive || phase !== "roll") ? 0.5 : 1 }}>{rolling ? "■ Stop" : "▶ Start"}</button>
+                  <button onClick={startRoll} disabled={rolling} style={{ width: "100%", padding: "0.9rem", borderRadius: 50, border: "none", background: `linear-gradient(160deg, ${theme.accent}, ${theme.accent}dd)`, color: "#fff", fontWeight: 600, fontSize: "0.9rem", cursor: rolling ? "wait" : "pointer", boxShadow: "0 3px 0 rgba(0,0,0,0.15)", opacity: rolling ? 0.72 : 1 }}>{rolling ? "🎲 Rolling…" : "🎲 Roll Dice"}</button>
                 </div>
               )}
               {phase === "over" && <button type="button" onClick={playAgain} style={{ marginTop: "0.9rem", width: "100%", padding: "0.85rem 2rem", border: "none", borderRadius: 999, background: `linear-gradient(160deg, ${theme.accent}, ${theme.accent2 || theme.accent})`, color: "#fff", fontWeight: 700, cursor: "pointer", boxShadow: `0 4px 15px ${theme.glow}` }}>↻ Play Again</button>}
@@ -601,12 +604,17 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
             {/* Board */}
             <div style={responsiveBoardStyle}>
               {boardDisplay.map(cell => (
-                <button key={cell.idx} onClick={() => handleCellClick(cell.idx)} disabled={!gameActive || phase === "roll" || cell.val !== null} style={{
+                <button
+                  key={cell.idx}
+                  onClick={() => handleCellClick(cell.idx)}
+                  disabled={!gameActive || phase === "roll" || (canConvert ? !cell.convertible : cell.val !== null)}
+                  aria-label={cell.convertible ? `Convert opponent tile ${cell.num}` : cell.val ? `Player ${cell.val} on tile ${cell.num}` : `Place a mark on tile ${cell.num}`}
+                  style={{
                   position: "relative",
                   borderRadius: "clamp(8px, 1.5vw, 14px)",
                   border: cell.isWin ? `2px solid ${theme.accent}` : `1px solid rgba(0,0,0,0.12)`,
                   background: `linear-gradient(155deg, ${theme.sand}, ${theme.sand}cc)`,
-                  cursor: (!gameActive || cell.val !== null) ? "default" : "pointer",
+                  cursor: (!gameActive || (canConvert ? !cell.convertible : cell.val !== null)) ? "default" : "pointer",
                   boxShadow: cell.isWin
                     ? `0 0 0 3px ${theme.glow}, inset 0 2px 6px rgba(0,0,0,0.18), inset 0 0 0 1px rgba(255,255,255,0.15)`
                     : `inset 0 2px 6px rgba(0,0,0,0.18), inset 0 0 0 1px rgba(255,255,255,0.15)`,
@@ -673,7 +681,8 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
 
       <style>{`
         @keyframes winPulse { 0%,100% { box-shadow: 0 0 0 3px ${theme.glow}, inset 0 2px 4px rgba(0,0,0,0.05); } 50% { box-shadow: 0 0 0 8px ${theme.glow.replace("0.15","0.08")}, 0 0 20px ${theme.glow}; } }
-        @keyframes diceRoll { 0% { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); } 100% { transform: rotateX(720deg) rotateY(720deg) rotateZ(360deg); } }
+        @keyframes diceTumble { 0%,100% { transform: translateY(0) rotate(-8deg) scale(0.98); } 50% { transform: translateY(-5px) rotate(8deg) scale(1.04); } }
+        @keyframes diceSettle { 0% { transform: rotate(7deg) scale(1.05); } 100% { transform: rotate(0) scale(1); } }
         @keyframes pieceIn { 0% { transform: scale(0.3); opacity: 0; } 60% { transform: scale(1.15); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
         @keyframes dustFly { 0% { transform: translate(-50%,-50%) translate(0,0) scale(1); opacity: 1; } 100% { transform: translate(-50%,-50%) translate(var(--dx), var(--dy)) scale(0.2); opacity: 0; } }
       `}</style>

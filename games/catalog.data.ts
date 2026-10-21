@@ -102,6 +102,18 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     isNew: true,
     hasComponent: true,
   },
+  quickfirequiz: {
+    name: "Quick Fire",
+    icon: "⚡",
+    desc: "Play solo or battle a friend in timed turns, build answer streaks, and break tied scores with a die roll.",
+    cover: "/assets/covers/general-knowledge-quiz-cover.webp",
+    tag: { label: "Quiz", color: "tag-grammar" },
+    badge: "Solo + 2P",
+    difficulty: "Timed Quiz",
+    barColor: "var(--blue)",
+    isNew: true,
+    hasComponent: true,
+  },
   generalknowledgequiz: {
     name: "General Knowledge Quiz",
     icon: "💰",

@@ -521,7 +521,81 @@ test('Word Quest is registered and reports its completed three-round score', () 
   assert.match(component, /Play again/);
 });
 
-test('Tic Tac Roll uses a pip die beside turn status and keeps replay in the status card', () => {
+test('Quick Fire is registered with topic selection, streak scoring, and a timed round', () => {
+  const component = read('games/quick-fire/QuickFire.jsx');
+  const questions = JSON.parse(read('games/quick-fire/questions.json'));
+  const styles = read('games/quick-fire/quick-fire.css');
+  const catalog = read('games/catalog.data.ts');
+  const registry = read('games/catalog.components.tsx');
+  const themes = read('games/tictacroll/themes.ts');
+
+  assert.match(catalog, /quickfirequiz:\s*\{[\s\S]*?name: "Quick Fire"[\s\S]*?hasComponent: true/);
+  assert.match(registry, /quickfirequiz: lazyGame\('quickfirequiz', \(\) => import\('@\/games\/quick-fire\/QuickFire\.jsx'\)\)/);
+  assert.match(component, /const ROUND_SECONDS = 30/);
+  assert.match(component, /const POINTS_PER_CORRECT = 10/);
+  assert.match(component, /import QUESTIONS from "\.\/questions\.json"/);
+  assert.equal(Object.keys(questions).length, 5);
+  assert.equal(Object.values(questions).reduce((total, topicQuestions) => total + topicQuestions.length, 0), 200);
+  for (const topicQuestions of Object.values(questions)) {
+    for (const question of topicQuestions) {
+      assert.equal(question.options.length, 4);
+      assert.ok(question.options.includes(question.answer));
+    }
+  }
+  assert.match(component, /const STREAK_BONUS_INTERVAL = 3/);
+  assert.match(component, /const STREAK_BONUS_POINTS = 5/);
+  assert.match(component, /const TOPICS = \["Mixed", "General Knowledge", "Science", "Nature", "English", "Sports"\]/);
+  assert.match(component, /aria-pressed=\{topic === item\}/);
+  assert.match(component, /className="qf-timer-card"/);
+  assert.match(component, /className="qf-panel qf-results-panel"/);
+  assert.match(component, /onComplete\?\.\(score, accuracy\)/);
+  assert.match(component, /if \(completedRef\.current\) return/);
+  assert.doesNotMatch(component, /FAST THINKING\. BIG LEARNING|30-SECOND QUIZ/);
+  assert.match(component, /useState\("players"\)/);
+  assert.match(component, /Player 1 name/);
+  assert.match(component, /Player 2 name/);
+  assert.match(component, /createDistinctQuestionDecks\(questions\)/);
+  assert.match(component, /setPhase\("handoff"\)/);
+  assert.match(component, /setPhase\("tiebreak"\)/);
+  assert.match(component, /Math\.floor\(Math\.random\(\) \* 6\) \+ 1/);
+  assert.match(component, /const THEME_OPTIONS = \["kalahari", "dice", "night"\]/);
+  assert.match(themes, /id: "night", name: "Desert Night"/);
+  assert.doesNotMatch(styles, /\.qf-footer/);
+  assert.match(styles, /\.qf-theme-grid/);
+});
+
+test('Quick Fire battle question decks never share prompts between players', async () => {
+  const deckModule = await import('../games/quick-fire/question-decks.js');
+  const { createDistinctQuestionDecks } = deckModule.default;
+  const questions = Array.from({ length: 10 }, (_, index) => ({ question: `Question ${index}` }));
+  const [playerOne, playerTwo] = createDistinctQuestionDecks(questions, () => 0.25);
+  const playerOneQuestions = new Set(playerOne.map((question) => question.question));
+  const playerTwoQuestions = new Set(playerTwo.map((question) => question.question));
+
+  assert.equal(playerOne.length, 5);
+  assert.equal(playerTwo.length, 5);
+  assert.equal([...playerOneQuestions].filter((question) => playerTwoQuestions.has(question)).length, 0);
+  assert.equal(new Set([...playerOneQuestions, ...playerTwoQuestions]).size, questions.length);
+});
+
+test('Da Rules links its cover and offers visible Chinese, Thai, and Spanish translation', () => {
+  const page = read('app/games/da-rules/page.tsx');
+  const gamesPage = read('app/games/page.tsx');
+  const styles = read('app/globals.css');
+
+  assert.match(page, /id="da-rules-language"/);
+  assert.match(page, /<option value="th">Thai<\/option>/);
+  assert.match(page, /<option value="zh-CN">Chinese<\/option>/);
+  assert.match(page, /<option value="es">Spanish<\/option>/);
+  assert.match(page, /Translate page/);
+  assert.match(page, /https:\/\/translate\.google\.com\/translate/);
+  assert.match(page, /searchParams\.set\('u', window\.location\.href\)/);
+  assert.match(gamesPage, /href="\/games\/da-rules"/);
+  assert.ok(styles.includes("background-image: url('/assets/covers/da-rules-cover.webp')"));
+  assert.ok(fs.existsSync(path.join(root, 'public/assets/covers/da-rules-cover.webp')));
+});
+
+test('Tic Tac Roll uses a pip die beside turn status and resolves roll-mode actions', () => {
   const component = read('games/tictacroll/TicTacRoll.tsx');
   const statusStart = component.indexOf('{/* Status Card */}');
   const boardStart = component.indexOf('{/* MAIN BOARD AREA */}', statusStart);
@@ -529,13 +603,19 @@ test('Tic Tac Roll uses a pip die beside turn status and keeps replay in the sta
 
   assert.match(component, /function Die\(\{ value, rolling, theme \}/);
   assert.match(component, /role="img" aria-label=\{`Die showing \$\{value\}`\}/);
-  assert.match(component, /transformStyle: "preserve-3d"/);
-  assert.match(component, /setRollVal\(Math\.floor\(Math\.random\(\) \* 6\) \+ 1\); \}, 125\)/);
+  assert.match(component, /gridTemplateColumns: "repeat\(3, 1fr\)"/);
+  assert.match(component, /@keyframes diceTumble/);
+  assert.match(component, /const result = Math\.floor\(Math\.random\(\) \* 6\) \+ 1/);
+  assert.match(component, /setTimeout\(\(\) => settleRoll\(result\), 900\)/);
+  assert.match(component, /if \(gameMode === "roll" && canConvert\) \{[\s\S]*?if \(board\[idx\] !== \(currentPlayer === "X" \? "O" : "X"\)\) return;[\s\S]*?if \(board\[idx\] !== null\) return;/);
+  assert.match(component, /case 2:[\s\S]*?setPhase\("play"\);[\s\S]*?Place your mark; opponent skips next turn/);
+  assert.match(component, /No opponent tile to convert; place your mark/);
+  assert.match(component, /disabled=\{!gameActive \|\| phase === "roll" \|\| \(canConvert \? !cell\.convertible : cell\.val !== null\)\}/);
+  assert.match(component, /setPhase\("roll"\);[\s\S]*?setStatus\(\{ main: `\$\{getName\(player\)\} earned another turn!`, hint: "Roll again" \}\)/);
   assert.match(statusMarkup, /<Die value=\{rollVal\} rolling=\{rolling\} theme=\{theme\} \/>/);
   assert.match(statusMarkup, /↻ Play Again/);
   assert.doesNotMatch(component.slice(boardStart), /Play Again/);
-  assert.match(component, /animation: rolling \? "diceRoll 1s linear infinite"/);
-  assert.match(component, /@keyframes diceRoll/);
+  assert.match(component, /animation: rolling \? "diceTumble 0\.32s ease-in-out infinite"/);
 });
 
 test('Burger Run is registered with the catalog and reports game completion', () => {
@@ -550,17 +630,54 @@ test('Burger Run is registered with the catalog and reports game completion', ()
 
   assert.match(catalog, /burgerrun:\s*\{[\s\S]*?name: "Burger Run"[\s\S]*?hasComponent: true,[\s\S]*?isNew: true/);
   assert.match(catalog, /burgerrun:\s*\{[\s\S]*?cover: "\/assets\/covers\/burger-run-cover\.webp"/);
-  assert.match(route, /burgerrun: \['\/assets\/games\/burger-run\/burger-run-welcome-bg\.webp', '\/assets\/games\/burger-run\/burger-run-victory-bg\.webp', '\/assets\/games\/burger-run\/burger-run-general-bg\.webp'\]/);
+  for (const asset of [
+    'burger-run-welcome-phone-bg.webp',
+    'burger-run-game-bg-p1.webp',
+    'burger-run-game-2p-bg.webp',
+    'burger-run-game-phone-bg.webp',
+    'burger-run-game-bg-phone.webp',
+  ]) {
+    assert.ok(fs.existsSync(path.join(root, 'public/assets/games/burger-run', asset)), `${asset} is published`);
+    assert.ok(route.includes(`/assets/games/burger-run/${asset}`), `${asset} is preloaded`);
+  }
   assert.match(registry, /burgerrun: lazyGame\('burgerrun', \(\) => import\('@\/games\/burger-run\/BurgerRun\.jsx'\)\)/);
   assert.match(component, /export default function BurgerRun\(\{ onComplete, startAtMenu = false \}\)/);
   assert.match(component, /drawBurger\(context, 16, 62/);
-  assert.match(component, /<BurgerPic bun=\{P\.bun\} size=\{160\} \/>/);
+  assert.match(component, /aria-label="Start Burger Run"[\s\S]*?className="burger-run-start-hitbox"[\s\S]*?onClick=\{go\}/);
+  assert.match(component, /className="burger-run-splash-art"/);
+  assert.match(component, /burger-run-start-hitbox\{position:absolute;z-index:1;left:50%;top:58\.5%;width:21%;height:11\.6%/);
+  assert.match(component, /burger-run-splash-art \.burger-run-start-hitbox\{left:50\.8%;top:54\.5%;width:37\.2%;height:6\.9%\}/);
+  assert.match(component, /burger-run-welcome-phone-bg\.webp/);
+  assert.match(component, /burger-run-game-phone-bg\.webp/);
+  assert.match(component, /burger-run-game-2p-bg\.webp/);
+  assert.match(component, /const isTwoPlayerRun = mode === "race" \|\| mode === "duel"/);
+  assert.match(component, /burger-run-play-screen-two-player/);
+  assert.match(component, /burger-run-play-screen-single/);
+  assert.doesNotMatch(component, /Dodge the cacti\. Outrun the birds\. Reach the finish\./);
+  assert.doesNotMatch(component, /PRESS START/);
+  assert.doesNotMatch(component, /<h1 className="text-5xl font-bold" style=\{\{ letterSpacing: "\.12em" \}\}>BURGER RUN<\/h1>/);
   assert.match(component, /scr === "splash"[\s\S]*?burger-run-welcome-bg\.webp/);
   assert.match(component, /scr === "win"[\s\S]*?burger-run-victory-bg\.webp/);
   assert.match(component, /burger-run-general-bg\.webp/);
+  assert.match(component, /isPlaying \? ` burger-run-play-screen \$\{isTwoPlayerRun \? "burger-run-play-screen-two-player" : "burger-run-play-screen-single"\}` : ""/);
+  assert.match(component, /burger-run-play-screen-single\{background-image:url\("\/assets\/games\/burger-run\/burger-run-game-phone-bg\.webp"\)!important\}/);
+  assert.match(component, /burger-run-play-screen-two-player\{background-image:url\("\/assets\/games\/burger-run\/burger-run-game-bg-phone\.webp"\)!important\}/);
+  assert.match(component, /DUEL_PORTRAIT_ART = \{ width: 941, height: 1671, laneYs: \[730, 1500\] \}/);
+  assert.match(component, /DUEL_LANDSCAPE_ART = \{ width: 1671, height: 941, laneYs: \[410, 590\] \}/);
+  assert.match(component, /Math\.max\(rect\.width \/ art\.width, rect\.height \/ art\.height\)/);
+  assert.match(component, /scale \* art\.dpr/);
+  assert.match(component, /canvas\.width = width;\s*canvas\.height = height/);
+  assert.match(component, /portraitQuery\.addEventListener\("change", updatePortraitLayout\)/);
+  assert.match(component, /resizeObserver\.observe\(canvas\.parentElement\)/);
+  assert.match(component, /window\.addEventListener\("resize", invalidateCanvasSize\)/);
+  assert.match(component, /if \(resizeCanvas\) resizeCanvas\(\)/);
+  assert.match(component, /\.burger-run-duel-track\{position:absolute;inset:0;width:100%;height:100%;display:block/);
+  assert.match(component, /\.burger-run-duel-controls\{position:absolute;top:65%;left:50%/);
+  assert.match(component, /\.burger-run-duel-controls\{top:62%;width:94%;height:25%/);
+  assert.match(component, /\.burger-run-duel-cards button\{aspect-ratio:3\/4!important/);
   assert.match(component, /backgroundSize: "cover", backgroundPosition: "center"/);
-  assert.match(component, /ctx\.clearRect\(0, 0, W, LH \* N\)/);
-  assert.match(component, /ctx\.clearRect\(0, 0, W, TRACK_LH \* 2\)/);
+  assert.match(component, /ctx\.clearRect\(0, 0, canvas\.width, canvas\.height\)/);
+  assert.match(component, /ctx\.clearRect\(0, 0, art\.width, art\.height\)/);
   assert.doesNotMatch(component, /🍔/);
   assert.doesNotMatch(component, /\bburger\(/);
   assert.match(component, /drawBurger\(ctx, 50, L\.y/);
@@ -589,13 +706,13 @@ test('Burger Run is registered with the catalog and reports game completion', ()
   assert.match(component, /hazard\.x > runnerX \+ 150/);
   assert.match(component, /const passDuration = \(hazard\.x \+ 48 - runnerX\) \/ 190 \+ 0\.08/);
   assert.match(component, /p\.jumpUntil = s\.t \+ passDuration \+ 0\.25/);
-  assert.match(component, /const GOAL = 18, TRACK_LH = 250, TRACK_GY = 215/);
-  assert.match(component, /const y = frozen \? TRACK_GY - 4 : TRACK_GY - 42/);
-  assert.match(component, /const y = p\.frozen \? TRACK_GY - 55/);
+  assert.match(component, /const GOAL = 18;/);
+  assert.match(component, /const y = frozen \? trackY - 4 : trackY - 42/);
+  assert.match(component, /const y = p\.frozen \? trackY - 55/);
   assert.match(component, /Math\.sin\(\(\(s\.t - p\.jumpFrom\) \/ \(p\.jumpUntil - p\.jumpFrom\)\) \* Math\.PI\) \* 72/);
   assert.match(component, /fillRect\(x - 8, y - 52, 64, 58\)/);
   assert.match(component, /x - \(\(s\.t \* 100\) % 80\)/);
-  assert.match(component, /const finish = \{ left: W - 88, right: W - 20, top: TRACK_GY - 128 \}/);
+  assert.match(component, /const finish = \{ left: finishX - 12, right: finishX \+ 56, top: trackY - 60 \}/);
   assert.match(component, /const winning = s\.winning\?\.player === i/);
   assert.match(component, /const finishRun = winning \? Math\.min\(84, \(s\.t - s\.winning\.at\) \* 150\) : 0/);
   assert.match(component, /ctx\.shadowBlur = winning \? 22 : 0/);
@@ -604,16 +721,17 @@ test('Burger Run is registered with the catalog and reports game completion', ()
   assert.match(component, /className="text-xl font-bold flex items-center justify-center gap-2" style=\{\{ color: ACC, fontSize: "calc\(var\(--text-xl\) \* 0\.9\)"/);
   const cardDuel = component.slice(component.indexOf("function CardDuel"), component.indexOf("/* ================= APP"));
   assert.doesNotMatch(cardDuel, /<Btn sm onClick=\{onExit\}>☰ Menu<\/Btn>/);
-  assert.match(component, /ctx\.fillRect\(finish\.left, finish\.top, 4, TRACK_GY - finish\.top\)/);
-  assert.match(component, /ctx\.fillRect\(finish\.right, finish\.top, 4, TRACK_GY - finish\.top\)/);
+  assert.match(component, /ctx\.fillRect\(finish\.left, finish\.top, 4, trackY - finish\.top\)/);
+  assert.match(component, /ctx\.fillRect\(finish\.right, finish\.top, 4, trackY - finish\.top\)/);
   assert.match(component, /for \(let r = 0; r < 4; r\+\+\) for \(let c = 0; c < 8; c\+\+\)/);
   assert.match(component, /ctx\.fillStyle = winning[\s\S]*?\(\(r \+ c\) % 2 === 0 \? \(flash \? "#fff27a" : "#ff8a3d"\)/);
   assert.match(component, /: \(\(r \+ c\) % 2 === 0 \? FG : BG\)/);
-  assert.match(component, /18-step race · auto-jump cacti and dinosaurs, duck under pterodactyls/);
+  assert.match(component, /18-step race · auto-jump hazards · cards control progress/);
+  assert.match(component, /<Sub>18-step race · auto-jump hazards · cards control progress<\/Sub>\s*<div className="burger-run-duel-cards">/);
   assert.match(component, /className="burger-run-duel-controls"/);
   assert.match(component, /className="burger-run-duel-cards"/);
   assert.match(component, /<Card key=\{i\} suit=\{SUITS\[i\]\} compact/);
-  assert.match(component, /@media\(max-width:760px\)\{\.burger-run-duel\{flex-direction:column/);
+  assert.match(component, /@media\(max-width:760px\) and \(orientation:portrait\)\{\.burger-run-duel-controls\{top:62%/);
   assert.match(component, /maxWidth: isPlaying \? "none"/);
   assert.match(component, /startAtMenu \? "menu" : "splash"/);
   assert.match(component, /scr === "howto"/);

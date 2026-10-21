@@ -37,6 +37,8 @@ const EFX = [
   { id: "slow", e: "🍟", n: "SLOW", d: "Move back 2 steps", mv: -2, pts: -100 },
 ];
 const COLS = [["#2f7de1", "Blue", "#fff"], ["#d0463a", "Red", "#fff"], ["#3fa34d", "Green", "#fff"], ["#f2c230", "Yellow", "#222"]];
+const DUEL_PORTRAIT_ART = { width: 941, height: 1671, laneYs: [730, 1500] };
+const DUEL_LANDSCAPE_ART = { width: 1671, height: 941, laneYs: [410, 590] };
 
 function advanceDuelTurn(state, currentTurn) {
   let nextTurn = 1 - currentTurn;
@@ -326,38 +328,80 @@ function Runner({ mode, P, P2, onBest, onExit, onRestart, onWin, onComplete }) {
 
 /* ================= 2P CARD DUEL ================= */
 function CardDuel({ P, P2, onWin }) {
-  const GOAL = 18, TRACK_LH = 250, TRACK_GY = 215;
+  const GOAL = 18;
   const newDeal = () => { const e = shuffle(EFX), c = shuffle(COLS); return e.map((x, i) => ({ x, c: c[i] })); };
   const mkP = (q, pos = 0, hazardOffset = 0) => ({ name: q.name, bun: q.bun, pos, dp: pos, pts: 0, skip: false, frozen: false, hazards: [], nextHazard: 1.4 + hazardOffset, jumpFrom: 0, jumpUntil: 0, duckUntil: 0 });
   const st = useRef({ pl: [mkP(P, 0.45), mkP(P2)], turn: 0, pick: -1, deal: newDeal(), msg: "", t: 0, lastAt: 0, done: false });
   const [, rr] = useState(0);
   const re = () => rr((n) => n + 1);
   const cv = useRef(null), timers = useRef([]);
+  const mobilePortrait = useRef(false);
+  mobilePortrait.current = typeof window !== "undefined" && window.matchMedia("(max-width: 760px) and (orientation: portrait)").matches;
 
   useEffect(() => {
+    const portraitQuery = window.matchMedia("(max-width: 760px) and (orientation: portrait)");
     const ctx = cv.current.getContext("2d");
+    const canvas = cv.current;
     let raf;
-    const drawHazard = (hazard, frozen) => {
+    let renderSize = "";
+    let resizeCanvas;
+    const invalidateCanvasSize = () => {
+      renderSize = "";
+      if (resizeCanvas) resizeCanvas();
+    };
+    const updatePortraitLayout = () => {
+      mobilePortrait.current = portraitQuery.matches;
+      invalidateCanvasSize();
+    };
+    portraitQuery.addEventListener("change", updatePortraitLayout);
+    const resizeObserver = new ResizeObserver(invalidateCanvasSize);
+    resizeObserver.observe(canvas.parentElement);
+    window.addEventListener("resize", invalidateCanvasSize);
+    resizeCanvas = () => {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      const art = mobilePortrait.current ? DUEL_PORTRAIT_ART : DUEL_LANDSCAPE_ART;
+      const width = Math.round(rect.width * dpr), height = Math.round(rect.height * dpr);
+      const signature = `${width}:${height}:${dpr}:${art.width}:${art.height}`;
+      const scale = Math.max(rect.width / art.width, rect.height / art.height);
+      const offsetX = (rect.width - art.width * scale) / 2;
+      const offsetY = (rect.height - art.height * scale) / 2;
+      if (signature !== renderSize) {
+        canvas.width = width;
+        canvas.height = height;
+        renderSize = signature;
+      }
+      return {
+        ...art,
+        scale,
+        offsetX,
+        offsetY,
+        visibleLeft: Math.max(0, -offsetX / scale),
+        visibleRight: Math.min(art.width, (rect.width - offsetX) / scale),
+        dpr,
+      };
+    };
+    const drawHazard = (hazard, frozen, trackY) => {
       const { x, type } = hazard;
       if (type === "cactus") {
         ctx.fillStyle = "#5aa83a";
-        ctx.fillRect(x + 10, TRACK_GY - 34, 10, 34);
-        ctx.fillRect(x + 2, TRACK_GY - 25, 9, 7);
-        ctx.fillRect(x + 2, TRACK_GY - 30, 5, 10);
-        ctx.fillRect(x + 19, TRACK_GY - 20, 9, 7);
-        ctx.fillRect(x + 23, TRACK_GY - 25, 5, 11);
+        ctx.fillRect(x + 10, trackY - 34, 10, 34);
+        ctx.fillRect(x + 2, trackY - 25, 9, 7);
+        ctx.fillRect(x + 2, trackY - 30, 5, 10);
+        ctx.fillRect(x + 19, trackY - 20, 9, 7);
+        ctx.fillRect(x + 23, trackY - 25, 5, 11);
       } else if (type === "dinosaur") {
         ctx.fillStyle = "#75a64b";
-        ctx.fillRect(x + 7, TRACK_GY - 27, 24, 19);
-        ctx.fillRect(x + 22, TRACK_GY - 36, 12, 13);
-        ctx.fillRect(x + 29, TRACK_GY - 33, 12, 6);
-        ctx.fillRect(x, TRACK_GY - 16, 12, 5);
-        ctx.fillRect(x + 11, TRACK_GY - 9, 6, 9);
-        ctx.fillRect(x + 25, TRACK_GY - 9, 6, 9);
+        ctx.fillRect(x + 7, trackY - 27, 24, 19);
+        ctx.fillRect(x + 22, trackY - 36, 12, 13);
+        ctx.fillRect(x + 29, trackY - 33, 12, 6);
+        ctx.fillRect(x, trackY - 16, 12, 5);
+        ctx.fillRect(x + 11, trackY - 9, 6, 9);
+        ctx.fillRect(x + 25, trackY - 9, 6, 9);
         ctx.fillStyle = BG;
-        ctx.fillRect(x + 33, TRACK_GY - 31, 3, 3);
+        ctx.fillRect(x + 33, trackY - 31, 3, 3);
       } else {
-        const y = frozen ? TRACK_GY - 4 : TRACK_GY - 42;
+        const y = frozen ? trackY - 4 : trackY - 42;
         ctx.fillStyle = "#b4c5d8";
         ctx.fillRect(x + 6, y - 5, 28, 8);
         ctx.fillRect(x + 27, y - 8, 12, 6);
@@ -368,17 +412,25 @@ function CardDuel({ P, P2, onWin }) {
       }
     };
     const loop = (now) => {
+      const art = resizeCanvas();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.setTransform(art.scale * art.dpr, 0, 0, art.scale * art.dpr, art.offsetX * art.dpr, art.offsetY * art.dpr);
       const s = st.current, dt = Math.min((now - (s.lastAt || now)) / 1000, 0.05);
       s.lastAt = now;
       s.t += dt;
-      ctx.clearRect(0, 0, W, TRACK_LH * 2);
+      ctx.clearRect(0, 0, art.width, art.height);
       s.pl.forEach((p, i) => {
+        const trackY = art.laneYs[i];
         const winning = s.winning?.player === i;
         const finishRun = winning ? Math.min(84, (s.t - s.winning.at) * 150) : 0;
-        const runnerX = 20 + (p.dp / GOAL) * (W - 130) + finishRun;
+        const margin = mobilePortrait.current ? 24 : 42;
+        const startX = art.visibleLeft + margin;
+        const finishX = art.visibleRight - (mobilePortrait.current ? 90 : 120);
+        const runnerX = startX + (p.dp / GOAL) * (finishX - startX) + finishRun;
         if (!s.done && !s.winning && s.t >= p.nextHazard) {
           const types = ["cactus", "dinosaur", "pterodactyl"];
-          p.hazards.push({ type: types[Math.floor(Math.random() * types.length)], x: W + 30, actioned: false });
+          p.hazards.push({ type: types[Math.floor(Math.random() * types.length)], x: art.width + 30, actioned: false });
           p.nextHazard = s.t + 2.4 + Math.random() * 1.4;
         }
         p.hazards.forEach((hazard) => {
@@ -391,19 +443,19 @@ function CardDuel({ P, P2, onWin }) {
         });
         p.hazards = p.hazards.filter((hazard) => hazard.x > -55);
         p.dp += (p.pos - p.dp) * Math.min(1, dt * 8);
-        ctx.save(); ctx.translate(0, i * TRACK_LH);
-        ctx.fillStyle = FG; ctx.fillRect(0, TRACK_GY, W, 2);
-        for (let x = -80; x < W; x += 80) ctx.fillRect(x - ((s.t * 100) % 80), TRACK_GY + 13, 40, 3);
-        p.hazards.forEach((hazard) => drawHazard(hazard, p.frozen));
-        const finish = { left: W - 88, right: W - 20, top: TRACK_GY - 128 };
+        ctx.fillStyle = "rgba(255,255,255,.8)";
+        ctx.fillRect(0, trackY, art.width, 2);
+        for (let x = -80; x < art.width; x += 80) ctx.fillRect(x - ((s.t * 100) % 80), trackY + 13, 40, 3);
+        p.hazards.forEach((hazard) => drawHazard(hazard, p.frozen, trackY));
+        const finish = { left: finishX - 12, right: finishX + 56, top: trackY - 60 };
         const flash = winning && Math.floor((s.t - s.winning.at) * 10) % 2 === 0;
         const gateColor = winning ? (flash ? "#fff27a" : "#ff8a3d") : FG;
         ctx.save();
         ctx.shadowColor = winning ? gateColor : "transparent";
         ctx.shadowBlur = winning ? 22 : 0;
         ctx.fillStyle = gateColor;
-        ctx.fillRect(finish.left, finish.top, 4, TRACK_GY - finish.top);
-        ctx.fillRect(finish.right, finish.top, 4, TRACK_GY - finish.top);
+        ctx.fillRect(finish.left, finish.top, 4, trackY - finish.top);
+        ctx.fillRect(finish.right, finish.top, 4, trackY - finish.top);
         for (let r = 0; r < 4; r++) for (let c = 0; c < 8; c++) {
           ctx.fillStyle = winning
             ? ((r + c) % 2 === 0 ? (flash ? "#fff27a" : "#ff8a3d") : (flash ? "#fff" : "#ffb3d1"))
@@ -415,7 +467,7 @@ function CardDuel({ P, P2, onWin }) {
         const jumping = !p.frozen && p.jumpUntil > s.t;
         const ducking = !p.frozen && p.duckUntil > s.t;
         const jumpHeight = jumping ? Math.sin(((s.t - p.jumpFrom) / (p.jumpUntil - p.jumpFrom)) * Math.PI) * 72 : 0;
-        const y = p.frozen ? TRACK_GY - 55 + Math.sin(s.t * 5) * 2 : TRACK_GY - jumpHeight;
+        const y = p.frozen ? trackY - 55 + Math.sin(s.t * 5) * 2 : trackY - jumpHeight;
         drawBurger(ctx, x, y, ducking, p.frozen ? 0 : Math.floor(s.t * 12) % 2, jumping, p.bun);
         if (p.frozen) {
           ctx.fillStyle = "rgba(120,190,255,.35)"; ctx.fillRect(x - 8, y - 52, 64, 58);
@@ -424,11 +476,14 @@ function CardDuel({ P, P2, onWin }) {
         }
         const act = s.turn === i && !s.done;
         ctx.fillStyle = act ? ACC : FG; ctx.strokeStyle = act ? ACC : FG; ctx.lineWidth = 2; ctx.font = 'bold 16px "Courier New",monospace';
-        ctx.textAlign = "left"; ctx.fillText(p.name + (act ? "  ◀ TURN" : "") + (p.frozen ? "  ❄️ frozen" : ""), 14, 24);
-        ctx.textAlign = "right"; ctx.fillText(p.pts + " pts", W - 14, 24);
-        ctx.strokeRect(14, 34, W - 28, 8); ctx.fillRect(16, 36, (W - 32) * Math.min(1, p.dp / GOAL), 4);
-        ctx.restore();
-        if (i) { ctx.fillStyle = MUTE; ctx.fillRect(0, i * TRACK_LH - 1, W, 2); }
+        const hudY = trackY - 74;
+        ctx.font = `bold ${mobilePortrait.current ? 30 : 24}px "Courier New",monospace`;
+        const hudLeft = art.visibleLeft + margin;
+        const hudRight = art.visibleRight - margin;
+        ctx.textAlign = "left"; ctx.fillText(p.name + (act ? "  ◀ TURN" : "") + (p.frozen ? "  ❄️ frozen" : ""), hudLeft, hudY);
+        ctx.textAlign = "right"; ctx.fillText(p.pts + " pts", hudRight, hudY);
+        ctx.strokeRect(hudLeft, hudY + 12, hudRight - hudLeft, 10); ctx.fillRect(hudLeft + 2, hudY + 14, (hudRight - hudLeft - 4) * Math.min(1, p.dp / GOAL), 6);
+        if (i) { ctx.fillStyle = "rgba(255,255,255,.65)"; ctx.fillRect(0, trackY - 48, art.width, 2); }
       });
       if (s.winning && s.t - s.winning.at >= 1.6) {
         s.done = true;
@@ -438,7 +493,13 @@ function CardDuel({ P, P2, onWin }) {
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
-    return () => { cancelAnimationFrame(raf); timers.current.forEach(clearTimeout); };
+    return () => {
+      cancelAnimationFrame(raf);
+      portraitQuery.removeEventListener("change", updatePortraitLayout);
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", invalidateCanvasSize);
+      timers.current.forEach(clearTimeout);
+    };
   }, []);
 
   const pick = (i) => {
@@ -466,17 +527,17 @@ function CardDuel({ P, P2, onWin }) {
   const s = st.current, p = s.pl[s.turn];
   return (
     <div className="burger-run-duel">
-      <style>{`.burger-run-duel{display:flex;flex-direction:row;align-items:stretch;gap:16px;width:100%;height:100%;min-height:0}.burger-run-duel-track{flex:1 1 0;width:0;height:100%;min-width:0;min-height:0;object-fit:contain;image-rendering:pixelated}.burger-run-duel-controls{display:flex;flex:0 0 min(340px,30vw);flex-direction:column;align-items:center;justify-content:center;gap:12px;min-width:0}.burger-run-duel-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;width:100%}@media(max-width:760px){.burger-run-duel{flex-direction:column;align-items:center;gap:8px}.burger-run-duel-track{flex:1 1 0;width:100%;height:0;min-height:0}.burger-run-duel-controls{flex:0 0 auto;width:100%;gap:8px}.burger-run-duel-cards{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}}`}</style>
-      <canvas ref={cv} width={W} height={TRACK_LH * 2} className="burger-run-duel-track" />
+      <style>{`.burger-run-duel{position:relative;width:100%;height:100%;min-height:0;overflow:hidden}.burger-run-duel-track{position:absolute;inset:0;width:100%;height:100%;display:block;image-rendering:pixelated}.burger-run-duel-controls{position:absolute;top:65%;left:50%;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:6px;width:min(520px,70%);height:33%;min-width:0;box-sizing:border-box;transform:translateX(-50%);text-align:center}.burger-run-duel-controls h2{min-height:0!important;margin:0;color:#fff!important;font-size:clamp(16px,2.2vw,24px)!important;text-shadow:0 2px 4px #202124,0 0 8px #202124}.burger-run-duel-controls h2 canvas{width:34px!important;height:30px!important}.burger-run-duel-controls p{color:#fff!important;font-size:clamp(10px,1.2vw,13px)!important;text-shadow:0 1px 4px #202124}.burger-run-duel-cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;width:100%;max-width:520px}.burger-run-duel-cards button{aspect-ratio:3/4!important;min-width:0}@media(max-width:760px) and (orientation:portrait){.burger-run-duel-controls{top:62%;width:94%;height:25%;gap:4px}.burger-run-duel-controls h2{font-size:16px!important}.burger-run-duel-controls h2 canvas{width:24px!important;height:21px!important}.burger-run-duel-cards{gap:8px}.burger-run-duel-cards button{border-radius:12px!important}}`}</style>
+      <canvas ref={cv} className="burger-run-duel-track" />
       <section className="burger-run-duel-controls">
         <h2 className="text-xl font-bold flex items-center justify-center gap-2" style={{ color: ACC, fontSize: "calc(var(--text-xl) * 0.9)", minHeight: 36, textAlign: "center" }}>{s.pick < 0 ? <><BurgerPic bun={p.bun} size={34} /> {p.name}, pick a card!</> : s.msg}</h2>
+        <Sub>18-step race · auto-jump hazards · cards control progress</Sub>
         <div className="burger-run-duel-cards">
           {s.deal.map(({ x, c }, i) => (
             <Card key={i} suit={SUITS[i]} compact disabled={s.pick >= 0} pick={s.pick === i} dim={s.pick >= 0 && s.pick !== i} onClick={() => pick(i)}
               face={s.pick >= 0 ? { bg: c[0], fg: c[2], e: x.e, n: x.n, d: x.d } : null} />
           ))}
         </div>
-        <Sub>18-step race · auto-jump cacti and dinosaurs, duck under pterodactyls · cards control progress</Sub>
       </section>
     </div>
   );
@@ -500,11 +561,14 @@ export default function BurgerRun({ onComplete, startAtMenu = false }) {
   const onWin = (d) => { setWin(d); setScr("win"); reportCompletion(100, 100); };
   const menu = () => setScr("menu");
   const isPlaying = scr === "game" || scr === "duel";
+  const isTwoPlayerRun = mode === "race" || mode === "duel";
   const background = scr === "splash"
     ? "/assets/games/burger-run/burger-run-welcome-bg.webp"
     : scr === "win"
       ? "/assets/games/burger-run/burger-run-victory-bg.webp"
-      : "/assets/games/burger-run/burger-run-general-bg.webp";
+      : isPlaying
+        ? `/assets/games/burger-run/${isTwoPlayerRun ? "burger-run-game-2p-bg.webp" : "burger-run-game-bg-p1.webp"}`
+        : "/assets/games/burger-run/burger-run-general-bg.webp";
 
   useEffect(() => {
     if (scr !== "splash") return;
@@ -514,18 +578,16 @@ export default function BurgerRun({ onComplete, startAtMenu = false }) {
   }, [scr, P.name]);
 
   return (
-    <div className="w-full flex items-center justify-center" style={{ height: "100%", minHeight: "100%", overflow: isPlaying ? "hidden" : "auto", backgroundColor: BG, backgroundImage: `url("${background}")`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat", color: FG, fontFamily: '"Courier New",ui-monospace,monospace', userSelect: "none" }}>
+    <div className={`w-full flex items-center justify-center${scr === "splash" ? " burger-run-splash" : ""}${isPlaying ? ` burger-run-play-screen ${isTwoPlayerRun ? "burger-run-play-screen-two-player" : "burger-run-play-screen-single"}` : ""}`} style={{ height: "100%", minHeight: "100%", overflow: isPlaying || scr === "splash" ? "hidden" : "auto", position: "relative", backgroundColor: BG, backgroundImage: `url("${background}")`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat", color: FG, fontFamily: '"Courier New",ui-monospace,monospace', userSelect: "none" }}>
       <style>{`@keyframes bob{50%{transform:translateY(-12px)}}@keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}@keyframes bl{50%{opacity:.25}}`}</style>
+      <style>{`.burger-run-splash-art{display:contents}.burger-run-start-hitbox{position:absolute;z-index:1;left:50%;top:58.5%;width:21%;height:11.6%;transform:translate(-50%,-50%);padding:0;border:0;border-radius:14px;background:transparent;cursor:pointer;touch-action:manipulation}@media(max-width:760px) and (orientation:portrait){.burger-run-splash{background-image:none!important}.burger-run-splash-art{display:block;position:absolute;left:50%;top:50%;width:min(100%,56.28dvh);aspect-ratio:941/1672;transform:translate(-50%,-50%);background:url("/assets/games/burger-run/burger-run-welcome-phone-bg.webp") center/100% 100% no-repeat}.burger-run-splash-art .burger-run-start-hitbox{left:50.8%;top:54.5%;width:37.2%;height:6.9%}.burger-run-play-screen-single{background-image:url("/assets/games/burger-run/burger-run-game-phone-bg.webp")!important}.burger-run-play-screen-two-player{background-image:url("/assets/games/burger-run/burger-run-game-bg-phone.webp")!important}.burger-run-play-screen{background-size:cover;background-position:center;background-repeat:no-repeat}}`}</style>
       <style>{`.burger-run-info{display:flex;flex-direction:column;align-items:center;gap:24px;width:min(100%,900px);padding:28px 20px}.burger-run-info-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;width:100%}.burger-run-player-setup{display:flex;flex-direction:column;align-items:center;gap:18px;padding:24px 18px;border:2px solid ${MUTE};border-radius:12px;background:#25272a}.burger-run-player-setup input{width:100%!important;max-width:360px!important}.burger-run-menu{display:flex;flex-direction:column;align-items:stretch;gap:26px;width:100%;padding:28px clamp(16px,4vw,48px)}.burger-run-menu-hero{display:flex;align-items:center;justify-content:center;gap:24px}.burger-run-menu-hero h2{font-size:clamp(30px,4vw,48px)}.burger-run-menu-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;width:100%}.burger-run-menu-mode{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;min-height:150px;padding:22px;border:2px solid ${MUTE};border-radius:12px;background:#25272a}.burger-run-menu-mode button{width:100%;min-height:68px;font-size:clamp(18px,2vw,22px)}.burger-run-menu-mode p{font-size:15px}.burger-run-menu-footer{display:flex;justify-content:center;gap:18px;flex-wrap:wrap}.burger-run-menu-footer button{min-height:58px}.burger-run-race-controls{display:flex;justify-content:center;gap:clamp(20px,6vw,72px);flex-wrap:wrap}.burger-run-race-controls>div{display:flex;align-items:center;gap:12px;padding:8px 14px;border:2px solid ${MUTE};border-radius:8px;background:#25272a}.burger-run-race-controls span{display:inline-flex;align-items:center;gap:5px;color:${FG};font-size:14px}.burger-run-race-controls kbd{min-width:28px;padding:3px 6px;border:1px solid ${FG};border-radius:4px;background:${BG};font:700 14px \"Courier New\",monospace;text-align:center}@media(max-width:640px){.burger-run-info{gap:16px;padding:16px 10px}.burger-run-info-grid{grid-template-columns:1fr;gap:14px}.burger-run-player-setup{gap:12px;padding:16px}.burger-run-menu{gap:16px;padding:16px 12px}.burger-run-menu-grid{grid-template-columns:1fr;gap:12px}.burger-run-menu-mode{min-height:120px;padding:16px}.burger-run-menu-hero{gap:12px}.burger-run-menu-hero canvas{width:72px!important;height:63px!important}.burger-run-race-controls{gap:8px}.burger-run-race-controls>div{gap:8px;padding:6px 8px}.burger-run-race-controls span{font-size:12px}}`}</style>
-      <div className="w-full p-3 flex flex-col items-center gap-3 text-center" style={{ flex: isPlaying ? "1 1 auto" : undefined, width: "100%", height: isPlaying ? "100%" : "auto", minHeight: 0, maxWidth: isPlaying ? "none" : scr === "menu" ? "68rem" : "60rem", padding: isPlaying ? 0 : undefined, boxSizing: "border-box" }}>
-        {scr === "splash" && (
-          <>
-            <h1 className="text-5xl font-bold" style={{ letterSpacing: ".12em" }}>BURGER RUN</h1>
-            <div style={{ animation: "bob 1.2s ease-in-out infinite" }}><BurgerPic bun={P.bun} size={160} /></div>
-            <div style={{ animation: "bl 1s steps(2) infinite" }}><Btn pri onClick={go}>PRESS START</Btn></div>
-            <Sub>Dodge the cacti. Outrun the birds. Reach the finish.</Sub>
-          </>
-        )}
+      {scr === "splash" && (
+        <div className="burger-run-splash-art">
+          <button type="button" aria-label="Start Burger Run" title="Start Burger Run" className="burger-run-start-hitbox" onClick={go} />
+        </div>
+      )}
+      {scr !== "splash" && <div className="w-full p-3 flex flex-col items-center gap-3 text-center" style={{ flex: isPlaying ? "1 1 auto" : undefined, width: "100%", height: isPlaying ? "100%" : "auto", minHeight: 0, maxWidth: isPlaying ? "none" : scr === "menu" ? "68rem" : "60rem", padding: isPlaying ? 0 : undefined, boxSizing: "border-box" }}>
         {scr === "info" && <Info P={P} P2={P2} onSave={(a, b) => { setP(a); setP2(b); menu(); }} />}
         {scr === "menu" && (
           <section className="burger-run-menu">
@@ -578,7 +640,7 @@ export default function BurgerRun({ onComplete, startAtMenu = false }) {
         {scr === "game" && <Runner key={run} mode={mode} P={P} P2={P2} onBest={onBest} onExit={menu} onRestart={() => setRun((r) => r + 1)} onWin={onWin} onComplete={reportCompletion} />}
         {scr === "duel" && <CardDuel key={run} P={P} P2={P2} onWin={onWin} />}
         {scr === "win" && win && <Win d={win} onAgain={() => play(win.mode)} onMenu={menu} bun={P.bun} />}
-      </div>
+      </div>}
     </div>
   );
 }
