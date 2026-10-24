@@ -1069,6 +1069,18 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     hasComponent: true,
     isNew: true,
   },
+  emojicategories: {
+    name: "Emoji Category Sort",
+    icon: "🗂️",
+    desc: "Match emoji clues to words in Food, Transport, Animals, and Nature, or sort them in Mixed mode.",
+    cover: "/assets/covers/emoji-match-cover.webp",
+    tag: { label: "Vocabulary", color: "tag-vocab" },
+    badge: "Sort & Say",
+    difficulty: "Easy to Hard",
+    barColor: "var(--orange)",
+    isNew: true,
+    hasComponent: true,
+  },
 };
 
 export const GAME_KEYS = Object.keys(GAME_CATALOG);

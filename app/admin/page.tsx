@@ -7,6 +7,7 @@ import { isCreatorUser, onAuthStateChanged } from '@/lib/firebase';
 
 const creatorTools = [
   { href: '/admin/users', icon: '👥', title: 'Users', description: 'Review accounts, roles, activity, and Teacher Pro access.' },
+  { href: '/admin/reviews', icon: '⭐', title: 'Review approvals', description: 'Approve or reject reviews before they appear on the hub.' },
   { href: '/admin/feedback', icon: '💡', title: 'Feedback', description: 'Review suggestions and mark resolved reports.' },
   { href: '/games', icon: '🎮', title: 'Game catalogue', description: 'Preview the learner catalogue and unpublished game states.' },
   { href: '/settings', icon: '⚙️', title: 'Creator profile', description: 'Update your profile, theme, sound, and account settings.' },

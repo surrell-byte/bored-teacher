@@ -3,8 +3,8 @@
     // lib/gameState.tsx — Global state context for ESL Game Hub
 
     import { createContext, useContext, useState, useEffect, useRef, useCallback, ReactNode } from 'react';
-    import { auth, onAuthStateChanged, saveUserState, loadUserState } from '@/lib/firebase';
-    import { GAME_KEYS } from '@/constants/index';
+    import { auth, onAuthStateChanged, saveUserState, loadUserState, addUserPlayTime } from '@/lib/firebase';
+    import { DEFAULT_PLAYER_AVATAR, GAME_KEYS } from '@/constants/index';
     import { getEarnedIds, getNewlyUnlocked, type Achievement } from '@/features/achievements/achievements';
     import { syncCurrentPlayerToLeaderboard } from '@/features/leaderboard/api';
 
@@ -17,6 +17,24 @@
       totalQuestions: number;
     }
 
+    function timestampToIso(value: unknown): string {
+      if (value instanceof Date) return Number.isNaN(value.getTime()) ? '' : value.toISOString();
+      if (typeof value === 'string') {
+        const date = new Date(value);
+        return Number.isNaN(date.getTime()) ? '' : date.toISOString();
+      }
+      if (value && typeof value === 'object' && 'toDate' in value && typeof value.toDate === 'function') {
+        const date = value.toDate();
+        return date instanceof Date && !Number.isNaN(date.getTime()) ? date.toISOString() : '';
+      }
+      return '';
+    }
+
+    type RemoteHubState = Omit<Partial<HubState>, 'lastLogin'> & {
+      lastLogin?: unknown;
+      createdAt?: unknown;
+    };
+
     export type Role = 'teacher' | 'student' | null;
 
     export interface HubState {
@@ -28,6 +46,8 @@
       lastGame: string | null;
       xp: number;
       level: number;
+      totalPlaySeconds: number;
+      joinedAt: string;
       coins: number;
       lastLogin: string;
       loginStreak: number;
@@ -42,9 +62,9 @@
     const DEFAULT_GAME: GameRecord = { highScore: 0, completions: 0, lastAccuracy: 0, totalQuestions: 100 };
 
     const DEFAULT_STATE: HubState = {
-      name: 'Explorer', username: '', avatar: '👤', theme: 'chalkboard',
+      name: 'Explorer', username: '', avatar: DEFAULT_PLAYER_AVATAR, theme: 'chalkboard',
       sound: true, lastGame: null,
-      xp: 0, level: 1, coins: 0, lastLogin: '', loginStreak: 0,
+      xp: 0, level: 1, totalPlaySeconds: 0, joinedAt: '', coins: 0, lastLogin: '', loginStreak: 0,
       classId: '', role: null,
       ownedItems: [],
       games: Object.fromEntries(GAME_KEYS.map(k => [k, { ...DEFAULT_GAME }])),
@@ -68,6 +88,7 @@
         xp?: number,
         coins?: number
       ) => void;
+      addPlayTime: (seconds: number) => void;
       applyTheme: (theme: string) => void;
       showToast: (msg: string) => void;
       toast: string;
@@ -96,23 +117,28 @@
       try {
         const saved = localStorage.getItem(LOCAL_KEY);
         const backup = localStorage.getItem(BACKUP_KEY);
-        const parsed = saved ? normalizeState(JSON.parse(saved)) : DEFAULT_STATE;
+        const parsed = normalizeState(saved ? JSON.parse(saved) : DEFAULT_STATE);
         const parsedBackup = backup ? normalizeState(JSON.parse(backup)) : null;
         return parsedBackup && isRicherState(parsedBackup, parsed) ? parsedBackup : parsed;
-      } catch { return DEFAULT_STATE; }
+      } catch { return normalizeState(DEFAULT_STATE); }
     }
 
     function normalizeState(value: Partial<HubState>): HubState {
       return {
         ...DEFAULT_STATE,
         ...value,
+        avatar: !value.avatar || value.avatar === '👤' ? DEFAULT_PLAYER_AVATAR : value.avatar,
+        joinedAt: value.joinedAt || new Date().toISOString(),
+        totalPlaySeconds: typeof value.totalPlaySeconds === 'number' && Number.isFinite(value.totalPlaySeconds)
+          ? Math.max(0, value.totalPlaySeconds)
+          : 0,
         games: { ...DEFAULT_STATE.games, ...(value.games || {}) },
         earnedAt: { ...(value.earnedAt || {}) },
         ownedItems: Array.isArray(value.ownedItems) ? value.ownedItems : [],
       };
     }
 
-    function totalXp(state: Partial<HubState>) {
+    function totalXp(state: Pick<Partial<HubState>, 'level' | 'xp'>) {
       const level = state.level || 1;
       let total = state.xp || 0;
       for (let lvl = 1; lvl < level; lvl++) total += xpForLevel(lvl);
@@ -158,7 +184,7 @@
       return merged;
     }
 
-    function mergeRemote(local: HubState, remote: Partial<HubState>): HubState {
+    function mergeRemote(local: HubState, remote: RemoteHubState): HubState {
       const localTotalXp = totalXp(local);
       const remoteTotalXp = totalXp(remote);
       const useRemoteXp = remoteTotalXp > localTotalXp;
@@ -167,14 +193,16 @@
         ...local,
         name:        chooseProfileValue(remote.name, local.name, DEFAULT_STATE.name),
         username:    chooseProfileValue(remote.username, local.username, DEFAULT_STATE.username),
-        avatar:      chooseProfileValue(remote.avatar, local.avatar, DEFAULT_STATE.avatar),
+        avatar:      chooseProfileValue(remote.avatar === '👤' ? DEFAULT_PLAYER_AVATAR : remote.avatar, local.avatar, DEFAULT_STATE.avatar),
         theme:       chooseProfileValue(remote.theme, local.theme, DEFAULT_STATE.theme),
         xp:          useRemoteXp ? (remote.xp ?? local.xp) : local.xp,
         level:       useRemoteXp ? (remote.level ?? local.level) : local.level,
+        totalPlaySeconds: Math.max(local.totalPlaySeconds || 0, remote.totalPlaySeconds || 0),
+        joinedAt:    timestampToIso(remote.createdAt) || remote.joinedAt || local.joinedAt,
         coins:       Math.max(local.coins || 0, remote.coins || 0),
         loginStreak: Math.max(local.loginStreak || 0, remote.loginStreak || 0),
         lastGame:    remote.lastGame    || local.lastGame,
-        lastLogin:   remote.lastLogin   || local.lastLogin,
+        lastLogin:   timestampToIso(remote.lastLogin) || local.lastLogin,
         sound:       remote.sound       !== undefined ? remote.sound : local.sound,
         classId:     remote.classId || local.classId,
         role:        remote.role ?? local.role,
@@ -260,9 +288,27 @@
       // Load from localStorage once on mount (client only)
       useEffect(() => {
         const s = loadLocal();
+        localStorage.setItem(LOCAL_KEY, JSON.stringify(s));
         setStateRaw(s);
         applyThemeClass(s.theme);
         setEarnedIds(getEarnedIds(s));
+      }, []);
+
+      const addPlayTime = useCallback((seconds: number) => {
+        const wholeSeconds = Math.floor(seconds);
+        if (!Number.isFinite(seconds) || wholeSeconds <= 0) return;
+
+        setStateRaw(prev => {
+          const next = { ...prev, totalPlaySeconds: prev.totalPlaySeconds + wholeSeconds };
+          persist(next);
+          return next;
+        });
+
+        const uid = uidRef.current;
+        if (uid) {
+          addUserPlayTime(uid, wholeSeconds).catch(error => console.error('Could not save game time:', error));
+        }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       }, []);
 
       // Firebase auth state listener
@@ -272,16 +318,26 @@
           uidRef.current = user.uid;
           const remote = await loadUserState(user.uid);
           backupLocalState();
-          const local = loadLocal();
+          const localState = loadLocal();
+          const authJoinedAt = timestampToIso(user.metadata.creationTime);
+          const local = { ...localState, joinedAt: authJoinedAt || localState.joinedAt };
           if (remote) {
-            const merged  = mergeRemote(local, remote as Partial<HubState>);
+            const merged  = mergeRemote(local, { ...remote, joinedAt: authJoinedAt });
             localStorage.setItem(LOCAL_KEY, JSON.stringify(merged));
             saveUserState(user.uid, merged).catch(() => {});
+            const unsyncedSeconds = Math.max(0, local.totalPlaySeconds - (remote.totalPlaySeconds || 0));
+            if (unsyncedSeconds > 0) {
+              addUserPlayTime(user.uid, unsyncedSeconds).catch(error => console.error('Could not sync local game time:', error));
+            }
             setStateRaw(merged);
             applyThemeClass(merged.theme);
             setEarnedIds(getEarnedIds(merged));
-          } else if (progressScore(local) > 0) {
-            saveUserState(user.uid, local).catch(() => {});
+          } else {
+            if (progressScore(local) > 0) saveUserState(user.uid, local).catch(() => {});
+            if (local.totalPlaySeconds > 0) {
+              addUserPlayTime(user.uid, local.totalPlaySeconds).catch(error => console.error('Could not sync local game time:', error));
+            }
+            setStateRaw(local);
           }
         });
         return unsub;
@@ -433,7 +489,7 @@
       }, [showToast]);
 
       return (
-        <GameContext.Provider value={{ state, setState, updateGameStats, addXP, completeGame, applyTheme, showToast, toast, checkDailyReward, earnedAchievementIds, pendingAchievement, clearPendingAchievement }}>
+        <GameContext.Provider value={{ state, setState, updateGameStats, addXP, completeGame, addPlayTime, applyTheme, showToast, toast, checkDailyReward, earnedAchievementIds, pendingAchievement, clearPendingAchievement }}>
           {children}
         </GameContext.Provider>
       );

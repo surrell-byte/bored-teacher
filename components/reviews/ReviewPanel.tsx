@@ -68,7 +68,7 @@ export default function ReviewPanel({ isCreator = false }: { isCreator?: boolean
       setComment('');
       setRating(5);
       await refresh();
-      setMessage('Review saved.');
+      setMessage('Review submitted. It will appear on the hub after creator approval.');
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'The review could not be saved.');
     } finally {
@@ -82,7 +82,7 @@ export default function ReviewPanel({ isCreator = false }: { isCreator?: boolean
       <div className="hub-review-grid">
         {reviews.length ? reviews.map(review => <article className="hub-review-item" key={review.id || `${review.userName}-${review.comment}`}><div className="hub-review-stars" aria-label={`${review.rating} out of 5 stars`}>{'★'.repeat(Math.max(1, Math.min(5, Number(review.rating) || 5)))}</div><p>{review.comment}</p><div className="hub-review-author"><ProfileAvatar value={review.avatar ?? ''} size={34} alt="" className="hub-review-avatar" /><span className="hub-review-author-copy"><strong>{review.userName}</strong><small>{review.age ? `${review.age} · ` : 'Age not shared · '}{countryFlag(review.countryCode)}</small></span></div></article>) : <p className="hub-review-empty">{message || 'No verified reviews yet. Be the first to share yours.'}</p>}
       </div>
-      {isCreator && <form className="hub-review-form" onSubmit={handleSubmit}><strong>Add a review to the hub</strong><div className="hub-review-form-row"><select value={rating} onChange={event => setRating(Number(event.target.value))} aria-label="Review rating">{[5, 4, 3, 2, 1].map(value => <option key={value} value={value}>{value} stars</option>)}</select><input value={comment} onChange={event => setComment(event.target.value)} maxLength={500} placeholder="Write a featured review" aria-label="Review comment" /><button className="pill-btn" disabled={saving}>{saving ? 'Saving...' : 'Add review'}</button></div>{message && <small role="status">{message}</small>}</form>}
+      {auth?.currentUser && <form className="hub-review-form" onSubmit={handleSubmit}><strong>{isCreator ? 'Submit a hub review' : 'Share a review'}</strong><div className="hub-review-form-row"><select value={rating} onChange={event => setRating(Number(event.target.value))} aria-label="Review rating">{[5, 4, 3, 2, 1].map(value => <option key={value} value={value}>{value} stars</option>)}</select><input value={comment} onChange={event => setComment(event.target.value)} maxLength={500} placeholder="Write your review" aria-label="Review comment" /><button className="pill-btn" disabled={saving}>{saving ? 'Submitting...' : 'Submit review'}</button></div><small>Reviews are published after approval by the creator account.</small>{message && <small role="status">{message}</small>}</form>}
     </section>
   );
 }

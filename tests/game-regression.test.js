@@ -77,6 +77,55 @@ test('Know It All splits questions from context art and switches to the answer i
   assert.match(visuals, /nile-answer\.webp/);
 });
 
+test('player badge, playtime tracking, and Emoji Spelling HUD use persistent profile data', () => {
+  const constants = read('constants/index.ts');
+  const provider = read('providers/GameProvider.tsx');
+  const firebase = read('lib/firebase.ts');
+  const appShell = read('components/AppShell.tsx');
+  const trophy = read('app/trophy/page.tsx');
+  const trophyStyles = read('app/trophy/trophy.css');
+  const emojiGame = read('games/emoji-spelling-game/EmojiSpellingMaster.jsx');
+  const styles = read('app/globals.css');
+  const rules = read('firestore.rules');
+  const profile = read('app/profile/page.tsx');
+  const coverStyle = read('lib/use-cover-art-style.ts');
+
+  assert.match(constants, /DEFAULT_PLAYER_AVATAR = '\/assets\/images\/avatars\/astro-explorer-avatar\.svg'/);
+  assert.ok(fs.existsSync(path.join(root, 'public/assets/images/avatars/astro-explorer-avatar.svg')));
+  assert.match(provider, /totalPlaySeconds: number/);
+  assert.match(provider, /joinedAt: string/);
+  assert.match(provider, /Math\.max\(local\.totalPlaySeconds \|\| 0, remote\.totalPlaySeconds \|\| 0\)/);
+  assert.match(provider, /addUserPlayTime\(uid, wholeSeconds\)/);
+  assert.match(firebase, /totalPlaySeconds: increment\(seconds\)/);
+  assert.match(appShell, /pathname\.startsWith\('\/games\/'\)/);
+  assert.match(appShell, /document\.visibilityState === 'visible'/);
+  assert.match(appShell, /visibilitychange/);
+  assert.match(trophy, /level <= 5\) return \{ name: 'Bronze'/);
+  assert.match(trophy, /level <= 10\) return \{ name: 'Silver'/);
+  assert.match(trophy, /level <= 15\) return \{ name: 'Gold'/);
+  assert.match(trophy, /level <= 20\) return \{ name: 'Platinum'/);
+  assert.match(trophy, /name: 'Diamond'/);
+  assert.match(trophy, /Joined/);
+  assert.match(trophy, /Game time/);
+  assert.match(trophy, /Change avatar/);
+  assert.match(trophyStyles, /\.trophy-player-badge--silver/);
+  assert.match(trophyStyles, /\.trophy-player-badge--gold/);
+  assert.match(trophyStyles, /\.trophy-player-badge--diamond/);
+  assert.match(emojiGame, /PlayerAvatar value=\{player\.avatar\}/);
+  assert.match(emojiGame, /\{playerName\}/);
+  assert.doesNotMatch(emojiGame, /level\.toUpperCase\(\)/);
+  assert.match(profile, /DEFAULT_PLAYER_AVATAR/);
+  assert.match(rules, /'totalPlaySeconds'/);
+  assert.match(styles, /emoji-spelling-welcome-bg\.webp'\) center \/ cover no-repeat/);
+  assert.match(coverStyle, /Math\.max\(width, height \* aspectRatio\)/);
+  assert.match(coverStyle, /ResizeObserver/);
+  assert.match(emojiGame, /useCoverArtStyle\(menuStageRef, 1672 \/ 941, 941 \/ 1672/);
+  assert.match(styles, /\.emoji-spelling-welcome-art \{[^}]*width: max\(100%, calc\(\(100svh - 61px\) \* 1\.777\)\)/);
+  assert.match(styles, /\.esm-menu-controls \{[^}]*width: 100%; height: 100%/);
+  assert.match(styles, /emoji-spelling-welcome-art \{ width: max\(100%, calc\(\(100svh - 61px\) \* 0\.563\)\)/);
+  assert.match(styles, /emoji-spelling-welcome-bg-phone\.webp/);
+});
+
 test('Know It All uses stage backgrounds and portrait-specific artwork', () => {
   const component = read('games/know-it-all/KnowItAll.jsx');
   const route = read('app/games/[game]/page.tsx');
@@ -361,6 +410,61 @@ test('new game backgrounds follow screen state and reserve phone art for portrai
   assert.match(gameRoute, /'colourclash2', 'zoogame'/);
 });
 
+test('Emoji Spelling uses its stage artwork with portrait-specific phone backgrounds', () => {
+  const component = read('games/emoji-spelling-game/EmojiSpellingMaster.jsx');
+  const gameRoute = read('app/games/[game]/page.tsx');
+  const styles = read('app/globals.css');
+  const assetPaths = [
+    'emoji-spelling-welcome-bg.webp',
+    'emoji-spelling-welcome-bg-phone.webp',
+    'emoji-spelling-main-menu-bg.webp',
+    'emoji-spelling-main-menu-phone-bg.webp',
+    'emoji-spelling-general-bg.webp',
+    'emoji-spelling-general-bg-phone.webp',
+  ];
+
+  for (const asset of assetPaths) {
+    const publicPath = `/assets/games/emoji-spelling-game/${asset}`;
+    assert.ok(fs.existsSync(path.join(root, 'public', publicPath.slice(1))), `${asset} exists`);
+    assert.ok(gameRoute.includes(publicPath), `${asset} is preloaded`);
+  }
+
+  assert.doesNotMatch(gameRoute.split('const GAMES_WITH_WELCOME = new Set([')[1].split(']);')[0], /'emojispelling'/);
+  assert.match(gameRoute, /emoji-spelling-route-welcome[\s\S]*?aria-label="Start Emoji Spelling"/);
+  assert.match(component, /className="esm-screen esm-screen--menu" data-screen="menu"/);
+  assert.match(component, /className="esm-screen esm-screen--player-info" data-screen="player-info"/);
+  assert.match(component, /className="esm-screen esm-screen--game" data-screen="game"/);
+  assert.match(component, /className="esm-screen esm-screen--over" data-screen="over"/);
+  assert.match(component, /setState\(\{ name, avatar: avatarInput \}\)/);
+  assert.match(component, /PLAYER_AVATARS\.map\(avatar =>/);
+  assert.match(component, /window\.addEventListener\("emoji-spelling:main-menu", showMainMenu\)/);
+  assert.match(gameRoute, /gameId === 'emojispelling'[\s\S]*?setEmojiSpellingStartAtMenu\(true\)[\s\S]*?emoji-spelling:main-menu/);
+  assert.match(gameRoute, /emojiSpellingStartAtMenu/);
+  assert.match(component, /aria-pressed=\{menuLevel === lvl\}/);
+  assert.match(component, /className=\{`esm-card\$\{feedback === "correct" \? " is-correct" : feedback === "wrong" \? " is-wrong" : ""\}`\}/);
+  assert.match(component, /function getMissingChoices\(word, index\) \{[\s\S]*?shuffle\(\[answer, \.\.\.distractors\]\)/);
+  assert.match(component, /setMissingChoices\(getMissingChoices\(qs\[0\]\.word, missingIndex\)\)/);
+  assert.match(component, /setMissingChoices\(getMissingChoices\(questions\[nextIdx\]\.word, missingIndex\)\)/);
+  assert.match(component, /className="esm-answer-grid esm-answer-grid--missing"/);
+  assert.match(component, /className="esm-answer-grid esm-answer-grid--letters"/);
+  assert.doesNotMatch(component, /shuffle\(\[current\.word\[missing\.index\]/);
+  assert.match(styles, /\.game-shell--emojispelling \.route-game-welcome\.emoji-spelling-route-welcome[^}]*emoji-spelling-welcome-bg\.webp/);
+  assert.match(styles, /\.esm-screen--menu \{[^}]*emoji-spelling-main-menu-bg\.webp/);
+  assert.match(styles, /\.esm-screen--game, \.esm-screen--over, \.esm-screen--player-info \{[^}]*emoji-spelling-general-bg\.webp/);
+  assert.match(styles, /\.esm-screen--game, \.esm-screen--over, \.esm-screen--player-info \{[^}]*emoji-spelling-general-bg-phone\.webp/);
+  assert.match(styles, /\.esm-player-setup \{[^}]*background: rgb\(20 24 110 \/ 88%\)/);
+  assert.match(styles, /\.esm-card\.is-correct \{[^}]*border-color: #22c55e;[^}]*box-shadow: 0 0 24px rgba\(34, 197, 94, 0\.16\);/);
+  assert.match(styles, /\.esm-card\.is-wrong \{[^}]*border-color: #ef4444;[^}]*box-shadow: 0 0 24px rgba\(239, 68, 68, 0\.16\);/);
+  assert.match(styles, /\.esm-card \{[^}]*background: rgb\(20 24 110 \/ 88%\)/);
+  assert.match(styles, /\.esm-answer-grid \{[^}]*display: grid/);
+  assert.match(styles, /\.esm-answer-grid button \{ aspect-ratio: 1; \}/);
+  assert.match(styles, /\.esm-answer-grid--missing \{ grid-template-columns: repeat\(5, minmax\(0, 58px\)\); \}/);
+  assert.match(styles, /\.esm-answer-grid--letters \{ grid-template-columns: repeat\(4, minmax\(0, 60px\)\); \}/);
+  assert.match(styles, /\.esm-answer-grid button:active:not\(:disabled\)[^}]*transform: translateY\(2px\)/);
+  assert.match(styles, /@media \(max-width: 420px\)[\s\S]*?\.esm-answer-grid--missing \{ grid-template-columns: repeat\(5, minmax\(0, 1fr\)\); \}/);
+  assert.match(styles, /@media \(max-width: 760px\) and \(orientation: portrait\)[\s\S]*emoji-spelling-welcome-bg-phone\.webp[\s\S]*emoji-spelling-main-menu-phone-bg\.webp[\s\S]*emoji-spelling-general-bg-phone\.webp/);
+});
+
 test('Colour Clash uses the approved palette and responsive high-visibility instructions', () => {
   const colourClash = read('games/colour-clash-2/ColourClash2.jsx');
   const allowedColours = [
@@ -493,6 +597,61 @@ test('Hub avatar is enlarged and public reviews require an attributed profile', 
   assert.match(reviewPanel, /<strong>\{review\.userName\}<\/strong>/);
 });
 
+test('Hub restores the four original fallback reviews when there are no eligible public reviews', () => {
+  const firebase = read('lib/firebase.ts');
+  const fallbackReviews = firebase.slice(firebase.indexOf('const FALLBACK_REVIEWS:'), firebase.indexOf('export function hasPublicReviewIdentity'));
+  const reviewLoader = firebase.slice(firebase.indexOf('export async function loadReviews()'), firebase.indexOf('export async function loadNotificationsForCreator()'));
+
+  assert.match(fallbackReviews, /userName: 'Mina'.*comment: 'The new learning path feels calm, joyful, and classroom friendly\.'/);
+  assert.match(fallbackReviews, /userName: 'Kai'.*comment: 'Loved the game choices and the helpful classroom flow\.'/);
+  assert.match(fallbackReviews, /userName: 'Ari'.*comment: 'The activities are bright, easy to understand, and fun to revisit\.'/);
+  assert.match(fallbackReviews, /userName: 'Sam'.*comment: 'A thoughtful learning space with games children actually want to play\.'/);
+  assert.match(reviewLoader, /if \(!db\) return FALLBACK_REVIEWS/);
+  assert.match(reviewLoader, /FALLBACK_REVIEWS\.filter\(fallback => !items\.some\(item => item\.comment === fallback\.comment\)\)/);
+  assert.match(reviewLoader, /\.slice\(0, 4\)/);
+  assert.match(reviewLoader, /\.filter\(item => Number\(item\.rating\) >= 4 && hasPublicReviewIdentity\(item\)\)/);
+});
+
+test('Hub reviews require creator approval before public display', () => {
+  const firebase = read('lib/firebase.ts');
+  const reviewPanel = read('components/reviews/ReviewPanel.tsx');
+  const approvalPage = read('app/admin/reviews/page.tsx');
+  const creatorPage = read('app/admin/page.tsx');
+  const rules = read('firestore.rules');
+  const submitter = firebase.slice(firebase.indexOf('export async function submitReview('), firebase.indexOf('export async function loadReviews()'));
+  const reviewLoader = firebase.slice(firebase.indexOf('export async function loadReviews()'), firebase.indexOf('function reviewCreatedAt('));
+  const reviewRules = rules.slice(rules.indexOf('match /reviews/{reviewId}'), rules.indexOf('match /notifications/{notificationId}'));
+
+  assert.match(submitter, /approvalStatus: 'pending'/);
+  assert.match(submitter, /approvedBy: null/);
+  assert.match(submitter, /approvedAt: null/);
+  assert.match(reviewLoader, /where\('approvalStatus', '==', 'approved'\)/);
+  assert.match(reviewPanel, /It will appear on the hub after creator approval/);
+  assert.match(reviewPanel, /Reviews are published after approval by the creator account/);
+  assert.match(approvalPage, /loadPendingReviewsForCreator/);
+  assert.match(approvalPage, /setReviewApproval\(review\.id, approvalStatus\)/);
+  assert.match(approvalPage, /'approved'/);
+  assert.match(approvalPage, /'rejected'/);
+  assert.match(creatorPage, /href: '\/admin\/reviews'.*Review approvals/);
+  assert.match(reviewRules, /allow read: if isCreator\(\) \|\| resource\.data\.approvalStatus == 'approved'/);
+  assert.match(reviewRules, /request\.resource\.data\.approvalStatus == 'pending'/);
+  assert.match(reviewRules, /allow update: if isCreator\(\)/);
+  assert.match(reviewRules, /request\.resource\.data\.approvalStatus in \['approved', 'rejected'\]/);
+});
+
+test('Service worker never caches Next.js chunks and clears stale runtime caches in development', () => {
+  const serviceWorker = read('public/sw.js');
+  const registration = read('components/ServiceWorkerRegistration.tsx');
+
+  assert.match(serviceWorker, /const CACHE_NAME = 'bored-teacher-runtime-v4'/);
+  assert.match(serviceWorker, /if \(!isPublicAsset\) return/);
+  assert.doesNotMatch(serviceWorker, /_next\/static/);
+  assert.match(registration, /process\.env\.NODE_ENV !== 'production'/);
+  assert.match(registration, /registration\.unregister\(\)/);
+  assert.match(registration, /name\.startsWith\('bored-teacher-runtime-'\)/);
+  assert.match(registration, /updateViaCache: 'none'/);
+});
+
 test('Profile editing opens the dedicated page and centers the avatar glyph', () => {
   const navbar = read('components/Navbar.tsx');
   const profileAvatar = read('components/profile/ProfileAvatar.tsx');
@@ -589,6 +748,8 @@ test('Da Rules links its cover and offers visible Chinese, Thai, and Spanish tra
   assert.match(page, /<option value="es">Spanish<\/option>/);
   assert.match(page, /Translate page/);
   assert.match(page, /https:\/\/translate\.google\.com\/translate/);
+  assert.match(page, /hostname === 'localhost'[\s\S]*?Google Translate can't access a localhost page/);
+  assert.match(page, /role="status"/);
   assert.match(page, /searchParams\.set\('u', window\.location\.href\)/);
   assert.match(gamesPage, /href="\/games\/da-rules"/);
   assert.ok(styles.includes("background-image: url('/assets/covers/da-rules-cover.webp')"));
@@ -616,6 +777,144 @@ test('Tic Tac Roll uses a pip die beside turn status and resolves roll-mode acti
   assert.match(statusMarkup, /↻ Play Again/);
   assert.doesNotMatch(component.slice(boardStart), /Play Again/);
   assert.match(component, /animation: rolling \? "diceTumble 0\.32s ease-in-out infinite"/);
+});
+
+test('Burger Run maps logical coordinates to responsive artwork and keeps collisions in world space', async () => {
+  const { createRunnerViewport, runnerBoxesOverlap, worldToScreen } = await import('../games/burger-run/runner-coordinate.mjs');
+  const desktopArt = { width: 1672, height: 940, laneYs: [560], laneBounds: [[0, 940]] };
+  const desktop = createRunnerViewport({ width: 1280, height: 668, dpr: 1, art: desktopArt });
+  const desktopHiDpi = createRunnerViewport({ width: 1280, height: 668, dpr: 2, art: desktopArt });
+  const desktopGround = worldToScreen(0, desktop.laneGrounds[0], desktop);
+  const desktopBackgroundScale = Math.max(1280 / desktopArt.width, 668 / desktopArt.height);
+
+  assert.ok(Math.abs(desktopGround.y - ((668 - desktopArt.height * desktopBackgroundScale) / 2 + 560 * desktopBackgroundScale)) < 0.001);
+  assert.equal(worldToScreen(180, 90, desktopHiDpi).x, worldToScreen(180, 90, desktop).x);
+  assert.equal(worldToScreen(180, 90, desktopHiDpi).y, worldToScreen(180, 90, desktop).y);
+
+  const mobileArt = { width: 940, height: 1672, laneYs: [1078], laneBounds: [[0, 1672]] };
+  const mobile = createRunnerViewport({ width: 390, height: 800, dpr: 3, art: mobileArt });
+  const mobileGround = worldToScreen(0, mobile.laneGrounds[0], mobile);
+  const mobileBackgroundScale = Math.max(390 / mobileArt.width, 800 / mobileArt.height);
+  assert.ok(Math.abs(mobileGround.y - ((800 - mobileArt.height * mobileBackgroundScale) / 2 + 1078 * mobileBackgroundScale)) < 0.001);
+  assert.ok(mobile.viewLeft > 0);
+  assert.ok(mobile.viewRight < 720);
+  assert.equal((worldToScreen(120, 90, mobile).x - worldToScreen(100, 90, mobile).x) / mobile.scale, 20);
+  assert.throws(() => createRunnerViewport({ width: 0, height: 800, art: mobileArt }), RangeError);
+
+  const race = createRunnerViewport({
+    width: 1280,
+    height: 668,
+    art: { width: 1672, height: 941, laneYs: [452, 900], laneBounds: [[0, 478], [478, 941]] },
+  });
+  const raceWide = createRunnerViewport({
+    width: 1365,
+    height: 711,
+    art: { width: 1672, height: 941, laneYs: [452, 900], laneBounds: [[0, 478], [478, 941]] },
+    fit: 'fill',
+  });
+  assert.equal(race.laneGrounds.length, 2);
+  assert.ok(race.laneGrounds[1] > race.laneGrounds[0]);
+  assert.deepEqual(race.laneBounds, [[0, 478 * 720 / 1672], [478 * 720 / 1672, 941 * 720 / 1672]]);
+  assert.equal(raceWide.viewTop, 0);
+  assert.equal(raceWide.viewBottom, raceWide.worldHeight);
+  assert.equal(raceWide.offsetY, 0);
+  assert.equal(raceWide.offsetX, 0);
+  assert.equal(worldToScreen(0, 0, raceWide).x, 0);
+  assert.equal(worldToScreen(720, raceWide.worldHeight, raceWide).x, raceWide.width);
+  assert.equal(worldToScreen(0, raceWide.worldHeight, raceWide).y, raceWide.height);
+  assert.notEqual(raceWide.scaleX, raceWide.scaleY);
+
+  const player = { x: 48, y: 131, w: 46, h: 44 };
+  const obstacle = { x: 68, y: 175, w: 24, h: 30 };
+  assert.equal(runnerBoxesOverlap(player, obstacle), true);
+  assert.equal(runnerBoxesOverlap({ ...player, x: 20 }, obstacle), false);
+});
+
+test('Burger Run Card Duel awards a one-round double-points bonus after three safe picks', async () => {
+  const { finishDuelBonusRound, resolveDuelPick } = await import('../games/burger-run/duel-round.mjs');
+  const player = { pts: 0, safeRounds: 0, bonusActive: false, bonusAnimating: false };
+  const boost = { id: 'boost', pts: 100 };
+  const turbo = { id: 'turbo', pts: 200 };
+  const freeze = { id: 'freeze', pts: -100 };
+
+  resolveDuelPick(player, boost);
+  resolveDuelPick(player, boost);
+  assert.equal(player.safeRounds, 2);
+  assert.equal(player.bonusActive, false);
+  resolveDuelPick(player, boost);
+  assert.equal(player.pts, 300);
+  assert.equal(player.safeRounds, 0);
+  assert.equal(player.bonusActive, true);
+
+  const { bonusApplied } = resolveDuelPick(player, turbo);
+  assert.equal(bonusApplied, true);
+  assert.equal(player.pts, 700);
+  assert.equal(player.bonusActive, false);
+  assert.equal(player.bonusAnimating, true);
+  assert.equal(player.safeRounds, 0);
+  finishDuelBonusRound(player);
+  assert.equal(player.bonusAnimating, false);
+
+  resolveDuelPick(player, boost);
+  resolveDuelPick(player, boost);
+  resolveDuelPick(player, boost);
+  assert.equal(player.bonusActive, true);
+  resolveDuelPick(player, freeze);
+  assert.equal(player.pts, 900);
+  assert.equal(player.safeRounds, 0);
+  assert.equal(player.bonusActive, false);
+  assert.equal(player.bonusAnimating, false);
+});
+
+test('Emoji Category Sort has category rounds and all requested game screens', async () => {
+  const { createEmojiCategoryRound, createEmojiWordQuestions, EMOJI_CATEGORIES, EMOJI_SORT_DIFFICULTIES } = await import('../games/emoji-category-sort/emoji-category-data.mjs');
+  const component = read('games/emoji-category-sort/EmojiCategorySort.jsx');
+  const catalog = read('games/catalog.data.ts');
+  const componentCatalog = read('games/catalog.components.tsx');
+  const route = read('app/games/[game]/page.tsx');
+  const expectedSizes = { easy: 3, medium: 5, hard: 7 };
+
+  for (const [difficulty, size] of Object.entries(expectedSizes)) {
+    assert.equal(EMOJI_SORT_DIFFICULTIES[difficulty].items, size);
+    const round = createEmojiCategoryRound(difficulty, () => 0.37);
+    assert.equal(round.length, size);
+    assert.equal(new Set(round.map((item) => item.id)).size, size);
+    assert.ok(round.every((item) => EMOJI_CATEGORIES.some((category) => category.id === item.categoryId && category.items.some((entry) => entry.id === item.id))));
+  }
+
+  assert.throws(() => createEmojiCategoryRound('expert'), RangeError);
+  assert.throws(() => createEmojiWordQuestions('expert'), RangeError);
+  for (const category of EMOJI_CATEGORIES) {
+    const questions = createEmojiWordQuestions(category.id, () => 0.37);
+    assert.ok(category.items.length > 7, `${category.label} has an expanded word pool`);
+    assert.equal(questions.length, category.items.length);
+    assert.ok(questions.every((question) => (
+      question.categoryId === category.id
+      && question.choices.length === 4
+      && new Set(question.choices.map((choice) => choice.id)).size === 4
+      && question.choices.some((choice) => choice.id === question.id)
+    )));
+  }
+  assert.ok(EMOJI_CATEGORIES.flatMap((category) => category.items).some((item) => item.word === 'Apple' && item.emoji === '🍎'));
+  assert.ok(EMOJI_CATEGORIES.flatMap((category) => category.items).some((item) => item.word === 'Train' && item.emoji === '🚆'));
+  assert.match(catalog, /emojicategories:\s*\{\s*name: "Emoji Category Sort"[\s\S]*?hasComponent: true/);
+  const catalogKeys = [...catalog.matchAll(/^  ([a-z][\w]*): \{/gm)].map((match) => match[1]);
+  assert.equal(catalogKeys.at(-1), 'emojicategories');
+  assert.ok(catalogKeys.slice(-4).includes('emojicategories'));
+  assert.match(componentCatalog, /emojicategories: lazyGame\('emojicategories', \(\) => import\('@\/games\/emoji-category-sort\/EmojiCategorySort\.jsx'\)\)/);
+  assert.match(route, /'emojicategories'/);
+  assert.match(component, /setScreen\("setup"\)/);
+  assert.match(component, /setScreen\("menu"\)/);
+  assert.match(component, /setScreen\("game"\)/);
+  assert.match(component, /setScreen\("victory"\)/);
+  assert.match(component, /setScreen\("how-to"\)/);
+  assert.match(component, /onDragStart=/);
+  assert.match(component, /onDrop=/);
+  assert.match(component, /onClick=\{\(\) => sortSelectedItem\(category\.id\)\}/);
+  assert.match(component, /createEmojiWordQuestions\(level\)/);
+  assert.match(component, /className="ecs-word-choice ecs-jigsaw-piece"/);
+  assert.match(component, /\.ecs-jigsaw-piece\{clip-path:/);
+  assert.match(component, /onComplete\?\.\(nextScore, Math\.round\(\(round\.length \/ nextAttempts\) \* 100\)\)/);
 });
 
 test('Burger Run is registered with the catalog and reports game completion', () => {
@@ -647,9 +946,12 @@ test('Burger Run is registered with the catalog and reports game completion', ()
   assert.match(component, /className="burger-run-splash-art"/);
   assert.match(component, /burger-run-start-hitbox\{position:absolute;z-index:1;left:50%;top:58\.5%;width:21%;height:11\.6%/);
   assert.match(component, /burger-run-splash-art \.burger-run-start-hitbox\{left:50\.8%;top:54\.5%;width:37\.2%;height:6\.9%\}/);
+  assert.match(component, /width:max\(100%,calc\(\(100dvh - 61px\)\*\.5628\)\)/);
   assert.match(component, /burger-run-welcome-phone-bg\.webp/);
   assert.match(component, /burger-run-game-phone-bg\.webp/);
   assert.match(component, /burger-run-game-2p-bg\.webp/);
+  assert.match(component, /const RUN_BACKGROUNDS = \{[\s\S]*?classic: \{\s*desktop: "burger-run-game-bg-p1\.webp",\s*mobile: "burger-run-game-phone-bg\.webp",\s*\},[\s\S]*?card: \{\s*desktop: "burger-run-game-bg-p1\.webp",\s*mobile: "burger-run-game-phone-bg\.webp",\s*\},[\s\S]*?race: \{\s*desktop: "burger-run-game-2p-bg\.webp",\s*mobile: "burger-run-game-bg-phone\.webp",\s*\},[\s\S]*?duel: \{\s*desktop: "burger-run-game-2p-bg\.webp",\s*mobile: "burger-run-game-bg-phone\.webp",/);
+  assert.match(component, /data-burger-run-mode=\{mode\}/);
   assert.match(component, /const isTwoPlayerRun = mode === "race" \|\| mode === "duel"/);
   assert.match(component, /burger-run-play-screen-two-player/);
   assert.match(component, /burger-run-play-screen-single/);
@@ -660,29 +962,80 @@ test('Burger Run is registered with the catalog and reports game completion', ()
   assert.match(component, /scr === "win"[\s\S]*?burger-run-victory-bg\.webp/);
   assert.match(component, /burger-run-general-bg\.webp/);
   assert.match(component, /isPlaying \? ` burger-run-play-screen \$\{isTwoPlayerRun \? "burger-run-play-screen-two-player" : "burger-run-play-screen-single"\}` : ""/);
-  assert.match(component, /burger-run-play-screen-single\{background-image:url\("\/assets\/games\/burger-run\/burger-run-game-phone-bg\.webp"\)!important\}/);
-  assert.match(component, /burger-run-play-screen-two-player\{background-image:url\("\/assets\/games\/burger-run\/burger-run-game-bg-phone\.webp"\)!important\}/);
-  assert.match(component, /DUEL_PORTRAIT_ART = \{ width: 941, height: 1671, laneYs: \[730, 1500\] \}/);
-  assert.match(component, /DUEL_LANDSCAPE_ART = \{ width: 1671, height: 941, laneYs: \[410, 590\] \}/);
-  assert.match(component, /Math\.max\(rect\.width \/ art\.width, rect\.height \/ art\.height\)/);
-  assert.match(component, /scale \* art\.dpr/);
+  assert.match(component, /"--burger-run-mobile-background": `url\("\/assets\/games\/burger-run\/\$\{gameplayBackground\.mobile\}"\)`/);
+  assert.match(component, /burger-run-play-screen\{background-image:var\(--burger-run-mobile-background\)!important/);
+  assert.match(component, /backgroundSize: isPlaying && isTwoPlayerRun \? "100% 100%" : "cover"/);
+  assert.match(component, /DUEL_PORTRAIT_ART = \{ width: 941, height: 1671, laneYs: \[697, 1460\] \}/);
+  assert.match(component, /DUEL_LANDSCAPE_ART = \{ width: 1672, height: 941, laneYs: \[452, 901\] \}/);
+  assert.match(component, /classic: \{\s*desktop: \{ width: 1672, height: 940, laneYs: \[560\]/);
+  assert.match(component, /race: \{\s*desktop: \{ width: 1672, height: 941, laneYs: \[452, 900\]/);
+  assert.match(component, /fit: race && !portraitQuery\.matches \? "fill" : "cover"/);
+  assert.match(component, /ctx\.setTransform\(viewport\.scaleX \* viewport\.dpr, 0, 0, viewport\.scaleY \* viewport\.dpr/);
+  assert.match(component, /runnerBoxesOverlap\(b, o\)/);
+  assert.match(component, /const controlsTop = viewport\.offsetY \+ viewport\.laneGrounds\[0\] \* viewport\.scaleY - 20/);
+  assert.match(component, /const worldY = \(e\.clientY - rect\.top - viewport\.offsetY\) \/ viewport\.scaleY/);
+  assert.match(component, /className="absolute z-10 flex w-full flex-col items-center gap-3"/);
+  assert.doesNotMatch(component, /maxHeight: "calc\(100dvh - 230px\)"/);
+  assert.match(component, /const scaleX = mobilePortrait\.current \? fitScale : rect\.width \/ art\.width/);
+  assert.match(component, /const scaleY = mobilePortrait\.current \? fitScale : rect\.height \/ art\.height/);
+  assert.match(component, /ctx\.setTransform\(art\.scaleX \* art\.dpr, 0, 0, art\.scaleY \* art\.dpr/);
+  assert.match(component, /art\.scaleX \* art\.dpr, 0, 0, art\.scaleY \* art\.dpr/);
   assert.match(component, /canvas\.width = width;\s*canvas\.height = height/);
   assert.match(component, /portraitQuery\.addEventListener\("change", updatePortraitLayout\)/);
   assert.match(component, /resizeObserver\.observe\(canvas\.parentElement\)/);
   assert.match(component, /window\.addEventListener\("resize", invalidateCanvasSize\)/);
   assert.match(component, /if \(resizeCanvas\) resizeCanvas\(\)/);
   assert.match(component, /\.burger-run-duel-track\{position:absolute;inset:0;width:100%;height:100%;display:block/);
-  assert.match(component, /\.burger-run-duel-controls\{position:absolute;top:65%;left:50%/);
-  assert.match(component, /\.burger-run-duel-controls\{top:62%;width:94%;height:25%/);
+  assert.match(component, /\.burger-run-duel-controls\{position:absolute;top:46%;left:50%/);
+  assert.match(component, /@media\(min-width:761px\)\{\.burger-run-duel-controls\{top:52%;height:48%\}\}/);
+  assert.match(component, /\.burger-run-duel-controls\{top:46%;width:94%;height:52%/);
   assert.match(component, /\.burger-run-duel-cards button\{aspect-ratio:3\/4!important/);
-  assert.match(component, /backgroundSize: "cover", backgroundPosition: "center"/);
+  assert.match(component, /backgroundSize: isPlaying && isTwoPlayerRun \? "100% 100%" : "cover", backgroundPosition: "center"/);
   assert.match(component, /ctx\.clearRect\(0, 0, canvas\.width, canvas\.height\)/);
   assert.match(component, /ctx\.clearRect\(0, 0, art\.width, art\.height\)/);
+  assert.match(component, /ctx\.scale\(1\.5, 1\.5\)/);
+  assert.match(component, /ctx\.scale\(1\.45, 1\.45\)/);
+  assert.match(component, /const drawCloud = \(x, y, size\) =>/);
+  assert.match(component, /ctx\.strokeStyle = "#315f86"/);
+  assert.match(component, /drawCloud\(art\.visibleLeft/);
+  assert.match(component, /ctx\.fillRect\(finish\.left, finish\.top, 8, trackY - finish\.top\)/);
+  assert.match(component, /ctx\.fillStyle = "#7cbd55"/);
+  assert.doesNotMatch(component, /if \(i\) \{ ctx\.fillStyle = "rgba\(255,255,255,\.65\)"/);
+  assert.doesNotMatch(component, /<Sub>18-step race · auto-jump hazards · cards control progress<\/Sub>/);
+  assert.doesNotMatch(component, /<BurgerPic bun=\{p\.bun\} size=\{34\} \/> \{p\.name\}, pick a card!/);
   assert.doesNotMatch(component, /🍔/);
   assert.doesNotMatch(component, /\bburger\(/);
-  assert.match(component, /drawBurger\(ctx, 50, L\.y/);
+  const victory = component.slice(component.indexOf('function Win('), component.indexOf('/* ================= RUNNER'));
+  assert.doesNotMatch(victory, /🏆/);
+  assert.match(victory, /burger-run-victory-panel/);
+  assert.match(component, /\.burger-run-victory-content\{position:absolute;inset:0;z-index:2;display:flex;align-items:flex-start/);
+  assert.match(component, /\.burger-run-victory-content\{[^}]*padding:max\(18px,4vh\) 16px 0/);
+  assert.match(component, /drawBurger\(ctx, L\.x - 20, L\.y/);
   assert.match(component, /className=\{`w-full\$\{race \? " burger-run-race-track" : ""\}`\}/);
-  assert.match(component, /maxHeight: "calc\(100dvh - 230px\)"/);
+  assert.match(component, /function PlayerStatusPanels\(\{ players \}\)/);
+  assert.match(component, /className="burger-run-player-status-panels" aria-label="Player status"/);
+  assert.match(component, /<BurgerPic bun=\{player\.bun\} size=\{58\} \/>/);
+  assert.match(component, /className="burger-run-player-status-progress" role="progressbar"/);
+  assert.match(component, /className=\{`burger-run-player-status-label\$\{player\.active \? " is-active" : ""\}\$\{player\.bonusActive \? " is-bonus" : ""\}`\}/);
+  assert.match(component, /player\.bonusActive \? "2× BONUS!" : player\.active && player\.status === "Choose a card" \? "YOUR TURN · CHOOSE A CARD" : player\.status/);
+  assert.match(component, /\.burger-run-player-status-label\.is-active\{background:#ffd166/);
+  assert.match(component, /\.burger-run-control-buttons\{display:none!important\}/);
+  assert.match(component, /resolveDuelPick\(p, x\)/);
+  assert.match(component, /finishDuelBonusRound\(p\)/);
+  assert.match(component, /player\.bonusActive \|\| player\.bonusAnimating/);
+  assert.match(component, /className=\{`burger-run-player-status\$\{player\.active \? " is-active" : ""\}\$\{player\.bonusActive \? " is-bonus" : ""\}`\}/);
+  assert.match(component, /@keyframes burger-run-bonus-flash/);
+  assert.match(component, /\.burger-run-player-status\.is-bonus\{animation:burger-run-bonus-flash/);
+  assert.match(component, /const flightHeight = bonusFlight \? 62 \+ Math\.sin\(s\.t \* 8\) \* 14 : 0/);
+  assert.match(component, /onStatus\(g\.L\.map/);
+  assert.match(component, /onStatus\(s\.pl\.map/);
+  assert.match(component, /if \(race\) return;/);
+  assert.doesNotMatch(component, /const hudY = trackY \+ \(i === 1 \? 54 : -74\)/);
+  assert.match(component, /\.burger-run-player-status\{display:flex;align-items:center;gap:12px;min-height:68px/);
+  assert.match(component, /\.burger-run-player-status-panels\{position:absolute;z-index:5;top:8px/);
+  assert.match(component, /WebkitLineClamp: 2/);
+  assert.match(component, /WebkitLineClamp: 3/);
+  assert.doesNotMatch(component, /maxHeight: "calc\(100dvh - 230px\)"/);
   assert.match(component, /className="burger-run-race-controls" aria-label="Keyboard controls"/);
   assert.match(component, /<kbd>W<\/kbd> Jump/);
   assert.match(component, /<kbd>S<\/kbd> Duck/);
@@ -703,35 +1056,35 @@ test('Burger Run is registered with the catalog and reports game completion', ()
   assert.match(component, /s\.turn = advanceDuelTurn\(s, T\)/);
   assert.match(component, /const types = \["cactus", "dinosaur", "pterodactyl"\]/);
   assert.match(component, /hazard\.type === "pterodactyl"\) p\.duckUntil/);
-  assert.match(component, /hazard\.x > runnerX \+ 150/);
-  assert.match(component, /const passDuration = \(hazard\.x \+ 48 - runnerX\) \/ 190 \+ 0\.08/);
+  assert.match(component, /hazard\.x > runnerX \+ 170/);
+  assert.match(component, /const passDuration = \(hazard\.x \+ 72 - runnerX\) \/ 190 \+ 0\.08/);
   assert.match(component, /p\.jumpUntil = s\.t \+ passDuration \+ 0\.25/);
   assert.match(component, /const GOAL = 18;/);
   assert.match(component, /const y = frozen \? trackY - 4 : trackY - 42/);
   assert.match(component, /const y = p\.frozen \? trackY - 55/);
   assert.match(component, /Math\.sin\(\(\(s\.t - p\.jumpFrom\) \/ \(p\.jumpUntil - p\.jumpFrom\)\) \* Math\.PI\) \* 72/);
   assert.match(component, /fillRect\(x - 8, y - 52, 64, 58\)/);
-  assert.match(component, /x - \(\(s\.t \* 100\) % 80\)/);
-  assert.match(component, /const finish = \{ left: finishX - 12, right: finishX \+ 56, top: trackY - 60 \}/);
+  assert.match(component, /const dashX = x - \(\(s\.t \* 100\) % 100\)/);
+  assert.match(component, /const finish = \{ left: finishX - 14, right: finishX \+ 82, top: trackY - 96 \}/);
   assert.match(component, /const winning = s\.winning\?\.player === i/);
   assert.match(component, /const finishRun = winning \? Math\.min\(84, \(s\.t - s\.winning\.at\) \* 150\) : 0/);
-  assert.match(component, /ctx\.shadowBlur = winning \? 22 : 0/);
+  assert.match(component, /ctx\.shadowBlur = winning \? 28 : 12/);
   assert.match(component, /const gateColor = winning \? \(flash \? "#fff27a" : "#ff8a3d"\) : FG/);
   assert.match(component, /s\.t - s\.winning\.at >= 1\.6/);
-  assert.match(component, /className="text-xl font-bold flex items-center justify-center gap-2" style=\{\{ color: ACC, fontSize: "calc\(var\(--text-xl\) \* 0\.9\)"/);
   const cardDuel = component.slice(component.indexOf("function CardDuel"), component.indexOf("/* ================= APP"));
   assert.doesNotMatch(cardDuel, /<Btn sm onClick=\{onExit\}>☰ Menu<\/Btn>/);
-  assert.match(component, /ctx\.fillRect\(finish\.left, finish\.top, 4, trackY - finish\.top\)/);
-  assert.match(component, /ctx\.fillRect\(finish\.right, finish\.top, 4, trackY - finish\.top\)/);
-  assert.match(component, /for \(let r = 0; r < 4; r\+\+\) for \(let c = 0; c < 8; c\+\+\)/);
+  assert.match(component, /ctx\.fillRect\(finish\.left, finish\.top, 8, trackY - finish\.top\)/);
+  assert.match(component, /ctx\.fillRect\(finish\.right, finish\.top, 8, trackY - finish\.top\)/);
+  assert.match(component, /for \(let r = 0; r < 6; r\+\+\) for \(let c = 0; c < 8; c\+\+\)/);
   assert.match(component, /ctx\.fillStyle = winning[\s\S]*?\(\(r \+ c\) % 2 === 0 \? \(flash \? "#fff27a" : "#ff8a3d"\)/);
-  assert.match(component, /: \(\(r \+ c\) % 2 === 0 \? FG : BG\)/);
-  assert.match(component, /18-step race · auto-jump hazards · cards control progress/);
-  assert.match(component, /<Sub>18-step race · auto-jump hazards · cards control progress<\/Sub>\s*<div className="burger-run-duel-cards">/);
+  assert.match(component, /: \(\(r \+ c\) % 2 === 0 \? "#fff3d6" : "#162438"\)/);
+  assert.doesNotMatch(component, /18-step race · auto-jump hazards · cards control progress/);
+  assert.doesNotMatch(cardDuel, /pick a card!/);
+  assert.match(cardDuel, /<section className="burger-run-duel-controls">\s*<div className="burger-run-duel-cards">/);
   assert.match(component, /className="burger-run-duel-controls"/);
   assert.match(component, /className="burger-run-duel-cards"/);
   assert.match(component, /<Card key=\{i\} suit=\{SUITS\[i\]\} compact/);
-  assert.match(component, /@media\(max-width:760px\) and \(orientation:portrait\)\{\.burger-run-duel-controls\{top:62%/);
+  assert.match(component, /@media\(max-width:760px\) and \(orientation:portrait\)\{\.burger-run-duel-controls\{top:46%/);
   assert.match(component, /maxWidth: isPlaying \? "none"/);
   assert.match(component, /startAtMenu \? "menu" : "splash"/);
   assert.match(component, /scr === "howto"/);

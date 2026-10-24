@@ -114,8 +114,16 @@ export default function DaRulesPage() {
   const [category, setCategory] = useState('All');
   const [search, setSearch] = useState('');
   const [translationLanguage, setTranslationLanguage] = useState('th');
+  const [translationMessage, setTranslationMessage] = useState('');
 
   function translatePage() {
+    const hostname = window.location.hostname.toLowerCase();
+    if (hostname === 'localhost' || hostname.endsWith('.localhost') || hostname === '127.0.0.1' || hostname === '::1') {
+      setTranslationMessage("Google Translate can't access a localhost page. Use your browser's built-in Translate this page option instead.");
+      return;
+    }
+
+    setTranslationMessage('');
     const translatorUrl = new URL('https://translate.google.com/translate');
     translatorUrl.searchParams.set('sl', 'en');
     translatorUrl.searchParams.set('tl', translationLanguage);
@@ -177,6 +185,11 @@ export default function DaRulesPage() {
               Translate page
             </button>
           </div>
+          {translationMessage && (
+            <p role="status" style={{ flexBasis: '100%', margin: 0, color: 'var(--muted)', fontSize: 13 }}>
+              {translationMessage}
+            </p>
+          )}
           <Link href="/games" style={{ color: 'var(--text)', textDecoration: 'none', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 999, padding: '10px 16px', fontWeight: 600 }}>
             ← Back to games
           </Link>

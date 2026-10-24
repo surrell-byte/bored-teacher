@@ -6,6 +6,11 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function isCreator() {
+      return signedIn()
+        && request.auth.token.email == 'boredteacherapp@gmail.com';
+    }
+
     function teacherOwnsClass(classId) {
       return signedIn()
         && exists(/databases/$(database)/documents/classCodes/$(classId))
@@ -64,16 +69,28 @@ service cloud.firestore {
     }
 
     match /reviews/{reviewId} {
-      allow read: if true;
-      allow create: if (request.resource.data.userId == null || (signedIn() && request.resource.data.userId == request.auth.uid))
+      allow read: if isCreator() || resource.data.approvalStatus == 'approved';
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid
         && request.resource.data.userName is string
         && request.resource.data.comment is string
         && request.resource.data.comment.size() > 0
         && request.resource.data.comment.size() <= 2000
         && request.resource.data.rating is number
         && request.resource.data.rating >= 1
-        && request.resource.data.rating <= 5;
-      allow update, delete: if signedIn() && request.auth.token.email == 'boredteacherapp@gmail.com';
+        && request.resource.data.rating <= 5
+        && request.resource.data.approvalStatus == 'pending'
+        && request.resource.data.approvedBy == null
+        && request.resource.data.approvedAt == null;
+      allow update: if isCreator()
+        && resource.data.approvalStatus == 'pending'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'approvalStatus', 'approvedBy', 'approvedAt'
+        ])
+        && request.resource.data.approvalStatus in ['approved', 'rejected']
+        && request.resource.data.approvedBy == request.auth.token.email
+        && request.resource.data.approvedAt == request.time;
+      allow delete: if isCreator();
     }
 
     match /notifications/{notificationId} {
@@ -107,10 +124,14 @@ service cloud.firestore {
         (request.auth.uid == userId && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
           'name', 'username', 'usernameLower', 'avatar', 'theme', 'sound', 'games',
           'xp', 'level', 'coins', 'lastGame', 'loginStreak', 'classId',
+          'totalPlaySeconds',
           'emailVerificationCode', 'emailVerificationSentAt', 'emailVerified',
           'welcomeGiftClaimed', 'welcomeGiftId', 'ownedItems', 'lastLogin',
           'isActive', 'updatedAt'
         ]))
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['totalPlaySeconds'])
+          || (request.resource.data.totalPlaySeconds is number
+            && request.resource.data.totalPlaySeconds >= resource.data.get('totalPlaySeconds', 0)))
         && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['classId'])
           || classIdCanBeSet(request.resource.data.classId))
         && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['usernameLower'])

@@ -6,14 +6,23 @@ export default function ServiceWorkerRegistration() {
   useEffect(() => {
     if (!('serviceWorker' in navigator)) return;
     if (process.env.NODE_ENV !== 'production') {
-      navigator.serviceWorker.getRegistrations().then(registrations => {
-        registrations.forEach(registration => registration.unregister());
+      void (async () => {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(registrations.map(registration => registration.unregister()));
+        const cacheNames = await caches.keys();
+        await Promise.all(
+          cacheNames
+            .filter(name => name.startsWith('bored-teacher-runtime-'))
+            .map(name => caches.delete(name)),
+        );
+      })().catch(error => {
+        console.error('Unable to clear the app service-worker cache in development.', error);
       });
       return;
     }
 
-    navigator.serviceWorker.register('/sw.js').catch(() => {
-      // The app remains fully usable when service-worker registration is unavailable.
+    navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' }).catch(error => {
+      console.error('Unable to register the app service worker.', error);
     });
   }, []);
 

@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { drawBurger } from "./burger-sprite";
+import { createRunnerViewport, runnerBoxesOverlap } from "./runner-coordinate.mjs";
+import { finishDuelBonusRound, resolveDuelPick } from "./duel-round.mjs";
 
 const BG = "#202124", FG = "#d6d6d6", MUTE = "#80868b", ACC = "#e8a24a";
 const BUNS = [
@@ -12,7 +14,7 @@ const BUNS = [
   { name: "Pink", color: "#df6b9b" },
   { name: "Orange", color: "#e88732" },
 ];
-const W = 720, LH = 210, GY = 175;
+const W = 720, LANE_HEIGHT = 210, GY = 175;
 const SUITS = ["♠", "♥", "♦", "♣"];
 const shuffle = (a) => [...a].sort(() => Math.random() - 0.5);
 
@@ -37,8 +39,50 @@ const EFX = [
   { id: "slow", e: "🍟", n: "SLOW", d: "Move back 2 steps", mv: -2, pts: -100 },
 ];
 const COLS = [["#2f7de1", "Blue", "#fff"], ["#d0463a", "Red", "#fff"], ["#3fa34d", "Green", "#fff"], ["#f2c230", "Yellow", "#222"]];
-const DUEL_PORTRAIT_ART = { width: 941, height: 1671, laneYs: [730, 1500] };
-const DUEL_LANDSCAPE_ART = { width: 1671, height: 941, laneYs: [410, 590] };
+const DUEL_PORTRAIT_ART = { width: 941, height: 1671, laneYs: [697, 1460] };
+const DUEL_LANDSCAPE_ART = { width: 1672, height: 941, laneYs: [452, 901] };
+const createPlayerStatus = (player, scoreLabel = "0 pts", lives = null, status = "Ready") => ({
+  name: player.name,
+  bun: player.bun,
+  scoreLabel,
+  progress: 0,
+  lives,
+  status,
+  active: false,
+  bonusActive: false,
+});
+const RUN_BACKGROUNDS = {
+  classic: {
+    desktop: "burger-run-game-bg-p1.webp",
+    mobile: "burger-run-game-phone-bg.webp",
+  },
+  card: {
+    desktop: "burger-run-game-bg-p1.webp",
+    mobile: "burger-run-game-phone-bg.webp",
+  },
+  race: {
+    desktop: "burger-run-game-2p-bg.webp",
+    mobile: "burger-run-game-bg-phone.webp",
+  },
+  duel: {
+    desktop: "burger-run-game-2p-bg.webp",
+    mobile: "burger-run-game-bg-phone.webp",
+  },
+};
+const RUNNER_ART = {
+  classic: {
+    desktop: { width: 1672, height: 940, laneYs: [560], laneBounds: [[0, 940]] },
+    mobile: { width: 940, height: 1672, laneYs: [1078], laneBounds: [[0, 1672]] },
+  },
+  card: {
+    desktop: { width: 1672, height: 940, laneYs: [560], laneBounds: [[0, 940]] },
+    mobile: { width: 940, height: 1672, laneYs: [1078], laneBounds: [[0, 1672]] },
+  },
+  race: {
+    desktop: { width: 1672, height: 941, laneYs: [452, 900], laneBounds: [[0, 478], [478, 941]] },
+    mobile: { width: 941, height: 1671, laneYs: [697, 1460], laneBounds: [[0, 835], [835, 1671]] },
+  },
+};
 
 function advanceDuelTurn(state, currentTurn) {
   let nextTurn = 1 - currentTurn;
@@ -67,12 +111,12 @@ const Sub = ({ children }) => <p style={{ color: MUTE, fontSize: 13, margin: 0 }
 function Card({ suit, face, onClick, dim, pick, disabled, compact = false }) {
   return (
     <button disabled={disabled} onClick={onClick} className="flex flex-col items-center justify-center gap-1"
-      style={{ width: compact ? "100%" : "clamp(76px,21vw,140px)", aspectRatio: "2/3", borderRadius: 10, padding: 4, font: "inherit", border: `3px solid ${pick ? "#fff" : "#666"}`, background: face ? face.bg : "#000", color: face ? face.fg : "#fff", opacity: dim ? 0.4 : 1, transform: pick ? "translateY(-8px)" : "none", transition: "all .2s", cursor: disabled ? "default" : "pointer" }}>
+      style={{ width: compact ? "100%" : "clamp(76px,21vw,140px)", aspectRatio: "2/3", borderRadius: 10, padding: 4, font: "inherit", border: `3px solid ${pick ? "#ffe08a" : "#dcecff"}`, boxShadow: "0 0 0 2px #172033, 0 5px 12px rgba(0,0,0,.55)", background: face ? face.bg : "#05070b", color: face ? face.fg : "#fff", opacity: dim ? 0.4 : 1, transform: pick ? "translateY(-8px)" : "none", transition: "all .2s", cursor: disabled ? "default" : "pointer" }}>
       {face ? (
         <>
           <span style={{ fontSize: "clamp(26px,8vw,44px)" }}>{face.e}</span>
-          <b style={{ fontSize: 13 }}>{face.n}</b>
-          <small style={{ fontSize: 10 }}>{face.d}</small>
+          <b style={{ minHeight: 28, display: "-webkit-box", overflow: "hidden", WebkitBoxOrient: "vertical", WebkitLineClamp: 2, fontSize: 13, lineHeight: "14px" }}>{face.n}</b>
+          <small style={{ minHeight: 30, display: "-webkit-box", overflow: "hidden", WebkitBoxOrient: "vertical", WebkitLineClamp: 3, fontSize: 10, lineHeight: "10px" }}>{face.d}</small>
         </>
       ) : (
         <span style={{ fontSize: "clamp(34px,10vw,56px)" }}>{suit}</span>
@@ -90,6 +134,33 @@ function BurgerPic({ bun, size = 112 }) {
     drawBurger(context, 16, 62, false, 0, false, bun);
   }, [bun]);
   return <canvas ref={ref} width={80} height={70} role="img" aria-label={`${bun} pixel burger`} style={{ width: size, height: size * .875, imageRendering: "pixelated" }} />;
+}
+
+function PlayerStatusPanels({ players }) {
+  return (
+    <section className="burger-run-player-status-panels" aria-label="Player status">
+      {players.map((player, index) => (
+        <article className={`burger-run-player-status${player.active ? " is-active" : ""}${player.bonusActive ? " is-bonus" : ""}`} key={`${index}-${player.name}`}>
+          <BurgerPic bun={player.bun} size={58} />
+          <div className="burger-run-player-status-main">
+            <div className="burger-run-player-status-heading">
+              <strong>{player.name}</strong>
+              <span className={`burger-run-player-status-label${player.active ? " is-active" : ""}${player.bonusActive ? " is-bonus" : ""}`}>
+                {player.bonusActive ? "2× BONUS!" : player.active && player.status === "Choose a card" ? "YOUR TURN · CHOOSE A CARD" : player.status}
+              </span>
+            </div>
+            <div className="burger-run-player-status-meta">
+              <span>{player.scoreLabel}</span>
+              {player.lives !== null && <span aria-label={`${player.lives} lives remaining`}>{"♥".repeat(player.lives)}{"♡".repeat(Math.max(0, 3 - player.lives))}</span>}
+            </div>
+            <div className="burger-run-player-status-progress" role="progressbar" aria-label={`${player.name} progress`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={player.progress}>
+              <span style={{ width: `${player.progress}%` }} />
+            </div>
+          </div>
+        </article>
+      ))}
+    </section>
+  );
 }
 
 function Info({ P, P2, onSave }) {
@@ -139,23 +210,24 @@ function Info({ P, P2, onSave }) {
 function Win({ d, onAgain, onMenu, bun }) {
   const [cf] = useState(() => Array.from({ length: 18 }, () => ({ l: Math.random() * 100, dl: Math.random() * 3, e: ["🍟", "🥤", "burger", "🎉"][Math.floor(Math.random() * 4)] })));
   return (
-    <div className="flex flex-col items-center gap-3">
+    <div className="burger-run-victory-content">
       <div className="fixed inset-0" style={{ pointerEvents: "none", overflow: "hidden" }}>
         {cf.map((c, i) => <span key={i} style={{ position: "absolute", top: -40, left: c.l + "%", fontSize: 28, animation: `fall 4s linear ${c.dl}s infinite` }}>{c.e === "burger" ? <BurgerPic bun={bun} size={32} /> : c.e}</span>)}
       </div>
-      <div style={{ fontSize: 90, animation: "bob 1.2s ease-in-out infinite" }}>🏆</div>
-      <h1 className="text-4xl font-bold">{d.title}</h1>
-      <Sub>{d.sub}</Sub>
-      <Btn pri onClick={onAgain}>Play again</Btn>
-      <Btn onClick={onMenu}>Main menu</Btn>
+      <section className="burger-run-victory-panel">
+        <h1>{d.title}</h1>
+        <Sub>{d.sub}</Sub>
+        <Btn pri onClick={onAgain}>Play again</Btn>
+        <Btn onClick={onMenu}>Main menu</Btn>
+      </section>
     </div>
   );
 }
 
 /* ================= RUNNER: classic, solo card mode, 2P race (1-2 lanes) ================= */
-function Runner({ mode, P, P2, onBest, onExit, onRestart, onWin, onComplete }) {
+function Runner({ mode, P, P2, onBest, onExit, onRestart, onWin, onComplete, onStatus }) {
   const race = mode === "race", N = race ? 2 : 1, LIVES = race ? 3 : 1, GOAL = race ? 1200 : 1000;
-  const cv = useRef(null), G = useRef(null);
+  const cv = useRef(null), G = useRef(null), controlsRef = useRef(null);
   const completionRef = useRef(onComplete);
   completionRef.current = onComplete;
   const [fxText, setFx] = useState("");
@@ -172,14 +244,54 @@ function Runner({ mode, P, P2, onBest, onExit, onRestart, onWin, onComplete }) {
 
   useEffect(() => {
     const names = [P.name, P2.name], buns = [P.bun, P2.bun];
-    const mk = (i) => ({ name: names[i], bun: buns[i], y: GY, vy: 0, duck: false, score: 0, obs: [], next: 90, lives: LIVES, inv: 0, stun: 0, fx: {}, shield: false, flash: 0, out: false, ground: 0 });
-    const g = (G.current = { state: race ? "count" : "run", cd: 180, t: 0, nextCard: 200, L: Array.from({ length: N }, (_, i) => mk(i)), clouds: [{ x: 200, y: 40 }, { x: 500, y: 70 }] });
-    const ctx = cv.current.getContext("2d");
+    const mk = (i) => ({ name: names[i], bun: buns[i], x: 70, y: GY, vy: 0, duck: false, score: 0, obs: [], next: 90, lives: LIVES, inv: 0, stun: 0, fx: {}, shield: false, flash: 0, out: false, ground: 0 });
+    const g = (G.current = { state: race ? "count" : "run", cd: 180, t: 0, nextCard: 200, L: Array.from({ length: N }, (_, i) => mk(i)), clouds: [{ x: 200, y: 40 }, { x: 500, y: 70 }], viewport: null, laneOffsets: [] });
+    const canvas = cv.current;
+    const ctx = canvas.getContext("2d");
+    const portraitQuery = window.matchMedia("(max-width: 760px) and (orientation: portrait)");
+    let renderSize = "";
+    let lastStatusUpdate = 0;
+    const resizeCanvas = () => {
+      const rect = canvas.getBoundingClientRect();
+      if (!rect.width || !rect.height) return null;
+      const dpr = window.devicePixelRatio || 1;
+      const art = RUNNER_ART[mode][portraitQuery.matches ? "mobile" : "desktop"];
+      const viewport = createRunnerViewport({
+        width: rect.width,
+        height: rect.height,
+        dpr,
+        art,
+        fit: race && !portraitQuery.matches ? "fill" : "cover",
+      });
+      const backingWidth = Math.round(rect.width * dpr);
+      const backingHeight = Math.round(rect.height * dpr);
+      const signature = `${backingWidth}:${backingHeight}:${dpr}`;
+      if (signature !== renderSize) {
+        canvas.width = backingWidth;
+        canvas.height = backingHeight;
+        renderSize = signature;
+      }
+      g.viewport = viewport;
+      g.laneOffsets = viewport.laneGrounds.map((ground) => ground - GY);
+      g.L.forEach((player) => { player.x = viewport.viewLeft + 70; });
+      const controlsTop = viewport.offsetY + viewport.laneGrounds[0] * viewport.scaleY - 20;
+      if (controlsRef.current && controlsRef.current.style.top !== `${controlsTop}px`) {
+        controlsRef.current.style.top = `${controlsTop}px`;
+      }
+      return viewport;
+    };
+    const invalidateCanvasSize = () => { renderSize = ""; };
+    const resizeObserver = new ResizeObserver(invalidateCanvasSize);
+    resizeObserver.observe(canvas.parentElement);
+    portraitQuery.addEventListener("change", invalidateCanvasSize);
+    window.addEventListener("resize", invalidateCanvasSize);
     const sc = (l) => Math.floor(l.score);
     const sizeOf = (L) => (L.fx.big ? 1.35 : L.fx.tiny ? 0.7 : 1);
     const boxOf = (L) => {
-      const k = sizeOf(L), cx = 70;
-      const b = L.duck && L.y >= GY ? { x: 48, y: L.y - 34, w: 54, h: 34 } : { x: 54, y: L.y - 42, w: 34, h: 42 };
+      const k = sizeOf(L) * 1.35, cx = L.x;
+      const b = L.duck && L.y >= GY
+        ? { x: cx - 22, y: L.y - 36, w: 54, h: 36 }
+        : { x: cx - 22, y: L.y - 44, w: 46, h: 44 };
       return { x: cx + (b.x - cx) * k, y: L.y + (b.y - L.y) * k, w: b.w * k, h: b.h * k };
     };
     const step = (L) => {
@@ -191,19 +303,20 @@ function Runner({ mode, P, P2, onBest, onExit, onRestart, onWin, onComplete }) {
       L.score += (sp / 12) * (fx.x2 ? 2 : 1); L.ground = (L.ground + sp) % W;
       if (L.y < GY || L.vy < 0) { L.vy += (fx.float ? 0.32 : 0.65) + (L.duck ? 0.8 : 0); L.y += L.vy; if (L.y >= GY) { L.y = GY; L.vy = 0; } }
       if (--L.next <= 0) {
-        if (L.score > 300 && Math.random() < 0.3) { const hs = [GY - 20, GY - 45, GY - 75]; L.obs.push({ b: 1, x: W + 20, y: hs[Math.floor(Math.random() * 3)], w: 34, h: 24 }); }
-        else { const n = 1 + Math.floor(Math.random() * 3); L.obs.push({ x: W + 20, y: GY, w: 16 * n + (n - 1) * 4, h: 30 + Math.floor(Math.random() * 22), n }); }
+        const spawnX = (g.viewport?.viewRight ?? W) + 20;
+        if (L.score > 300 && Math.random() < 0.3) { const hs = [GY - 20, GY - 45, GY - 75]; L.obs.push({ b: 1, x: spawnX, y: hs[Math.floor(Math.random() * 3)], w: 34, h: 24 }); }
+        else { const n = 1 + Math.floor(Math.random() * 3); L.obs.push({ x: spawnX, y: GY, w: 16 * n + (n - 1) * 4, h: 30 + Math.floor(Math.random() * 22), n }); }
         L.next = Math.floor((55 + Math.random() * 60) * (sp / 6));
       }
       const b = boxOf(L);
       for (const o of L.obs) {
         o.x -= sp;
-        if (o.x > -900 && b.x < o.x + o.w - 3 && b.x + b.w > o.x + 3 && b.y < o.y - 3 && b.y + b.h > o.y - o.h + 3) {
+        if (o.x > -900 && runnerBoxesOverlap(b, o)) {
           if (L.shield) { L.shield = false; L.flash = 30; o.x = -999; }
           else if (L.inv <= 0) { L.lives--; L.inv = 90; L.stun = 40; o.x = -999; if (L.lives <= 0) L.out = true; }
         }
       }
-      L.obs = L.obs.filter((o) => o.x > -60);
+      L.obs = L.obs.filter((o) => o.x > (g.viewport?.viewLeft ?? 0) - 60);
     };
     const update = () => {
       g.t++;
@@ -226,9 +339,36 @@ function Runner({ mode, P, P2, onBest, onExit, onRestart, onWin, onComplete }) {
         else if (mode === "card" && l.score >= g.nextCard) { g.nextCard += 200; g.state = "card"; setHand({ cards: shuffle(CARDS).slice(0, 3), pick: -1 }); }
       }
     };
-    const drawLane = (L) => {
-      ctx.fillStyle = FG;
-      ctx.globalAlpha = 0.3; g.clouds.forEach((c) => { ctx.fillRect(c.x, c.y, 44, 10); ctx.fillRect(c.x + 10, c.y - 8, 24, 8); }); ctx.globalAlpha = 1;
+    const updatePlayerStatus = (now) => {
+      if (!race || now - lastStatusUpdate < 100) return;
+      lastStatusUpdate = now;
+      onStatus(g.L.map((player) => ({
+        name: player.name,
+        bun: player.bun,
+        scoreLabel: `${Math.floor(player.score)} pts`,
+        progress: Math.min(100, Math.floor(player.score / GOAL * 100)),
+        lives: Math.max(0, player.lives),
+        status: player.out ? "Out" : "Racing",
+        active: false,
+      })));
+    };
+    const drawLane = (L, laneOffset, laneBounds) => {
+      g.clouds.forEach((c) => {
+        ctx.fillStyle = "#fff";
+        ctx.strokeStyle = "#24558a";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(c.x - 8, c.y + 10);
+        ctx.lineTo(c.x + 4, c.y - 4);
+        ctx.lineTo(c.x + 16, c.y - 4);
+        ctx.lineTo(c.x + 26, c.y - 14);
+        ctx.lineTo(c.x + 44, c.y - 14);
+        ctx.lineTo(c.x + 58, c.y + 2);
+        ctx.lineTo(c.x + 68, c.y + 10);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+      });
       ctx.fillRect(0, GY, W, 2);
       for (let k = 0; k < 24; k++) ctx.fillRect((k * 97 - L.ground + W * 2) % W, GY + 8 + (k % 3) * 6, 3 + (k % 4) * 2, 2);
       for (const o of L.obs) {
@@ -236,34 +376,59 @@ function Runner({ mode, P, P2, onBest, onExit, onRestart, onWin, onComplete }) {
         else { const f = Math.floor(g.t / 10) % 2; ctx.fillRect(o.x + 6, o.y - 16, 22, 8); ctx.fillRect(o.x, o.y - 14, 8, 4); ctx.fillRect(o.x + 28, o.y - 18, 6, 4); f ? ctx.fillRect(o.x + 10, o.y - 26, 12, 10) : ctx.fillRect(o.x + 10, o.y - 8, 12, 8); }
       }
       if (!(L.inv > 0 && Math.floor(g.t / 4) % 2)) {
-        const k = sizeOf(L);
-        ctx.save(); ctx.translate(70, L.y); ctx.scale(k, k); ctx.translate(-70, -L.y);
-        drawBurger(ctx, 50, L.y, L.duck && L.y >= GY, Math.floor(g.t / 5) % 2, L.y < GY, L.bun);
-        if (L.shield) { ctx.strokeStyle = "#3fa34d"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(70, L.y - 22, 36, 0, 7); ctx.stroke(); }
+        const k = sizeOf(L) * 1.35;
+        ctx.save(); ctx.translate(L.x, L.y); ctx.scale(k, k); ctx.translate(-L.x, -L.y);
+        ctx.shadowColor = "#111827";
+        ctx.shadowBlur = 5;
+        drawBurger(ctx, L.x - 20, L.y, L.duck && L.y >= GY, Math.floor(g.t / 5) % 2, L.y < GY, L.bun);
+        ctx.shadowBlur = 0;
+        if (L.shield) { ctx.strokeStyle = "#3fa34d"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(L.x, L.y - 22, 36, 0, 7); ctx.stroke(); }
         ctx.restore();
       }
-      if (L.flash) { ctx.globalAlpha = L.flash / 60; ctx.fillStyle = "#3fa34d"; ctx.fillRect(0, 0, W, LH); ctx.globalAlpha = 1; }
+      if (L.flash) { ctx.globalAlpha = L.flash / 60; ctx.fillStyle = "#3fa34d"; ctx.fillRect(0, laneBounds[0] - laneOffset, W, laneBounds[1] - laneBounds[0]); ctx.globalAlpha = 1; }
+    };
+    const drawHud = (L) => {
+      if (race) return;
+      const viewport = g.viewport;
+      const hudY = viewport.viewTop + 24;
+      const hudLeft = viewport.viewLeft + 14, hudRight = viewport.viewRight - 14;
+      ctx.fillStyle = "rgba(12,18,30,.88)";
+      ctx.fillRect(hudLeft - 8, hudY - 22, hudRight - hudLeft + 16, 42);
+      ctx.strokeStyle = "rgba(255,255,255,.72)";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(hudLeft - 8, hudY - 22, hudRight - hudLeft + 16, 42);
       ctx.fillStyle = FG; ctx.strokeStyle = FG; ctx.lineWidth = 2; ctx.font = 'bold 16px "Courier New",monospace';
-      const lv = Math.max(0, L.lives);
-      ctx.textAlign = "left"; ctx.fillText(L.name + (race ? "  " + "♥".repeat(lv) + "♡".repeat(LIVES - lv) : ""), 14, 24);
-      ctx.textAlign = "right"; ctx.fillText(String(sc(L)).padStart(4, "0"), W - 14, 24);
-      ctx.strokeRect(14, 34, W - 28, 8); ctx.fillRect(16, 36, (W - 32) * Math.min(1, L.score / GOAL), 4);
-      ctx.textAlign = "right"; ctx.fillText("🏁", W - 4, 52);
+      ctx.textAlign = "left";       ctx.fillText(L.name, hudLeft, hudY);
+      ctx.textAlign = "right"; ctx.fillText(String(sc(L)).padStart(4, "0"), hudRight, hudY);
+      ctx.strokeRect(hudLeft, hudY + 10, hudRight - hudLeft, 8); ctx.fillRect(hudLeft + 2, hudY + 12, (hudRight - hudLeft - 4) * Math.min(1, L.score / GOAL), 4);
+      ctx.textAlign = "right"; ctx.fillText("🏁", hudRight + 10, hudY + 28);
     };
     let last = "";
     const draw = () => {
-      ctx.clearRect(0, 0, W, LH * N);
+      const viewport = resizeCanvas();
+      if (!viewport) return;
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.setTransform(viewport.scaleX * viewport.dpr, 0, 0, viewport.scaleY * viewport.dpr, viewport.offsetX * viewport.dpr, viewport.offsetY * viewport.dpr);
+      ctx.clearRect(viewport.viewLeft, viewport.viewTop, viewport.viewRight - viewport.viewLeft, viewport.viewBottom - viewport.viewTop);
       g.L.forEach((L, i) => {
-        ctx.save(); ctx.translate(0, i * LH); ctx.beginPath(); ctx.rect(0, 0, W, LH); ctx.clip(); drawLane(L); ctx.restore();
-        if (i) { ctx.fillStyle = MUTE; ctx.fillRect(0, i * LH - 1, W, 2); }
+        const laneBounds = viewport.laneBounds[i];
+        const clipTop = Math.max(viewport.viewTop, laneBounds[0]);
+        const clipBottom = Math.min(viewport.viewBottom, laneBounds[1]);
+        ctx.save();
+        ctx.beginPath(); ctx.rect(viewport.viewLeft, clipTop, viewport.viewRight - viewport.viewLeft, clipBottom - clipTop); ctx.clip();
+        ctx.translate(0, g.laneOffsets[i]);
+        drawLane(L, g.laneOffsets[i], laneBounds);
+        ctx.restore();
+        drawHud(L);
       });
-      if (g.state === "count") { ctx.fillStyle = ACC; ctx.font = 'bold 64px "Courier New",monospace'; ctx.textAlign = "center"; ctx.fillText(Math.ceil(g.cd / 60), W / 2, (LH * N) / 2 + 20); }
+      if (g.state === "count") { ctx.fillStyle = ACC; ctx.font = 'bold 64px "Courier New",monospace'; ctx.textAlign = "center"; ctx.fillText(Math.ceil(g.cd / 60), (viewport.viewLeft + viewport.viewRight) / 2, (viewport.viewTop + viewport.viewBottom) / 2 + 20); }
       const L = g.L[0];
       const txt = Object.keys(L.fx).map((k) => { const c = CARDS.find((x) => x.id === k); return `${c.e} ${c.n} ${Math.ceil(L.fx[k] / 60)}s`; }).concat(L.shield ? ["🥒 Shield"] : []).join("   ");
       if (txt !== last) { last = txt; setFx(txt); }
     };
     let raf;
-    const loop = () => { update(); draw(); raf = requestAnimationFrame(loop); };
+    const loop = (now) => { update(); updatePlayerStatus(now); draw(); raf = requestAnimationFrame(loop); };
     loop();
     const kd = (e) => {
       const km = KEYS.findIndex((k) => k.j.includes(e.code) || k.d.includes(e.code));
@@ -273,7 +438,14 @@ function Runner({ mode, P, P2, onBest, onExit, onRestart, onWin, onComplete }) {
     };
     const ku = (e) => KEYS.forEach((k, i) => { if (k.d.includes(e.code)) duck(i, false); });
     addEventListener("keydown", kd); addEventListener("keyup", ku);
-    return () => { cancelAnimationFrame(raf); removeEventListener("keydown", kd); removeEventListener("keyup", ku); };
+    return () => {
+      cancelAnimationFrame(raf);
+      removeEventListener("keydown", kd);
+      removeEventListener("keyup", ku);
+      portraitQuery.removeEventListener("change", invalidateCanvasSize);
+      window.removeEventListener("resize", invalidateCanvasSize);
+      resizeObserver.disconnect();
+    };
   }, []);
 
   const pickCard = (i) => {
@@ -286,22 +458,33 @@ function Runner({ mode, P, P2, onBest, onExit, onRestart, onWin, onComplete }) {
   };
 
   return (
-    <div className="flex flex-col items-center gap-3 w-full h-full min-h-0">
-      <canvas ref={cv} width={W} height={LH * N} className={`w-full${race ? " burger-run-race-track" : ""}`} style={{ imageRendering: "pixelated", touchAction: "manipulation", ...(race ? { maxHeight: "calc(100dvh - 230px)", objectFit: "contain", flex: "0 1 auto" } : {}) }}
-        onPointerDown={(e) => { e.preventDefault(); const r = e.currentTarget.getBoundingClientRect(); jump(Math.min(N - 1, Math.floor(((e.clientY - r.top) / r.height) * N))); }} />
-      <div style={{ minHeight: 20, fontSize: 14 }}>{fxText}</div>
-      <div className="flex gap-2 flex-wrap justify-center">
-        {Array.from({ length: N }, (_, i) => (
-          <Btn key={i} sm onPointerDown={(e) => { e.preventDefault(); duck(i, true); }} onPointerUp={() => duck(i, false)} onPointerLeave={() => duck(i, false)}>▼ Duck{race ? " " + [P.name, P2.name][i] : ""}</Btn>
-        ))}
-        <Btn sm onClick={onExit}>☰ Menu</Btn>
-      </div>
-      {race ? (
-        <div className="burger-run-race-controls" aria-label="Keyboard controls">
-          <div><b>{P.name}</b><span><kbd>W</kbd> Jump</span><span><kbd>S</kbd> Duck</span></div>
-          <div><b>{P2.name}</b><span><kbd>↑</kbd> Jump</span><span><kbd>↓</kbd> Duck</span></div>
+    <div className="w-full h-full min-h-0" style={{ position: "relative", overflow: "hidden" }}>
+      <canvas ref={cv} width={W} height={LANE_HEIGHT * N} className={`w-full${race ? " burger-run-race-track" : ""}`}
+        style={{ position: "absolute", inset: 0, display: "block", width: "100%", height: "100%", imageRendering: "pixelated", touchAction: "manipulation" }}
+        onPointerDown={(e) => {
+          e.preventDefault();
+          const viewport = G.current?.viewport;
+          if (!viewport) return;
+          const rect = e.currentTarget.getBoundingClientRect();
+          const worldY = (e.clientY - rect.top - viewport.offsetY) / viewport.scaleY;
+          const lane = viewport.laneBounds.findIndex(([top, bottom]) => worldY >= top && worldY < bottom);
+          jump(lane < 0 ? 0 : lane);
+        }} />
+      <div ref={controlsRef} className="absolute z-10 flex w-full flex-col items-center gap-3" style={{ left: "50%", top: 0, transform: "translateX(-50%)", pointerEvents: "none" }}>
+        <div style={{ minHeight: 20, fontSize: 14 }}>{fxText}</div>
+        <div className="burger-run-control-buttons flex gap-2 flex-wrap justify-center" style={{ pointerEvents: "auto" }}>
+          {Array.from({ length: N }, (_, i) => (
+            <Btn key={i} sm onPointerDown={(e) => { e.preventDefault(); duck(i, true); }} onPointerUp={() => duck(i, false)} onPointerLeave={() => duck(i, false)}>▼ Duck{race ? " " + [P.name, P2.name][i] : ""}</Btn>
+          ))}
+          <Btn sm onClick={onExit}>☰ Menu</Btn>
         </div>
-      ) : <Sub>Space / ↑ / tap = jump · ↓ = duck · R = restart</Sub>}
+        {race ? (
+          <div className="burger-run-race-controls" aria-label="Keyboard controls">
+            <div><b>{P.name}</b><span><kbd>W</kbd> Jump</span><span><kbd>S</kbd> Duck</span></div>
+            <div><b>{P2.name}</b><span><kbd>↑</kbd> Jump</span><span><kbd>↓</kbd> Duck</span></div>
+          </div>
+        ) : <Sub>Space / ↑ / tap = jump · ↓ = duck · R = restart</Sub>}
+      </div>
       {hand && (
         <Modal>
           <h2 className="text-2xl font-bold">Pick a card…</h2>
@@ -327,11 +510,11 @@ function Runner({ mode, P, P2, onBest, onExit, onRestart, onWin, onComplete }) {
 }
 
 /* ================= 2P CARD DUEL ================= */
-function CardDuel({ P, P2, onWin }) {
+function CardDuel({ P, P2, onWin, onStatus }) {
   const GOAL = 18;
   const newDeal = () => { const e = shuffle(EFX), c = shuffle(COLS); return e.map((x, i) => ({ x, c: c[i] })); };
-  const mkP = (q, pos = 0, hazardOffset = 0) => ({ name: q.name, bun: q.bun, pos, dp: pos, pts: 0, skip: false, frozen: false, hazards: [], nextHazard: 1.4 + hazardOffset, jumpFrom: 0, jumpUntil: 0, duckUntil: 0 });
-  const st = useRef({ pl: [mkP(P, 0.45), mkP(P2)], turn: 0, pick: -1, deal: newDeal(), msg: "", t: 0, lastAt: 0, done: false });
+  const mkP = (q, pos = 0, hazardOffset = 0) => ({ name: q.name, bun: q.bun, pos, dp: pos, pts: 0, skip: false, frozen: false, safeRounds: 0, bonusActive: false, bonusAnimating: false, hazards: [], nextHazard: 1.4 + hazardOffset, jumpFrom: 0, jumpUntil: 0, duckUntil: 0 });
+  const st = useRef({ pl: [mkP(P, 0.45), mkP(P2)], turn: 0, pick: -1, deal: newDeal(), t: 0, lastAt: 0, done: false });
   const [, rr] = useState(0);
   const re = () => rr((n) => n + 1);
   const cv = useRef(null), timers = useRef([]);
@@ -343,6 +526,7 @@ function CardDuel({ P, P2, onWin }) {
     const ctx = cv.current.getContext("2d");
     const canvas = cv.current;
     let raf;
+    let lastStatusUpdate = 0;
     let renderSize = "";
     let resizeCanvas;
     const invalidateCanvasSize = () => {
@@ -363,9 +547,13 @@ function CardDuel({ P, P2, onWin }) {
       const art = mobilePortrait.current ? DUEL_PORTRAIT_ART : DUEL_LANDSCAPE_ART;
       const width = Math.round(rect.width * dpr), height = Math.round(rect.height * dpr);
       const signature = `${width}:${height}:${dpr}:${art.width}:${art.height}`;
-      const scale = Math.max(rect.width / art.width, rect.height / art.height);
-      const offsetX = (rect.width - art.width * scale) / 2;
-      const offsetY = (rect.height - art.height * scale) / 2;
+      const fitScale = mobilePortrait.current
+        ? Math.max(rect.width / art.width, rect.height / art.height)
+        : Math.min(rect.width / art.width, rect.height / art.height);
+      const scaleX = mobilePortrait.current ? fitScale : rect.width / art.width;
+      const scaleY = mobilePortrait.current ? fitScale : rect.height / art.height;
+      const offsetX = mobilePortrait.current ? (rect.width - art.width * fitScale) / 2 : 0;
+      const offsetY = mobilePortrait.current ? (rect.height - art.height * fitScale) / 2 : 0;
       if (signature !== renderSize) {
         canvas.width = width;
         canvas.height = height;
@@ -373,36 +561,46 @@ function CardDuel({ P, P2, onWin }) {
       }
       return {
         ...art,
-        scale,
+        scale: scaleX,
+        scaleX,
+        scaleY,
         offsetX,
         offsetY,
-        visibleLeft: Math.max(0, -offsetX / scale),
-        visibleRight: Math.min(art.width, (rect.width - offsetX) / scale),
+        visibleLeft: Math.max(0, -offsetX / scaleX),
+        visibleRight: Math.min(art.width, (rect.width - offsetX) / scaleX),
         dpr,
       };
     };
     const drawHazard = (hazard, frozen, trackY) => {
       const { x, type } = hazard;
+      ctx.save();
+      ctx.translate(x, trackY);
+      ctx.scale(1.5, 1.5);
+      ctx.translate(-x, -trackY);
+      ctx.shadowColor = "#102033";
+      ctx.shadowBlur = 5;
+      ctx.fillStyle = "#267a36";
+      ctx.strokeStyle = "#183b2a";
+      ctx.lineWidth = 2;
       if (type === "cactus") {
-        ctx.fillStyle = "#5aa83a";
         ctx.fillRect(x + 10, trackY - 34, 10, 34);
         ctx.fillRect(x + 2, trackY - 25, 9, 7);
         ctx.fillRect(x + 2, trackY - 30, 5, 10);
         ctx.fillRect(x + 19, trackY - 20, 9, 7);
         ctx.fillRect(x + 23, trackY - 25, 5, 11);
       } else if (type === "dinosaur") {
-        ctx.fillStyle = "#75a64b";
+        ctx.fillStyle = "#7cbd55";
         ctx.fillRect(x + 7, trackY - 27, 24, 19);
         ctx.fillRect(x + 22, trackY - 36, 12, 13);
         ctx.fillRect(x + 29, trackY - 33, 12, 6);
         ctx.fillRect(x, trackY - 16, 12, 5);
         ctx.fillRect(x + 11, trackY - 9, 6, 9);
         ctx.fillRect(x + 25, trackY - 9, 6, 9);
-        ctx.fillStyle = BG;
+        ctx.fillStyle = "#101820";
         ctx.fillRect(x + 33, trackY - 31, 3, 3);
       } else {
         const y = frozen ? trackY - 4 : trackY - 42;
-        ctx.fillStyle = "#b4c5d8";
+        ctx.fillStyle = "#f3fbff";
         ctx.fillRect(x + 6, y - 5, 28, 8);
         ctx.fillRect(x + 27, y - 8, 12, 6);
         ctx.fillRect(x + 1, y - 2, 9, 4);
@@ -410,16 +608,66 @@ function CardDuel({ P, P2, onWin }) {
         ctx.fillRect(x + 16, y - 20, 5, 6);
         ctx.fillRect(x + 17, y - 20, 3, 8);
       }
+      ctx.restore();
+    };
+    const drawCloud = (x, y, size) => {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.scale(size, size);
+      ctx.fillStyle = "#f7fbff";
+      ctx.strokeStyle = "#315f86";
+      ctx.lineWidth = 5;
+      ctx.shadowColor = "rgba(13,38,68,.45)";
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+      ctx.moveTo(-86, 16);
+      ctx.lineTo(-70, -2);
+      ctx.lineTo(-50, -2);
+      ctx.lineTo(-35, -27);
+      ctx.lineTo(-8, -27);
+      ctx.lineTo(8, -8);
+      ctx.lineTo(23, -34);
+      ctx.lineTo(55, -34);
+      ctx.lineTo(75, -4);
+      ctx.lineTo(92, 16);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
     };
     const loop = (now) => {
       const art = resizeCanvas();
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.setTransform(art.scale * art.dpr, 0, 0, art.scale * art.dpr, art.offsetX * art.dpr, art.offsetY * art.dpr);
+      ctx.setTransform(art.scaleX * art.dpr, 0, 0, art.scaleY * art.dpr, art.offsetX * art.dpr, art.offsetY * art.dpr);
       const s = st.current, dt = Math.min((now - (s.lastAt || now)) / 1000, 0.05);
       s.lastAt = now;
       s.t += dt;
+      if (now - lastStatusUpdate >= 100) {
+        lastStatusUpdate = now;
+        onStatus(s.pl.map((player, index) => ({
+          name: player.name,
+          bun: player.bun,
+          scoreLabel: `${player.pts} pts`,
+          progress: Math.min(100, Math.floor(player.dp / GOAL * 100)),
+          lives: null,
+          status: player.bonusActive || player.bonusAnimating
+            ? "Double points bonus"
+            : player.frozen
+              ? "Frozen"
+              : s.turn === index ? "Choose a card" : `${player.safeRounds}/3 safe rounds`,
+          bonusActive: player.bonusActive || player.bonusAnimating,
+          active: s.turn === index && !s.done,
+        })));
+      }
       ctx.clearRect(0, 0, art.width, art.height);
+      if (mobilePortrait.current) {
+        drawCloud(art.visibleLeft + (art.visibleRight - art.visibleLeft) * 0.36, 410, 1.35);
+        drawCloud(art.visibleLeft + (art.visibleRight - art.visibleLeft) * 0.78, 520, 0.95);
+      } else {
+        drawCloud(art.visibleLeft + (art.visibleRight - art.visibleLeft) * 0.32, 250, 1.25);
+        drawCloud(art.visibleLeft + (art.visibleRight - art.visibleLeft) * 0.72, 345, 0.95);
+      }
       s.pl.forEach((p, i) => {
         const trackY = art.laneYs[i];
         const winning = s.winning?.player === i;
@@ -435,55 +683,77 @@ function CardDuel({ P, P2, onWin }) {
         }
         p.hazards.forEach((hazard) => {
           hazard.x -= 190 * dt;
-          if (hazard.actioned || p.frozen || hazard.x > runnerX + 150 || hazard.x < runnerX + 35) return;
+          if (hazard.actioned || p.frozen || hazard.x > runnerX + 170 || hazard.x < runnerX + 60) return;
           hazard.actioned = true;
-          const passDuration = (hazard.x + 48 - runnerX) / 190 + 0.08;
+          const passDuration = (hazard.x + 72 - runnerX) / 190 + 0.08;
           if (hazard.type === "pterodactyl") p.duckUntil = Math.max(p.duckUntil, s.t + passDuration);
           else { p.jumpFrom = s.t; p.jumpUntil = s.t + passDuration + 0.25; }
         });
         p.hazards = p.hazards.filter((hazard) => hazard.x > -55);
         p.dp += (p.pos - p.dp) * Math.min(1, dt * 8);
-        ctx.fillStyle = "rgba(255,255,255,.8)";
-        ctx.fillRect(0, trackY, art.width, 2);
-        for (let x = -80; x < art.width; x += 80) ctx.fillRect(x - ((s.t * 100) % 80), trackY + 13, 40, 3);
+        ctx.fillStyle = "#172033";
+        ctx.fillRect(0, trackY - 2, art.width, 12);
+        ctx.fillStyle = "#ffe08a";
+        ctx.fillRect(0, trackY, art.width, 5);
+        for (let x = -100; x < art.width; x += 100) {
+          const dashX = x - ((s.t * 100) % 100);
+          ctx.fillStyle = "#f8fbff";
+          ctx.fillRect(dashX, trackY + 17, 55, 6);
+          ctx.strokeStyle = "#233247";
+          ctx.lineWidth = 2;
+          ctx.strokeRect(dashX, trackY + 17, 55, 6);
+        }
         p.hazards.forEach((hazard) => drawHazard(hazard, p.frozen, trackY));
-        const finish = { left: finishX - 12, right: finishX + 56, top: trackY - 60 };
+        const finish = { left: finishX - 14, right: finishX + 82, top: trackY - 96 };
         const flash = winning && Math.floor((s.t - s.winning.at) * 10) % 2 === 0;
         const gateColor = winning ? (flash ? "#fff27a" : "#ff8a3d") : FG;
         ctx.save();
         ctx.shadowColor = winning ? gateColor : "transparent";
-        ctx.shadowBlur = winning ? 22 : 0;
+        ctx.shadowBlur = winning ? 28 : 12;
         ctx.fillStyle = gateColor;
-        ctx.fillRect(finish.left, finish.top, 4, trackY - finish.top);
-        ctx.fillRect(finish.right, finish.top, 4, trackY - finish.top);
-        for (let r = 0; r < 4; r++) for (let c = 0; c < 8; c++) {
+        ctx.fillStyle = "#172033";
+        ctx.fillRect(finish.left - 4, finish.top - 4, 16, trackY - finish.top + 8);
+        ctx.fillRect(finish.right - 4, finish.top - 4, 16, trackY - finish.top + 8);
+        ctx.fillStyle = gateColor;
+        ctx.fillRect(finish.left, finish.top, 8, trackY - finish.top);
+        ctx.fillRect(finish.right, finish.top, 8, trackY - finish.top);
+        ctx.fillRect(finish.left - 4, finish.top - 4, finish.right - finish.left + 16, 8);
+        for (let r = 0; r < 6; r++) for (let c = 0; c < 8; c++) {
           ctx.fillStyle = winning
             ? ((r + c) % 2 === 0 ? (flash ? "#fff27a" : "#ff8a3d") : (flash ? "#fff" : "#ffb3d1"))
-            : ((r + c) % 2 === 0 ? FG : BG);
-          ctx.fillRect(finish.left + 4 + c * 8, finish.top + r * 8, 8, 8);
+            : ((r + c) % 2 === 0 ? "#fff3d6" : "#162438");
+          ctx.fillRect(finish.left + 8 + c * 12, finish.top + r * 12, 12, 12);
         }
         ctx.restore();
         const x = runnerX;
         const jumping = !p.frozen && p.jumpUntil > s.t;
         const ducking = !p.frozen && p.duckUntil > s.t;
         const jumpHeight = jumping ? Math.sin(((s.t - p.jumpFrom) / (p.jumpUntil - p.jumpFrom)) * Math.PI) * 72 : 0;
-        const y = p.frozen ? trackY - 55 + Math.sin(s.t * 5) * 2 : trackY - jumpHeight;
+        const bonusFlight = p.bonusActive || p.bonusAnimating;
+        const flightHeight = bonusFlight ? 62 + Math.sin(s.t * 8) * 14 : 0;
+        const y = p.frozen ? trackY - 55 + Math.sin(s.t * 5) * 2 : trackY - jumpHeight - flightHeight;
+        ctx.save();
+        if (bonusFlight) {
+          ctx.fillStyle = "#fff3b0";
+          ctx.font = "24px sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText("✦", x - 31, y - 12 + Math.sin(s.t * 9) * 4);
+          ctx.fillText("✦", x + 34, y - 28 + Math.sin(s.t * 7) * 5);
+        }
+        ctx.translate(x, y);
+        if (bonusFlight) ctx.rotate(Math.sin(s.t * 5) * 0.1);
+        ctx.scale(1.45, 1.45);
+        ctx.translate(-x, -y);
+        ctx.shadowColor = "#101820";
+        ctx.shadowBlur = 6;
         drawBurger(ctx, x, y, ducking, p.frozen ? 0 : Math.floor(s.t * 12) % 2, jumping, p.bun);
+        ctx.shadowBlur = 0;
+        ctx.restore();
         if (p.frozen) {
           ctx.fillStyle = "rgba(120,190,255,.35)"; ctx.fillRect(x - 8, y - 52, 64, 58);
           ctx.strokeStyle = "#9cf"; ctx.lineWidth = 2; ctx.strokeRect(x - 8, y - 52, 64, 58);
           ctx.font = "22px sans-serif"; ctx.textAlign = "center"; ctx.fillStyle = "#fff"; ctx.fillText("❄️", x + 20, y - 57);
         }
-        const act = s.turn === i && !s.done;
-        ctx.fillStyle = act ? ACC : FG; ctx.strokeStyle = act ? ACC : FG; ctx.lineWidth = 2; ctx.font = 'bold 16px "Courier New",monospace';
-        const hudY = trackY - 74;
-        ctx.font = `bold ${mobilePortrait.current ? 30 : 24}px "Courier New",monospace`;
-        const hudLeft = art.visibleLeft + margin;
-        const hudRight = art.visibleRight - margin;
-        ctx.textAlign = "left"; ctx.fillText(p.name + (act ? "  ◀ TURN" : "") + (p.frozen ? "  ❄️ frozen" : ""), hudLeft, hudY);
-        ctx.textAlign = "right"; ctx.fillText(p.pts + " pts", hudRight, hudY);
-        ctx.strokeRect(hudLeft, hudY + 12, hudRight - hudLeft, 10); ctx.fillRect(hudLeft + 2, hudY + 14, (hudRight - hudLeft - 4) * Math.min(1, p.dp / GOAL), 6);
-        if (i) { ctx.fillStyle = "rgba(255,255,255,.65)"; ctx.fillRect(0, trackY - 48, art.width, 2); }
       });
       if (s.winning && s.t - s.winning.at >= 1.6) {
         s.done = true;
@@ -505,12 +775,14 @@ function CardDuel({ P, P2, onWin }) {
   const pick = (i) => {
     const s = st.current;
     if (s.pick >= 0 || s.done) return;
-    const { x, c } = s.deal[i], T = s.turn, p = s.pl[T];
-    p.pos = Math.min(GOAL, Math.max(0, p.pos + x.mv)); p.pts = Math.max(0, p.pts + x.pts);
+    const { x } = s.deal[i], T = s.turn, p = s.pl[T];
+    p.pos = Math.min(GOAL, Math.max(0, p.pos + x.mv));
+    resolveDuelPick(p, x);
     if (x.id === "freeze") { p.frozen = true; p.skip = true; }
-    s.pick = i; s.msg = `${c[1]} card = ${x.e} ${x.n}`; re();
+    s.pick = i; re();
     timers.current.push(setTimeout(() => {
       if (s.done || s.winning) return;
+      finishDuelBonusRound(p);
       if (p.pos >= GOAL) {
         s.winning = {
           player: T,
@@ -520,18 +792,17 @@ function CardDuel({ P, P2, onWin }) {
         re();
         return;
       }
-      s.turn = advanceDuelTurn(s, T); s.pick = -1; s.deal = newDeal(); s.msg = ""; re();
+      s.turn = advanceDuelTurn(s, T); s.pick = -1; s.deal = newDeal(); re();
     }, 2000));
   };
 
-  const s = st.current, p = s.pl[s.turn];
+  const s = st.current;
   return (
     <div className="burger-run-duel">
-      <style>{`.burger-run-duel{position:relative;width:100%;height:100%;min-height:0;overflow:hidden}.burger-run-duel-track{position:absolute;inset:0;width:100%;height:100%;display:block;image-rendering:pixelated}.burger-run-duel-controls{position:absolute;top:65%;left:50%;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:6px;width:min(520px,70%);height:33%;min-width:0;box-sizing:border-box;transform:translateX(-50%);text-align:center}.burger-run-duel-controls h2{min-height:0!important;margin:0;color:#fff!important;font-size:clamp(16px,2.2vw,24px)!important;text-shadow:0 2px 4px #202124,0 0 8px #202124}.burger-run-duel-controls h2 canvas{width:34px!important;height:30px!important}.burger-run-duel-controls p{color:#fff!important;font-size:clamp(10px,1.2vw,13px)!important;text-shadow:0 1px 4px #202124}.burger-run-duel-cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;width:100%;max-width:520px}.burger-run-duel-cards button{aspect-ratio:3/4!important;min-width:0}@media(max-width:760px) and (orientation:portrait){.burger-run-duel-controls{top:62%;width:94%;height:25%;gap:4px}.burger-run-duel-controls h2{font-size:16px!important}.burger-run-duel-controls h2 canvas{width:24px!important;height:21px!important}.burger-run-duel-cards{gap:8px}.burger-run-duel-cards button{border-radius:12px!important}}`}</style>
+      <style>{`.burger-run-duel{position:relative;width:100%;height:100%;min-height:0;overflow:hidden}.burger-run-duel-track{position:absolute;inset:0;width:100%;height:100%;display:block;image-rendering:pixelated}.burger-run-duel-controls{position:absolute;top:46%;left:50%;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:6px;width:min(520px,70%);height:52%;min-width:0;box-sizing:border-box;transform:translateX(-50%);text-align:center}.burger-run-duel-controls h2{min-height:0!important;margin:0;color:#fff!important;font-size:clamp(16px,2.2vw,24px)!important;text-shadow:0 2px 4px #202124,0 0 8px #202124}.burger-run-duel-controls h2 canvas{width:34px!important;height:30px!important}.burger-run-duel-controls p{color:#fff!important;font-size:clamp(10px,1.2vw,13px)!important;text-shadow:0 1px 4px #202124}.burger-run-duel-cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;width:100%;max-width:520px}.burger-run-duel-cards button{aspect-ratio:3/4!important;min-width:0}@media(max-width:760px) and (orientation:portrait){.burger-run-duel-controls{top:46%;width:94%;height:52%;gap:4px}.burger-run-duel-controls h2{font-size:16px!important}.burger-run-duel-controls h2 canvas{width:24px!important;height:21px!important}.burger-run-duel-cards{gap:8px}.burger-run-duel-cards button{border-radius:12px!important}}`}</style>
+      <style>{`@media(min-width:761px){.burger-run-duel-controls{top:52%;height:48%}}`}</style>
       <canvas ref={cv} className="burger-run-duel-track" />
       <section className="burger-run-duel-controls">
-        <h2 className="text-xl font-bold flex items-center justify-center gap-2" style={{ color: ACC, fontSize: "calc(var(--text-xl) * 0.9)", minHeight: 36, textAlign: "center" }}>{s.pick < 0 ? <><BurgerPic bun={p.bun} size={34} /> {p.name}, pick a card!</> : s.msg}</h2>
-        <Sub>18-step race · auto-jump hazards · cards control progress</Sub>
         <div className="burger-run-duel-cards">
           {s.deal.map(({ x, c }, i) => (
             <Card key={i} suit={SUITS[i]} compact disabled={s.pick >= 0} pick={s.pick === i} dim={s.pick >= 0 && s.pick !== i} onClick={() => pick(i)}
@@ -553,21 +824,30 @@ export default function BurgerRun({ onComplete, startAtMenu = false }) {
   const [best, setBest] = useState({ classic: 0, card: 0 });
   const [win, setWin] = useState(null);
   const [mode, setMode] = useState("classic");
+  const [playerStatuses, setPlayerStatuses] = useState(() => [createPlayerStatus(P), createPlayerStatus(P2)]);
   const [run, setRun] = useState(0);
   const go = () => setScr(P.name ? "menu" : "info");
-  const play = (m) => { setMode(m); setRun((r) => r + 1); setScr(m === "duel" ? "duel" : "game"); };
+  const play = (m) => {
+    setMode(m);
+    setPlayerStatuses(m === "duel"
+      ? [createPlayerStatus(P, "0 pts", null, "Choose a card"), createPlayerStatus(P2, "0 pts", null, "Waiting")]
+      : [createPlayerStatus(P, "0 pts", 3, "Racing"), createPlayerStatus(P2, "0 pts", 3, "Racing")]);
+    setRun((r) => r + 1);
+    setScr(m === "duel" ? "duel" : "game");
+  };
   const onBest = (m, v) => setBest((b) => ({ ...b, [m]: Math.max(b[m] || 0, v) }));
   const reportCompletion = (score, accuracy) => completionRef.current?.(score, accuracy);
   const onWin = (d) => { setWin(d); setScr("win"); reportCompletion(100, 100); };
   const menu = () => setScr("menu");
   const isPlaying = scr === "game" || scr === "duel";
   const isTwoPlayerRun = mode === "race" || mode === "duel";
+  const gameplayBackground = RUN_BACKGROUNDS[mode];
   const background = scr === "splash"
     ? "/assets/games/burger-run/burger-run-welcome-bg.webp"
     : scr === "win"
       ? "/assets/games/burger-run/burger-run-victory-bg.webp"
       : isPlaying
-        ? `/assets/games/burger-run/${isTwoPlayerRun ? "burger-run-game-2p-bg.webp" : "burger-run-game-bg-p1.webp"}`
+        ? `/assets/games/burger-run/${gameplayBackground.desktop}`
         : "/assets/games/burger-run/burger-run-general-bg.webp";
 
   useEffect(() => {
@@ -578,10 +858,13 @@ export default function BurgerRun({ onComplete, startAtMenu = false }) {
   }, [scr, P.name]);
 
   return (
-    <div className={`w-full flex items-center justify-center${scr === "splash" ? " burger-run-splash" : ""}${isPlaying ? ` burger-run-play-screen ${isTwoPlayerRun ? "burger-run-play-screen-two-player" : "burger-run-play-screen-single"}` : ""}`} style={{ height: "100%", minHeight: "100%", overflow: isPlaying || scr === "splash" ? "hidden" : "auto", position: "relative", backgroundColor: BG, backgroundImage: `url("${background}")`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat", color: FG, fontFamily: '"Courier New",ui-monospace,monospace', userSelect: "none" }}>
-      <style>{`@keyframes bob{50%{transform:translateY(-12px)}}@keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}@keyframes bl{50%{opacity:.25}}`}</style>
-      <style>{`.burger-run-splash-art{display:contents}.burger-run-start-hitbox{position:absolute;z-index:1;left:50%;top:58.5%;width:21%;height:11.6%;transform:translate(-50%,-50%);padding:0;border:0;border-radius:14px;background:transparent;cursor:pointer;touch-action:manipulation}@media(max-width:760px) and (orientation:portrait){.burger-run-splash{background-image:none!important}.burger-run-splash-art{display:block;position:absolute;left:50%;top:50%;width:min(100%,56.28dvh);aspect-ratio:941/1672;transform:translate(-50%,-50%);background:url("/assets/games/burger-run/burger-run-welcome-phone-bg.webp") center/100% 100% no-repeat}.burger-run-splash-art .burger-run-start-hitbox{left:50.8%;top:54.5%;width:37.2%;height:6.9%}.burger-run-play-screen-single{background-image:url("/assets/games/burger-run/burger-run-game-phone-bg.webp")!important}.burger-run-play-screen-two-player{background-image:url("/assets/games/burger-run/burger-run-game-bg-phone.webp")!important}.burger-run-play-screen{background-size:cover;background-position:center;background-repeat:no-repeat}}`}</style>
+    <div data-burger-run-mode={mode} className={`w-full flex items-center justify-center${scr === "splash" ? " burger-run-splash" : ""}${isPlaying ? ` burger-run-play-screen ${isTwoPlayerRun ? "burger-run-play-screen-two-player" : "burger-run-play-screen-single"}` : ""}`} style={{ height: "100%", minHeight: "100%", overflow: isPlaying || scr === "splash" ? "hidden" : "auto", position: "relative", backgroundColor: BG, backgroundImage: `url("${background}")`, backgroundSize: isPlaying && isTwoPlayerRun ? "100% 100%" : "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat", "--burger-run-mobile-background": `url("/assets/games/burger-run/${gameplayBackground.mobile}")`, color: FG, fontFamily: '"Courier New",ui-monospace,monospace', userSelect: "none" }}>
+      <style>{`@keyframes bob{50%{transform:translateY(-12px)}}@keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}@keyframes bl{50%{opacity:.25}}@keyframes burger-run-bonus-flash{0%,100%{border-color:#ffd166;background:rgba(38,34,21,.97);box-shadow:0 0 0 3px rgba(255,209,102,.34),0 0 18px rgba(255,209,102,.52),0 3px 10px rgba(0,0,0,.5)}50%{border-color:#fff3b0;background:rgba(112,72,20,.98);box-shadow:0 0 0 5px rgba(255,243,176,.55),0 0 28px rgba(255,209,102,.9),0 3px 10px rgba(0,0,0,.5)}}.burger-run-player-status.is-bonus{animation:burger-run-bonus-flash .48s steps(2,end) infinite}.burger-run-player-status-label.is-bonus{background:#ffd166;border-color:#fff3b0;color:#152033;text-shadow:none;box-shadow:0 0 12px rgba(255,209,102,.75)}`}</style>
+      <style>{`.burger-run-splash-art{display:contents}.burger-run-start-hitbox{position:absolute;z-index:1;left:50%;top:58.5%;width:21%;height:11.6%;transform:translate(-50%,-50%);padding:0;border:0;border-radius:14px;background:transparent;cursor:pointer;touch-action:manipulation}@media(max-width:760px) and (orientation:portrait){.burger-run-splash{background-image:none!important}.burger-run-splash-art{display:block;position:absolute;left:50%;top:50%;width:max(100%,calc((100dvh - 61px)*.5628));aspect-ratio:941/1672;transform:translate(-50%,-50%);background:url("/assets/games/burger-run/burger-run-welcome-phone-bg.webp") center/100% 100% no-repeat}.burger-run-splash-art .burger-run-start-hitbox{left:50.8%;top:54.5%;width:37.2%;height:6.9%}.burger-run-play-screen{background-image:var(--burger-run-mobile-background)!important;background-size:cover!important;background-position:center;background-repeat:no-repeat}}`}</style>
       <style>{`.burger-run-info{display:flex;flex-direction:column;align-items:center;gap:24px;width:min(100%,900px);padding:28px 20px}.burger-run-info-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;width:100%}.burger-run-player-setup{display:flex;flex-direction:column;align-items:center;gap:18px;padding:24px 18px;border:2px solid ${MUTE};border-radius:12px;background:#25272a}.burger-run-player-setup input{width:100%!important;max-width:360px!important}.burger-run-menu{display:flex;flex-direction:column;align-items:stretch;gap:26px;width:100%;padding:28px clamp(16px,4vw,48px)}.burger-run-menu-hero{display:flex;align-items:center;justify-content:center;gap:24px}.burger-run-menu-hero h2{font-size:clamp(30px,4vw,48px)}.burger-run-menu-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;width:100%}.burger-run-menu-mode{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;min-height:150px;padding:22px;border:2px solid ${MUTE};border-radius:12px;background:#25272a}.burger-run-menu-mode button{width:100%;min-height:68px;font-size:clamp(18px,2vw,22px)}.burger-run-menu-mode p{font-size:15px}.burger-run-menu-footer{display:flex;justify-content:center;gap:18px;flex-wrap:wrap}.burger-run-menu-footer button{min-height:58px}.burger-run-race-controls{display:flex;justify-content:center;gap:clamp(20px,6vw,72px);flex-wrap:wrap}.burger-run-race-controls>div{display:flex;align-items:center;gap:12px;padding:8px 14px;border:2px solid ${MUTE};border-radius:8px;background:#25272a}.burger-run-race-controls span{display:inline-flex;align-items:center;gap:5px;color:${FG};font-size:14px}.burger-run-race-controls kbd{min-width:28px;padding:3px 6px;border:1px solid ${FG};border-radius:4px;background:${BG};font:700 14px \"Courier New\",monospace;text-align:center}@media(max-width:640px){.burger-run-info{gap:16px;padding:16px 10px}.burger-run-info-grid{grid-template-columns:1fr;gap:14px}.burger-run-player-setup{gap:12px;padding:16px}.burger-run-menu{gap:16px;padding:16px 12px}.burger-run-menu-grid{grid-template-columns:1fr;gap:12px}.burger-run-menu-mode{min-height:120px;padding:16px}.burger-run-menu-hero{gap:12px}.burger-run-menu-hero canvas{width:72px!important;height:63px!important}.burger-run-race-controls{gap:8px}.burger-run-race-controls>div{gap:8px;padding:6px 8px}.burger-run-race-controls span{font-size:12px}}`}</style>
+      <style>{`.burger-run-player-status-panels{position:absolute;z-index:5;top:8px;left:8px;right:8px;display:grid;gap:8px;pointer-events:none}.burger-run-player-status{display:flex;align-items:center;gap:12px;min-height:68px;padding:6px 14px;border:3px solid rgba(255,255,255,.64);border-radius:12px;background:rgba(12,18,30,.94);color:#fff;box-shadow:0 3px 10px rgba(0,0,0,.5);text-shadow:0 1px 2px #000}.burger-run-player-status.is-active{border:4px solid #ffd166;background:rgba(38,34,21,.97);box-shadow:0 0 0 3px rgba(255,209,102,.34),0 0 18px rgba(255,209,102,.52),0 3px 10px rgba(0,0,0,.5)}.burger-run-player-status>canvas{flex:0 0 58px;width:58px!important;height:51px!important;background:#fff;border:2px solid rgba(255,255,255,.75);border-radius:9px}.burger-run-player-status-main{display:grid;gap:3px;flex:1;min-width:0}.burger-run-player-status-heading,.burger-run-player-status-meta{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}.burger-run-player-status-heading strong{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:clamp(14px,3.4vw,18px)}.burger-run-player-status-label{flex:0 0 auto;max-width:60%;padding:4px 8px;border:1px solid rgba(255,255,255,.55);border-radius:999px;background:#28364b;color:#fff;font-size:clamp(10px,2.5vw,13px);font-weight:900;letter-spacing:.04em;text-align:center;text-transform:uppercase;white-space:nowrap}.burger-run-player-status-label.is-active{background:#ffd166;border-color:#fff3d6;color:#152033;text-shadow:none;box-shadow:0 0 12px rgba(255,209,102,.55)}.burger-run-player-status-meta{font-size:clamp(11px,2.8vw,14px);font-weight:800}.burger-run-player-status-meta span:last-child{color:#ff7b91;letter-spacing:2px}.burger-run-player-status-progress{height:8px;overflow:hidden;border:1px solid rgba(255,255,255,.72);border-radius:999px;background:#202124}.burger-run-player-status-progress span{display:block;height:100%;background:${ACC};transition:width 120ms linear}@media(max-width:640px){.burger-run-control-buttons{display:none!important}.burger-run-player-status-panels{top:6px;left:6px;right:6px;gap:6px}.burger-run-player-status{min-height:60px;gap:8px;padding:4px 9px;border-width:3px}.burger-run-player-status.is-active{border-width:4px}.burger-run-player-status>canvas{flex-basis:50px;width:50px!important;height:44px!important}.burger-run-player-status-label,.burger-run-player-status-meta{font-size:10px}.burger-run-player-status-label{padding:3px 6px;letter-spacing:0}.burger-run-player-status-progress{height:7px}}`}</style>
+      <style>{`.burger-run-victory-content{position:absolute;inset:0;z-index:2;display:flex;align-items:flex-start;justify-content:center;box-sizing:border-box;padding:max(18px,4vh) 16px 0;pointer-events:none}.burger-run-victory-panel{display:grid;justify-items:center;gap:12px;width:min(100%,480px);padding:18px 20px;border:3px solid #ffe08a;border-radius:18px;background:rgba(13,28,47,.92);color:#fff;box-shadow:0 8px 28px rgba(0,0,0,.55);text-align:center;pointer-events:auto}.burger-run-victory-panel h1{margin:0;color:#ffe08a;font-size:clamp(1.5rem,6vw,2.4rem);line-height:1.1;text-shadow:0 2px 3px #101820}.burger-run-victory-panel p{color:#f3f7ff;font-size:clamp(.85rem,3vw,1rem)}.burger-run-victory-panel button{width:min(100%,320px);min-height:48px;border-color:#fff3d6;box-shadow:0 3px 0 #79421c}.burger-run-player-status{border-color:#f3ead6}.burger-run-player-status.is-active{border-color:#ffd166}.burger-run-player-status-progress{border:2px solid #f3ead6;background:#172033}.burger-run-player-status-progress span{background:linear-gradient(90deg,#f6ad38,#ffe08a)}@media(max-width:640px){.burger-run-victory-content{padding:14px 12px 0}.burger-run-victory-panel{gap:9px;padding:14px 14px;border-width:3px}}`}</style>
+      {isPlaying && isTwoPlayerRun && <PlayerStatusPanels players={playerStatuses} />}
       {scr === "splash" && (
         <div className="burger-run-splash-art">
           <button type="button" aria-label="Start Burger Run" title="Start Burger Run" className="burger-run-start-hitbox" onClick={go} />
@@ -637,8 +920,8 @@ export default function BurgerRun({ onComplete, startAtMenu = false }) {
             </div>
           </section>
         )}
-        {scr === "game" && <Runner key={run} mode={mode} P={P} P2={P2} onBest={onBest} onExit={menu} onRestart={() => setRun((r) => r + 1)} onWin={onWin} onComplete={reportCompletion} />}
-        {scr === "duel" && <CardDuel key={run} P={P} P2={P2} onWin={onWin} />}
+        {scr === "game" && <Runner key={run} mode={mode} P={P} P2={P2} onBest={onBest} onExit={menu} onRestart={() => setRun((r) => r + 1)} onWin={onWin} onComplete={reportCompletion} onStatus={setPlayerStatuses} />}
+        {scr === "duel" && <CardDuel key={run} P={P} P2={P2} onWin={onWin} onStatus={setPlayerStatuses} />}
         {scr === "win" && win && <Win d={win} onAgain={() => play(win.mode)} onMenu={menu} bun={P.bun} />}
       </div>}
     </div>

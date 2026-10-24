@@ -46,7 +46,7 @@ interface BlockFightHud {
 }
 
 const GAMES_WITH_WELCOME = new Set([
-  'airpuck', 'animalAdventureRace', 'blockfight', 'connect4', 'farmgame', 'findmyfood', 'flagmaster', 'emojimatch',
+  'airpuck', 'animalAdventureRace', 'blockfight', 'connect4', 'farmgame', 'findmyfood', 'flagmaster', 'emojimatch', 'emojicategories',
   'finnthefox', 'oceanquest', 'parachutedrop', 'weatherwizard',
   'phonicsadventure', 'riddlebombs', 'tictacroll', 'tornado', 'wordfusion', 'weatherwizard', 'victoryvet',
   'turbodash',
@@ -70,6 +70,7 @@ export default function GamePage() {
   const [result, setResult]   = useState<GameResult | null>(null);
   const [gameSession, setGameSession] = useState(0);
   const [burgerRunStartAtMenu, setBurgerRunStartAtMenu] = useState(false);
+  const [emojiSpellingStartAtMenu, setEmojiSpellingStartAtMenu] = useState(false);
   const [airPuckHud, setAirPuckHud] = useState<AirPuckHud | null>(null);
   const [blockFightHud, setBlockFightHud] = useState<BlockFightHud | null>(null);
   // Connect 4 hands its in-match HUD (player badges + reset/home) up here so
@@ -107,6 +108,14 @@ export default function GamePage() {
   useEffect(() => {
     const assets: Record<string, string[]> = {
       alphabethunt: ['/assets/games/alphabet-hunt/alphabet-hunt-general-phone-bg.webp'],
+      emojispelling: [
+        '/assets/games/emoji-spelling-game/emoji-spelling-welcome-bg.webp',
+        '/assets/games/emoji-spelling-game/emoji-spelling-welcome-bg-phone.webp',
+        '/assets/games/emoji-spelling-game/emoji-spelling-main-menu-bg.webp',
+        '/assets/games/emoji-spelling-game/emoji-spelling-main-menu-phone-bg.webp',
+        '/assets/games/emoji-spelling-game/emoji-spelling-general-bg.webp',
+        '/assets/games/emoji-spelling-game/emoji-spelling-general-bg-phone.webp',
+      ],
       burgerrun: [
         '/assets/games/burger-run/burger-run-welcome-bg.webp',
         '/assets/games/burger-run/burger-run-welcome-phone-bg.webp',
@@ -221,6 +230,7 @@ export default function GamePage() {
     : gameId === 'fruitwordhunt' ? '' : GAME_ICONS[gameId] ?? '🎮';
   const GameComp  = GAME_COMPONENTS[gameId];
   const isKnowItAll = gameId === 'knowitall';
+  const isEmojiSpelling = gameId === 'emojispelling';
   const profileName = auth?.currentUser
     ? (state.name.trim() && state.name !== 'Explorer' ? state.name.trim() : auth.currentUser.displayName?.trim() ?? '')
     : '';
@@ -382,6 +392,10 @@ export default function GamePage() {
       setShowRouteWelcome(false);
       setBurgerRunStartAtMenu(true);
       setGameSession(session => session + 1);
+    } else if (gameId === 'emojispelling') {
+      setShowRouteWelcome(false);
+      setEmojiSpellingStartAtMenu(true);
+      window.dispatchEvent(new Event('emoji-spelling:main-menu'));
     } else {
       setShowRouteWelcome(true);
       setGameSession(session => session + 1);
@@ -688,7 +702,20 @@ export default function GamePage() {
                 </div>
               </section>
             ) : (
-              isKnowItAll ? (
+              isEmojiSpelling ? (
+                <section className="route-game-welcome emoji-spelling-route-welcome" aria-label="Emoji Spelling welcome screen">
+                  <div className="emoji-spelling-welcome-art">
+                    <button
+                      type="button"
+                      className="emoji-spelling-welcome-start"
+                      onClick={() => setShowRouteWelcome(false)}
+                      aria-label="Start Emoji Spelling"
+                    >
+                      Start Emoji Spelling
+                    </button>
+                  </div>
+                </section>
+              ) : isKnowItAll ? (
                 <section className="route-game-welcome know-it-all-route-welcome" aria-label="Know It All welcome screen">
                   <button
                     type="button"
@@ -738,6 +765,7 @@ export default function GamePage() {
                 ? (gameResult: { score: number; accuracy: number }) => handleComplete(gameResult.score, gameResult.accuracy)
                 : handleComplete}
               {...(gameId === 'burgerrun' ? { startAtMenu: burgerRunStartAtMenu } : {})}
+              {...(gameId === 'emojispelling' ? { startAtMenu: emojiSpellingStartAtMenu } : {})}
               profileName={profileName}
               {...(gameId === 'riddlebombs' ? { onHudUpdate: setRiddleBombsHud } : {})}
               {...(isTicTacRoll ? { themeId: ticTheme.id, onThemeChange: setTicTheme } : {})}

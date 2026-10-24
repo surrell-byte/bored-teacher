@@ -74,6 +74,7 @@ export const GAME_COMPONENTS: Partial<Record<string, React.LazyExoticComponent<R
   deepseaReveal: lazyGame('deepseaReveal', () => import('@/games/deep-sea-reveal/DeepSeaReveal.jsx')),
   dragonslingshot: lazyGame('dragonslingshot', () => import('@/games/dragon-slingshot/DragonSlingshot')),
   emojimatch: lazyGame('emojimatch', () => import('@/games/emoji-match/EmojiMatch.jsx')),
+  emojicategories: lazyGame('emojicategories', () => import('@/games/emoji-category-sort/EmojiCategorySort.jsx')),
   wordfusion: lazyGame('wordfusion', () => import('@/games/word-fusion/WordFusion.jsx')),
   knowitall: lazyGame('knowitall', () => import('@/games/know-it-all/KnowItAll.jsx')),
   emojispelling: lazyGame('emojispelling', () => import('@/games/emoji-spelling-game/EmojiSpellingMaster.jsx')),

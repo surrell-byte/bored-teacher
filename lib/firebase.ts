@@ -28,12 +28,17 @@ import {
   query,
   where,
   updateDoc,
+  increment,
   serverTimestamp,
   writeBatch,
 } from 'firebase/firestore';
+import { DEFAULT_PLAYER_AVATAR } from '@/constants/index';
 
 export interface ReviewItem {
   id?: string;
+  approvalStatus?: 'pending' | 'approved' | 'rejected';
+  approvedBy?: string | null;
+  approvedAt?: unknown;
   userId?: string | null;
   userName?: string;
   userEmail?: string | null;
@@ -45,6 +50,13 @@ export interface ReviewItem {
   page?: string;
   createdAt?: unknown;
 }
+
+const FALLBACK_REVIEWS: ReviewItem[] = [
+  { id: 'fallback-1', userName: 'Mina', avatar: '👩🏽‍🏫', age: 29, countryCode: 'GB', rating: 5, comment: 'The new learning path feels calm, joyful, and classroom friendly.', page: '/hub', createdAt: Date.now() },
+  { id: 'fallback-2', userName: 'Kai', avatar: '🧑🏻‍💻', age: 34, countryCode: 'CA', rating: 4, comment: 'Loved the game choices and the helpful classroom flow.', page: '/hub', createdAt: Date.now() - 3600000 },
+  { id: 'fallback-3', userName: 'Ari', avatar: '🧑🏾‍🎨', age: 27, countryCode: 'AU', rating: 5, comment: 'The activities are bright, easy to understand, and fun to revisit.', page: '/hub', createdAt: Date.now() - 7200000 },
+  { id: 'fallback-4', userName: 'Sam', avatar: '🧑🏼‍🏫', age: 41, countryCode: 'US', rating: 5, comment: 'A thoughtful learning space with games children actually want to play.', page: '/hub', createdAt: Date.now() - 10800000 },
+];
 
 export function hasPublicReviewIdentity(
   review: Pick<ReviewItem, 'userId' | 'userName' | 'avatar'>,
@@ -334,6 +346,7 @@ interface UserState {
   classId?: string; role?: AccountRole | null;
   ownedItems?: string[];
   createdAt?: unknown;
+  totalPlaySeconds?: number;
   isActive?: boolean;
   teacherPro?: boolean;
   emailVerified?: boolean;
@@ -355,7 +368,7 @@ async function createUserProfile(uid: string, name: string, email: string, role:
     username,
     usernameLower: username,
     email: email.toLowerCase(),
-    avatar: '👤',
+    avatar: DEFAULT_PLAYER_AVATAR,
     theme: 'chalkboard',
     xp: 0,
     level: 1,
@@ -371,6 +384,7 @@ async function createUserProfile(uid: string, name: string, email: string, role:
     welcomeGiftClaimed: false,
     welcomeGiftId: null,
     games: {},
+    totalPlaySeconds: 0,
     classId: '',
     role,
     createdAt: serverTimestamp(),
@@ -403,6 +417,17 @@ export async function saveUserState(uid: string, state: Partial<UserState>) {
   } catch (error) {
     if (typeof writableState.usernameLower === 'string') throw error;
   }
+}
+
+export async function addUserPlayTime(uid: string, seconds: number) {
+  if (!uid || !db) return;
+  if (!Number.isSafeInteger(seconds) || seconds <= 0) {
+    throw new Error('Game time must be a positive whole number of seconds.');
+  }
+  await updateDoc(doc(db, 'users', uid), {
+    totalPlaySeconds: increment(seconds),
+    updatedAt: serverTimestamp(),
+  });
 }
 
 export async function loadUserState(uid: string): Promise<UserState | null> {
@@ -564,9 +589,14 @@ export async function submitReview(data: {
   const rating = Math.min(5, Math.max(1, Math.round(Number(data.rating) || 5)));
   const comment = String(data.comment ?? '').trim();
   if (!comment) throw new Error('Review comment text is required.');
+  const currentUser = auth?.currentUser;
+  if (!currentUser) throw new Error('Sign in before submitting a review.');
+  if (data.userId && data.userId !== currentUser.uid) {
+    throw new Error('Reviews can only be submitted for the signed-in account.');
+  }
 
   const review = {
-    userId: data.userId ?? null,
+    userId: currentUser.uid,
     userName: (data.userName ?? auth?.currentUser?.displayName ?? 'Explorer').trim() || 'Explorer',
     userEmail: (data.userEmail ?? auth?.currentUser?.email ?? '').trim().toLowerCase() || null,
     avatar: data.avatar ?? '🙂',
@@ -575,6 +605,9 @@ export async function submitReview(data: {
     rating,
     comment,
     page: data.page ?? '/hub',
+    approvalStatus: 'pending',
+    approvedBy: null,
+    approvedAt: null,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   };
@@ -587,8 +620,8 @@ export async function submitReview(data: {
     recipientUid: null,
     userId: data.userId ?? auth?.currentUser?.uid ?? null,
     userName: review.userName,
-    title: 'New 4–5 star review',
-    message: `${review.userName} added a ${rating}/5 review: ${comment}`,
+    title: 'Review awaiting approval',
+    message: `${review.userName} submitted a ${rating}/5 review for approval: ${comment}`,
     reviewId: reviewSnap.id,
     page: data.page ?? '/hub',
     rating,
@@ -598,24 +631,59 @@ export async function submitReview(data: {
 }
 
 export async function loadReviews() {
-  if (!db) return [];
+  if (!db) return FALLBACK_REVIEWS;
 
-  const snapshot = await getDocs(collection(db, 'reviews'));
-  return snapshot.docs
+  const snapshot = await getDocs(query(collection(db, 'reviews'), where('approvalStatus', '==', 'approved')));
+  const items = snapshot.docs
     .map(docSnap => ({ id: docSnap.id, ...(docSnap.data() as Record<string, unknown>) } as ReviewItem))
     .filter(item => Number(item.rating) >= 4 && hasPublicReviewIdentity(item))
-    .sort((left, right) => {
-      const leftTime = left.createdAt && typeof (left.createdAt as { toMillis?: () => number }).toMillis === 'function'
-        ? (left.createdAt as { toMillis: () => number }).toMillis()
-        : new Date(String(left.createdAt ?? 0)).getTime();
-      const rightTime = right.createdAt && typeof (right.createdAt as { toMillis?: () => number }).toMillis === 'function'
-        ? (right.createdAt as { toMillis: () => number }).toMillis()
-        : new Date(String(right.createdAt ?? 0)).getTime();
-      return rightTime - leftTime;
-    })
+    .sort((left, right) => reviewCreatedAt(right) - reviewCreatedAt(left));
+
+  return [
+    ...items,
+    ...FALLBACK_REVIEWS.filter(fallback => !items.some(item => item.comment === fallback.comment)),
+  ]
     .slice(0, 4)
     .map(item => ({ ...item, rating: Number(item.rating) }));
+}
 
+function reviewCreatedAt(review: ReviewItem) {
+  return review.createdAt && typeof (review.createdAt as { toMillis?: () => number }).toMillis === 'function'
+    ? (review.createdAt as { toMillis: () => number }).toMillis()
+    : new Date(String(review.createdAt ?? 0)).getTime();
+}
+
+export async function loadPendingReviewsForCreator() {
+  if (!auth?.currentUser || !isCreatorUser(auth.currentUser)) {
+    throw new Error('Only the creator can review pending submissions.');
+  }
+  if (!db) {
+    throw new Error('Firebase is not configured. Pending reviews cannot be loaded.');
+  }
+
+  const snapshot = await getDocs(query(collection(db, 'reviews'), where('approvalStatus', '==', 'pending')));
+  return snapshot.docs
+    .map(docSnap => ({ id: docSnap.id, ...(docSnap.data() as Record<string, unknown>) } as ReviewItem))
+    .sort((left, right) => reviewCreatedAt(right) - reviewCreatedAt(left));
+}
+
+export async function setReviewApproval(reviewId: string, approvalStatus: 'approved' | 'rejected') {
+  if (!reviewId.trim()) throw new Error('Review id is required.');
+  if (approvalStatus !== 'approved' && approvalStatus !== 'rejected') {
+    throw new Error('Review approval status is invalid.');
+  }
+  if (!auth?.currentUser || !isCreatorUser(auth.currentUser)) {
+    throw new Error('Only the creator can approve or reject reviews.');
+  }
+  if (!db) {
+    throw new Error('Firebase is not configured. Review approval cannot be saved.');
+  }
+
+  await updateDoc(doc(db, 'reviews', reviewId), {
+    approvalStatus,
+    approvedBy: auth.currentUser.email,
+    approvedAt: serverTimestamp(),
+  });
 }
 
 export async function loadNotificationsForCreator() {

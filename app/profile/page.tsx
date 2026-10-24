@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { auth, onAuthStateChanged, setDisplayName } from '@/lib/firebase';
 import { useGame } from '@/providers/GameProvider';
-import { AVATARS, THEMES } from '@/constants/index';
+import { AVATARS, DEFAULT_PLAYER_AVATAR, THEMES } from '@/constants/index';
 import { SHOP_ITEMS } from '@/features/shop/catalog';
 import ProfileAvatar from '@/components/profile/ProfileAvatar';
 
@@ -17,7 +17,7 @@ export default function ProfilePage() {
   const [ready, setReady] = useState(false);
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
-  const [avatar, setAvatar] = useState('👤');
+  const [avatar, setAvatar] = useState(DEFAULT_PLAYER_AVATAR);
   const [feedback, setFeedback] = useState('');
   const [saving, setSaving] = useState(false);
   const [isGuest, setIsGuest] = useState(false);
@@ -37,7 +37,7 @@ export default function ProfilePage() {
       }
     });
   }, [router]);
-  useEffect(() => { setName(state.name === 'Explorer' ? '' : state.name); setUsername(state.username || ''); setAvatar(state.avatar || '👤'); }, [state.name, state.username, state.avatar]);
+  useEffect(() => { setName(state.name === 'Explorer' ? '' : state.name); setUsername(state.username || ''); setAvatar(state.avatar || DEFAULT_PLAYER_AVATAR); }, [state.name, state.username, state.avatar]);
 
   async function save() {
     if (isGuest) { setFeedback('Create an account or sign in before changing your profile.'); return; }
@@ -63,7 +63,7 @@ export default function ProfilePage() {
 
   if (!ready) return null;
   const purchased = avatarItems.filter(item => state.ownedItems.includes(item.id)).map(item => item.value);
-  const available = [...new Set([...baseAvatars, ...purchased])];
+  const available = [...new Set([DEFAULT_PLAYER_AVATAR, ...baseAvatars, ...purchased])];
 
   return <main className="profile-page hub-page">
     <div className="profile-page-header"><div><p className="suggestions-kicker">Your account</p><h1 className="hub-welcome-title">Profile</h1><p className="hub-welcome-sub">Manage your identity, avatar, and learning look.</p></div><button type="button" className="pill-btn" onClick={() => router.push('/hub')}>← Dashboard</button></div>

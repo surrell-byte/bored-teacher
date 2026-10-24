@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bored-teacher-runtime-v3';
+const CACHE_NAME = 'bored-teacher-runtime-v4';
 
 self.addEventListener('install', event => {
   event.waitUntil(self.skipWaiting());
@@ -17,9 +17,8 @@ self.addEventListener('fetch', event => {
   if (request.method !== 'GET' || new URL(request.url).origin !== self.location.origin) return;
 
   const url = new URL(request.url);
-  const isNextStatic = url.pathname.startsWith('/_next/static/');
   const isPublicAsset = url.pathname.startsWith('/assets/');
-  if (!isNextStatic && !isPublicAsset) return;
+  if (!isPublicAsset) return;
 
   let preferredRequest = request;
   if (request.destination === 'image' && url.pathname.startsWith('/assets/') && !url.pathname.includes('/.optimized/')) {

@@ -17,17 +17,39 @@ function formatDate(iso: string | undefined) {
   }
 }
 
+function formatJoinedDate(iso: string | undefined) {
+  if (!iso) return 'Not available';
+  const date = new Date(iso);
+  return Number.isNaN(date.getTime())
+    ? 'Not available'
+    : date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function getPlayerTier(level: number) {
+  if (level <= 5) return { name: 'Bronze', className: 'bronze' };
+  if (level <= 10) return { name: 'Silver', className: 'silver' };
+  if (level <= 15) return { name: 'Gold', className: 'gold' };
+  if (level <= 20) return { name: 'Platinum', className: 'platinum' };
+  return { name: 'Diamond', className: 'diamond' };
+}
+
+function formatPlayTime(totalSeconds: number) {
+  return `${(Math.max(0, totalSeconds) / 3600).toFixed(1)} hrs`;
+}
+
 export default function TrophyPage() {
   const router = useRouter();
   const { state, earnedAchievementIds } = useGame();
   const [ready, setReady]   = useState(false);
   const [tab, setTab]       = useState<'all' | string>('all');
+  const [authJoinedAt, setAuthJoinedAt] = useState('');
 
   useEffect(() => {
     const isGuest = localStorage.getItem('guestUser') === 'true';
     if (isGuest) { setReady(true); return; }
     const unsub = onAuthStateChanged(user => {
       if (!user) { router.replace('/auth'); return; }
+      setAuthJoinedAt(user.metadata.creationTime || '');
       setReady(true);
     });
     return unsub;
@@ -51,6 +73,7 @@ export default function TrophyPage() {
   const latestAchievement: Achievement | null = recentAchievements[0] ?? null;
 
   const donutPct = totalBadges > 0 ? (earnedCount / totalBadges) * 360 : 0;
+  const playerTier = getPlayerTier(state.level || 1);
 
   const visibleCategories = tab === 'all'
     ? ACHIEVEMENT_CATEGORIES
@@ -70,6 +93,19 @@ export default function TrophyPage() {
           <p style={{ color: 'var(--muted)', fontSize: '0.88rem', lineHeight: 1.6, maxWidth: '48ch' }}>
             Celebrate your achievements and track your learning journey.
           </p>
+          <section className={`trophy-player-badge trophy-player-badge--${playerTier.className}`} aria-label="Player badge">
+            <div className="trophy-player-badge-heading">
+              <ProfileAvatar value={state.avatar} size={64} alt={`${state.name}'s avatar`} />
+              <div><span className="trophy-player-tier">{playerTier.name} Player</span><span className="trophy-player-level">Level {state.level || 1}</span></div>
+              <a href="/profile" className="trophy-player-edit">Change avatar</a>
+            </div>
+            <div className="trophy-player-stats">
+              <div><span>Joined</span><strong>{formatJoinedDate(state.joinedAt || authJoinedAt)}</strong></div>
+              <div><span>Game time</span><strong>{formatPlayTime(state.totalPlaySeconds || 0)}</strong></div>
+              <div><span>Level</span><strong>{state.level || 1}</strong></div>
+              <div><span>XP</span><strong>{state.xp || 0}</strong></div>
+            </div>
+          </section>
         </div>
 
         <div>
@@ -239,5 +275,3 @@ export default function TrophyPage() {
     </div>
   );
 }
-
-

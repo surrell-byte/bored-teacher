@@ -19,6 +19,10 @@ if (!/replace\(\/\\\.\(\?:png\|jpe\?g\)\$\/i, '\.webp'\)/.test(serviceWorker)) {
   throw new Error('The service worker must rewrite PNG and JPEG images to their optimized WebP paths.');
 }
 
+if (!/if \(!isPublicAsset\) return;/.test(serviceWorker) || /_next\/static/.test(serviceWorker)) {
+  throw new Error('The service worker must not cache Next.js chunks, which can become stale across builds.');
+}
+
 if (/rel="preload"[^>]*as="image"/.test(head)) {
   throw new Error('Page-specific images must not be preloaded globally on every route.');
 }

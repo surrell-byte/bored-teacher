@@ -1,5 +1,22 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useGame } from "@/lib/gameState";
+import { useCoverArtStyle } from "@/lib/use-cover-art-style";
+
+const PLAYER_AVATARS = [
+  { label: "Astro Explorer", value: "/assets/images/avatars/astro-explorer-avatar.svg" },
+  { label: "Sky Dragon", value: "/assets/images/avatars/sky-dragon-avatar.svg" },
+  { label: "Rainbow Unicorn", value: "/assets/images/avatars/rainbow-unicorn-avatar.svg" },
+  { label: "Cat", value: "🐱" },
+  { label: "Fox", value: "🦊" },
+  { label: "Robot", value: "🤖" },
+];
+
+function PlayerAvatar({ value, alt }) {
+  const isImage = value.startsWith("/") || value.startsWith("//") || value.startsWith("http://") || value.startsWith("https://") || value.startsWith("data:image/");
+  if (!isImage) return <span className="esm-player-avatar-emoji" role="img" aria-label={alt}>{value}</span>;
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={value} alt={alt} />;
+}
 
 const DATA = {
   easy: [
@@ -20,7 +37,6 @@ const DATA = {
   ],
 };
 
-const LEVEL_COLORS = { easy: "#22c55e", medium: "#f59e0b", hard: "#ef4444" };
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
@@ -31,11 +47,20 @@ function getLetterPool(word) {
   return shuffle([...needed, ...extra]);
 }
 
-export default function EmojiSpellingMaster({ onComplete }) {
-  const { completeGame } = useGame();
-  const [screen, setScreen] = useState("start"); // start | game | over
+function getMissingChoices(word, index) {
+  const answer = word[index];
+  const distractors = shuffle(ALPHABET.filter(letter => letter !== answer)).slice(0, 4);
+  return shuffle([answer, ...distractors]);
+}
+
+export default function EmojiSpellingMaster({ onComplete, startAtMenu = false }) {
+  const { completeGame, setState, state: player } = useGame();
+  const [screen, setScreen] = useState(startAtMenu ? "start" : "player-info"); // player-info | start | game | over
+  const menuStageRef = useRef(null);
+  const menuArtStyle = useCoverArtStyle(menuStageRef, 1672 / 941, 941 / 1672, screen === "start");
   const [mode, setMode] = useState("spell");
   const [level, setLevel] = useState("easy");
+  const [menuLevel, setMenuLevel] = useState("easy");
   const [questions, setQuestions] = useState([]);
   const [qIdx, setQIdx] = useState(0);
   const [typed, setTyped] = useState([]);
@@ -47,7 +72,17 @@ export default function EmojiSpellingMaster({ onComplete }) {
   const [feedback, setFeedback] = useState("");
   const [won, setWon] = useState(false);
   const [missing, setMissing] = useState(null);
+  const [missingChoices, setMissingChoices] = useState([]);
   const [timeLeft, setTimeLeft] = useState(30);
+  const playerName = player.name?.trim() || "Explorer";
+  const [playerNameInput, setPlayerNameInput] = useState(player.name === "Explorer" ? "" : player.name);
+  const [avatarInput, setAvatarInput] = useState(player.avatar);
+
+  useEffect(() => {
+    const showMainMenu = () => setScreen("start");
+    window.addEventListener("emoji-spelling:main-menu", showMainMenu);
+    return () => window.removeEventListener("emoji-spelling:main-menu", showMainMenu);
+  }, []);
 
   useEffect(() => {
     if (screen !== "game") return undefined;
@@ -86,7 +121,9 @@ export default function EmojiSpellingMaster({ onComplete }) {
     setTimeLeft(30);
     setFeedback("");
     setWon(false);
-    setMissing({ index: Math.floor(Math.random() * qs[0].word.length), choice: null });
+    const missingIndex = Math.floor(Math.random() * qs[0].word.length);
+    setMissing({ index: missingIndex, choice: null });
+    setMissingChoices(getMissingChoices(qs[0].word, missingIndex));
     setScreen("game");
   }, []);
 
@@ -107,7 +144,9 @@ export default function EmojiSpellingMaster({ onComplete }) {
         return;
       }
       setQIdx(nextIdx);
-      setMissing({ index: Math.floor(Math.random() * questions[nextIdx].word.length), choice: null });
+      const missingIndex = Math.floor(Math.random() * questions[nextIdx].word.length);
+      setMissing({ index: missingIndex, choice: null });
+      setMissingChoices(getMissingChoices(questions[nextIdx].word, missingIndex));
       setFeedback("");
     }, 700);
   };
@@ -175,39 +214,86 @@ export default function EmojiSpellingMaster({ onComplete }) {
     setTyped(prev => prev.slice(0, -1));
   };
 
+  if (screen === "player-info") return (
+    <div className="esm-screen esm-screen--player-info" data-screen="player-info">
+      <form
+        className="esm-player-setup"
+        onSubmit={event => {
+          event.preventDefault();
+          const name = playerNameInput.trim();
+          if (!name) return;
+          setState({ name, avatar: avatarInput });
+          setScreen("start");
+        }}
+      >
+        <div className="esm-player-setup-heading">
+          <PlayerAvatar value={avatarInput} alt="Selected player avatar" />
+          <div><h1>Who&apos;s playing?</h1><p>Choose a name and avatar for your game.</p></div>
+        </div>
+        <label htmlFor="esm-player-name">Player name</label>
+        <input
+          id="esm-player-name"
+          autoComplete="name"
+          maxLength={32}
+          required
+          value={playerNameInput}
+          onChange={event => setPlayerNameInput(event.target.value)}
+          placeholder="Enter your name"
+        />
+        <fieldset className="esm-player-avatar-picker">
+          <legend>Choose your avatar</legend>
+          <div>
+            {PLAYER_AVATARS.map(avatar => (
+              <button
+                key={avatar.value}
+                type="button"
+                className={avatarInput === avatar.value ? "is-selected" : ""}
+                aria-label={avatar.label}
+                aria-pressed={avatarInput === avatar.value}
+                onClick={() => setAvatarInput(avatar.value)}
+              >
+                <PlayerAvatar value={avatar.value} alt="" />
+              </button>
+            ))}
+          </div>
+        </fieldset>
+        <button className="esm-player-setup-submit" type="submit">Save &amp; continue</button>
+      </form>
+    </div>
+  );
+
   if (screen === "start") return (
-    <div style={{
-      minHeight: "100vh", display: "flex", flexDirection: "column",
-      alignItems: "center", justifyContent: "center",
-      background: "linear-gradient(135deg,#1e1b4b,#312e81,#1e1b4b)",
-      fontFamily: "'Segoe UI', sans-serif", color: "#e0e7ff", padding: 24,
-    }}>
-      <div style={{ fontSize: "3rem", marginBottom: 8 }}>✏️</div>
-      <h1 style={{ fontSize: "2.2rem", margin: "0 0 8px", color: "#a5b4fc" }}>Emoji Spelling Master</h1>
-      <p style={{ color: "#818cf8", marginBottom: 32 }}>Choose your level!</p>
-      <div style={{ display: "flex", gap: 16, flexWrap: "wrap", justifyContent: "center" }}>
-        {["easy","medium","hard"].map(lvl => (
-          <button key={lvl} onClick={() => startGame(lvl)} style={{
-            padding: "16px 36px", borderRadius: 16, border: "none",
-            background: LEVEL_COLORS[lvl], color: "#fff",
-            fontWeight: 800, fontSize: "1.2rem", cursor: "pointer",
-            boxShadow: `0 4px 20px ${LEVEL_COLORS[lvl]}55`,
-            textTransform: "capitalize",
-          }}>{lvl}</button>
+    <div className="esm-screen esm-screen--menu" data-screen="menu" ref={menuStageRef}>
+      <div className="esm-menu-controls" style={menuArtStyle} role="group" aria-label="Choose a difficulty and game mode">
+        {["easy", "medium", "hard"].map(lvl => (
+          <button
+            key={lvl}
+            type="button"
+            className={`esm-menu-button esm-level-${lvl}`}
+            aria-label={`${lvl} difficulty`}
+            aria-pressed={menuLevel === lvl}
+            onClick={() => { setMenuLevel(lvl); setLevel(lvl); }}
+          />
         ))}
-      </div>
-      <p style={{ color: "#c4b5fd", margin: "28px 0 12px" }}>Choose the missing letter</p>
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
-        {["easy","medium","hard"].map(lvl => <button key={`missing-${lvl}`} onClick={() => startMissing(lvl)} style={{ padding: "10px 22px", borderRadius: 999, border: "1px solid #818cf8", background: "transparent", color: "#e0e7ff", fontWeight: 700, cursor: "pointer", textTransform: "capitalize" }}>{lvl}</button>)}
+        <button
+          type="button"
+          className="esm-menu-button esm-mode-spell"
+          aria-label={`Spell the word, ${menuLevel} difficulty`}
+          onClick={() => startGame(menuLevel)}
+        />
+        <button
+          type="button"
+          className="esm-menu-button esm-mode-missing"
+          aria-label={`Choose the missing letter, ${menuLevel} difficulty`}
+          onClick={() => startMissing(menuLevel)}
+        />
       </div>
     </div>
   );
 
   if (screen === "over") return (
-    <div style={{
-      minHeight: "100vh", display: "flex", flexDirection: "column",
+    <div className="esm-screen esm-screen--over" data-screen="over" style={{
       alignItems: "center", justifyContent: "center",
-      background: "linear-gradient(135deg,#1e1b4b,#312e81)",
       fontFamily: "'Segoe UI', sans-serif", color: "#e0e7ff", padding: 24, textAlign: "center",
     }}>
       <div style={{ fontSize: "4rem", marginBottom: 12 }}>{won ? "🏆" : "💔"}</div>
@@ -231,14 +317,22 @@ export default function EmojiSpellingMaster({ onComplete }) {
   if (!current) return null;
 
   if (mode === "missing") return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg,#1e1b4b,#312e81,#1e1b4b)", fontFamily: "'Segoe UI', sans-serif", color: "#e0e7ff", padding: 24 }}>
-      <div style={{ width: "100%", maxWidth: 760, textAlign: "center" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}><span>{level.toUpperCase()}</span><span style={{ color: "#fbbf24", fontSize: "1.2rem" }}>{Array.from({ length: 5 }, (_, i) => i < lives ? "❤️" : "🖤").join("")}</span><span>⏱ {timeLeft}s</span></div>
-        <div style={{ background: "rgba(255,255,255,.08)", borderRadius: 24, padding: 32, border: feedback === "correct" ? "2px solid #22c55e" : feedback === "wrong" ? "2px solid #ef4444" : "2px solid rgba(255,255,255,.1)" }}>
+    <div className="esm-screen esm-screen--game" data-screen="game" style={{ alignItems: "center", justifyContent: "center", fontFamily: "'Segoe UI', sans-serif", color: "#e0e7ff", padding: 24 }}>
+      <div className="esm-game-content">
+        <div className="esm-game-hud">
+          <span className="esm-player-identity"><PlayerAvatar value={player.avatar} alt={`${playerName}'s avatar`} /><span>{playerName}</span></span>
+          <span className="esm-lives" role="img" aria-label={`${lives} of 5 lives remaining`}>
+            {Array.from({ length: 5 }, (_, i) => <span key={i} className={`esm-life${i < lives ? " is-active" : ""}`} aria-hidden="true">♥</span>)}
+          </span>
+          <span className={`esm-timer${timeLeft <= 10 ? " is-urgent" : ""}`} role="timer" aria-label={`${timeLeft} seconds remaining`}>
+            <span className="esm-timer-icon" aria-hidden="true">◷</span><span className="esm-timer-value">{timeLeft}</span><span className="esm-timer-unit">sec</span>
+          </span>
+        </div>
+        <div className={`esm-card${feedback === "correct" ? " is-correct" : feedback === "wrong" ? " is-wrong" : ""}`}>
           <div style={{ fontSize: "clamp(4rem, 12vw, 8rem)" }}>{current.emoji}</div>
           <h2 style={{ fontSize: "clamp(2rem, 6vw, 4rem)", letterSpacing: 8 }}>{current.word.split("").map((letter, index) => index === missing.index ? (missing.choice || "_") : letter).join("")}</h2>
           <p>Which letter completes the word?</p>
-          <div style={{ display: "flex", justifyContent: "center", flexWrap: "wrap", gap: 10, marginTop: 24 }}>{shuffle([current.word[missing.index], ...ALPHABET.filter(letter => letter !== current.word[missing.index])]).slice(0, 5).map((letter, index) => <button key={`${letter}-${index}`} disabled={!!feedback} onClick={() => chooseMissing(letter)} style={{ width: 58, height: 58, borderRadius: 12, border: "none", background: "#4f46e5", color: "white", fontSize: "1.5rem", fontWeight: 800, cursor: "pointer" }}>{letter}</button>)}</div>
+          <div className="esm-answer-grid esm-answer-grid--missing">{missingChoices.map(letter => <button key={letter} disabled={!!feedback} onClick={() => chooseMissing(letter)}>{letter}</button>)}</div>
           {feedback && <p style={{ color: feedback === "correct" ? "#4ade80" : "#f87171", fontWeight: 700 }}>{feedback === "correct" ? "✅ Correct!" : `❌ The answer is ${current.word[missing.index]}`}</p>}
         </div>
       </div>
@@ -246,24 +340,25 @@ export default function EmojiSpellingMaster({ onComplete }) {
   );
 
   return (
-    <div style={{
-      minHeight: "100vh", display: "flex", flexDirection: "column",
+    <div className="esm-screen esm-screen--game" data-screen="game" style={{
       alignItems: "center", justifyContent: "center",
-      background: "linear-gradient(135deg,#1e1b4b,#312e81,#1e1b4b)",
       fontFamily: "'Segoe UI', sans-serif", color: "#e0e7ff", padding: 24,
     }}>
-      <div style={{ width: "100%", maxWidth: "min(760px, calc(100vw - 56px))" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-          <span style={{ background: LEVEL_COLORS[level], padding: "4px 14px", borderRadius: 999, fontWeight: 700, fontSize: "0.85rem" }}>{level.toUpperCase()}</span>
-          <span style={{ color: "#fbbf24", fontWeight: 700, fontSize: "1.2rem" }}>{Array.from({ length: 5 }, (_, i) => i < lives ? "❤️" : "🖤").join("")}</span>
-          <span>⏱ {timeLeft}s</span>
+      <div className="esm-game-content">
+        <div className="esm-game-hud">
+          <span className="esm-player-identity"><PlayerAvatar value={player.avatar} alt={`${playerName}'s avatar`} /><span>{playerName}</span></span>
+          <span className="esm-lives" role="img" aria-label={`${lives} of 5 lives remaining`}>
+            {Array.from({ length: 5 }, (_, i) => <span key={i} className={`esm-life${i < lives ? " is-active" : ""}`} aria-hidden="true">♥</span>)}
+          </span>
+          <span className={`esm-timer${timeLeft <= 10 ? " is-urgent" : ""}`} role="timer" aria-label={`${timeLeft} seconds remaining`}>
+            <span className="esm-timer-icon" aria-hidden="true">◷</span><span className="esm-timer-value">{timeLeft}</span><span className="esm-timer-unit">sec</span>
+          </span>
         </div>
 
-        <div style={{
-          background: "rgba(255,255,255,0.07)", borderRadius: 24, padding: 32,
-          textAlign: "center", marginBottom: 20,
-          border: feedback === "correct" ? "2px solid #22c55e" : feedback === "wrong" ? "2px solid #ef4444" : "2px solid rgba(255,255,255,0.1)",
-        }}>
+        <div
+          className={`esm-card${feedback === "correct" ? " is-correct" : feedback === "wrong" ? " is-wrong" : ""}`}
+          style={{ textAlign: "center", marginBottom: 20 }}
+        >
           <div style={{ fontSize: "clamp(3rem, 8vw, 6.5rem)", marginBottom: 16 }}>{current.emoji}</div>
           {/* Slots */}
           <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
@@ -287,31 +382,19 @@ export default function EmojiSpellingMaster({ onComplete }) {
         </div>
 
         {/* Letter pool */}
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center", marginBottom: 16 }}>
+        <div className="esm-answer-grid esm-answer-grid--letters">
           {letterPool.map((letter, i) => (
             <button key={i} onClick={() => tapLetter(i, letter)}
               disabled={usedPoolIdx.has(i) || !!feedback}
-              style={{
-                width: "clamp(38px, 7vw, 60px)", height: "clamp(38px, 7vw, 60px)", borderRadius: 10, border: "none",
-                background: usedPoolIdx.has(i) ? "rgba(255,255,255,0.05)" : "#4f46e5",
-                color: usedPoolIdx.has(i) ? "transparent" : "#fff",
-                fontWeight: 800, fontSize: "clamp(1.1rem, 2vw, 1.5rem)", cursor: usedPoolIdx.has(i) ? "default" : "pointer",
-                transition: "all 0.15s",
-              }}>
+              className={usedPoolIdx.has(i) ? "is-used" : ""}>
               {letter}
             </button>
           ))}
         </div>
 
-        <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
-          <button onClick={removeLast} style={{
-            padding: "10px 24px", borderRadius: 12, border: "none",
-            background: "#374151", color: "#fff", fontWeight: 700, cursor: "pointer",
-          }}>⌫ Back</button>
-          <button onClick={() => { setTyped([]); setUsedPoolIdx(new Set()); }} style={{
-            padding: "10px 24px", borderRadius: 12, border: "none",
-            background: "#374151", color: "#fff", fontWeight: 700, cursor: "pointer",
-          }}>🔄 Clear</button>
+        <div className="esm-game-actions">
+          <button type="button" onClick={removeLast}>⌫ Back</button>
+          <button type="button" onClick={() => { setTyped([]); setUsedPoolIdx(new Set()); }}>🔄 Clear</button>
         </div>
       </div>
     </div>

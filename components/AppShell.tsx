@@ -28,7 +28,43 @@ export default function AppShell({ children }: { children: ReactNode }) {
   const gameContext = useContext(GameContext);
   const pendingAchievement = gameContext?.pendingAchievement ?? null;
   const clearPendingAchievement = gameContext?.clearPendingAchievement ?? (() => {});
+  const addPlayTime = gameContext?.addPlayTime;
   const [reward, setReward] = useState<any>(null);
+
+  useEffect(() => {
+    if (!isGameRoute || !addPlayTime) return;
+
+    let isVisible = document.visibilityState === 'visible';
+    let activeSince = Date.now();
+    let elapsedMilliseconds = 0;
+
+    function flushPlayTime() {
+      const now = Date.now();
+      if (isVisible) elapsedMilliseconds += Math.max(0, now - activeSince);
+      activeSince = now;
+      const seconds = Math.floor(elapsedMilliseconds / 1000);
+      if (seconds > 0 && addPlayTime) {
+        elapsedMilliseconds -= seconds * 1000;
+        addPlayTime(seconds);
+      }
+    }
+
+    function handleVisibilityChange() {
+      flushPlayTime();
+      isVisible = document.visibilityState === 'visible';
+      activeSince = Date.now();
+    }
+
+    const timer = window.setInterval(flushPlayTime, 15_000);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('pagehide', flushPlayTime);
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('pagehide', flushPlayTime);
+      flushPlayTime();
+    };
+  }, [isGameRoute, addPlayTime]);
 
   useEffect(() => {
     const handleReward = (event: Event) => setReward((event as CustomEvent).detail);
