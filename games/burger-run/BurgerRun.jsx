@@ -16,6 +16,7 @@ const BUNS = [
 ];
 const W = 720, LANE_HEIGHT = 210, GY = 175;
 const SUITS = ["♠", "♥", "♦", "♣"];
+const SUIT_LABELS = { "♠": "Spades", "♥": "Hearts", "♦": "Diamonds", "♣": "Clubs" };
 const shuffle = (a) => [...a].sort(() => Math.random() - 0.5);
 
 /* ---------------- solo card-mode effects ---------------- */
@@ -110,7 +111,7 @@ const Sub = ({ children }) => <p style={{ color: MUTE, fontSize: 13, margin: 0 }
 /* black card with white suit; when `face` is given it is flipped to its colour */
 function Card({ suit, face, onClick, dim, pick, disabled, compact = false }) {
   return (
-    <button disabled={disabled} onClick={onClick} className="flex flex-col items-center justify-center gap-1"
+    <button disabled={disabled} onClick={onClick} aria-label={!face ? `${SUIT_LABELS[suit]} card` : undefined} className="flex flex-col items-center justify-center gap-1"
       style={{ width: compact ? "100%" : "clamp(76px,21vw,140px)", aspectRatio: "2/3", borderRadius: 10, padding: 4, font: "inherit", border: `3px solid ${pick ? "#ffe08a" : "#dcecff"}`, boxShadow: "0 0 0 2px #172033, 0 5px 12px rgba(0,0,0,.55)", background: face ? face.bg : "#05070b", color: face ? face.fg : "#fff", opacity: dim ? 0.4 : 1, transform: pick ? "translateY(-8px)" : "none", transition: "all .2s", cursor: disabled ? "default" : "pointer" }}>
       {face ? (
         <>
@@ -119,7 +120,10 @@ function Card({ suit, face, onClick, dim, pick, disabled, compact = false }) {
           <small style={{ minHeight: 30, display: "-webkit-box", overflow: "hidden", WebkitBoxOrient: "vertical", WebkitLineClamp: 3, fontSize: 10, lineHeight: "10px" }}>{face.d}</small>
         </>
       ) : (
-        <span style={{ fontSize: "clamp(34px,10vw,56px)" }}>{suit}</span>
+        <>
+          <span style={{ fontSize: "clamp(34px,10vw,56px)", lineHeight: 1 }}>{suit}</span>
+          <small style={{ fontSize: "clamp(10px,2.5vw,14px)", fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase" }}>{SUIT_LABELS[suit]}</small>
+        </>
       )}
     </button>
   );

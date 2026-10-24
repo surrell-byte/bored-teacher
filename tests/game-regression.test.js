@@ -511,7 +511,7 @@ test('Sports Quiz start target follows the full-width artwork placeholder', () =
   assert.match(styles, /\.sports-welcome-start \{ width:100%; height:9%; \}/);
 });
 
-test('Money Blocks keeps both account cards in its shell-height viewport and contains flip text', () => {
+test('Money Blocks keeps account cards in its shell viewport and centers responsive flip content', () => {
   const component = read('games/money-blocks/MoneyBlocks.jsx');
   const styles = read('games/money-blocks/MoneyBlocks.css');
   const original = read('money-blocks-final.html');
@@ -523,7 +523,11 @@ test('Money Blocks keeps both account cards in its shell-height viewport and con
   assert.match(styles, /\.money-blocks \.setup-name-input \{[\s\S]*font: 500 1\.08rem/);
   assert.match(styles, /\.money-blocks \.avatar-btn \{[\s\S]*font-size: 1\.8rem/);
   assert.match(styles, /\.game \{[\s\S]*height: 100%;[\s\S]*max-height: 100%/);
-  assert.match(styles, /\.reveal-preview \{ width: 100%; max-height: 3em; overflow: hidden/);
+  assert.match(styles, /\.reveal-face\.back \{[\s\S]*align-items: center;[\s\S]*text-align: center/);
+  assert.match(styles, /\.reveal-symbol \{ flex: 0 0 auto; max-width: 100%; font-size: 2\.15em/);
+  assert.match(styles, /\.reveal-preview \{ width: 100%; max-height: 5em; overflow: hidden;[\s\S]*text-align: center/);
+  assert.match(styles, /\.reveal-overlay\.centered \{[\s\S]*width: clamp\(240px, 36vmin, 400px\);[\s\S]*font-size: clamp\(24px, 3vmin, 38px\)/);
+  assert.match(styles, /@media \(max-width: 600px\) \{[\s\S]*\.reveal-overlay\.centered \{[\s\S]*width: min\(84vw, 360px\);[\s\S]*height: min\(46vh, 380px\)/);
   assert.match(original, /font-family:'Fraunces', serif/);
   assert.match(original, /font-family:'Inter', sans-serif/);
 });
@@ -1084,6 +1088,8 @@ test('Burger Run is registered with the catalog and reports game completion', ()
   assert.match(component, /className="burger-run-duel-controls"/);
   assert.match(component, /className="burger-run-duel-cards"/);
   assert.match(component, /<Card key=\{i\} suit=\{SUITS\[i\]\} compact/);
+  assert.match(component, /SUIT_LABELS = \{ "♠": "Spades", "♥": "Hearts", "♦": "Diamonds", "♣": "Clubs" \}/);
+  assert.match(component, /<small style=\{\{ fontSize: "clamp\(10px,2\.5vw,14px\)", fontWeight: 800, letterSpacing: "\.08em", textTransform: "uppercase" \}\}>\{SUIT_LABELS\[suit\]\}<\/small>/);
   assert.match(component, /@media\(max-width:760px\) and \(orientation:portrait\)\{\.burger-run-duel-controls\{top:46%/);
   assert.match(component, /maxWidth: isPlaying \? "none"/);
   assert.match(component, /startAtMenu \? "menu" : "splash"/);
