@@ -468,6 +468,17 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     barColor: "var(--gold)",
     hasComponent: true,
   },
+  seasonstars: {
+    name: "Season Stars",
+    icon: "🌤️",
+    desc: "Order the seasons, spell words, and guess the shadow in a four-part seasonal challenge.",
+    cover: "/assets/covers/weather-wizards-cover.webp",
+    tag: { label: "Seasons", color: "tag-bio" },
+    badge: "4 Modes",
+    difficulty: "Starter",
+    barColor: "var(--green)",
+    hasComponent: true,
+  },
   neonbridge: {
     name: "Neon Bridge of Destiny",
     icon: "🌉",

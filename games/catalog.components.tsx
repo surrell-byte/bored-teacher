@@ -86,6 +86,7 @@ export const GAME_COMPONENTS: Partial<Record<string, React.LazyExoticComponent<R
   foodwordhunt: lazyGame('foodwordhunt', () => import('@/games/food-word-hunt/FoodWordHunt.jsx')),
   fruitwordhunt: lazyGame('fruitwordhunt', () => import('@/games/fruit-word-hunt/FruitWordHunt.jsx')),
   lakersracer: lazyGame('lakersracer', () => import('@/games/lakers-showtime-racer/LakersShowtimeRacer.jsx')),
+  seasonstars: lazyGame('seasonstars', () => import('@/games/season-stars/SeasonStars.jsx')),
   neonbridge: lazyGame('neonbridge', () => import('@/games/neon-bridge-of-destiny/NeonBridgeOfDestiny.jsx')),
   oceanquest: lazyGame('oceanquest', () => import('@/games/ocean-quest/OceanQuest.jsx')),
   pacman: lazyGame('pacman', () => import('@/games/pac-man/PacMan.jsx')),
