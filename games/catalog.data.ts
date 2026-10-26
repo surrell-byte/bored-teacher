@@ -477,6 +477,7 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     badge: "4 Modes",
     difficulty: "Starter",
     barColor: "var(--green)",
+    isNew: true,
     hasComponent: true,
   },
   neonbridge: {

@@ -20,6 +20,7 @@ const LEVELS = [
   { name: "Americas Zone", icon:"🗽", region:"americas", timerSec: 16, sub:"North, Central and South America" },
   { name: "Oceania Zone", icon:"🏝️", region:"oceania", timerSec: 12, sub:"Australia and Pacific islands" },
   { name: "Caribbean Islands", icon:"🌴", region:"caribbean", timerSec: 12, sub:"Identify island nations of the Caribbean" },
+  { name: "Wildlife Match", icon:"🐾", region:"animals", timerSec: 0, mode:"animal-match", sub:"Match each country to a native animal" },
 ];
 
 const REGION_CODES = {
@@ -31,7 +32,18 @@ const REGION_CODES = {
   caribbean: "AG AI AW BS BB BM BZ BQ KY CU CW DM DO GD GP HT JM MQ MS PR BL KN LC MF VC SX TT TC VG VI".split(" "),
 };
 
-const NODE_POSITIONS = [{x:8,y:78},{x:23,y:62},{x:38,y:48},{x:53,y:34},{x:68,y:48},{x:82,y:30},{x:92,y:62},{x:50,y:81}];
+const NODE_POSITIONS = [{x:8,y:78},{x:23,y:62},{x:38,y:48},{x:53,y:34},{x:68,y:48},{x:82,y:30},{x:92,y:62},{x:50,y:81},{x:50,y:12}];
+
+const ANIMAL_MATCHES = [
+  { code: "AU", animal: "Koala", animalEmoji: "🐨" },
+  { code: "CN", animal: "Giant panda", animalEmoji: "🐼" },
+  { code: "IN", animal: "Bengal tiger", animalEmoji: "🐅" },
+  { code: "KE", animal: "Giraffe", animalEmoji: "🦒" },
+  { code: "MG", animal: "Ring-tailed lemur", animalEmoji: "🐒" },
+  { code: "CA", animal: "Beaver", animalEmoji: "🦫" },
+  { code: "JP", animal: "Japanese macaque", animalEmoji: "🐵" },
+  { code: "ZA", animal: "Springbok", animalEmoji: "🦌" },
+];
 
 const popularityCodes = {
   US:10,GB:10,FR:10,DE:10,JP:10,CN:10,AU:10,BR:10,CA:10,IN:10,
@@ -72,6 +84,7 @@ const levelPools = [
   [...allCountries],
   [...allCountries],
   ...Object.values(REGION_CODES).map(codes => codes.map(code => allCountries.find(country => country.code === code)).filter(Boolean)),
+  ANIMAL_MATCHES.map(match => ({ ...allCountries.find(country => country.code === match.code), ...match })),
 ];
 const SECTION_SIZE = 12;
 
@@ -259,6 +272,21 @@ select.fm-field-input { cursor:pointer; }
 .fm-rb-teal { background:#2a9d8f; color:#fff; box-shadow: 0 3px 0 #1a5a4a; }
 
 .fm-options-grid { display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
+.fm-game-layout.fm-animal-match-layout { display:block; }
+.fm-animal-match-intro { margin:10px 0 20px; color:var(--theme-body-text); font-size:1.1rem; }
+.fm-animal-match-columns { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:clamp(16px,3vw,36px); }
+.fm-animal-match-group h3 { margin:0 0 10px; color:var(--theme-sub-color); font-family:'DM Mono',monospace; font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; }
+.fm-animal-match-list { display:grid; gap:9px; }
+.fm-animal-choice { display:flex; align-items:center; gap:12px; width:100%; min-height:58px; padding:10px 14px; border:1px solid rgba(201,168,76,.24); border-radius:4px; background:var(--theme-option-bg); color:var(--theme-card-color); font-family:'Cormorant Garamond',serif; font-size:1.1rem; font-weight:600; text-align:left; cursor:pointer; transition:background .15s ease,border-color .15s ease,transform .15s ease; }
+.fm-animal-choice:not(:disabled):hover { transform:translateY(-2px); border-color:var(--gold); background:var(--theme-option-hover-bg); }
+.fm-animal-choice.fm-animal-selected { border-color:var(--gold); box-shadow:0 0 0 2px rgba(201,168,76,.2); }
+.fm-animal-choice.fm-animal-matched { border-color:#2ecc71; background:rgba(46,204,113,.12); color:var(--theme-card-color); }
+.fm-animal-choice.fm-animal-wrong { border-color:#e74c3c; background:rgba(231,76,60,.12); }
+.fm-animal-choice:disabled { opacity:1; cursor:default; }
+.fm-animal-choice-emoji { min-width:34px; font-family:system-ui,sans-serif; font-size:1.7rem; text-align:center; }
+.fm-animal-match-feedback { min-height:48px; margin-top:18px; padding:12px 16px; border:1px solid rgba(201,168,76,.15); background:var(--theme-msg-bg); color:var(--theme-card-color); font-size:1rem; }
+.fm-animal-match-feedback.fm-msg-correct { color:#1a6b3a; background:rgba(46,204,113,.08); }
+.fm-animal-match-feedback.fm-msg-wrong { color:#8b1a1a; background:rgba(231,76,60,.08); }
 .fm-option-btn { width:100%; padding:13px 20px; background: var(--theme-option-bg); border:1px solid rgba(201,168,76,0.2); border-radius:2px; font-family:'Cormorant Garamond',serif; font-size:1.05rem; font-weight:600; color: var(--theme-card-color); cursor:pointer; transition: transform .08s ease, background .15s ease, border-color .15s ease, padding-left .15s ease; text-align:left; position:relative; overflow:hidden; }
 .fm-option-btn::before { content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background: var(--gold); transform: scaleY(0); transition: transform .15s; transform-origin: bottom; }
 .fm-option-btn:not(:disabled):hover::before { transform: scaleY(1); }
@@ -321,6 +349,10 @@ select.fm-field-input { cursor:pointer; }
   .fm-game-answers .fm-option-btn { padding:clamp(18px, 2vw, 26px) 24px; font-size:1.3rem; }
   .fm-game-answers .fm-message-panel { min-height:64px; display:flex; align-items:center; font-size:1.1rem; }
 }
+@media (max-width:640px) {
+  .fm-animal-match-columns { grid-template-columns:1fr; }
+  .fm-animal-choice { min-height:50px; padding:8px 10px; }
+}
 
 .fm-pause-overlay { position:fixed; inset:0; background: rgba(11,22,40,0.92); backdrop-filter: blur(10px); z-index:999; display:flex; justify-content:center; align-items:center; flex-direction:column; }
 .fm-pause-content { text-align:center; border:1px solid rgba(201,168,76,0.3); padding:48px; border-radius:4px; background: rgba(253,246,227,0.04); }
@@ -359,6 +391,12 @@ export default function Flagmaster({ onComplete, darkMode = false, isCreator = f
   const [waitingForNext, setWaitingForNext] = useState(false);
   const [selected, setSelected] = useState(null);
   const [message, setMessage] = useState({ text: "", type: "" });
+  const [animalCountries, setAnimalCountries] = useState([]);
+  const [animalChoices, setAnimalChoices] = useState([]);
+  const [matchedAnimals, setMatchedAnimals] = useState([]);
+  const [selectedAnimalCountry, setSelectedAnimalCountry] = useState(null);
+  const [selectedAnimal, setSelectedAnimal] = useState(null);
+  const [animalResolving, setAnimalResolving] = useState(false);
 
   const advanceTimeoutRef = useRef(null);
 
@@ -437,7 +475,18 @@ export default function Flagmaster({ onComplete, darkMode = false, isCreator = f
     setCurrentQIndex(0);
     setLevelQuestions(questions);
     setCurrentQIndex(0);
+    setMatchedAnimals([]);
+    setSelectedAnimalCountry(null);
+    setSelectedAnimal(null);
+    setAnimalResolving(false);
+    setAnimalCountries(LEVELS[idx].mode === "animal-match" ? shuffle(questions) : []);
+    setAnimalChoices(LEVELS[idx].mode === "animal-match" ? shuffle(questions) : []);
+    setMessage({ text: "", type: "" });
     setScreen("game");
+    if (LEVELS[idx].mode === "animal-match") {
+      setCurrentCountry(null);
+      return;
+    }
     loadQuestion(idx, 0, questions);
   };
 
@@ -460,7 +509,7 @@ export default function Flagmaster({ onComplete, darkMode = false, isCreator = f
       return next;
     });
     setScreen("worldMap");
-  }, [currentLevelIdx, onComplete]);
+  }, [currentLevelIdx, onComplete, sectionIndex]);
 
   const nextQuestion = useCallback(() => {
     setCurrentQIndex(prevIdx => {
@@ -517,6 +566,49 @@ export default function Flagmaster({ onComplete, darkMode = false, isCreator = f
       setMessage({ text: bonusLeft === 0 ? "⚠ All sectors revealed · No bonus remaining" : `Sector revealed · ${bonusLeft} bonus remaining`, type: "" });
       return used;
     });
+  };
+
+  const resolveAnimalChoice = (countryCode, animalCode) => {
+    if (animalResolving || !countryCode || !animalCode) return;
+    const pair = ANIMAL_MATCHES.find(match => match.code === countryCode);
+    if (!pair) return;
+    const country = allCountries.find(item => item.code === pair.code);
+    if (pair.code === animalCode) {
+      const nextMatched = [...matchedAnimals, pair.code];
+      setMatchedAnimals(nextMatched);
+      setSelectedAnimalCountry(null);
+      setSelectedAnimal(null);
+      setMessage({ text: `✓ Correct! The ${pair.animal.toLowerCase()} lives in ${country.name}.`, type: "correct" });
+      setTotalScore(score => score + 1);
+      if (nextMatched.length === animalCountries.length) {
+        advanceTimeoutRef.current = setTimeout(() => {
+          setTotalScore(score => { finishLevel(score); return score; });
+        }, 700);
+      }
+      return;
+    }
+    setAnimalResolving(true);
+    setMessage({ text: `✗ Not a match. ${pair.animal}s live in ${country.name}.`, type: "wrong" });
+    advanceTimeoutRef.current = setTimeout(() => {
+      setSelectedAnimalCountry(null);
+      setSelectedAnimal(null);
+      setAnimalResolving(false);
+      setMessage({ text: "", type: "" });
+    }, 950);
+  };
+
+  const chooseAnimalCountry = (code) => {
+    if (animalResolving || matchedAnimals.includes(code)) return;
+    const nextCode = selectedAnimalCountry === code ? null : code;
+    setSelectedAnimalCountry(nextCode);
+    if (nextCode && selectedAnimal) resolveAnimalChoice(nextCode, selectedAnimal);
+  };
+
+  const chooseAnimal = (code) => {
+    if (animalResolving || matchedAnimals.includes(code)) return;
+    const nextCode = selectedAnimal === code ? null : code;
+    setSelectedAnimal(nextCode);
+    if (nextCode && selectedAnimalCountry) resolveAnimalChoice(selectedAnimalCountry, nextCode);
   };
 
   // Enter submits the passport form.
@@ -685,6 +777,41 @@ export default function Flagmaster({ onComplete, darkMode = false, isCreator = f
         <div className="fm-stat-strip" style={{ marginTop: 20 }}>
           <div className="fm-stat-pill"><span className="fm-stat-val">{totalScore}</span><span className="fm-stat-lbl">TOTAL SCORE</span></div>
         </div>
+      </div></div></div>
+    </div>
+  );
+
+  if (lvl.mode === "animal-match") return (
+    <div className={rootCls}><Style /><div className="fm-bg-layer" />
+      <div className="fm-screen fm-wide-screen"><div className="fm-card"><div className="fm-card-inner fm-game-layout fm-animal-match-layout">
+        <div className="fm-nav-row"><button className="fm-btn-sm" onClick={exitToMap}>← World Map</button></div>
+        <div className="fm-game-top"><div className="fm-stat-strip">
+          <div className="fm-stat-pill"><span className="fm-stat-val">{totalScore}</span><span className="fm-stat-lbl">Score</span></div>
+          <div className="fm-stat-pill"><span className="fm-stat-val">{matchedAnimals.length}/{animalCountries.length}</span><span className="fm-stat-lbl">Matches</span></div>
+        </div></div>
+        <div className="fm-game-progress"><div className="fm-progress-track"><div className="fm-progress-fill" style={{ width: `${animalCountries.length ? (matchedAnimals.length / animalCountries.length) * 100 : 0}%` }} /></div></div>
+        <div className="fm-display-sub">Wildlife Mission</div>
+        <h2 className="fm-display-title">MATCH THE ANIMALS</h2>
+        <p className="fm-animal-match-intro">Select a country and the animal that lives there.</p>
+        <div className="fm-animal-match-columns">
+          <section className="fm-animal-match-group" aria-label="Countries">
+            <h3>Countries</h3>
+            <div className="fm-animal-match-list">{animalCountries.map(country => {
+              const matched = matchedAnimals.includes(country.code);
+              const wrong = animalResolving && selectedAnimalCountry === country.code;
+              return <button key={country.code} type="button" className={`fm-animal-choice ${selectedAnimalCountry === country.code ? "fm-animal-selected" : ""} ${matched ? "fm-animal-matched" : ""} ${wrong ? "fm-animal-wrong" : ""}`} disabled={matched || animalResolving} onClick={() => chooseAnimalCountry(country.code)}><span className="fm-animal-choice-emoji">{country.emoji}</span>{country.name}</button>;
+            })}</div>
+          </section>
+          <section className="fm-animal-match-group" aria-label="Animals">
+            <h3>Animals</h3>
+            <div className="fm-animal-match-list">{animalChoices.map(animal => {
+              const matched = matchedAnimals.includes(animal.code);
+              const wrong = animalResolving && selectedAnimal === animal.code;
+              return <button key={animal.code} type="button" className={`fm-animal-choice ${selectedAnimal === animal.code ? "fm-animal-selected" : ""} ${matched ? "fm-animal-matched" : ""} ${wrong ? "fm-animal-wrong" : ""}`} disabled={matched || animalResolving} onClick={() => chooseAnimal(animal.code)}><span className="fm-animal-choice-emoji">{animal.animalEmoji}</span>{animal.animal}</button>;
+            })}</div>
+          </section>
+        </div>
+        <div className={`fm-animal-match-feedback ${message.type === "correct" ? "fm-msg-correct" : message.type === "wrong" ? "fm-msg-wrong" : ""}`} aria-live="polite">{message.text}</div>
       </div></div></div>
     </div>
   );

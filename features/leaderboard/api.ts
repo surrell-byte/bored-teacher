@@ -1,17 +1,12 @@
 // features/leaderboard/api.ts — Leaderboard persistence & scoring helpers
 
 import { loadAllStudentScores } from '@/lib/firebase';
+import { GAME_KEYS } from '@/constants/index';
 import type { Leaderboard, LBPlayer, LBPlayerWithScore } from '@/types/leaderboard';
 
 const LB_KEY  = 'eslhub_leaderboard';
 
-export const GAME_KEYS = [
-  'unicorn','warriors','compound','animal','wordmatch','memory','missingfruit',
-  'animalclass','colourclash','compoundword','crimsonduel','deepseaReveal',
-  'emojimatch','emojispelling','familyquest','farmgame','findmyfood',
-  'flagmaster','foodwordhunt','fruitwordhunt','lakersracer','neonbridge','oceanquest',
-  'pacman','phonicsadventure','phonicsworld','shuttlecock','tornado','wgrandprix','wordfusion',
-];
+export { GAME_KEYS };
 
 export type { Leaderboard, LBPlayer, LBPlayerWithScore };
 

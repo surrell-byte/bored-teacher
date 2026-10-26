@@ -1,7 +1,9 @@
-import { useState, useEffect, useRef } from "react";
+import { memo, useState, useEffect, useRef, useCallback } from "react";
 import { drawBurger } from "./burger-sprite";
+import BurgerSprite from "./BurgerSprite";
 import { createRunnerViewport, runnerBoxesOverlap } from "./runner-coordinate.mjs";
 import { finishDuelBonusRound, resolveDuelPick } from "./duel-round.mjs";
+import { createSeededRandom, shuffle } from "./random.mjs";
 
 const BG = "#202124", FG = "#d6d6d6", MUTE = "#80868b", ACC = "#e8a24a";
 const BUNS = [
@@ -17,7 +19,6 @@ const BUNS = [
 const W = 720, LANE_HEIGHT = 210, GY = 175;
 const SUITS = ["♠", "♥", "♦", "♣"];
 const SUIT_LABELS = { "♠": "Spades", "♥": "Hearts", "♦": "Diamonds", "♣": "Clubs" };
-const shuffle = (a) => [...a].sort(() => Math.random() - 0.5);
 
 /* ---------------- solo card-mode effects ---------------- */
 const CARDS = [
@@ -84,6 +85,19 @@ const RUNNER_ART = {
     mobile: { width: 941, height: 1671, laneYs: [697, 1460], laneBounds: [[0, 835], [835, 1671]] },
   },
 };
+const BURGER_RUN_GLOBAL_CSS = `@keyframes bob{50%{transform:translateY(-12px)}}@keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}@keyframes bl{50%{opacity:.25}}@keyframes burger-run-bonus-flash{0%,100%{border-color:#ffd166;background:rgba(38,34,21,.97);box-shadow:0 0 0 3px rgba(255,209,102,.34),0 0 18px rgba(255,209,102,.52),0 3px 10px rgba(0,0,0,.5)}50%{border-color:#fff3b0;background:rgba(112,72,20,.98);box-shadow:0 0 0 5px rgba(255,243,176,.55),0 0 28px rgba(255,209,102,.9),0 3px 10px rgba(0,0,0,.5)}}.burger-run-player-status.is-bonus{animation:burger-run-bonus-flash .48s steps(2,end) infinite}.burger-run-player-status-label.is-bonus{background:#ffd166;border-color:#fff3b0;color:#152033;text-shadow:none;box-shadow:0 0 12px rgba(255,209,102,.75)}`;
+const BEST_SCORE_KEY = "burger-run-best-scores";
+const readBestScores = () => {
+  const empty = { classic: 0, card: 0, race: 0, duel: 0 };
+  if (typeof window === "undefined") return empty;
+  try {
+    const saved = JSON.parse(window.localStorage.getItem(BEST_SCORE_KEY) || "{}");
+    return Object.fromEntries(Object.keys(empty).map((mode) => [mode, Number.isFinite(saved[mode]) ? Math.max(0, saved[mode]) : 0]));
+  } catch (error) {
+    console.warn("Unable to read Burger Run best scores.", error);
+    return empty;
+  }
+};
 
 function advanceDuelTurn(state, currentTurn) {
   let nextTurn = 1 - currentTurn;
@@ -103,15 +117,35 @@ function Btn({ children, pri, sm, ...r }) {
     </button>
   );
 }
-const Modal = ({ children }) => (
-  <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 text-center p-3" style={{ background: "rgba(32,33,36,.94)" }}>{children}</div>
-);
+const Modal = ({ children }) => {
+  const dialogRef = useRef(null);
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    const previousFocus = document.activeElement;
+    const focusable = () => [...dialog.querySelectorAll('button:not(:disabled), [href], input:not(:disabled), [tabindex]:not([tabindex="-1"])')];
+    (focusable()[0] || dialog).focus();
+    const trapFocus = (event) => {
+      if (event.key !== "Tab") return;
+      const items = focusable();
+      if (!items.length) { event.preventDefault(); dialog.focus(); return; }
+      const first = items[0], last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    dialog.addEventListener("keydown", trapFocus);
+    return () => {
+      dialog.removeEventListener("keydown", trapFocus);
+      if (previousFocus instanceof HTMLElement) previousFocus.focus();
+    };
+  }, []);
+  return <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Burger Run dialog" tabIndex={-1} className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 text-center p-3" style={{ background: "rgba(32,33,36,.94)" }}>{children}</div>;
+};
 const Sub = ({ children }) => <p style={{ color: MUTE, fontSize: 13, margin: 0 }}>{children}</p>;
 
 /* black card with white suit; when `face` is given it is flipped to its colour */
 function Card({ suit, face, onClick, dim, pick, disabled, compact = false }) {
   return (
-    <button disabled={disabled} onClick={onClick} aria-label={!face ? `${SUIT_LABELS[suit]} card` : undefined} className="flex flex-col items-center justify-center gap-1"
+    <button disabled={disabled} onClick={onClick} aria-label={`${SUIT_LABELS[suit]} card${face ? `: ${face.n}. ${face.d}` : ", face down"}`} aria-pressed={Boolean(pick)} className="flex flex-col items-center justify-center gap-1"
       style={{ width: compact ? "100%" : "clamp(76px,21vw,140px)", aspectRatio: "2/3", borderRadius: 10, padding: 4, font: "inherit", border: `3px solid ${pick ? "#ffe08a" : "#dcecff"}`, boxShadow: "0 0 0 2px #172033, 0 5px 12px rgba(0,0,0,.55)", background: face ? face.bg : "#05070b", color: face ? face.fg : "#fff", opacity: dim ? 0.4 : 1, transform: pick ? "translateY(-8px)" : "none", transition: "all .2s", cursor: disabled ? "default" : "pointer" }}>
       {face ? (
         <>
@@ -129,18 +163,9 @@ function Card({ suit, face, onClick, dim, pick, disabled, compact = false }) {
   );
 }
 
-function BurgerPic({ bun, size = 112 }) {
-  const ref = useRef(null);
-  useEffect(() => {
-    const context = ref.current?.getContext("2d");
-    if (!context) return;
-    context.clearRect(0, 0, 80, 70);
-    drawBurger(context, 16, 62, false, 0, false, bun);
-  }, [bun]);
-  return <canvas ref={ref} width={80} height={70} role="img" aria-label={`${bun} pixel burger`} style={{ width: size, height: size * .875, imageRendering: "pixelated" }} />;
-}
+const BurgerPic = BurgerSprite;
 
-function PlayerStatusPanels({ players }) {
+const PlayerStatusPanels = memo(function PlayerStatusPanels({ players }) {
   return (
     <section className="burger-run-player-status-panels" aria-label="Player status">
       {players.map((player, index) => (
@@ -165,7 +190,7 @@ function PlayerStatusPanels({ players }) {
       ))}
     </section>
   );
-}
+});
 
 function Info({ P, P2, onSave }) {
   const [n1, setN1] = useState(P.name), [n2, setN2] = useState(P2.name);
@@ -193,7 +218,7 @@ function Info({ P, P2, onSave }) {
   );
   return (
     <div className="burger-run-info">
-      <h2 className="text-2xl font-bold">Who's cooking?</h2>
+      <h2 className="text-2xl font-bold">Who&apos;s cooking?</h2>
       <div className="burger-run-info-grid">
         <section className="burger-run-player-setup">
           <div className="flex flex-col items-center gap-1"><BurgerPic bun={bun1} size={96} /><Sub>{n1.trim() || "Chef"}</Sub></div>
@@ -232,11 +257,14 @@ function Win({ d, onAgain, onMenu, bun }) {
 function Runner({ mode, P, P2, onBest, onExit, onRestart, onWin, onComplete, onStatus }) {
   const race = mode === "race", N = race ? 2 : 1, LIVES = race ? 3 : 1, GOAL = race ? 1200 : 1000;
   const cv = useRef(null), G = useRef(null), controlsRef = useRef(null);
+  const activePointers = useRef(new Map());
   const completionRef = useRef(onComplete);
   completionRef.current = onComplete;
   const [fxText, setFx] = useState("");
   const [over, setOver] = useState(null);
   const [hand, setHand] = useState(null);
+  const [isPaused, setIsPaused] = useState(false);
+  const cardPickTimer = useRef(null);
   const KEYS = race
     ? [{ j: ["KeyW"], d: ["KeyS"] }, { j: ["ArrowUp"], d: ["ArrowDown"] }]
     : [{ j: ["Space", "ArrowUp", "KeyW"], d: ["ArrowDown", "KeyS"] }];
@@ -245,36 +273,44 @@ function Runner({ mode, P, P2, onBest, onExit, onRestart, onWin, onComplete, onS
     if (L && g.state === "run" && !L.out && L.y >= GY) L.vy = L.fx.float ? -9 : L.fx.sticky ? -9.5 : -12.5;
   };
   const duck = (i, v) => { const L = G.current && G.current.L[i]; if (L) L.duck = v; };
+  const clearDuckStates = () => {
+    G.current?.L.forEach((player) => { player.duck = false; });
+    activePointers.current.clear();
+  };
+  const togglePause = (paused = !G.current?.paused) => {
+    const g = G.current;
+    if (!g || g.state === "done" || g.state === "over") return;
+    g.paused = paused;
+    if (paused) clearDuckStates();
+    setIsPaused(paused);
+  };
 
   useEffect(() => {
     const names = [P.name, P2.name], buns = [P.bun, P2.bun];
     const mk = (i) => ({ name: names[i], bun: buns[i], x: 70, y: GY, vy: 0, duck: false, score: 0, obs: [], next: 90, lives: LIVES, inv: 0, stun: 0, fx: {}, shield: false, flash: 0, out: false, ground: 0 });
-    const g = (G.current = { state: race ? "count" : "run", cd: 180, t: 0, nextCard: 200, L: Array.from({ length: N }, (_, i) => mk(i)), clouds: [{ x: 200, y: 40 }, { x: 500, y: 70 }], viewport: null, laneOffsets: [] });
+    const g = (G.current = { state: race ? "count" : "run", paused: false, cd: 180, t: 0, nextCard: 200, raceNextObstacle: 90, raceRandom: createSeededRandom((Date.now() ^ Math.floor(Math.random() * 0xffffffff)) >>> 0), L: Array.from({ length: N }, (_, i) => mk(i)), clouds: [{ x: 200, y: 40 }, { x: 500, y: 70 }], viewport: null, laneOffsets: [] });
     const canvas = cv.current;
     const ctx = canvas.getContext("2d");
     const portraitQuery = window.matchMedia("(max-width: 760px) and (orientation: portrait)");
     let renderSize = "";
+    let cachedSize = null;
     let lastStatusUpdate = 0;
     const resizeCanvas = () => {
-      const rect = canvas.getBoundingClientRect();
-      if (!rect.width || !rect.height) return null;
+      if (!cachedSize?.width || !cachedSize?.height) return null;
       const dpr = window.devicePixelRatio || 1;
       const art = RUNNER_ART[mode][portraitQuery.matches ? "mobile" : "desktop"];
+      const signature = `${Math.round(cachedSize.width * dpr)}:${Math.round(cachedSize.height * dpr)}:${dpr}:${portraitQuery.matches}`;
+      if (g.viewport && signature === renderSize) return g.viewport;
       const viewport = createRunnerViewport({
-        width: rect.width,
-        height: rect.height,
+        width: cachedSize.width,
+        height: cachedSize.height,
         dpr,
         art,
         fit: race && !portraitQuery.matches ? "fill" : "cover",
       });
-      const backingWidth = Math.round(rect.width * dpr);
-      const backingHeight = Math.round(rect.height * dpr);
-      const signature = `${backingWidth}:${backingHeight}:${dpr}`;
-      if (signature !== renderSize) {
-        canvas.width = backingWidth;
-        canvas.height = backingHeight;
-        renderSize = signature;
-      }
+      canvas.width = Math.round(cachedSize.width * dpr);
+      canvas.height = Math.round(cachedSize.height * dpr);
+      renderSize = signature;
       g.viewport = viewport;
       g.laneOffsets = viewport.laneGrounds.map((ground) => ground - GY);
       g.L.forEach((player) => { player.x = viewport.viewLeft + 70; });
@@ -284,7 +320,12 @@ function Runner({ mode, P, P2, onBest, onExit, onRestart, onWin, onComplete, onS
       }
       return viewport;
     };
-    const invalidateCanvasSize = () => { renderSize = ""; };
+    const invalidateCanvasSize = () => {
+      const rect = canvas.parentElement.getBoundingClientRect();
+      cachedSize = { width: rect.width, height: rect.height };
+      renderSize = "";
+      resizeCanvas();
+    };
     const resizeObserver = new ResizeObserver(invalidateCanvasSize);
     resizeObserver.observe(canvas.parentElement);
     portraitQuery.addEventListener("change", invalidateCanvasSize);
@@ -306,7 +347,8 @@ function Runner({ mode, P, P2, onBest, onExit, onRestart, onWin, onComplete, onS
       if (L.inv > 0) L.inv--; if (L.flash > 0) L.flash--;
       L.score += (sp / 12) * (fx.x2 ? 2 : 1); L.ground = (L.ground + sp) % W;
       if (L.y < GY || L.vy < 0) { L.vy += (fx.float ? 0.32 : 0.65) + (L.duck ? 0.8 : 0); L.y += L.vy; if (L.y >= GY) { L.y = GY; L.vy = 0; } }
-      if (--L.next <= 0) {
+      if (L.score >= GOAL && L.finishTick === undefined) L.finishTick = g.t;
+      if (!race && --L.next <= 0) {
         const spawnX = (g.viewport?.viewRight ?? W) + 20;
         if (L.score > 300 && Math.random() < 0.3) { const hs = [GY - 20, GY - 45, GY - 75]; L.obs.push({ b: 1, x: spawnX, y: hs[Math.floor(Math.random() * 3)], w: 34, h: 24 }); }
         else { const n = 1 + Math.floor(Math.random() * 3); L.obs.push({ x: spawnX, y: GY, w: 16 * n + (n - 1) * 4, h: 30 + Math.floor(Math.random() * 22), n }); }
@@ -325,15 +367,35 @@ function Runner({ mode, P, P2, onBest, onExit, onRestart, onWin, onComplete, onS
     const update = () => {
       g.t++;
       g.clouds.forEach((c) => { c.x -= 1; if (c.x < -50) { c.x = W + 30; c.y = 20 + Math.random() * 60; } });
-      if (g.state === "count") { if (--g.cd <= 0) g.state = "run"; return; }
-      if (g.state !== "run") return;
+      if (g.state === "count") { if (--g.cd <= 0) { g.state = "run"; g.t = 0; } return; }
+      if (g.paused || g.state !== "run") return;
+      if (race && g.t >= g.raceNextObstacle) {
+        const random = g.raceRandom;
+        const spawnX = (g.viewport?.viewRight ?? W) + 20;
+        const speed = Math.min(14, 6 + g.L[0].score / 250);
+        const obstacle = g.L[0].score > 300 && random() < 0.3
+          ? (() => { const heights = [GY - 20, GY - 45, GY - 75]; return { b: 1, x: spawnX, y: heights[Math.floor(random() * heights.length)], w: 34, h: 24 }; })()
+          : (() => { const n = 1 + Math.floor(random() * 3); return { x: spawnX, y: GY, w: 16 * n + (n - 1) * 4, h: 30 + Math.floor(random() * 22), n }; })();
+        g.L.forEach((player) => { if (!player.out) player.obs.push({ ...obstacle }); });
+        g.raceNextObstacle = g.t + Math.floor((55 + random() * 60) * (speed / 6));
+      }
       g.L.forEach((l) => { if (!l.out) step(l); });
       const top = g.L.reduce((a, b) => (b.score > a.score ? b : a));
       if (race) {
         const alive = g.L.filter((l) => !l.out), done = g.L.filter((l) => l.score >= GOAL);
         if (done.length || alive.length < 2) {
           g.state = "done";
-          const w = done.length ? top : alive[0] || top;
+          let contenders;
+          if (done.length) {
+            const earliestFinish = Math.min(...done.map((player) => player.finishTick));
+            contenders = done.filter((player) => player.finishTick === earliestFinish);
+          } else if (alive.length) contenders = alive;
+          else {
+            const highestScore = Math.max(...g.L.map((player) => player.score));
+            contenders = g.L.filter((player) => player.score === highestScore);
+          }
+          const w = contenders[Math.floor(Math.random() * contenders.length)] || top;
+          g.L.forEach((player) => onBest(mode, sc(player)));
           onWin({ mode, title: w.name + " wins!", sub: `${done.length ? "Crossed the finish line" : "Last burger standing"} · Score ${sc(w)} · ♥ ${Math.max(0, w.lives)} left` });
         }
       } else {
@@ -343,10 +405,11 @@ function Runner({ mode, P, P2, onBest, onExit, onRestart, onWin, onComplete, onS
         else if (mode === "card" && l.score >= g.nextCard) { g.nextCard += 200; g.state = "card"; setHand({ cards: shuffle(CARDS).slice(0, 3), pick: -1 }); }
       }
     };
+    let lastStatusSignature = "";
     const updatePlayerStatus = (now) => {
       if (!race || now - lastStatusUpdate < 100) return;
       lastStatusUpdate = now;
-      onStatus(g.L.map((player) => ({
+      const players = g.L.map((player) => ({
         name: player.name,
         bun: player.bun,
         scoreLabel: `${Math.floor(player.score)} pts`,
@@ -354,7 +417,12 @@ function Runner({ mode, P, P2, onBest, onExit, onRestart, onWin, onComplete, onS
         lives: Math.max(0, player.lives),
         status: player.out ? "Out" : "Racing",
         active: false,
-      })));
+      }));
+      const signature = JSON.stringify(players);
+      if (signature !== lastStatusSignature) {
+        lastStatusSignature = signature;
+        onStatus(players);
+      }
     };
     const drawLane = (L, laneOffset, laneBounds) => {
       g.clouds.forEach((c) => {
@@ -377,7 +445,14 @@ function Runner({ mode, P, P2, onBest, onExit, onRestart, onWin, onComplete, onS
       for (let k = 0; k < 24; k++) ctx.fillRect((k * 97 - L.ground + W * 2) % W, GY + 8 + (k % 3) * 6, 3 + (k % 4) * 2, 2);
       for (const o of L.obs) {
         if (!o.b) for (let k = 0; k < o.n; k++) { const x = o.x + k * 20, t = o.y - o.h; ctx.fillRect(x + 5, t, 7, o.h); ctx.fillRect(x, t + 12, 5, 5); ctx.fillRect(x, t + 12, 3, 12); ctx.fillRect(x + 12, t + 6, 5, 5); ctx.fillRect(x + 14, t + 6, 3, 14); }
-        else { const f = Math.floor(g.t / 10) % 2; ctx.fillRect(o.x + 6, o.y - 16, 22, 8); ctx.fillRect(o.x, o.y - 14, 8, 4); ctx.fillRect(o.x + 28, o.y - 18, 6, 4); f ? ctx.fillRect(o.x + 10, o.y - 26, 12, 10) : ctx.fillRect(o.x + 10, o.y - 8, 12, 8); }
+        else {
+          const f = Math.floor(g.t / 10) % 2;
+          ctx.fillRect(o.x + 6, o.y - 16, 22, 8);
+          ctx.fillRect(o.x, o.y - 14, 8, 4);
+          ctx.fillRect(o.x + 28, o.y - 18, 6, 4);
+          if (f) ctx.fillRect(o.x + 10, o.y - 26, 12, 10);
+          else ctx.fillRect(o.x + 10, o.y - 8, 12, 8);
+        }
       }
       if (!(L.inv > 0 && Math.floor(g.t / 4) % 2)) {
         const k = sizeOf(L) * 1.35;
@@ -432,23 +507,51 @@ function Runner({ mode, P, P2, onBest, onExit, onRestart, onWin, onComplete, onS
       if (txt !== last) { last = txt; setFx(txt); }
     };
     let raf;
-    const loop = (now) => { update(); updatePlayerStatus(now); draw(); raf = requestAnimationFrame(loop); };
-    loop();
+    let previousFrame = null;
+    let accumulator = 0;
+    const frameDuration = 1000 / 60;
+    const loop = (now) => {
+      if (previousFrame === null) previousFrame = now;
+      else {
+        accumulator += Math.min(now - previousFrame, 250);
+        previousFrame = now;
+        if (!g.paused) {
+          while (accumulator >= frameDuration) {
+            update();
+            accumulator -= frameDuration;
+          }
+        } else accumulator = 0;
+      }
+      updatePlayerStatus(now);
+      draw();
+      raf = requestAnimationFrame(loop);
+    };
+    invalidateCanvasSize();
+    raf = requestAnimationFrame(loop);
     const kd = (e) => {
+      if (e.code === "KeyP") { e.preventDefault(); togglePause(); return; }
       const km = KEYS.findIndex((k) => k.j.includes(e.code) || k.d.includes(e.code));
       if (km >= 0 || e.code === "Space") e.preventDefault();
       if (km >= 0) { if (KEYS[km].j.includes(e.code)) jump(km); else duck(km, true); }
       if (e.code === "KeyR" && !race) onRestart();
     };
     const ku = (e) => KEYS.forEach((k, i) => { if (k.d.includes(e.code)) duck(i, false); });
+    const clearDuck = () => clearDuckStates();
+    const pauseWhenHidden = () => { if (document.hidden) togglePause(true); };
     addEventListener("keydown", kd); addEventListener("keyup", ku);
+    addEventListener("blur", clearDuck);
+    document.addEventListener("visibilitychange", pauseWhenHidden);
     return () => {
       cancelAnimationFrame(raf);
       removeEventListener("keydown", kd);
       removeEventListener("keyup", ku);
+      removeEventListener("blur", clearDuck);
+      document.removeEventListener("visibilitychange", pauseWhenHidden);
       portraitQuery.removeEventListener("change", invalidateCanvasSize);
       window.removeEventListener("resize", invalidateCanvasSize);
       resizeObserver.disconnect();
+      clearDuckStates();
+      clearTimeout(cardPickTimer.current);
     };
   }, []);
 
@@ -458,13 +561,14 @@ function Runner({ mode, P, P2, onBest, onExit, onRestart, onWin, onComplete, onS
     const c = hand.cards[i], L = g.L[0];
     if (c.id === "shield") L.shield = true; else { delete L.fx[CLASH[c.id]]; L.fx[c.id] = c.t; }
     setHand({ ...hand, pick: i });
-    setTimeout(() => { setHand(null); if (G.current === g && g.state === "card") g.state = "run"; }, 1700);
+    clearTimeout(cardPickTimer.current);
+    cardPickTimer.current = setTimeout(() => { setHand(null); if (G.current === g && g.state === "card") g.state = "run"; }, 1700);
   };
 
   return (
     <div className="w-full h-full min-h-0" style={{ position: "relative", overflow: "hidden" }}>
       <canvas ref={cv} width={W} height={LANE_HEIGHT * N} className={`w-full${race ? " burger-run-race-track" : ""}`}
-        style={{ position: "absolute", inset: 0, display: "block", width: "100%", height: "100%", imageRendering: "pixelated", touchAction: "manipulation" }}
+        style={{ position: "absolute", inset: 0, display: "block", width: "100%", height: "100%", imageRendering: "pixelated", touchAction: "none" }}
         onPointerDown={(e) => {
           e.preventDefault();
           const viewport = G.current?.viewport;
@@ -472,14 +576,44 @@ function Runner({ mode, P, P2, onBest, onExit, onRestart, onWin, onComplete, onS
           const rect = e.currentTarget.getBoundingClientRect();
           const worldY = (e.clientY - rect.top - viewport.offsetY) / viewport.scaleY;
           const lane = viewport.laneBounds.findIndex(([top, bottom]) => worldY >= top && worldY < bottom);
-          jump(lane < 0 ? 0 : lane);
+          const playerLane = lane < 0 ? 0 : lane;
+          const [laneTop, laneBottom] = viewport.laneBounds[playerLane];
+          const shouldDuck = e.pointerType === "touch" && worldY >= laneTop + (laneBottom - laneTop) * (2 / 3);
+          activePointers.current.set(e.pointerId, { lane: playerLane, startY: e.clientY, ducking: shouldDuck });
+          e.currentTarget.setPointerCapture(e.pointerId);
+          if (shouldDuck) duck(playerLane, true);
+          else jump(playerLane);
+        }}
+        onPointerMove={(e) => {
+          const pointer = activePointers.current.get(e.pointerId);
+          if (!pointer || pointer.ducking || e.pointerType !== "touch" || e.clientY - pointer.startY < 24) return;
+          pointer.ducking = true;
+          duck(pointer.lane, true);
+        }}
+        onPointerUp={(e) => {
+          const pointer = activePointers.current.get(e.pointerId);
+          if (pointer?.ducking) duck(pointer.lane, false);
+          activePointers.current.delete(e.pointerId);
+          if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId);
+        }}
+        onPointerCancel={(e) => {
+          const pointer = activePointers.current.get(e.pointerId);
+          if (pointer?.ducking) duck(pointer.lane, false);
+          activePointers.current.delete(e.pointerId);
+        }}
+        onLostPointerCapture={(e) => {
+          const pointer = activePointers.current.get(e.pointerId);
+          if (pointer?.ducking) duck(pointer.lane, false);
+          activePointers.current.delete(e.pointerId);
         }} />
       <div ref={controlsRef} className="absolute z-10 flex w-full flex-col items-center gap-3" style={{ left: "50%", top: 0, transform: "translateX(-50%)", pointerEvents: "none" }}>
+        <style>{`@media(max-width:640px){.burger-run-control-buttons{display:flex!important}}`}</style>
         <div style={{ minHeight: 20, fontSize: 14 }}>{fxText}</div>
         <div className="burger-run-control-buttons flex gap-2 flex-wrap justify-center" style={{ pointerEvents: "auto" }}>
           {Array.from({ length: N }, (_, i) => (
-            <Btn key={i} sm onPointerDown={(e) => { e.preventDefault(); duck(i, true); }} onPointerUp={() => duck(i, false)} onPointerLeave={() => duck(i, false)}>▼ Duck{race ? " " + [P.name, P2.name][i] : ""}</Btn>
+            <Btn key={i} sm className="burger-run-duck-control" onPointerDown={(e) => { e.preventDefault(); duck(i, true); }} onPointerUp={() => duck(i, false)} onPointerLeave={() => duck(i, false)} onPointerCancel={() => duck(i, false)} onLostPointerCapture={() => duck(i, false)}>▼ Duck{race ? " " + [P.name, P2.name][i] : ""}</Btn>
           ))}
+          <Btn sm aria-pressed={isPaused} onClick={() => togglePause()}>{isPaused ? "▶ Resume" : "Ⅱ Pause"}</Btn>
           <Btn sm onClick={onExit}>☰ Menu</Btn>
         </div>
         {race ? (
@@ -509,21 +643,79 @@ function Runner({ mode, P, P2, onBest, onExit, onRestart, onWin, onComplete, onS
           <Btn onClick={onExit}>Main menu</Btn>
         </Modal>
       )}
+      {isPaused && (
+        <Modal>
+          <h2 className="text-2xl font-bold">Paused</h2>
+          <Sub>Press P or choose Resume to continue.</Sub>
+          <Btn pri onClick={() => togglePause(false)}>▶ Resume</Btn>
+          <Btn onClick={onExit}>Main menu</Btn>
+        </Modal>
+      )}
     </div>
   );
 }
 
 /* ================= 2P CARD DUEL ================= */
-function CardDuel({ P, P2, onWin, onStatus }) {
-  const GOAL = 18;
-  const newDeal = () => { const e = shuffle(EFX), c = shuffle(COLS); return e.map((x, i) => ({ x, c: c[i] })); };
+function CardDuel({ P, P2, onWin, onStatus, onBest, onExit }) {
+  const GOAL = 15;
+  const newDeal = () => {
+    const effects = shuffle(EFX), colors = shuffle(COLS);
+    const cards = effects.map((x, i) => ({ x, c: colors[i] }));
+    return { cards, hintIndex: Math.floor(Math.random() * cards.length) };
+  };
   const mkP = (q, pos = 0, hazardOffset = 0) => ({ name: q.name, bun: q.bun, pos, dp: pos, pts: 0, skip: false, frozen: false, safeRounds: 0, bonusActive: false, bonusAnimating: false, hazards: [], nextHazard: 1.4 + hazardOffset, jumpFrom: 0, jumpUntil: 0, duckUntil: 0 });
-  const st = useRef({ pl: [mkP(P, 0.45), mkP(P2)], turn: 0, pick: -1, deal: newDeal(), t: 0, lastAt: 0, done: false });
+  const st = useRef({ pl: [mkP(P), mkP(P2)], turn: Math.random() < 0.5 ? 0 : 1, pick: -1, deal: newDeal(), t: 0, lastAt: 0, done: false });
   const [, rr] = useState(0);
   const re = () => rr((n) => n + 1);
   const cv = useRef(null), timers = useRef([]);
+  const [isPaused, setIsPaused] = useState(false);
+  const pausedRef = useRef(false);
+  const turnTimer = useRef(null);
+  const pendingTurn = useRef(null);
   const mobilePortrait = useRef(false);
   mobilePortrait.current = typeof window !== "undefined" && window.matchMedia("(max-width: 760px) and (orientation: portrait)").matches;
+
+  const completeTurn = () => {
+    const pending = pendingTurn.current;
+    const s = st.current;
+    if (!pending || s.done || s.winning) return;
+    const { player, turn } = pending;
+    pendingTurn.current = null;
+    turnTimer.current = null;
+    finishDuelBonusRound(player);
+    if (player.pos >= GOAL) {
+      s.winning = {
+        player: turn,
+        at: s.t,
+        result: { mode: "duel", title: player.name + " wins!", sub: `Reached the finish line with ${player.pts} pts` },
+      };
+      re();
+      return;
+    }
+    s.turn = advanceDuelTurn(s, turn);
+    s.pick = -1;
+    s.deal = newDeal();
+    re();
+  };
+  const scheduleTurnAdvance = (delay) => {
+    if (!pendingTurn.current || pausedRef.current) return;
+    pendingTurn.current.remaining = delay;
+    pendingTurn.current.dueAt = performance.now() + delay;
+    turnTimer.current = setTimeout(completeTurn, delay);
+    timers.current.push(turnTimer.current);
+  };
+  const pauseDuel = (paused) => {
+    if (paused === pausedRef.current) return;
+    pausedRef.current = paused;
+    if (paused) {
+      if (pendingTurn.current && turnTimer.current) {
+        clearTimeout(turnTimer.current);
+        pendingTurn.current.remaining = Math.max(0, pendingTurn.current.dueAt - performance.now());
+        turnTimer.current = null;
+      }
+    } else if (pendingTurn.current) scheduleTurnAdvance(pendingTurn.current.remaining);
+    setIsPaused(paused);
+  };
 
   useEffect(() => {
     const portraitQuery = window.matchMedia("(max-width: 760px) and (orientation: portrait)");
@@ -531,9 +723,14 @@ function CardDuel({ P, P2, onWin, onStatus }) {
     const canvas = cv.current;
     let raf;
     let lastStatusUpdate = 0;
+    let lastStatusSignature = "";
     let renderSize = "";
+    let cachedSize = null;
+    let cachedArt = null;
     let resizeCanvas;
     const invalidateCanvasSize = () => {
+      const rect = canvas.parentElement.getBoundingClientRect();
+      cachedSize = { width: rect.width, height: rect.height };
       renderSize = "";
       if (resizeCanvas) resizeCanvas();
     };
@@ -546,24 +743,23 @@ function CardDuel({ P, P2, onWin, onStatus }) {
     resizeObserver.observe(canvas.parentElement);
     window.addEventListener("resize", invalidateCanvasSize);
     resizeCanvas = () => {
-      const rect = canvas.getBoundingClientRect();
+      if (!cachedSize?.width || !cachedSize?.height) return null;
       const dpr = window.devicePixelRatio || 1;
       const art = mobilePortrait.current ? DUEL_PORTRAIT_ART : DUEL_LANDSCAPE_ART;
-      const width = Math.round(rect.width * dpr), height = Math.round(rect.height * dpr);
+      const width = Math.round(cachedSize.width * dpr), height = Math.round(cachedSize.height * dpr);
       const signature = `${width}:${height}:${dpr}:${art.width}:${art.height}`;
+      if (cachedArt && signature === renderSize) return cachedArt;
       const fitScale = mobilePortrait.current
-        ? Math.max(rect.width / art.width, rect.height / art.height)
-        : Math.min(rect.width / art.width, rect.height / art.height);
-      const scaleX = mobilePortrait.current ? fitScale : rect.width / art.width;
-      const scaleY = mobilePortrait.current ? fitScale : rect.height / art.height;
-      const offsetX = mobilePortrait.current ? (rect.width - art.width * fitScale) / 2 : 0;
-      const offsetY = mobilePortrait.current ? (rect.height - art.height * fitScale) / 2 : 0;
-      if (signature !== renderSize) {
-        canvas.width = width;
-        canvas.height = height;
-        renderSize = signature;
-      }
-      return {
+        ? Math.max(cachedSize.width / art.width, cachedSize.height / art.height)
+        : Math.min(cachedSize.width / art.width, cachedSize.height / art.height);
+      const scaleX = mobilePortrait.current ? fitScale : cachedSize.width / art.width;
+      const scaleY = mobilePortrait.current ? fitScale : cachedSize.height / art.height;
+      const offsetX = mobilePortrait.current ? (cachedSize.width - art.width * fitScale) / 2 : 0;
+      const offsetY = mobilePortrait.current ? (cachedSize.height - art.height * fitScale) / 2 : 0;
+      canvas.width = width;
+      canvas.height = height;
+      renderSize = signature;
+      cachedArt = {
         ...art,
         scale: scaleX,
         scaleX,
@@ -571,10 +767,15 @@ function CardDuel({ P, P2, onWin, onStatus }) {
         offsetX,
         offsetY,
         visibleLeft: Math.max(0, -offsetX / scaleX),
-        visibleRight: Math.min(art.width, (rect.width - offsetX) / scaleX),
+        visibleRight: Math.min(art.width, (cachedSize.width - offsetX) / scaleX),
         dpr,
       };
+      return cachedArt;
     };
+    const onKeyDown = (event) => { if (event.code === "KeyP") { event.preventDefault(); pauseDuel(!pausedRef.current); } };
+    const pauseWhenHidden = () => { if (document.hidden) pauseDuel(true); };
+    window.addEventListener("keydown", onKeyDown);
+    document.addEventListener("visibilitychange", pauseWhenHidden);
     const drawHazard = (hazard, frozen, trackY) => {
       const { x, type } = hazard;
       ctx.save();
@@ -641,15 +842,16 @@ function CardDuel({ P, P2, onWin, onStatus }) {
     };
     const loop = (now) => {
       const art = resizeCanvas();
+      if (!art) { raf = requestAnimationFrame(loop); return; }
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.setTransform(art.scaleX * art.dpr, 0, 0, art.scaleY * art.dpr, art.offsetX * art.dpr, art.offsetY * art.dpr);
-      const s = st.current, dt = Math.min((now - (s.lastAt || now)) / 1000, 0.05);
+      const s = st.current, dt = pausedRef.current ? 0 : Math.min((now - (s.lastAt || now)) / 1000, 0.05);
       s.lastAt = now;
-      s.t += dt;
-      if (now - lastStatusUpdate >= 100) {
+      if (!pausedRef.current) s.t += dt;
+      if (!pausedRef.current && now - lastStatusUpdate >= 100) {
         lastStatusUpdate = now;
-        onStatus(s.pl.map((player, index) => ({
+        const players = s.pl.map((player, index) => ({
           name: player.name,
           bun: player.bun,
           scoreLabel: `${player.pts} pts`,
@@ -662,7 +864,12 @@ function CardDuel({ P, P2, onWin, onStatus }) {
               : s.turn === index ? "Choose a card" : `${player.safeRounds}/3 safe rounds`,
           bonusActive: player.bonusActive || player.bonusAnimating,
           active: s.turn === index && !s.done,
-        })));
+        }));
+        const signature = JSON.stringify(players);
+        if (signature !== lastStatusSignature) {
+          lastStatusSignature = signature;
+          onStatus(players);
+        }
       }
       ctx.clearRect(0, 0, art.width, art.height);
       if (mobilePortrait.current) {
@@ -680,7 +887,7 @@ function CardDuel({ P, P2, onWin, onStatus }) {
         const startX = art.visibleLeft + margin;
         const finishX = art.visibleRight - (mobilePortrait.current ? 90 : 120);
         const runnerX = startX + (p.dp / GOAL) * (finishX - startX) + finishRun;
-        if (!s.done && !s.winning && s.t >= p.nextHazard) {
+        if (!pausedRef.current && !s.done && !s.winning && s.t >= p.nextHazard) {
           const types = ["cactus", "dinosaur", "pterodactyl"];
           p.hazards.push({ type: types[Math.floor(Math.random() * types.length)], x: art.width + 30, actioned: false });
           p.nextHazard = s.t + 2.4 + Math.random() * 1.4;
@@ -767,37 +974,32 @@ function CardDuel({ P, P2, onWin, onStatus }) {
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
+    const scheduledTimers = timers.current;
     return () => {
       cancelAnimationFrame(raf);
+      window.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("visibilitychange", pauseWhenHidden);
       portraitQuery.removeEventListener("change", updatePortraitLayout);
       resizeObserver.disconnect();
       window.removeEventListener("resize", invalidateCanvasSize);
-      timers.current.forEach(clearTimeout);
+      scheduledTimers.forEach(clearTimeout);
+      turnTimer.current = null;
+      pendingTurn.current = null;
     };
   }, []);
 
   const pick = (i) => {
     const s = st.current;
-    if (s.pick >= 0 || s.done) return;
+    if (s.pick >= 0 || s.done || pausedRef.current || s.winning) return;
     const { x } = s.deal[i], T = s.turn, p = s.pl[T];
-    p.pos = Math.min(GOAL, Math.max(0, p.pos + x.mv));
+    const bonusApplied = p.bonusActive && x.id !== "freeze";
+    p.pos = Math.min(GOAL, Math.max(0, p.pos + x.mv * (bonusApplied ? 2 : 1)));
     resolveDuelPick(p, x);
+    onBest("duel", p.pos);
     if (x.id === "freeze") { p.frozen = true; p.skip = true; }
     s.pick = i; re();
-    timers.current.push(setTimeout(() => {
-      if (s.done || s.winning) return;
-      finishDuelBonusRound(p);
-      if (p.pos >= GOAL) {
-        s.winning = {
-          player: T,
-          at: s.t,
-          result: { mode: "duel", title: p.name + " wins!", sub: `Reached the finish line with ${p.pts} pts` },
-        };
-        re();
-        return;
-      }
-      s.turn = advanceDuelTurn(s, T); s.pick = -1; s.deal = newDeal(); re();
-    }, 2000));
+    pendingTurn.current = { player: p, turn: T };
+    scheduleTurnAdvance(2000);
   };
 
   const s = st.current;
@@ -807,30 +1009,70 @@ function CardDuel({ P, P2, onWin, onStatus }) {
       <style>{`@media(min-width:761px){.burger-run-duel-controls{top:52%;height:48%}}`}</style>
       <canvas ref={cv} className="burger-run-duel-track" />
       <section className="burger-run-duel-controls">
+        <div className="flex gap-2">
+          <Btn sm aria-pressed={isPaused} onClick={() => pauseDuel(!pausedRef.current)}>{isPaused ? "▶ Resume" : "Ⅱ Pause"}</Btn>
+          <Btn sm onClick={onExit}>☰ Menu</Btn>
+        </div>
+        <p className="sr-only" aria-live="polite">
+          {s.pick >= 0
+            ? `${s.pl[s.turn].name} picked ${s.deal.cards[s.pick].x.n}.`
+            : `${s.pl[s.turn].name}'s turn. One card is revealed as a hint. Choose a card.`}
+        </p>
         <div className="burger-run-duel-cards">
-          {s.deal.map(({ x, c }, i) => (
+          {s.deal.cards.map(({ x, c }, i) => (
             <Card key={i} suit={SUITS[i]} compact disabled={s.pick >= 0} pick={s.pick === i} dim={s.pick >= 0 && s.pick !== i} onClick={() => pick(i)}
-              face={s.pick >= 0 ? { bg: c[0], fg: c[2], e: x.e, n: x.n, d: x.d } : null} />
+              face={s.pick >= 0 || s.deal.hintIndex === i ? { bg: c[0], fg: c[2], e: x.e, n: x.n, d: x.d } : null} />
           ))}
         </div>
       </section>
+      {isPaused && (
+        <Modal>
+          <h2 className="text-2xl font-bold">Paused</h2>
+          <Sub>Press P or choose Resume to continue.</Sub>
+          <Btn pri onClick={() => pauseDuel(false)}>▶ Resume</Btn>
+          <Btn onClick={onExit}>Main menu</Btn>
+        </Modal>
+      )}
     </div>
   );
 }
 
 /* ================= APP ================= */
+const BURGER_RUN_APP_STYLES = (
+  <>
+      <style>{BURGER_RUN_GLOBAL_CSS}</style>
+      <style>{`.burger-run-splash-art{display:contents}.burger-run-start-hitbox{position:absolute;z-index:1;left:50%;top:58.5%;width:21%;height:11.6%;transform:translate(-50%,-50%);padding:0;border:0;border-radius:14px;background:transparent;cursor:pointer;touch-action:manipulation}@media(max-width:760px) and (orientation:portrait){.burger-run-splash{background-image:none!important}.burger-run-splash-art{display:block;position:absolute;left:50%;top:50%;width:max(100%,calc((100dvh - 61px)*.5628));aspect-ratio:941/1672;transform:translate(-50%,-50%);background:url("/assets/games/burger-run/burger-run-welcome-phone-bg.webp") center/100% 100% no-repeat}.burger-run-splash-art .burger-run-start-hitbox{left:50.8%;top:54.5%;width:37.2%;height:6.9%}.burger-run-play-screen{background-image:var(--burger-run-mobile-background)!important;background-size:cover!important;background-position:center;background-repeat:no-repeat}}`}</style>
+      <style>{`.burger-run-info{display:flex;flex-direction:column;align-items:center;gap:24px;width:min(100%,900px);padding:28px 20px}.burger-run-info-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;width:100%}.burger-run-player-setup{display:flex;flex-direction:column;align-items:center;gap:18px;padding:24px 18px;border:2px solid ${MUTE};border-radius:12px;background:#25272a}.burger-run-player-setup input{width:100%!important;max-width:360px!important}.burger-run-menu{display:flex;flex-direction:column;align-items:stretch;gap:26px;width:100%;padding:28px clamp(16px,4vw,48px)}.burger-run-menu-hero{display:flex;align-items:center;justify-content:center;gap:24px}.burger-run-menu-hero h2{font-size:clamp(30px,4vw,48px)}.burger-run-menu-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;width:100%}.burger-run-menu-mode{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;min-height:150px;padding:22px;border:2px solid ${MUTE};border-radius:12px;background:#25272a}.burger-run-menu-mode button{width:100%;min-height:68px;font-size:clamp(18px,2vw,22px)}.burger-run-menu-mode p{font-size:15px}.burger-run-menu-footer{display:flex;justify-content:center;gap:18px;flex-wrap:wrap}.burger-run-menu-footer button{min-height:58px}.burger-run-race-controls{display:flex;justify-content:center;gap:clamp(20px,6vw,72px);flex-wrap:wrap}.burger-run-race-controls>div{display:flex;align-items:center;gap:12px;padding:8px 14px;border:2px solid ${MUTE};border-radius:8px;background:#25272a}.burger-run-race-controls span{display:inline-flex;align-items:center;gap:5px;color:${FG};font-size:14px}.burger-run-race-controls kbd{min-width:28px;padding:3px 6px;border:1px solid ${FG};border-radius:4px;background:${BG};font:700 14px \"Courier New\",monospace;text-align:center}@media(max-width:640px){.burger-run-info{gap:16px;padding:16px 10px}.burger-run-info-grid{grid-template-columns:1fr;gap:14px}.burger-run-player-setup{gap:12px;padding:16px}.burger-run-menu{gap:16px;padding:16px 12px}.burger-run-menu-grid{grid-template-columns:1fr;gap:12px}.burger-run-menu-mode{min-height:120px;padding:16px}.burger-run-menu-hero{gap:12px}.burger-run-menu-hero canvas{width:72px!important;height:63px!important}.burger-run-race-controls{gap:8px}.burger-run-race-controls>div{gap:8px;padding:6px 8px}.burger-run-race-controls span{font-size:12px}}`}</style>
+      <style>{`.burger-run-player-status-panels{position:absolute;z-index:5;top:8px;left:8px;right:8px;display:grid;gap:8px;pointer-events:none}.burger-run-player-status{display:flex;align-items:center;gap:12px;min-height:68px;padding:6px 14px;border:3px solid rgba(255,255,255,.64);border-radius:12px;background:rgba(12,18,30,.94);color:#fff;box-shadow:0 3px 10px rgba(0,0,0,.5);text-shadow:0 1px 2px #000}.burger-run-player-status.is-active{border:4px solid #ffd166;background:rgba(38,34,21,.97);box-shadow:0 0 0 3px rgba(255,209,102,.34),0 0 18px rgba(255,209,102,.52),0 3px 10px rgba(0,0,0,.5)}.burger-run-player-status>canvas{flex:0 0 58px;width:58px!important;height:51px!important;background:#fff;border:2px solid rgba(255,255,255,.75);border-radius:9px}.burger-run-player-status-main{display:grid;gap:3px;flex:1;min-width:0}.burger-run-player-status-heading,.burger-run-player-status-meta{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}.burger-run-player-status-heading strong{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:clamp(14px,3.4vw,18px)}.burger-run-player-status-label{flex:0 0 auto;max-width:60%;padding:4px 8px;border:1px solid rgba(255,255,255,.55);border-radius:999px;background:#28364b;color:#fff;font-size:clamp(10px,2.5vw,13px);font-weight:900;letter-spacing:.04em;text-align:center;text-transform:uppercase;white-space:nowrap}.burger-run-player-status-label.is-active{background:#ffd166;border-color:#fff3d6;color:#152033;text-shadow:none;box-shadow:0 0 12px rgba(255,209,102,.55)}.burger-run-player-status-meta{font-size:clamp(11px,2.8vw,14px);font-weight:800}.burger-run-player-status-meta span:last-child{color:#ff7b91;letter-spacing:2px}.burger-run-player-status-progress{height:8px;overflow:hidden;border:1px solid rgba(255,255,255,.72);border-radius:999px;background:#202124}.burger-run-player-status-progress span{display:block;height:100%;background:${ACC};transition:width 120ms linear}@media(max-width:640px){.burger-run-control-buttons{display:none!important}.burger-run-player-status-panels{top:6px;left:6px;right:6px;gap:6px}.burger-run-player-status{min-height:60px;gap:8px;padding:4px 9px;border-width:3px}.burger-run-player-status.is-active{border-width:4px}.burger-run-player-status>canvas{flex-basis:50px;width:50px!important;height:44px!important}.burger-run-player-status-label,.burger-run-player-status-meta{font-size:10px}.burger-run-player-status-label{padding:3px 6px;letter-spacing:0}.burger-run-player-status-progress{height:7px}}`}</style>
+      <style>{`.burger-run-victory-content{position:absolute;inset:0;z-index:2;display:flex;align-items:flex-start;justify-content:center;box-sizing:border-box;padding:max(18px,4vh) 16px 0;pointer-events:none}.burger-run-victory-panel{display:grid;justify-items:center;gap:12px;width:min(100%,480px);padding:18px 20px;border:3px solid #ffe08a;border-radius:18px;background:rgba(13,28,47,.92);color:#fff;box-shadow:0 8px 28px rgba(0,0,0,.55);text-align:center;pointer-events:auto}.burger-run-victory-panel h1{margin:0;color:#ffe08a;font-size:clamp(1.5rem,6vw,2.4rem);line-height:1.1;text-shadow:0 2px 3px #101820}.burger-run-victory-panel p{color:#f3f7ff;font-size:clamp(.85rem,3vw,1rem)}.burger-run-victory-panel button{width:min(100%,320px);min-height:48px;border-color:#fff3d6;box-shadow:0 3px 0 #79421c}.burger-run-player-status{border-color:#f3ead6}.burger-run-player-status.is-active{border-color:#ffd166}.burger-run-player-status-progress{border:2px solid #f3ead6;background:#172033}.burger-run-player-status-progress span{background:linear-gradient(90deg,#f6ad38,#ffe08a)}@media(max-width:640px){.burger-run-victory-content{padding:14px 12px 0}.burger-run-victory-panel{gap:9px;padding:14px 14px;border-width:3px}}`}</style>
+  </>
+);
+
 export default function BurgerRun({ onComplete, startAtMenu = false }) {
   const [scr, setScr] = useState(startAtMenu ? "menu" : "splash");
   const completionRef = useRef(onComplete);
   completionRef.current = onComplete;
   const [P, setP] = useState({ name: startAtMenu ? "Chef" : "", bun: BUNS[7].color });
   const [P2, setP2] = useState({ name: "Player 2", bun: BUNS[2].color });
-  const [best, setBest] = useState({ classic: 0, card: 0 });
+  const [best, setBest] = useState({ classic: 0, card: 0, race: 0, duel: 0 });
+  const [bestLoaded, setBestLoaded] = useState(false);
   const [win, setWin] = useState(null);
   const [mode, setMode] = useState("classic");
   const [playerStatuses, setPlayerStatuses] = useState(() => [createPlayerStatus(P), createPlayerStatus(P2)]);
   const [run, setRun] = useState(0);
-  const go = () => setScr(P.name ? "menu" : "info");
+  useEffect(() => {
+    setBest(readBestScores());
+    setBestLoaded(true);
+  }, []);
+  useEffect(() => {
+    if (!bestLoaded) return;
+    try {
+      window.localStorage.setItem(BEST_SCORE_KEY, JSON.stringify(best));
+    } catch (error) {
+      console.warn("Unable to save Burger Run best scores.", error);
+    }
+  }, [best, bestLoaded]);
+  const go = useCallback(() => setScr(P.name ? "menu" : "info"), [P.name]);
   const play = (m) => {
     setMode(m);
     setPlayerStatuses(m === "duel"
@@ -859,15 +1101,11 @@ export default function BurgerRun({ onComplete, startAtMenu = false }) {
     const f = (e) => { if (e.code === "Space" || e.code === "Enter") { e.preventDefault(); go(); } };
     addEventListener("keydown", f);
     return () => removeEventListener("keydown", f);
-  }, [scr, P.name]);
+  }, [scr, go]);
 
   return (
     <div data-burger-run-mode={mode} className={`w-full flex items-center justify-center${scr === "splash" ? " burger-run-splash" : ""}${isPlaying ? ` burger-run-play-screen ${isTwoPlayerRun ? "burger-run-play-screen-two-player" : "burger-run-play-screen-single"}` : ""}`} style={{ height: "100%", minHeight: "100%", overflow: isPlaying || scr === "splash" ? "hidden" : "auto", position: "relative", backgroundColor: BG, backgroundImage: `url("${background}")`, backgroundSize: isPlaying && isTwoPlayerRun ? "100% 100%" : "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat", "--burger-run-mobile-background": `url("/assets/games/burger-run/${gameplayBackground.mobile}")`, color: FG, fontFamily: '"Courier New",ui-monospace,monospace', userSelect: "none" }}>
-      <style>{`@keyframes bob{50%{transform:translateY(-12px)}}@keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}@keyframes bl{50%{opacity:.25}}@keyframes burger-run-bonus-flash{0%,100%{border-color:#ffd166;background:rgba(38,34,21,.97);box-shadow:0 0 0 3px rgba(255,209,102,.34),0 0 18px rgba(255,209,102,.52),0 3px 10px rgba(0,0,0,.5)}50%{border-color:#fff3b0;background:rgba(112,72,20,.98);box-shadow:0 0 0 5px rgba(255,243,176,.55),0 0 28px rgba(255,209,102,.9),0 3px 10px rgba(0,0,0,.5)}}.burger-run-player-status.is-bonus{animation:burger-run-bonus-flash .48s steps(2,end) infinite}.burger-run-player-status-label.is-bonus{background:#ffd166;border-color:#fff3b0;color:#152033;text-shadow:none;box-shadow:0 0 12px rgba(255,209,102,.75)}`}</style>
-      <style>{`.burger-run-splash-art{display:contents}.burger-run-start-hitbox{position:absolute;z-index:1;left:50%;top:58.5%;width:21%;height:11.6%;transform:translate(-50%,-50%);padding:0;border:0;border-radius:14px;background:transparent;cursor:pointer;touch-action:manipulation}@media(max-width:760px) and (orientation:portrait){.burger-run-splash{background-image:none!important}.burger-run-splash-art{display:block;position:absolute;left:50%;top:50%;width:max(100%,calc((100dvh - 61px)*.5628));aspect-ratio:941/1672;transform:translate(-50%,-50%);background:url("/assets/games/burger-run/burger-run-welcome-phone-bg.webp") center/100% 100% no-repeat}.burger-run-splash-art .burger-run-start-hitbox{left:50.8%;top:54.5%;width:37.2%;height:6.9%}.burger-run-play-screen{background-image:var(--burger-run-mobile-background)!important;background-size:cover!important;background-position:center;background-repeat:no-repeat}}`}</style>
-      <style>{`.burger-run-info{display:flex;flex-direction:column;align-items:center;gap:24px;width:min(100%,900px);padding:28px 20px}.burger-run-info-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;width:100%}.burger-run-player-setup{display:flex;flex-direction:column;align-items:center;gap:18px;padding:24px 18px;border:2px solid ${MUTE};border-radius:12px;background:#25272a}.burger-run-player-setup input{width:100%!important;max-width:360px!important}.burger-run-menu{display:flex;flex-direction:column;align-items:stretch;gap:26px;width:100%;padding:28px clamp(16px,4vw,48px)}.burger-run-menu-hero{display:flex;align-items:center;justify-content:center;gap:24px}.burger-run-menu-hero h2{font-size:clamp(30px,4vw,48px)}.burger-run-menu-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;width:100%}.burger-run-menu-mode{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;min-height:150px;padding:22px;border:2px solid ${MUTE};border-radius:12px;background:#25272a}.burger-run-menu-mode button{width:100%;min-height:68px;font-size:clamp(18px,2vw,22px)}.burger-run-menu-mode p{font-size:15px}.burger-run-menu-footer{display:flex;justify-content:center;gap:18px;flex-wrap:wrap}.burger-run-menu-footer button{min-height:58px}.burger-run-race-controls{display:flex;justify-content:center;gap:clamp(20px,6vw,72px);flex-wrap:wrap}.burger-run-race-controls>div{display:flex;align-items:center;gap:12px;padding:8px 14px;border:2px solid ${MUTE};border-radius:8px;background:#25272a}.burger-run-race-controls span{display:inline-flex;align-items:center;gap:5px;color:${FG};font-size:14px}.burger-run-race-controls kbd{min-width:28px;padding:3px 6px;border:1px solid ${FG};border-radius:4px;background:${BG};font:700 14px \"Courier New\",monospace;text-align:center}@media(max-width:640px){.burger-run-info{gap:16px;padding:16px 10px}.burger-run-info-grid{grid-template-columns:1fr;gap:14px}.burger-run-player-setup{gap:12px;padding:16px}.burger-run-menu{gap:16px;padding:16px 12px}.burger-run-menu-grid{grid-template-columns:1fr;gap:12px}.burger-run-menu-mode{min-height:120px;padding:16px}.burger-run-menu-hero{gap:12px}.burger-run-menu-hero canvas{width:72px!important;height:63px!important}.burger-run-race-controls{gap:8px}.burger-run-race-controls>div{gap:8px;padding:6px 8px}.burger-run-race-controls span{font-size:12px}}`}</style>
-      <style>{`.burger-run-player-status-panels{position:absolute;z-index:5;top:8px;left:8px;right:8px;display:grid;gap:8px;pointer-events:none}.burger-run-player-status{display:flex;align-items:center;gap:12px;min-height:68px;padding:6px 14px;border:3px solid rgba(255,255,255,.64);border-radius:12px;background:rgba(12,18,30,.94);color:#fff;box-shadow:0 3px 10px rgba(0,0,0,.5);text-shadow:0 1px 2px #000}.burger-run-player-status.is-active{border:4px solid #ffd166;background:rgba(38,34,21,.97);box-shadow:0 0 0 3px rgba(255,209,102,.34),0 0 18px rgba(255,209,102,.52),0 3px 10px rgba(0,0,0,.5)}.burger-run-player-status>canvas{flex:0 0 58px;width:58px!important;height:51px!important;background:#fff;border:2px solid rgba(255,255,255,.75);border-radius:9px}.burger-run-player-status-main{display:grid;gap:3px;flex:1;min-width:0}.burger-run-player-status-heading,.burger-run-player-status-meta{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}.burger-run-player-status-heading strong{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:clamp(14px,3.4vw,18px)}.burger-run-player-status-label{flex:0 0 auto;max-width:60%;padding:4px 8px;border:1px solid rgba(255,255,255,.55);border-radius:999px;background:#28364b;color:#fff;font-size:clamp(10px,2.5vw,13px);font-weight:900;letter-spacing:.04em;text-align:center;text-transform:uppercase;white-space:nowrap}.burger-run-player-status-label.is-active{background:#ffd166;border-color:#fff3d6;color:#152033;text-shadow:none;box-shadow:0 0 12px rgba(255,209,102,.55)}.burger-run-player-status-meta{font-size:clamp(11px,2.8vw,14px);font-weight:800}.burger-run-player-status-meta span:last-child{color:#ff7b91;letter-spacing:2px}.burger-run-player-status-progress{height:8px;overflow:hidden;border:1px solid rgba(255,255,255,.72);border-radius:999px;background:#202124}.burger-run-player-status-progress span{display:block;height:100%;background:${ACC};transition:width 120ms linear}@media(max-width:640px){.burger-run-control-buttons{display:none!important}.burger-run-player-status-panels{top:6px;left:6px;right:6px;gap:6px}.burger-run-player-status{min-height:60px;gap:8px;padding:4px 9px;border-width:3px}.burger-run-player-status.is-active{border-width:4px}.burger-run-player-status>canvas{flex-basis:50px;width:50px!important;height:44px!important}.burger-run-player-status-label,.burger-run-player-status-meta{font-size:10px}.burger-run-player-status-label{padding:3px 6px;letter-spacing:0}.burger-run-player-status-progress{height:7px}}`}</style>
-      <style>{`.burger-run-victory-content{position:absolute;inset:0;z-index:2;display:flex;align-items:flex-start;justify-content:center;box-sizing:border-box;padding:max(18px,4vh) 16px 0;pointer-events:none}.burger-run-victory-panel{display:grid;justify-items:center;gap:12px;width:min(100%,480px);padding:18px 20px;border:3px solid #ffe08a;border-radius:18px;background:rgba(13,28,47,.92);color:#fff;box-shadow:0 8px 28px rgba(0,0,0,.55);text-align:center;pointer-events:auto}.burger-run-victory-panel h1{margin:0;color:#ffe08a;font-size:clamp(1.5rem,6vw,2.4rem);line-height:1.1;text-shadow:0 2px 3px #101820}.burger-run-victory-panel p{color:#f3f7ff;font-size:clamp(.85rem,3vw,1rem)}.burger-run-victory-panel button{width:min(100%,320px);min-height:48px;border-color:#fff3d6;box-shadow:0 3px 0 #79421c}.burger-run-player-status{border-color:#f3ead6}.burger-run-player-status.is-active{border-color:#ffd166}.burger-run-player-status-progress{border:2px solid #f3ead6;background:#172033}.burger-run-player-status-progress span{background:linear-gradient(90deg,#f6ad38,#ffe08a)}@media(max-width:640px){.burger-run-victory-content{padding:14px 12px 0}.burger-run-victory-panel{gap:9px;padding:14px 14px;border-width:3px}}`}</style>
+      {BURGER_RUN_APP_STYLES}
       {isPlaying && isTwoPlayerRun && <PlayerStatusPanels players={playerStatuses} />}
       {scr === "splash" && (
         <div className="burger-run-splash-art">
@@ -904,7 +1142,7 @@ export default function BurgerRun({ onComplete, startAtMenu = false }) {
               <Btn onClick={() => setScr("howto")}>📖 How to Play</Btn>
               <Btn onClick={() => setScr("info")}>👤 Edit profiles</Btn>
             </div>
-            <Sub>Best — Classic: {best.classic} · Card: {best.card}</Sub>
+            <Sub>Best — Classic: {best.classic} · Card: {best.card} · Race: {best.race} · Duel: {best.duel}</Sub>
           </section>
         )}
         {scr === "howto" && (
@@ -912,20 +1150,20 @@ export default function BurgerRun({ onComplete, startAtMenu = false }) {
             <h2 className="text-2xl font-bold" style={{ textAlign: "center", color: ACC, marginTop: 0 }}>How to Play Burger Run</h2>
             <p>Choose a mode from the main menu. In runner modes, jump over cacti and dinosaurs, duck under pterodactyls, and reach the goal.</p>
             <h3 style={{ color: ACC }}>Classic Run</h3>
-            <p>Run solo and aim for 1,000 points. Use <b>Space</b>, <b>↑</b>, or tap the track to jump. Hold <b>↓</b> or press the Duck button to crouch. Press <b>R</b> to restart.</p>
+            <p>Run solo and aim for 1,000 points. Use <b>Space</b>, <b>↑</b>, or tap the track to jump. Hold <b>↓</b> or press the Duck button to crouch. Swipe down or tap the lower third of the lane to duck on phones. Press <b>P</b> to pause or <b>R</b> to restart.</p>
             <h3 style={{ color: ACC }}>Solo Card Mode</h3>
             <p>Run solo and choose one of three cards each time you reach another 200 points. Pickle Shield blocks a hit; Cheese Float changes your jumps; Lettuce Boost doubles points; Bacon Shrink makes you smaller; Honey Slow slows the run; Hot Sauce speeds it up; Mega Size makes you bigger; and Ketchup Boots weaken your jumps. Keep dodging between picks.</p>
             <h3 style={{ color: ACC }}>2P Card Duel</h3>
-            <p>Take turns picking one of four cards. Turbo moves forward 3 steps, Boost moves forward 2, Slow moves back 2, and Freeze holds position and skips that player&apos;s next turn. If both players are due to skip, each frozen turn is skipped before play resumes. First to 18 steps wins. Both burgers automatically jump cacti and dinosaurs and duck under pterodactyls; frozen burgers are safe from low-flying pterodactyls.</p>
+            <p>Take turns picking one of four cards, with one card revealed as a hint each turn. Turbo moves forward 3 steps, Boost moves forward 2, Slow moves back 2, and Freeze holds position and skips that player&apos;s next turn. Three safe picks activate a bonus that doubles your next forward move. If both players are due to skip, each frozen turn is skipped before play resumes. First to 15 steps wins. Press P or use Pause to stop the duel. Both burgers automatically jump cacti and dinosaurs and duck under pterodactyls; frozen burgers are safe from low-flying pterodactyls.</p>
             <h3 style={{ color: ACC }}>2P Race</h3>
-            <p>Race side by side to 1,200 points with three lives each. Player 1 uses <b>W</b> to jump and <b>S</b> to duck; Player 2 uses <b>↑</b> to jump and <b>↓</b> to duck. First to the finish wins, or the last burger standing wins if the other runs out of lives.</p>
+            <p>Race side by side to 1,200 points with three lives each. Player 1 uses <b>W</b> to jump and <b>S</b> to duck; Player 2 uses <b>↑</b> to jump and <b>↓</b> to duck. On phones, tap the lower third of your lane or swipe down to duck; press <b>P</b> to pause. First to the finish wins, or the last burger standing wins if the other runs out of lives.</p>
             <div style={{ display: "flex", justifyContent: "center", marginTop: 18 }}>
               <Btn pri onClick={menu}>Back to modes</Btn>
             </div>
           </section>
         )}
         {scr === "game" && <Runner key={run} mode={mode} P={P} P2={P2} onBest={onBest} onExit={menu} onRestart={() => setRun((r) => r + 1)} onWin={onWin} onComplete={reportCompletion} onStatus={setPlayerStatuses} />}
-        {scr === "duel" && <CardDuel key={run} P={P} P2={P2} onWin={onWin} onStatus={setPlayerStatuses} />}
+        {scr === "duel" && <CardDuel key={run} P={P} P2={P2} onWin={onWin} onStatus={setPlayerStatuses} onBest={onBest} onExit={menu} />}
         {scr === "win" && win && <Win d={win} onAgain={() => play(win.mode)} onMenu={menu} bun={P.bun} />}
       </div>}
     </div>

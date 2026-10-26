@@ -2,6 +2,21 @@
 
 import { useEffect, useState } from 'react';
 
+const MONTHS = [
+  { month: 'January', icon: '❄️' },
+  { month: 'February', icon: '💘' },
+  { month: 'March', icon: '🍀' },
+  { month: 'April', icon: '🌧️' },
+  { month: 'May', icon: '🌸' },
+  { month: 'June', icon: '☀️' },
+  { month: 'July', icon: '🌞' },
+  { month: 'August', icon: '🍦' },
+  { month: 'September', icon: '🎒' },
+  { month: 'October', icon: '🎃' },
+  { month: 'November', icon: '🍁' },
+  { month: 'December', icon: '🎄' },
+];
+
 const LEVELS = [
   { title: 'Weather Scout', icon: '☀️', questions: [['☀️', 'What is the weather like?', ['Sunny', 'Snowy', 'Rainy', 'Foggy'], 'Sunny'], ['🌧️', 'What is the weather like?', ['Windy', 'Rainy', 'Sunny', 'Snowy'], 'Rainy'], ['❄️', 'What is falling from the sky?', ['Rain', 'Leaves', 'Snow', 'Sand'], 'Snow']] },
   { title: 'Season Keeper', icon: '🌸', questions: [['🌸', 'Which season is famous for flowers?', ['Winter', 'Spring', 'Summer', 'Autumn'], 'Spring'], ['🏖️', 'Which season is usually the hottest?', ['Winter', 'Autumn', 'Summer', 'Spring'], 'Summer'], ['🍂', 'Leaves often fall from trees in...', ['Spring', 'Summer', 'Autumn', 'Winter'], 'Autumn']] },
@@ -9,8 +24,13 @@ const LEVELS = [
   { title: 'Spelling Storm', icon: '🔤', type: 'spelling', questions: [['☀️', 'sunny'], ['🌧️', 'rainy'], ['☁️', 'cloudy'], ['💨', 'windy']] },
   { title: 'Sentence Sky', icon: '✏️', type: 'sentence', questions: [['It is very _____ today.', ['sunny', 'snowy', 'foggy'], 'sunny'], ['Take an umbrella. It is _____ outside.', ['rainy', 'windy', 'hot'], 'rainy'], ['We build snowmen in _____.', ['summer', 'winter', 'spring'], 'winter']] },
   { title: 'Weather Wizard', icon: '🧙', questions: [['🌈', 'Which condition is often needed before a rainbow appears?', ['Rain', 'Snow', 'Fog', 'Heat'], 'Rain'], ['🌡️', 'If the temperature drops below 0°C, water can...', ['Freeze', 'Boil', 'Disappear', 'Become hotter'], 'Freeze'], ['🌪️', 'What is a powerful spinning column of air?', ['Tornado', 'Cloud', 'Breeze', 'Rainbow'], 'Tornado']] },
+  { title: 'Month Matcher', icon: '🗓️', type: 'matching', questions: MONTHS },
 ];
 const shuffle = (items) => { const copy = [...items]; for (let i = copy.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [copy[i], copy[j]] = [copy[j], copy[i]]; } return copy; };
+const createMonthCards = () => shuffle(MONTHS.flatMap(({ month, icon }, pair) => [
+  { id: `month-${pair}`, pair, type: 'month', label: month },
+  { id: `icon-${pair}`, pair, type: 'icon', label: icon },
+]));
 
 export default function WeatherWizard({ onComplete, onHudUpdate }) {
   const [screen, setScreen] = useState('welcome');
@@ -24,6 +44,9 @@ export default function WeatherWizard({ onComplete, onHudUpdate }) {
   const [isCorrect, setIsCorrect] = useState(false);
   const [spellingOptions, setSpellingOptions] = useState([]);
   const [answerOptions, setAnswerOptions] = useState([]);
+  const [matchingCards, setMatchingCards] = useState([]);
+  const [revealedCards, setRevealedCards] = useState([]);
+  const [matchedPairs, setMatchedPairs] = useState([]);
   const current = LEVELS[level];
   const item = current?.questions[question];
   const weatherBackground = screen === 'welcome'
@@ -43,7 +66,7 @@ export default function WeatherWizard({ onComplete, onHudUpdate }) {
       onHudUpdate?.(null);
       return;
     }
-    onHudUpdate?.({ question: `${question + 1}/${current.questions.length}` });
+    onHudUpdate?.({ question: `${current.type === 'matching' ? question : question + 1}/${current.questions.length}` });
   }, [current, onHudUpdate, question, screen]);
 
   useEffect(() => {
@@ -54,9 +77,15 @@ export default function WeatherWizard({ onComplete, onHudUpdate }) {
 
   function startLevel(nextLevel) {
     if (nextLevel > 0 && !completed.includes(nextLevel - 1)) return;
+    if (LEVELS[nextLevel].type === 'matching') {
+      setLevel(nextLevel); setQuestion(0); setScore(0); setSelected(null); setIsCorrect(false);
+      setSpelling([]); setSpellingOptions([]); setAnswerOptions([]); setMatchingCards(createMonthCards());
+      setRevealedCards([]); setMatchedPairs([]); setFeedback(''); setScreen('game');
+      return;
+    }
     const firstQuestion = LEVELS[nextLevel].questions[0];
     const firstOptions = shuffle(LEVELS[nextLevel].type === 'spelling' ? firstQuestion[1].toUpperCase().split('') : LEVELS[nextLevel].type === 'sentence' ? firstQuestion[1] : firstQuestion[2]);
-    setLevel(nextLevel); setQuestion(0); setScore(0); setSelected(null); setIsCorrect(false); setSpelling([]); setSpellingOptions(firstOptions); setAnswerOptions(firstOptions); setFeedback(''); setScreen('game');
+    setLevel(nextLevel); setQuestion(0); setScore(0); setSelected(null); setIsCorrect(false); setSpelling([]); setSpellingOptions(firstOptions); setAnswerOptions(firstOptions); setMatchingCards([]); setRevealedCards([]); setMatchedPairs([]); setFeedback(''); setScreen('game');
   }
   function advance(nextScore) {
     if (question + 1 >= current.questions.length) {
@@ -77,10 +106,40 @@ export default function WeatherWizard({ onComplete, onHudUpdate }) {
     setIsCorrect(correct);
     if (!correct) { setFeedback(`💡 Try again. Answer: ${current.type === 'sentence' ? item[2] : item[3]}`); setTimeout(() => { setSelected(null); setFeedback(''); setIsCorrect(false); }, 900); }
   }
+  function chooseMonthCard(card) {
+    if (matchedPairs.includes(card.pair) || revealedCards.includes(card.id) || revealedCards.length >= 2) return;
+    const nextRevealed = [...revealedCards, card.id];
+    setRevealedCards(nextRevealed);
+    if (nextRevealed.length === 1) return;
+
+    const firstCard = matchingCards.find((entry) => entry.id === revealedCards[0]);
+    if (firstCard?.pair === card.pair && firstCard.type !== card.type) {
+      const nextMatched = [...matchedPairs, card.pair];
+      const nextScore = score + 1;
+      setMatchedPairs(nextMatched);
+      setScore(nextScore);
+      setQuestion(nextMatched.length);
+      setFeedback('✨ Match found!');
+      if (nextMatched.length === current.questions.length) {
+        setTimeout(() => {
+          setCompleted((items) => items.includes(level) ? items : [...items, level]);
+          setScreen('result');
+          onComplete?.(nextScore, Math.round((nextScore / current.questions.length) * 100));
+        }, 650);
+      } else {
+        setTimeout(() => { setRevealedCards([]); setFeedback(''); }, 650);
+      }
+      return;
+    }
+
+    setFeedback('Try another pair.');
+    setTimeout(() => { setRevealedCards([]); setFeedback(''); }, 900);
+  }
   if (screen === 'welcome') return <main className="weather-wizard ww ww-welcome-only" style={backgroundStyle}><button type="button" className="ww-welcome-start" aria-label="Start Weather Wizard" onClick={() => setScreen('levels')} /></main>;
   if (screen === 'levels') return <main className="weather-wizard ww" style={backgroundStyle}><section className="ww-panel ww-adventure-panel"><span className="ww-badge">WIZARD ACADEMY</span><h1>Your Adventure</h1><div className="ww-levels">{LEVELS.map((entry, index) => <button key={entry.title} disabled={index > 0 && !completed.includes(index - 1)} onClick={() => startLevel(index)}>{index > 0 && !completed.includes(index - 1) ? '🔒' : entry.icon}<strong>{index + 1}. {entry.title}</strong><small>{completed.includes(index) ? '✓ Completed' : entry.description || 'Start level'}</small></button>)}</div></section></main>;
   if (screen === 'result') return <main className="weather-wizard ww" style={backgroundStyle}><section className="ww-panel ww-result"><div className="ww-wizard">🏆</div><span className="ww-badge">LEVEL COMPLETE</span><h1>{current.title} Complete!</h1><p>You scored <strong>{score} / {current.questions.length}</strong></p><div className="ww-stars">{'⭐'.repeat(score >= current.questions.length * .8 ? 3 : score >= current.questions.length * .6 ? 2 : 1)}</div><button onClick={() => level < LEVELS.length - 1 ? startLevel(level + 1) : setScreen('levels')}>{level < LEVELS.length - 1 ? 'Continue Adventure →' : 'View Academy Map'}</button></section></main>;
   const isSpelling = current.type === 'spelling';
+  const isMatching = current.type === 'matching';
   const options = isSpelling ? spellingOptions : answerOptions;
   const chooseLetter = (letter, index) => {
     setSpelling((letters) => [...letters, letter]);
@@ -97,6 +156,7 @@ export default function WeatherWizard({ onComplete, onHudUpdate }) {
     setSpelling(nextSpelling);
     setSpellingOptions(available);
   };
+  if (isMatching) return <main className="weather-wizard ww" style={backgroundStyle}><section className="ww-panel ww-game ww-month-game"><div className="ww-progress"><i style={{ width: `${(matchedPairs.length / current.questions.length) * 100}%` }} /></div><div className="ww-question"><div className="ww-visual">🗓️</div><h2>Match each month to its picture</h2><p className="ww-match-instruction">Find all 12 month-and-picture pairs. {matchedPairs.length} of 12 matched.</p><div className="ww-month-cards">{matchingCards.map((card) => { const visible = matchedPairs.includes(card.pair) || revealedCards.includes(card.id); return <button key={card.id} type="button" className={`ww-month-card${visible ? ' is-visible' : ''}${matchedPairs.includes(card.pair) ? ' is-matched' : ''}`} aria-label={visible ? `${card.type === 'month' ? 'Month' : 'Picture'}: ${card.label}` : 'Reveal a month or picture card'} disabled={matchedPairs.includes(card.pair) || revealedCards.length >= 2 || revealedCards.includes(card.id)} onClick={() => chooseMonthCard(card)}>{visible ? card.label : '?'}</button>; })}</div><div className="ww-feedback" aria-live="polite">{feedback}</div></div></section></main>;
   return <main className="weather-wizard ww" style={backgroundStyle}><style>{`.ww-sentence-question h2{max-width:760px;margin:16px auto 24px;font-size:clamp(1.8rem,3.5vw,3rem);line-height:1.2}.ww-sentence-question .ww-visual{width:96px;height:96px;font-size:48px;margin:8px auto 14px}.ww-sentence-question .ww-answers{margin-top:12px}.ww-answers button.correct{background:#d8f5e5!important;border-color:#31b66c!important;color:#145c38!important}.ww-answers button.selected:not(.correct){background:#ffe0e5!important;border-color:#e65d73!important;color:#8f2639!important}`}</style><section className="ww-panel ww-game"><div className="ww-progress"><i style={{ width: `${((question + 1) / current.questions.length) * 100}%` }} /></div><div className={`ww-question${current.type === 'sentence' ? ' ww-sentence-question' : ''}`}><div className="ww-visual">{isSpelling ? item[0] : current.type === 'sentence' ? '✏️' : item[0]}</div><h2>{isSpelling ? 'Spell the weather word' : current.type === 'sentence' ? item[0] : item[1]}</h2>{isSpelling && <div className="ww-word">{item[1].toUpperCase().split('').map((_, index) => <span key={index}>{spelling[index] || '_'}</span>)}</div>}<div className="ww-answers">{options.map((option, index) => <button key={`${option}-${index}`} disabled={selected !== null} className={selected === option ? (isCorrect ? 'selected correct' : 'selected') : ''} onClick={() => isSpelling ? chooseLetter(option, index) : answer(option)}>{option}</button>)}</div>{isSpelling && <div className="ww-spelling-actions"><button className="ww-secondary" onClick={backspaceSpelling}>Backspace</button><button className="ww-secondary" onClick={resetSpelling}>Reset</button><button onClick={() => answer(spelling.join(''))}>Check</button></div>}<div className="ww-feedback">{feedback}</div></div></section></main>;
 }
 
@@ -106,6 +166,7 @@ const STYLES = `
 .ww-welcome-start{position:absolute!important;left:39%;top:78%;width:22%;height:13%;padding:0!important;border:0!important;border-radius:999px!important;background:transparent!important;cursor:pointer}
 .ww-welcome-start:focus-visible{outline:4px solid #fff;outline-offset:5px}
 .ww-hero,.ww-panel{width:min(1100px,100%);margin:auto;border-radius:30px}.ww-hero{min-height:600px;padding:clamp(30px,6vw,70px);display:grid;grid-template-columns:1.1fr .9fr;align-items:center;background:#ffffff12;box-shadow:0 25px 80px #0005}.ww-hero h1{font-size:clamp(2.8rem,7vw,6rem);line-height:.95}.ww-hero em{display:block;color:#49e1c2;font-style:normal}.ww-hero p{max-width:560px;color:#c7c8df;font-size:1.1rem;line-height:1.7}.ww-badge{display:inline-block;padding:8px 14px;border-radius:999px;background:#ffffff14;color:#d5ccff;font-size:.72rem;font-weight:900;letter-spacing:.12em}.ww-wizard{text-align:center;font-size:clamp(4rem,12vw,10rem)}.ww button{border:0;border-radius:14px;padding:13px 20px;background:#f5b942;color:#241b36;font-weight:900;cursor:pointer}.ww button:disabled{opacity:.45;cursor:not-allowed}.ww-panel{background:#faf7ee;color:#201b3c;padding:clamp(22px,4vw,40px);box-shadow:0 25px 80px #0005}.ww-levels{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:28px 0}.ww-levels button{min-height:150px;display:flex;flex-direction:column;align-items:flex-start;gap:10px;text-align:left;background:#fffdf8;color:#27213f}.ww-levels small{color:#77728d}.ww-secondary{background:#211c3c12!important;color:#292341!important}.ww-game header{display:flex;justify-content:space-between;align-items:center;gap:12px}.ww-progress{height:8px;margin:22px 0;background:#e8e1d4;border-radius:99px;overflow:hidden}.ww-progress i{display:block;height:100%;background:linear-gradient(90deg,#9174ff,#44d3b0)}.ww-question{text-align:center;max-width:800px;margin:auto}.ww-visual{width:140px;height:140px;display:grid;place-items:center;margin:20px auto;border-radius:28px;background:#fff;font-size:70px}.ww-question h2{font-size:clamp(1.6rem,4vw,2.5rem)}.ww-answers{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:24px 0}.ww-answers button{background:#fff;color:#27213f;border:2px solid #e8e2d6;font-size:1.1rem}.ww-answers button.selected{border-color:#e65d73;background:#ffe5e9}.ww-word{display:flex;justify-content:center;gap:8px;margin:20px}.ww-word span{width:42px;height:50px;border-bottom:4px solid #9076f6;font-size:1.6rem}.ww-feedback{min-height:42px;font-weight:900;color:#c33e57}.ww-result{width:min(820px,100%);display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px}.ww-result h1,.ww-result p{margin:0}.ww-result .ww-stars{margin:10px 0 18px}.ww-result button{min-width:260px}.ww-stars{font-size:2.5rem;margin:22px}@media(max-width:700px){.ww-hero{grid-template-columns:1fr;text-align:center}.ww-hero p{margin-left:auto;margin-right:auto}.ww-levels{grid-template-columns:1fr 1fr}.ww-answers{grid-template-columns:1fr}.ww-welcome-start{left:34%;top:78%;width:32%;height:13%}}@media(max-width:480px){.ww{padding:12px}.ww-levels{grid-template-columns:1fr}.ww-panel{padding:20px}.weather-wizard.ww-welcome-only{padding:0}}@media(max-width:639px) and (orientation:portrait){.weather-wizard.ww.ww-welcome-only{background-image:url('/assets/games/weather-wizard/weather-wizards-welcome-phone-bg.webp')!important;background-attachment:scroll}.weather-wizard.ww:not(.ww-welcome-only){background-image:url('/assets/games/weather-wizard/weather-wizards-general-phone-bg.webp')!important;background-attachment:scroll}}
+.ww-match-instruction{color:#77728d}.ww-month-cards{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin:20px auto;max-width:900px}.ww-month-card{min-height:68px;padding:8px!important;border:2px solid #e8e2d6!important;background:#fff!important;color:#27213f!important;font-size:clamp(1rem,2vw,1.35rem)!important;box-shadow:0 4px 0 #e8e2d6;transition:transform .15s ease,border-color .15s ease,background .15s ease}.ww-month-card:not(:disabled):hover{transform:translateY(-2px);border-color:#9076f6!important}.ww-month-card.is-visible{background:#f0edff!important;border-color:#9076f6!important}.ww-month-card.is-matched{background:#d8f5e5!important;border-color:#31b66c!important;color:#145c38!important}.ww-month-card:disabled{opacity:1!important;cursor:default}@media(max-width:700px){.ww-month-cards{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.ww-month-card{min-height:58px}}@media(max-width:480px){.ww-month-cards{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.ww-month-card{min-height:54px;padding:6px!important;font-size:1rem!important}}
 `;
 
 if (typeof document !== 'undefined') {

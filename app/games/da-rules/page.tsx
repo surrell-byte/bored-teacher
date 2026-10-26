@@ -39,7 +39,7 @@ const QUICK_RULES: Partial<Record<string, string>> = {
   farmgame: 'Explore farm-life vocabulary through quick interactive challenges.',
   plantvegetablequiz: 'Answer plant and vegetable questions in flashcards, spelling, and quiz rounds.',
   findmyfood: 'Read each clue and identify the correct food item.',
-  flagmaster: 'Match flags with countries and build geography vocabulary.',
+  flagmaster: 'Match flags with countries, then match countries to animals that live there.',
   foodwordhunt: 'Search the grid for hidden food words and sharpen spelling.',
   fruitwordhunt: 'Find fruit names hidden in the letters and spot them quickly.',
   lakersracer: 'Answer correctly to race toward the basket and win the round.',
@@ -69,7 +69,7 @@ const QUICK_RULES: Partial<Record<string, string>> = {
   bubblepop: 'Pop the target number of bubbles before the round ends.',
   buildtower: 'Arrange blocks from smallest to biggest and build the tallest tower.',
   mathracing: 'Answer arithmetic questions quickly and race to the finish line.',
-  weatherwizard: 'Learn weather words, seasons, and sentence skills across magical levels.',
+  weatherwizard: 'Learn weather words, seasons, and sentences, then match all 12 months to their pictures.',
   pizzafractions: 'Match each fraction to the right pizza slice before the order is served.',
   fishingnumbers: 'Catch the fish that matches the target total and build a bigger score.',
   shapebuilder: 'Place shapes, count them, and answer quick geometry questions.',
@@ -96,6 +96,7 @@ const QUICK_RULES: Partial<Record<string, string>> = {
 
 const FULL_RULES: Partial<Record<string, string>> = {
   alphabethunt: 'Players take turns revealing tiles. Each player tries to find their own avatar or target before the opponent finds theirs. Correct picks can score points and reward another turn, while risky choices can pass the turn to the other player.',
+  flagmaster: 'Identify flags across world and regional missions, then complete the Wildlife Match by pairing each country with an animal that lives there.',
   miniracer: 'Use the controls to accelerate, steer, and survive the track edges. The goal is to finish three laps without crashing and keep your speed under control.',
   tilelanes: 'Players choose tiles that knock down pins. The winner is the player with the highest score after the lane ends, so timing and risk management matter.',
   bowlingbattle: 'Each player bowls a full ten-frame match. The aim is to knock down all the pins as often as possible and beat the opponent total.',
@@ -296,16 +297,19 @@ export default function DaRulesPage() {
               <div
                 style={{
                   position: 'relative',
-                  height: 176,
+                  aspectRatio: '4 / 3',
                   backgroundColor: 'rgba(255,255,255,0.06)',
                   backgroundImage: cover ? `url(${cover})` : 'none',
-                  backgroundSize: 'cover',
+                  backgroundSize: 'contain',
                   backgroundPosition: 'center',
+                  backgroundRepeat: 'no-repeat',
                   borderBottom: '1px solid rgba(255,255,255,0.12)',
                 }}
               >
-                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(7,10,19,0.15), rgba(7,10,19,0.65))' }} />
-                <div style={{ position: 'absolute', left: 12, right: 12, bottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+              </div>
+
+              <div style={{ padding: 16 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                   {tag && (
                     <span style={{ display: 'inline-flex', padding: '6px 10px', borderRadius: 999, fontSize: 11, fontWeight: 700, background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(255,255,255,0.15)' }}>
                       {tag.label}
@@ -315,9 +319,6 @@ export default function DaRulesPage() {
                     {difficulty}
                   </span>
                 </div>
-              </div>
-
-              <div style={{ padding: 16 }}>
                 <h2 style={{ margin: '0 0 12px', fontSize: '1.2rem', lineHeight: 1.3 }}>{name}</h2>
                 <p style={{ margin: 0, color: 'var(--muted)', lineHeight: 1.7, fontSize: 14 }}>
                   <strong style={{ color: 'var(--text)' }}>How to play:</strong> {getRuleText(gameId, mode)}

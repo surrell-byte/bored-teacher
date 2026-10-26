@@ -870,6 +870,19 @@ test('Burger Run Card Duel awards a one-round double-points bonus after three sa
   assert.equal(player.bonusAnimating, false);
 });
 
+test('Burger Run random helpers provide deterministic seeds and unbiased shuffle steps', async () => {
+  const { createSeededRandom, shuffle } = await import('../games/burger-run/random.mjs');
+  const source = [1, 2, 3, 4, 5];
+  const first = shuffle(source, createSeededRandom(42));
+  const second = shuffle(source, createSeededRandom(42));
+
+  assert.deepEqual(first, second);
+  assert.deepEqual([...first].sort(), source);
+  assert.deepEqual(source, [1, 2, 3, 4, 5]);
+  assert.deepEqual(shuffle([1, 2, 3], () => 0), [2, 3, 1]);
+  assert.deepEqual(shuffle([1, 2, 3], () => 0.999999), [1, 2, 3]);
+});
+
 test('Emoji Category Sort has category rounds and all requested game screens', async () => {
   const { createEmojiCategoryRound, createEmojiWordQuestions, EMOJI_CATEGORIES, EMOJI_SORT_DIFFICULTIES } = await import('../games/emoji-category-sort/emoji-category-data.mjs');
   const component = read('games/emoji-category-sort/EmojiCategorySort.jsx');
@@ -945,7 +958,7 @@ test('Burger Run is registered with the catalog and reports game completion', ()
   }
   assert.match(registry, /burgerrun: lazyGame\('burgerrun', \(\) => import\('@\/games\/burger-run\/BurgerRun\.jsx'\)\)/);
   assert.match(component, /export default function BurgerRun\(\{ onComplete, startAtMenu = false \}\)/);
-  assert.match(component, /drawBurger\(context, 16, 62/);
+  assert.match(component, /import BurgerSprite from "\.\/BurgerSprite"/);
   assert.match(component, /aria-label="Start Burger Run"[\s\S]*?className="burger-run-start-hitbox"[\s\S]*?onClick=\{go\}/);
   assert.match(component, /className="burger-run-splash-art"/);
   assert.match(component, /burger-run-start-hitbox\{position:absolute;z-index:1;left:50%;top:58\.5%;width:21%;height:11\.6%/);
@@ -980,8 +993,8 @@ test('Burger Run is registered with the catalog and reports game completion', ()
   assert.match(component, /const worldY = \(e\.clientY - rect\.top - viewport\.offsetY\) \/ viewport\.scaleY/);
   assert.match(component, /className="absolute z-10 flex w-full flex-col items-center gap-3"/);
   assert.doesNotMatch(component, /maxHeight: "calc\(100dvh - 230px\)"/);
-  assert.match(component, /const scaleX = mobilePortrait\.current \? fitScale : rect\.width \/ art\.width/);
-  assert.match(component, /const scaleY = mobilePortrait\.current \? fitScale : rect\.height \/ art\.height/);
+  assert.match(component, /const scaleX = mobilePortrait\.current \? fitScale : cachedSize\.width \/ art\.width/);
+  assert.match(component, /const scaleY = mobilePortrait\.current \? fitScale : cachedSize\.height \/ art\.height/);
   assert.match(component, /ctx\.setTransform\(art\.scaleX \* art\.dpr, 0, 0, art\.scaleY \* art\.dpr/);
   assert.match(component, /art\.scaleX \* art\.dpr, 0, 0, art\.scaleY \* art\.dpr/);
   assert.match(component, /canvas\.width = width;\s*canvas\.height = height/);
@@ -1024,15 +1037,24 @@ test('Burger Run is registered with the catalog and reports game completion', ()
   assert.match(component, /player\.bonusActive \? "2× BONUS!" : player\.active && player\.status === "Choose a card" \? "YOUR TURN · CHOOSE A CARD" : player\.status/);
   assert.match(component, /\.burger-run-player-status-label\.is-active\{background:#ffd166/);
   assert.match(component, /\.burger-run-control-buttons\{display:none!important\}/);
+  assert.match(component, /@media\(max-width:640px\)\{\.burger-run-control-buttons\{display:flex!important\}\}/);
+  assert.match(component, /onPointerCancel=\{\(e\) => \{[\s\S]*?activePointers\.current\.delete\(e\.pointerId\)/);
+  assert.match(component, /addEventListener\("blur", clearDuck\)/);
+  assert.match(component, /const frameDuration = 1000 \/ 60/);
+  assert.match(component, /while \(accumulator >= frameDuration\)/);
+  assert.match(component, /raceRandom: createSeededRandom/);
+  assert.match(component, /g\.L\.forEach\(\(player\) => \{ if \(!player\.out\) player\.obs\.push\(\{ \.\.\.obstacle \}\); \}\)/);
+  assert.match(component, /clearTimeout\(cardPickTimer\.current\)/);
+  assert.match(component, /BEST_SCORE_KEY = "burger-run-best-scores"/);
+  assert.match(component, /localStorage\.setItem\(BEST_SCORE_KEY/);
   assert.match(component, /resolveDuelPick\(p, x\)/);
-  assert.match(component, /finishDuelBonusRound\(p\)/);
+  assert.match(component, /finishDuelBonusRound\(player\)/);
   assert.match(component, /player\.bonusActive \|\| player\.bonusAnimating/);
   assert.match(component, /className=\{`burger-run-player-status\$\{player\.active \? " is-active" : ""\}\$\{player\.bonusActive \? " is-bonus" : ""\}`\}/);
   assert.match(component, /@keyframes burger-run-bonus-flash/);
   assert.match(component, /\.burger-run-player-status\.is-bonus\{animation:burger-run-bonus-flash/);
   assert.match(component, /const flightHeight = bonusFlight \? 62 \+ Math\.sin\(s\.t \* 8\) \* 14 : 0/);
-  assert.match(component, /onStatus\(g\.L\.map/);
-  assert.match(component, /onStatus\(s\.pl\.map/);
+  assert.equal(component.match(/onStatus\(players\)/g)?.length, 2);
   assert.match(component, /if \(race\) return;/);
   assert.doesNotMatch(component, /const hudY = trackY \+ \(i === 1 \? 54 : -74\)/);
   assert.match(component, /\.burger-run-player-status\{display:flex;align-items:center;gap:12px;min-height:68px/);
@@ -1046,10 +1068,11 @@ test('Burger Run is registered with the catalog and reports game completion', ()
   assert.match(component, /<kbd>↑<\/kbd> Jump/);
   assert.match(component, /<kbd>↓<\/kbd> Duck/);
   assert.match(component, /drawBurger\(ctx, x, y/);
-  assert.match(component, /const GOAL = 18/);
-  assert.match(component, /pl: \[mkP\(P, 0\.45\), mkP\(P2\)\]/);
+  assert.match(component, /const GOAL = 15/);
+  assert.match(component, /pl: \[mkP\(P\), mkP\(P2\)\]/);
   assert.doesNotMatch(component, /p\.pos = Math\.min\(GOAL, p\.pos \+ [^)]+dt\)/);
-  assert.match(component, /p\.pos = Math\.min\(GOAL, Math\.max\(0, p\.pos \+ x\.mv\)\)/);
+  assert.match(component, /p\.pos = Math\.min\(GOAL, Math\.max\(0, p\.pos \+ x\.mv \* \(bonusApplied \? 2 : 1\)\)\)/);
+  assert.match(component, /bonusApplied = p\.bonusActive && x\.id !== "freeze"/);
   assert.match(component, /Move forward 3 steps", mv: 3/);
   assert.match(component, /Move forward 2 steps", mv: 2/);
   assert.match(component, /Move back 2 steps", mv: -2/);
@@ -1057,13 +1080,13 @@ test('Burger Run is registered with the catalog and reports game completion', ()
   assert.match(component, /function advanceDuelTurn\(state, currentTurn\)/);
   assert.match(component, /while \(state\.pl\[nextTurn\]\.skip\)/);
   assert.match(component, /state\.pl\[nextTurn\]\.skip = false;\s*state\.pl\[nextTurn\]\.frozen = false/);
-  assert.match(component, /s\.turn = advanceDuelTurn\(s, T\)/);
+  assert.match(component, /s\.turn = advanceDuelTurn\(s, turn\)/);
   assert.match(component, /const types = \["cactus", "dinosaur", "pterodactyl"\]/);
   assert.match(component, /hazard\.type === "pterodactyl"\) p\.duckUntil/);
   assert.match(component, /hazard\.x > runnerX \+ 170/);
   assert.match(component, /const passDuration = \(hazard\.x \+ 72 - runnerX\) \/ 190 \+ 0\.08/);
   assert.match(component, /p\.jumpUntil = s\.t \+ passDuration \+ 0\.25/);
-  assert.match(component, /const GOAL = 18;/);
+  assert.match(component, /const GOAL = 15;/);
   assert.match(component, /const y = frozen \? trackY - 4 : trackY - 42/);
   assert.match(component, /const y = p\.frozen \? trackY - 55/);
   assert.match(component, /Math\.sin\(\(\(s\.t - p\.jumpFrom\) \/ \(p\.jumpUntil - p\.jumpFrom\)\) \* Math\.PI\) \* 72/);
@@ -1076,7 +1099,7 @@ test('Burger Run is registered with the catalog and reports game completion', ()
   assert.match(component, /const gateColor = winning \? \(flash \? "#fff27a" : "#ff8a3d"\) : FG/);
   assert.match(component, /s\.t - s\.winning\.at >= 1\.6/);
   const cardDuel = component.slice(component.indexOf("function CardDuel"), component.indexOf("/* ================= APP"));
-  assert.doesNotMatch(cardDuel, /<Btn sm onClick=\{onExit\}>☰ Menu<\/Btn>/);
+  assert.match(cardDuel, /<Btn sm onClick=\{onExit\}>☰ Menu<\/Btn>/);
   assert.match(component, /ctx\.fillRect\(finish\.left, finish\.top, 8, trackY - finish\.top\)/);
   assert.match(component, /ctx\.fillRect\(finish\.right, finish\.top, 8, trackY - finish\.top\)/);
   assert.match(component, /for \(let r = 0; r < 6; r\+\+\) for \(let c = 0; c < 8; c\+\+\)/);
@@ -1084,10 +1107,15 @@ test('Burger Run is registered with the catalog and reports game completion', ()
   assert.match(component, /: \(\(r \+ c\) % 2 === 0 \? "#fff3d6" : "#162438"\)/);
   assert.doesNotMatch(component, /18-step race · auto-jump hazards · cards control progress/);
   assert.doesNotMatch(cardDuel, /pick a card!/);
-  assert.match(cardDuel, /<section className="burger-run-duel-controls">\s*<div className="burger-run-duel-cards">/);
+  assert.match(cardDuel, /<section className="burger-run-duel-controls">[\s\S]*?<div className="burger-run-duel-cards">/);
   assert.match(component, /className="burger-run-duel-controls"/);
   assert.match(component, /className="burger-run-duel-cards"/);
   assert.match(component, /<Card key=\{i\} suit=\{SUITS\[i\]\} compact/);
+  assert.match(cardDuel, /s\.deal\.cards\.map/);
+  assert.match(cardDuel, /s\.deal\.hintIndex === i/);
+  assert.match(cardDuel, /aria-live="polite"/);
+  assert.match(cardDuel, /pauseDuel\(!pausedRef\.current\)/);
+  assert.match(cardDuel, /onBest\("duel", p\.pos\)/);
   assert.match(component, /SUIT_LABELS = \{ "♠": "Spades", "♥": "Hearts", "♦": "Diamonds", "♣": "Clubs" \}/);
   assert.match(component, /<small style=\{\{ fontSize: "clamp\(10px,2\.5vw,14px\)", fontWeight: 800, letterSpacing: "\.08em", textTransform: "uppercase" \}\}>\{SUIT_LABELS\[suit\]\}<\/small>/);
   assert.match(component, /@media\(max-width:760px\) and \(orientation:portrait\)\{\.burger-run-duel-controls\{top:46%/);
