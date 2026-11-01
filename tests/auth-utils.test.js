@@ -39,6 +39,29 @@ test('username email mappings are private and username login uses a custom token
   assert.doesNotMatch(authRoute, /jsonResponse\(\{\s*email\s*[,}]/);
 });
 
+test('creator access and email verification are server-trusted', () => {
+  const rules = read('firestore.rules');
+  const firebase = read('lib/firebase.ts');
+  const appShell = read('components/AppShell.tsx');
+  const verifyRoute = read('app/api/auth/verify/route.ts');
+  const emailSender = read('lib/email-sender.ts');
+  const userRules = rules.split('match /users/{userId}')[1].split('match /emailVerificationCodes')[0];
+
+  assert.match(rules, /request\.auth\.token\.email_verified == true/);
+  assert.match(firebase, /user\?\.emailVerified/);
+  assert.match(appShell, /user\.emailVerified/);
+  assert.doesNotMatch(userRules.split('allow update:')[1], /'emailVerified'/);
+  assert.match(rules, /match \/emailVerificationCodes\/\{userId\} \{\s*allow read, write: if false;/);
+  assert.match(rules, /match \/emailVerificationRateLimits\/\{emailHash\} \{\s*allow read, write: if false;/);
+  assert.match(verifyRoute, /verifyIdToken\(token\)/);
+  assert.match(verifyRoute, /randomInt\(100000, 1000000\)/);
+  assert.match(verifyRoute, /VERIFY_ATTEMPT_LIMIT = 5/);
+  assert.match(verifyRoute, /body\.action === 'verify'/);
+  assert.doesNotMatch(verifyRoute, /body\.email|body\.displayName/);
+  assert.match(emailSender, /escapeHtml\(displayName\)/);
+  assert.match(emailSender, /\$\{safeDisplayName\}/);
+});
+
 test('class leaderboard access requires trusted class ownership', () => {
   const rules = read('firestore.rules');
   const userRules = rules.split('match /users/{userId}')[1].split('match /classCodes')[0];

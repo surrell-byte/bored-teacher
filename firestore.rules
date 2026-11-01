@@ -8,7 +8,8 @@ service cloud.firestore {
 
     function isCreator() {
       return signedIn()
-        && request.auth.token.email == 'boredteacherapp@gmail.com';
+        && request.auth.token.email == 'boredteacherapp@gmail.com'
+        && request.auth.token.email_verified == true;
     }
 
     function teacherOwnsClass(classId) {
@@ -63,9 +64,9 @@ service cloud.firestore {
         && (request.resource.data.userId == null || request.resource.data.userId is string)
         && (request.resource.data.userName == null || request.resource.data.userName is string);
       allow read: if request.auth != null
-        && request.auth.token.email == 'boredteacherapp@gmail.com';
+        && isCreator();
       allow update, delete: if request.auth != null
-        && request.auth.token.email == 'boredteacherapp@gmail.com';
+        && isCreator();
     }
 
     match /reviews/{reviewId} {
@@ -102,7 +103,7 @@ service cloud.firestore {
         && request.resource.data.message.size() <= 2000
         && (request.resource.data.userId == null || request.resource.data.userId == request.auth.uid);
       allow read, update, delete: if signedIn()
-        && request.auth.token.email == 'boredteacherapp@gmail.com';
+        && isCreator();
     }
 
     match /users/{userId} {
@@ -116,16 +117,15 @@ service cloud.firestore {
 
       allow read: if request.auth != null && (
         request.auth.uid == userId ||
-        request.auth.token.email == 'boredteacherapp@gmail.com'
+        isCreator()
       );
 
       allow update: if request.auth != null && (
-        request.auth.token.email == 'boredteacherapp@gmail.com' ||
+        isCreator() ||
         (request.auth.uid == userId && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
           'name', 'username', 'usernameLower', 'avatar', 'theme', 'sound', 'games',
           'xp', 'level', 'coins', 'lastGame', 'loginStreak', 'classId',
           'totalPlaySeconds',
-          'emailVerificationCode', 'emailVerificationSentAt', 'emailVerified',
           'welcomeGiftClaimed', 'welcomeGiftId', 'ownedItems', 'lastLogin',
           'isActive', 'updatedAt'
         ]))
@@ -139,7 +139,15 @@ service cloud.firestore {
       );
 
       allow delete: if request.auth != null
-        && request.auth.token.email == 'boredteacherapp@gmail.com';
+        && isCreator();
+    }
+
+    match /emailVerificationCodes/{userId} {
+      allow read, write: if false;
+    }
+
+    match /emailVerificationRateLimits/{emailHash} {
+      allow read, write: if false;
     }
 
     match /classCodes/{classCode} {

@@ -32,7 +32,9 @@ For a manual smoke test, verify:
 
 ## Firebase setup
 
-Create separate Firebase projects for staging and production. Configure the six `NEXT_PUBLIC_FIREBASE_*` values as deployment secrets in both environments. Configure `FIREBASE_ADMIN_SERVICE_ACCOUNT_JSON` as a server-only secret for username sign-in and password reset; its service account must belong to the matching Firebase project. Never commit this credential or expose it through a `NEXT_PUBLIC_*` variable. Username authentication reports a configuration error when the secret is missing. The production build fails when any required public Firebase key is missing.
+Create separate Firebase projects for staging and production. Configure the six `NEXT_PUBLIC_FIREBASE_*` values as deployment secrets in both environments. Configure `FIREBASE_ADMIN_SERVICE_ACCOUNT_JSON` as a server-only secret for username sign-in, password reset, and account email verification; its service account must belong to the matching Firebase project and have the required Authentication and Firestore permissions. Configure `GMAIL_USER` and `GMAIL_APP_PASSWORD` as server-only secrets for verification email delivery. Never commit these credentials or expose them through a `NEXT_PUBLIC_*` variable. Account verification fails closed if the Admin SDK is unavailable. The production build fails when any required public Firebase key is missing.
+
+Creator permissions require a Firebase Auth token whose email is verified. Deploy and test the reviewed Firestore rules in staging before production so the `email_verified` claim and server-only verification collections are enforced.
 
 Class rosters, class scores, and class leaderboard queries are restricted to the owning teacher until a server-verified student membership flow is implemented. Do not loosen these rules based only on a client-controlled `classId`.
 

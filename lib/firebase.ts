@@ -91,14 +91,16 @@ export interface CreatorNotificationItem {
   createdAt?: unknown;
   read?: boolean;
 }
-import { isVerificationExpired } from '@/lib/email-verification';
-
 export type AccountRole = 'teacher' | 'student';
 
 export const CREATOR_EMAIL = 'boredteacherapp@gmail.com';
 
-export function isCreatorUser(user: Pick<User, 'email'> | null | undefined): boolean {
-  return !!user?.email && user.email.trim().toLowerCase() === CREATOR_EMAIL;
+export function isCreatorUser(user: Pick<User, 'email' | 'emailVerified'> | null | undefined): boolean {
+  return Boolean(
+    user?.emailVerified
+    && user.email
+    && user.email.trim().toLowerCase() === CREATOR_EMAIL,
+  );
 }
 
 export interface UserSummary {
@@ -350,8 +352,6 @@ interface UserState {
   isActive?: boolean;
   teacherPro?: boolean;
   emailVerified?: boolean;
-  emailVerificationCode?: string;
-  emailVerificationSentAt?: number | string | null;
   welcomeGiftClaimed?: boolean;
   welcomeGiftId?: string | null;
 }
@@ -379,8 +379,6 @@ async function createUserProfile(uid: string, name: string, email: string, role:
     sound: true,
     teacherPro: false,
     emailVerified: false,
-    emailVerificationCode: '',
-    emailVerificationSentAt: 0,
     welcomeGiftClaimed: false,
     welcomeGiftId: null,
     games: {},
@@ -398,8 +396,7 @@ export async function saveUserState(uid: string, state: Partial<UserState>) {
   if (!uid || !db) return;
   const writableState = Object.fromEntries(Object.entries(state).filter(([key]) => [
     'name', 'username', 'usernameLower', 'avatar', 'theme', 'sound', 'games', 'xp', 'level', 'coins',
-    'lastGame', 'loginStreak', 'classId', 'emailVerificationCode', 'emailVerificationSentAt',
-    'emailVerified', 'welcomeGiftClaimed', 'welcomeGiftId', 'ownedItems', 'lastLogin', 'isActive'
+    'lastGame', 'loginStreak', 'classId', 'welcomeGiftClaimed', 'welcomeGiftId', 'ownedItems', 'lastLogin', 'isActive'
   ].includes(key)));
   try {
     const username = typeof writableState.usernameLower === 'string' ? writableState.usernameLower : '';

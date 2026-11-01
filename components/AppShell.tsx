@@ -7,7 +7,7 @@ import Navbar from './Navbar';
 import Toast from './ui/Toast';
 import AchievementToast from '@/features/achievements/components/AchievementToast';
 import { GameContext } from '@/providers/GameProvider';
-import { isCreatorUser, loadUserState, onAuthStateChanged } from '@/lib/firebase';
+import { onAuthStateChanged } from '@/lib/firebase';
 import { useEffect, useState } from 'react';
 import { GAME_BAR_COLOR } from '@/constants/index';
 import type { CSSProperties } from 'react';
@@ -76,12 +76,9 @@ export default function AppShell({ children }: { children: ReactNode }) {
     if (!pathname || pathname === '/' || pathname === '/auth' || pathname === '/auth/verify') return;
     if (localStorage.getItem('guestUser') === 'true') return;
 
-    return onAuthStateChanged(async user => {
-      if (!user || isCreatorUser(user)) return;
-      const profile = await loadUserState(user.uid);
-      if (profile?.emailVerified === false) {
-        router.replace(`/auth/verify?returnTo=${encodeURIComponent(pathname)}`);
-      }
+    return onAuthStateChanged(user => {
+      if (!user || user.emailVerified) return;
+      router.replace(`/auth/verify?returnTo=${encodeURIComponent(pathname)}`);
     });
   }, [pathname, router]);
 
