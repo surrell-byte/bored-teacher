@@ -6,6 +6,30 @@ const test = require('node:test');
 const root = process.cwd();
 const read = relativePath => fs.readFileSync(path.join(root, relativePath), 'utf8');
 
+test('selected games are restricted to creator access', () => {
+  const access = read('config/game-access.ts');
+  const teacherProIds = access.match(/export const TEACHER_PRO_GAME_IDS = new Set\(\[([\s\S]*?)\]\);/);
+  const creatorOnlyIds = access.match(/export const CREATOR_ONLY_GAME_IDS = new Set\(\[([\s\S]*?)\]\);/);
+  const route = read('app/games/[game]/page.tsx');
+  const hub = read('app/hub/page.tsx');
+  const games = read('app/games/page.tsx');
+  const navbar = read('components/Navbar.tsx');
+  const gameCard = read('components/cards/GameCard.tsx');
+
+  assert.ok(teacherProIds, 'Teacher Pro game IDs should be configured');
+  assert.ok(creatorOnlyIds, 'Creator-only game IDs should be configured');
+  for (const gameId of ['cannonclash', 'volcanoescape', 'doordash', 'basketballshoot', 'miniracer']) {
+    assert.doesNotMatch(teacherProIds[1], new RegExp(`'${gameId}'`), `${gameId} should not require Teacher Pro`);
+    assert.match(creatorOnlyIds[1], new RegExp(`'${gameId}'`), `${gameId} should require creator access`);
+  }
+  assert.match(route, /CREATOR_ONLY_GAME_IDS\.has\(gameId\) && !isCreator/);
+  assert.match(access, /export function isVisibleToUser\(gameId: string, isCreator: boolean\)[\s\S]*return isCreator \|\| !CREATOR_ONLY_GAME_IDS\.has\(gameId\)/);
+  assert.match(hub, /isVisibleToUser\(id, isCreator\)/);
+  assert.match(games, /isVisibleToUser\(gameId, isCreator\)/);
+  assert.match(navbar, /isVisibleToUser\(gameId, creator\)/);
+  assert.match(gameCard, /creatorOnly \? 'Creator-only game' : 'Teacher Pro game'/);
+});
+
 test('Know It All offers Chinese and Thai help through the shared game navbar', () => {
   const component = read('games/know-it-all/KnowItAll.jsx');
   const route = read('app/games/[game]/page.tsx');
@@ -306,15 +330,15 @@ test('Look and Say validates question data and has a visible empty-state guard',
   assert.match(styles, /\.look-and-say-game \.finish .*display: flex/);
 });
 
-test('portrait game controls and start actions remain visible and usable', () => {
+test('portrait game controls remain usable and Find My Food splash is background-only', () => {
   const lookAndSay = read('games/look-and-say/LookAndSay.css');
   const findMyFood = read('games/find-my-food/FindMyFood.jsx');
   const miniRacer = read('games/mini-racer/MiniRacer.jsx');
   const mobileShell = read('app/globals.css');
 
   assert.match(lookAndSay, /\.start-hotspot[\s\S]*background: #075985;[\s\S]*color: #fff/);
-  assert.match(findMyFood, /className="ff-welcome-start-hotspot"/);
-  assert.match(findMyFood, /className="ff-welcome-start-hotspot"[\s\S]*?>Start Game<\/button>/);
+  assert.match(findMyFood, /if \(screen === "welcome" && variant === "food"\) return \([\s\S]*?<style>\{STYLES\}<\/style>\s*<\/div>\s*\);/);
+  assert.doesNotMatch(findMyFood, /ff-welcome-start-hotspot/);
   assert.match(miniRacer, /aria-label="Steer left"[\s\S]*onPointerDown/);
   assert.match(miniRacer, /aria-label="Accelerate"[\s\S]*onPointerDown/);
   assert.match(mobileShell, /game-shell-topbar-stats > label\.game-shell-header-action[\s\S]*width: 116px/);

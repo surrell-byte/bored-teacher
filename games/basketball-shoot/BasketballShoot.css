@@ -1,0 +1,244 @@
+.basketball-game {
+  min-height: 100%;
+  padding: clamp(12px, 3vw, 28px);
+  color: #f7f4ed;
+  background:
+    radial-gradient(ellipse at 10% 0%, rgba(245, 158, 11, .13), transparent 35%),
+    #111827;
+  font-family: var(--font-nunito, Nunito, system-ui, sans-serif);
+}
+
+.basketball-shell {
+  width: min(100%, 1080px);
+  margin: 0 auto;
+  padding: clamp(14px, 3vw, 27px);
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 24px;
+  background: linear-gradient(145deg, #1d273b, #151d2e);
+  box-shadow: 0 25px 80px rgba(0, 0, 0, .35);
+}
+
+.basketball-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 18px;
+}
+
+.basketball-title {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.basketball-heading p {
+  margin: 0 0 5px;
+  color: #fbbf24;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .14em;
+}
+
+.basketball-heading h1 {
+  margin: 0;
+  font-size: clamp(30px, 5vw, 46px);
+  font-weight: 1000;
+  line-height: 1;
+}
+
+.basketball-heading span {
+  display: block;
+  margin-top: 7px;
+  color: #cbd5e1;
+}
+
+.basketball-artwork {
+  display: block;
+  width: 88px;
+  height: 74px;
+  border: 2px solid rgba(255, 255, 255, .28);
+  border-radius: 13px;
+  background-image: url("/assets/games/sports-quiz/basketball-1.jpg");
+  background-position: center;
+  background-size: cover;
+}
+
+.basketball-stats {
+  display: flex;
+  gap: 8px;
+}
+
+.basketball-stats div {
+  display: grid;
+  min-width: 75px;
+  justify-items: center;
+  padding: 8px 11px;
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 11px;
+  background: rgba(255, 255, 255, .05);
+}
+
+.basketball-stats small {
+  color: #aeb9ca;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .09em;
+}
+
+.basketball-stats strong {
+  margin-top: 2px;
+  color: #fcd34d;
+  font-size: 21px;
+}
+
+.basketball-intro {
+  display: grid;
+  min-height: 390px;
+  align-content: center;
+  justify-items: center;
+  padding: 25px;
+  border: 1px solid rgba(255, 255, 255, .1);
+  border-radius: 18px;
+  background: linear-gradient(180deg, #30304a, #25283e);
+  text-align: center;
+}
+
+.basketball-intro-ball {
+  font-size: 65px;
+  line-height: 1;
+}
+
+.basketball-intro h2 {
+  margin: 18px 0 8px;
+  font-size: clamp(24px, 4vw, 34px);
+}
+
+.basketball-intro p {
+  width: min(100%, 600px);
+  margin: 0 0 22px;
+  color: #d3d9e5;
+  line-height: 1.55;
+}
+
+.basketball-primary {
+  min-height: 45px;
+  padding: 11px 22px;
+  border: 0;
+  border-radius: 12px;
+  background: linear-gradient(100deg, #f97316, #fbbf24);
+  color: #261b17;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 950;
+  transition: filter .15s ease, transform .15s ease;
+}
+
+.basketball-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+}
+
+.basketball-primary:disabled {
+  cursor: not-allowed;
+  opacity: .58;
+}
+
+.basketball-primary:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
+
+.basketball-court {
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, .15);
+  border-radius: 17px;
+  background: #32253a;
+}
+
+.basketball-court canvas {
+  display: block;
+  width: 100%;
+  aspect-ratio: 960 / 500;
+}
+
+.basketball-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 18px;
+  margin-top: 15px;
+}
+
+.basketball-controls label {
+  display: grid;
+  gap: 8px;
+  color: #e4e9f2;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.basketball-controls label span {
+  display: flex;
+  justify-content: space-between;
+}
+
+.basketball-controls label b {
+  color: #fcd34d;
+}
+
+.basketball-controls input {
+  width: 100%;
+  accent-color: #f59e0b;
+}
+
+.basketball-message {
+  min-height: 24px;
+  margin: 13px 0 0;
+  color: #fde68a;
+  font-weight: 850;
+  text-align: center;
+}
+
+.basketball-result {
+  min-height: 350px;
+}
+
+@media (max-width: 720px) {
+  .basketball-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .basketball-stats {
+    width: 100%;
+  }
+
+  .basketball-stats div {
+    flex: 1;
+  }
+
+  .basketball-controls {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .basketball-controls button {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 420px) {
+  .basketball-artwork {
+    width: 64px;
+    height: 64px;
+  }
+
+  .basketball-heading span {
+    font-size: 12px;
+  }
+
+  .basketball-stats div {
+    min-width: 0;
+    padding: 7px 5px;
+  }
+}

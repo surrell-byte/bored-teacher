@@ -12,7 +12,7 @@ import {
 import GameCard from '@/components/cards/GameCard';
 import ManagePlayersModal from '@/features/players/components/ManagePlayersModal';
 import { preloadGame } from '@/games/catalog.components';
-import { COMING_SOON_GAME_IDS } from '@/config/game-access';
+import { COMING_SOON_GAME_IDS, isVisibleToUser } from '@/config/game-access';
 
 const CATEGORY_OPTIONS = [
   'All Categories',
@@ -45,7 +45,7 @@ export default function GamesPage() {
   const [showManage, setShowManage] = useState(false);
   const [isCreator, setIsCreator] = useState(false);
   const availableGameIds = useMemo(
-    () => GAME_KEYS.filter(gameId => isCreator || !COMING_SOON_GAME_IDS.has(gameId)),
+    () => GAME_KEYS.filter(gameId => isCreator || (!COMING_SOON_GAME_IDS.has(gameId) && isVisibleToUser(gameId, isCreator))),
     [isCreator],
   );
 

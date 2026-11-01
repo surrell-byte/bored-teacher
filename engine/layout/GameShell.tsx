@@ -86,8 +86,21 @@ export default function GameShell({
   const [soundOn, setSoundOn] = useState(true);
   const [showExitNotice, setShowExitNotice] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [recordingState, setRecordingState] = useState<'idle' | 'requesting' | 'previewing' | 'recording' | 'stopping'>('idle');
+  const [recordingMessage, setRecordingMessage] = useState('');
+  const [recordingPreview, setRecordingPreview] = useState('');
   const [helpLanguage, setHelpLanguage] = useState<GameHelpLanguage>('off');
   const shellRef = useRef<HTMLDivElement>(null);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const recordingStreamRef = useRef<MediaStream | null>(null);
+  useEffect(() => () => {
+    const recorder = recorderRef.current;
+    if (recorder && recorder.state !== 'inactive') {
+      recorder.onstop = null;
+      recorder.stop();
+    }
+    recordingStreamRef.current?.getTracks().forEach(track => track.stop());
+  }, []);
   const shellText = (text: string) => translateGameShellText(text, helpLanguage);
   const shellLabel = (english: string) => {
     const translation = getGameHelpTranslation(english, helpLanguage);
@@ -145,6 +158,12 @@ export default function GameShell({
     setSoundEnabled(soundOn);
   }, [soundOn]);
 
+  useEffect(() => () => {
+    const recorder = recorderRef.current;
+    if (recorder && recorder.state !== 'inactive') recorder.stop();
+    else recordingStreamRef.current?.getTracks().forEach(track => track.stop());
+  }, []);
+
   useEffect(() => {
     if (!mobileMenuOpen) return undefined;
     const closeOnEscape = (event: KeyboardEvent) => {
@@ -199,6 +218,187 @@ export default function GameShell({
     onRestart?.();
     emit('restarted');
   }, [emit, onRestart]);
+
+  const stopRecording = useCallback(() => {
+    const recorder = recorderRef.current;
+    if (!recorder || recorder.state === 'inactive') return;
+    setRecordingState('stopping');
+    setRecordingMessage('Finishing your gameplay recording…');
+    recorder.stop();
+  }, []);
+
+  const cancelRecordingPreview = useCallback(() => {
+    const stream = recordingStreamRef.current;
+    recordingStreamRef.current = null;
+    stream?.getTracks().forEach(track => track.stop());
+    setRecordingPreview('');
+    setRecordingState('idle');
+    setRecordingMessage('Screen preview cancelled.');
+  }, []);
+
+  const startRecording = useCallback(async () => {
+    if (recordingState !== 'idle') return;
+    setRecordingMessage('');
+    if (!navigator.mediaDevices?.getDisplayMedia || typeof MediaRecorder === 'undefined') {
+      setRecordingMessage('MP4 screen recording is not supported in this browser.');
+      return;
+    }
+
+    const mimeType = [
+      'video/mp4;codecs=avc3.42E01E',
+      'video/mp4;codecs=avc1.42E01E',
+      'video/mp4',
+    ].find(type => MediaRecorder.isTypeSupported(type));
+    if (!mimeType) {
+      setRecordingMessage('This browser cannot record MP4. Try an up-to-date version of Chrome, Edge, or Safari.');
+      return;
+    }
+
+    setRecordingState('requesting');
+    setRecordingMessage('Choose this game tab in the browser prompt.');
+    let stream: MediaStream | null = null;
+    try {
+      const captureOptions: DisplayMediaStreamOptions & { preferCurrentTab?: boolean } = {
+        video: { displaySurface: 'browser', frameRate: { ideal: 30, max: 30 } },
+        audio: false,
+        preferCurrentTab: true,
+      };
+      stream = await navigator.mediaDevices.getDisplayMedia(captureOptions);
+      const videoTrack = stream.getVideoTracks()[0];
+      if (!videoTrack) {
+        throw new Error('The selected screen did not provide a video track.');
+      }
+
+      const previewVideo = document.createElement('video');
+      previewVideo.muted = true;
+      previewVideo.playsInline = true;
+      previewVideo.srcObject = stream;
+      try {
+        await new Promise<void>((resolve, reject) => {
+          const timeout = window.setTimeout(() => reject(new Error('The selected screen did not provide a video preview. Choose this game tab and try again.')), 10_000);
+          previewVideo.onloadeddata = () => {
+            window.clearTimeout(timeout);
+            resolve();
+          };
+          previewVideo.onerror = () => {
+            window.clearTimeout(timeout);
+            reject(new Error('Could not preview the selected screen. Choose this game tab and try again.'));
+          };
+          void previewVideo.play().catch(error => {
+            window.clearTimeout(timeout);
+            reject(error);
+          });
+        });
+        if (!previewVideo.videoWidth || !previewVideo.videoHeight) {
+          throw new Error('The selected screen preview is blank. Choose this game tab and try again.');
+        }
+        const previewCanvas = document.createElement('canvas');
+        const scale = Math.min(1, 480 / previewVideo.videoWidth);
+        previewCanvas.width = Math.round(previewVideo.videoWidth * scale);
+        previewCanvas.height = Math.round(previewVideo.videoHeight * scale);
+        const previewContext = previewCanvas.getContext('2d');
+        if (!previewContext) throw new Error('Could not create a preview of the selected screen.');
+        previewContext.drawImage(previewVideo, 0, 0, previewCanvas.width, previewCanvas.height);
+        setRecordingPreview(previewCanvas.toDataURL('image/jpeg', 0.78));
+      } finally {
+        previewVideo.pause();
+        previewVideo.srcObject = null;
+      }
+
+      recordingStreamRef.current = stream;
+      setRecordingState('previewing');
+      setRecordingMessage('Check the preview before recording. If it does not show the game, cancel and choose this tab.');
+      videoTrack.addEventListener('ended', () => {
+        if (recordingStreamRef.current !== stream) return;
+        const activeRecorder = recorderRef.current;
+        if (activeRecorder && activeRecorder.state !== 'inactive') {
+          activeRecorder.stop();
+        } else {
+          recordingStreamRef.current = null;
+          setRecordingPreview('');
+          setRecordingState('idle');
+          setRecordingMessage('Screen sharing ended before recording started.');
+        }
+      }, { once: true });
+    } catch (error) {
+      recordingStreamRef.current = null;
+      stream?.getTracks().forEach(track => track.stop());
+      recorderRef.current = null;
+      setRecordingPreview('');
+      setRecordingState('idle');
+      if (error instanceof DOMException && ['AbortError', 'NotAllowedError'].includes(error.name)) {
+        setRecordingMessage('Screen sharing was cancelled. Choose this game tab to start recording.');
+      } else {
+        console.error('Could not start gameplay screen recording.', error);
+        setRecordingMessage(error instanceof Error ? error.message : 'Could not preview the screen for recording.');
+      }
+    }
+  }, [recordingState]);
+
+  const beginRecording = useCallback(() => {
+    const stream = recordingStreamRef.current;
+    if (recordingState !== 'previewing' || !stream) return;
+    try {
+      const mimeType = [
+        'video/mp4;codecs=avc3.42E01E',
+        'video/mp4;codecs=avc1.42E01E',
+        'video/mp4',
+      ].find(type => MediaRecorder.isTypeSupported(type));
+      if (!mimeType) {
+        throw new Error('This browser cannot record MP4. Try an up-to-date version of Chrome, Edge, or Safari.');
+      }
+      const recorder = new MediaRecorder(stream, { mimeType });
+      const chunks: Blob[] = [];
+      recorderRef.current = recorder;
+      recorder.ondataavailable = event => {
+        if (event.data.size > 0) chunks.push(event.data);
+      };
+      recorder.onerror = event => {
+        console.error('Gameplay screen recording failed.', event);
+        setRecordingMessage('The recording failed. Try again or use your device’s screen recorder.');
+      };
+      recorder.onstop = () => {
+        const blob = new Blob(chunks, { type: recorder.mimeType });
+        recorderRef.current = null;
+        recordingStreamRef.current = null;
+        stream.getTracks().forEach(track => track.stop());
+        setRecordingState('idle');
+        setRecordingPreview('');
+        if (!blob.size) {
+          setRecordingMessage('No video was captured. Check the preview and record for a little longer.');
+          return;
+        }
+        if (!blob.type.includes('mp4')) {
+          console.error('The browser returned a non-MP4 gameplay recording.', { type: blob.type });
+          setRecordingMessage('This browser did not produce an MP4. Try an up-to-date version of Chrome, Edge, or Safari.');
+          return;
+        }
+
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${gameId}-gameplay-${new Date().toISOString().replace(/[:.]/g, '-')}.mp4`;
+        link.click();
+        window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+        const fileSize = blob.size >= 1_048_576
+          ? `${(blob.size / 1_048_576).toFixed(1)} MB`
+          : `${Math.max(1, Math.round(blob.size / 1024))} KB`;
+        setRecordingMessage(`Gameplay recording downloaded as MP4 (${fileSize}).`);
+      };
+      recorder.start(1000);
+      setRecordingPreview('');
+      setRecordingState('recording');
+      setRecordingMessage('Recording gameplay as MP4. Stop to download your video.');
+    } catch (error) {
+      recordingStreamRef.current = null;
+      stream.getTracks().forEach(track => track.stop());
+      recorderRef.current = null;
+      setRecordingPreview('');
+      setRecordingState('idle');
+      console.error('Could not start MP4 gameplay recording.', error);
+      setRecordingMessage(error instanceof Error ? error.message : 'Could not start MP4 screen recording.');
+    }
+  }, [gameId, recordingState]);
 
   const toggleFullscreen = useCallback(async () => {
     const fullscreenDocument = document as LegacyFullscreenDocument;
@@ -303,6 +503,22 @@ export default function GameShell({
                     <span aria-hidden="true">{soundOn ? '🔊' : '🔇'}</span>
                     <span className="game-shell-action-label">{shellLabel(soundOn ? 'Sound' : 'Sound off')}</span>
                   </button>
+                  <button
+                    type="button"
+                    className={`game-shell-header-action game-shell-recorder-control${recordingState === 'recording' ? ' is-recording' : ''}`}
+                    onClick={() => {
+                      if (recordingState === 'recording') stopRecording();
+                      else if (recordingState === 'previewing') cancelRecordingPreview();
+                      else void startRecording();
+                    }}
+                    disabled={recordingState === 'requesting' || recordingState === 'stopping'}
+                    aria-label={shellText(recordingState === 'recording' ? 'Stop gameplay recording' : recordingState === 'previewing' ? 'Cancel screen preview' : 'Record gameplay as MP4')}
+                    aria-pressed={recordingState === 'recording'}
+                    title={shellText(recordingState === 'recording' ? 'Stop gameplay recording' : recordingState === 'previewing' ? 'Cancel screen preview' : 'Record gameplay as MP4')}
+                  >
+                    <span aria-hidden="true">{recordingState === 'recording' ? '⏹' : recordingState === 'requesting' ? '◌' : '⏺'}</span>
+                    <span className="game-shell-action-label">{shellLabel(recordingState === 'recording' ? 'Stop recording' : recordingState === 'requesting' ? 'Choose screen' : recordingState === 'previewing' ? 'Cancel preview' : 'Record MP4')}</span>
+                  </button>
                   {!hidePauseControl && <button type="button" className="game-shell-header-action game-shell-mobile-secondary" onClick={paused ? resume : pause} aria-pressed={paused} aria-label={shellText(paused ? 'Resume game' : 'Pause game')} title={shellText(paused ? 'Resume game' : 'Pause game')}>
                     <span aria-hidden="true">{paused ? '▶' : '⏸'}</span>
                     <span className="game-shell-action-label">{shellLabel(paused ? 'Resume' : 'Pause')}</span>
@@ -371,6 +587,22 @@ export default function GameShell({
                           <span>{shellLabel('Sound')}</span>
                           <small>{shellLabel(soundOn ? 'On' : 'Off')}</small>
                         </button>
+                        <button
+                          type="button"
+                          role="menuitem"
+                          className={recordingState === 'recording' ? 'is-recording' : undefined}
+                          disabled={recordingState === 'requesting' || recordingState === 'stopping'}
+                          onClick={() => {
+                            setMobileMenuOpen(false);
+                            if (recordingState === 'recording') stopRecording();
+                            else if (recordingState === 'previewing') cancelRecordingPreview();
+                            else void startRecording();
+                          }}
+                        >
+                          <span aria-hidden="true">{recordingState === 'recording' ? '⏹' : recordingState === 'requesting' ? '◌' : '⏺'}</span>
+                          <span>{shellLabel(recordingState === 'recording' ? 'Stop recording' : recordingState === 'requesting' ? 'Choose screen' : recordingState === 'previewing' ? 'Cancel preview' : 'Record MP4')}</span>
+                          {recordingState === 'recording' && <small>REC</small>}
+                        </button>
                         {!hidePauseControl && <button type="button" role="menuitem" onClick={() => { setMobileMenuOpen(false); paused ? resume() : pause(); }}>
                           <span aria-hidden="true">{paused ? '▶' : '⏸'}</span>
                           <span>{shellLabel(paused ? 'Resume' : 'Pause')}</span>
@@ -433,10 +665,31 @@ export default function GameShell({
           </div>
         </ErrorBoundary>
       </GameLayout>
+      {recordingState === 'previewing' && recordingPreview && (
+        <section className="game-shell-recording-preview" role="dialog" aria-labelledby="game-shell-recording-preview-title">
+          <h2 id="game-shell-recording-preview-title">Check the screen preview</h2>
+          <p>Make sure this shows the game. If it is blank or shows another screen, cancel and choose this game tab.</p>
+          <div
+            className="game-shell-recording-preview-image"
+            role="img"
+            aria-label="Preview of the screen selected for recording"
+            style={{ backgroundImage: `url("${recordingPreview}")` }}
+          />
+          <div className="game-shell-recording-preview-actions">
+            <button type="button" className="game-shell-primary-action" onClick={beginRecording}>Start MP4 recording</button>
+            <button type="button" className="game-shell-secondary-action" onClick={cancelRecordingPreview}>Cancel</button>
+          </div>
+        </section>
+      )}
       {fullscreenMessage && (
         <div className="game-shell-fullscreen-message" role="status">
           <span>{fullscreenMessage}</span>
           <button type="button" onClick={() => setFullscreenMessage('')} aria-label="Dismiss fullscreen message">×</button>
+        </div>
+      )}
+      {recordingMessage && (
+        <div className={`game-shell-recording-status${recordingState === 'recording' ? ' is-active' : ''}`} role="status" aria-live="polite">
+          <span aria-hidden="true">{recordingState === 'recording' ? '● ' : ''}</span>{recordingMessage}
         </div>
       )}
       </GameTranslationProvider>

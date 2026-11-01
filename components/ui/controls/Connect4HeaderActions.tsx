@@ -10,11 +10,11 @@ export default function Connect4HeaderActions({ hud }: { hud: Connect4Hud | null
 
   return (
     <>
-      <button type="button" className="game-shell-header-action" onClick={hud.onReset} title="Reset match">
-        <span aria-hidden="true">⟳</span><span className="game-shell-action-label">Reset</span>
+      <button type="button" role="menuitem" onClick={hud.onReset} title="Reset match">
+        <span aria-hidden="true">⟳</span><span>Reset</span>
       </button>
-      <button type="button" className="game-shell-header-action" onClick={hud.onHome} title="Back to menu">
-        <span aria-hidden="true">⌂</span><span className="game-shell-action-label">Home</span>
+      <button type="button" role="menuitem" onClick={hud.onHome} title="Back to menu">
+        <span aria-hidden="true">⌂</span><span>Home</span>
       </button>
     </>
   );

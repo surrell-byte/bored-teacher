@@ -1,0 +1,695 @@
+.volcano-escape {
+  min-height: 100%;
+  padding: clamp(10px, 2.5vw, 24px);
+  color: #fff8e9;
+  background: #101629;
+  font-family: var(--font-nunito, Nunito, system-ui, sans-serif);
+}
+
+.volcano-escape.is-full-screen-canvas {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  box-sizing: border-box;
+  place-items: center;
+  overflow: auto;
+  padding: 0;
+  background-image: url("/assets/images/volcano-bg-1.webp");
+  background-position: center;
+  background-size: cover;
+}
+
+.ve-welcome,
+.ve-setup,
+.ve-winner,
+.ve-game-shell,
+.ve-menu-screen {
+  width: min(100%, 1120px);
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, .14);
+  border-radius: 24px;
+  background: #1b2036;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, .38);
+}
+
+.ve-welcome {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  place-items: center;
+  background-image: url("/assets/images/volcano-bg-1.webp");
+  background-position: center;
+  background-size: cover;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.ve-welcome-art {
+  width: min(560px, calc(100% - 34px));
+  padding: clamp(24px, 5vw, 46px);
+  border: 2px solid rgba(255, 221, 130, .72);
+  border-radius: 25px;
+  background: #18203a;
+  box-shadow: 0 16px 55px rgba(0, 0, 0, .5);
+  text-align: center;
+}
+
+.ve-eyebrow {
+  margin: 0 0 7px;
+  color: #ffd05a;
+  font-size: 11px;
+  font-weight: 1000;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.ve-welcome h1 {
+  margin: 8px 0 12px;
+  color: #fff4d3;
+  font-size: clamp(42px, 8vw, 74px);
+  font-weight: 1000;
+  letter-spacing: .04em;
+  line-height: .87;
+  text-shadow: 0 5px 0 #9c3d20, 0 0 25px rgba(255, 155, 40, .5);
+}
+
+.ve-welcome h1 span { color: #ff8a3d; }
+
+.ve-welcome-art > p:not(.ve-eyebrow) {
+  color: #f0e2d0;
+  font-size: clamp(15px, 2.4vw, 19px);
+  line-height: 1.5;
+}
+
+.ve-welcome-art small {
+  display: block;
+  margin-top: 15px;
+  color: #d7d9de;
+}
+
+.ve-button,
+.ve-menu-button,
+.ve-link-button {
+  min-height: 43px;
+  border: 0;
+  border-radius: 12px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 950;
+  transition: filter .15s ease, transform .15s ease;
+}
+
+.ve-button {
+  padding: 11px 20px;
+  background: linear-gradient(110deg, #ffae31, #ff6a2c);
+  color: #2b1d1b;
+  box-shadow: 0 6px 0 #a84023;
+}
+
+.ve-button:hover:not(:disabled),
+.ve-menu-button:hover,
+.ve-link-button:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+}
+
+.ve-button:disabled { cursor: not-allowed; opacity: .5; }
+
+.ve-button:focus-visible,
+.ve-menu-button:focus-visible,
+.ve-link-button:focus-visible,
+.ve-spin-button:focus-visible {
+  outline: 3px solid #fff3a6;
+  outline-offset: 3px;
+}
+
+.ve-setup { padding: clamp(20px, 4vw, 34px); }
+.ve-setup > h1 { margin: 0 0 19px; font-size: clamp(30px, 5vw, 42px); }
+
+.ve-menu-screen {
+  width: min(900px, calc(100% - 32px));
+  padding: clamp(24px, 5vw, 46px);
+  text-align: center;
+}
+
+.ve-menu-screen h1 { margin: 0 0 22px; font-size: clamp(32px, 5vw, 46px); }
+
+.ve-mode-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.ve-mode-card {
+  display: grid;
+  min-height: 190px;
+  align-content: center;
+  justify-items: center;
+  gap: 10px;
+  padding: 22px;
+  border: 2px solid rgba(255, 221, 130, .72);
+  border-radius: 18px;
+  background: #252a42;
+  color: #fff8e9;
+  cursor: pointer;
+  font: inherit;
+  transition: transform .15s ease, filter .15s ease;
+}
+
+.ve-mode-card:hover { transform: translateY(-3px); filter: brightness(1.1); }
+.ve-mode-card:focus-visible { outline: 3px solid #fff3a6; outline-offset: 3px; }
+.ve-mode-card > span { font-size: 42px; }
+.ve-mode-card strong { font-size: 23px; }
+.ve-mode-card small { max-width: 290px; color: #d7d9de; font-size: 14px; line-height: 1.5; }
+.ve-menu-screen > .ve-link-button { margin-top: 20px; }
+
+.ve-setup-grid {
+  display: grid;
+  grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.ve-setup-card {
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, .1);
+  border-radius: 17px;
+  background: #252a42;
+}
+
+.ve-label {
+  display: grid;
+  gap: 7px;
+  margin-bottom: 13px;
+  color: #e4e6ed;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.ve-label select,
+.ve-label input,
+.ve-team-name input,
+.ve-setup-card textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #525b77;
+  border-radius: 10px;
+  background: #171d31;
+  color: white;
+  font: inherit;
+}
+
+.ve-label select,
+.ve-label input,
+.ve-team-name input { min-height: 42px; padding: 8px 11px; }
+
+.ve-setup-actions { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.ve-validation { margin: 10px 0 0 !important; color: #fecaca !important; }
+
+.ve-team-name {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 8px 0;
+}
+
+.ve-team-name span {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+}
+
+.ve-setup-card p { margin: -5px 0 10px; color: #c3cada; font-size: 13px; }
+.ve-setup-card textarea { min-height: 220px; padding: 12px; resize: vertical; line-height: 1.5; }
+
+.ve-game-shell { padding: clamp(12px, 2.3vw, 23px); }
+
+.volcano-escape.is-playing {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.is-playing .ve-game-shell {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.ve-game-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 13px;
+  margin-bottom: 13px;
+}
+
+.ve-mini-title { display: flex; align-items: center; gap: 10px; }
+.ve-mini-title > span { font-size: 38px; }
+.ve-mini-title h1 { margin: 0; font-size: clamp(18px, 3vw, 26px); font-weight: 1000; }
+.ve-mini-title .ve-eyebrow { margin-bottom: 3px; font-size: 9px; }
+
+.ve-active-team {
+  padding: 9px 13px;
+  border: 2px solid var(--team-color);
+  border-radius: 99px;
+  background: #242a40;
+  color: white;
+  font-weight: 900;
+}
+
+.ve-menu-button,
+.ve-link-button {
+  padding: 8px 13px;
+  border: 1px solid rgba(255, 255, 255, .2);
+  background: #30354b;
+  color: #fff;
+}
+
+.ve-scene-menu {
+  position: absolute;
+  z-index: 5;
+  top: 10px;
+  left: 10px;
+}
+
+.ve-score-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 10px 10px 0;
+}
+
+.ve-score-card {
+  display: grid;
+  grid-template-columns: 30px 1fr auto;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid color-mix(in srgb, var(--team-color) 45%, transparent);
+  border-radius: 12px;
+  background: #20263a;
+  opacity: .76;
+}
+
+.ve-score-card.active {
+  border: 2px solid var(--team-color);
+  opacity: 1;
+}
+
+.ve-score-card > span { font-size: 21px; }
+.ve-score-card strong { overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.ve-score-card b { color: var(--team-color); font-size: 15px; }
+.ve-score-card small { grid-column: 2 / -1; color: #bbf7d0; font-size: 8px; font-weight: 950; }
+
+.ve-scene {
+  position: relative;
+  flex: 1 1 0;
+  min-height: clamp(390px, 54vw, 560px);
+  overflow: hidden;
+  isolation: isolate;
+  border: 2px solid #26314a;
+  border-radius: 17px;
+  background-image: url("/assets/images/volcano-bg-1.webp");
+  background-position: center;
+  background-size: cover;
+}
+
+.is-playing .ve-scene { min-height: 0; }
+
+.ve-route {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.ve-start-boat {
+  position: absolute;
+  z-index: 3;
+  top: 63%;
+  left: 3%;
+  display: grid;
+  justify-items: center;
+  color: white;
+  font-size: 31px;
+  filter: drop-shadow(0 3px 4px rgba(0, 0, 0, .6));
+}
+
+.ve-boat-crews {
+  display: flex;
+  justify-content: center;
+  margin-bottom: -4px;
+}
+
+.ve-boat-crews i {
+  display: grid;
+  width: 23px;
+  height: 23px;
+  place-items: center;
+  border: 2px solid white;
+  border-radius: 50%;
+  background: var(--team-color);
+  font-size: 14px;
+  font-style: normal;
+  line-height: 1;
+}
+
+.ve-boat-emoji {
+  line-height: 1;
+}
+
+.ve-start-label {
+  margin-top: -3px;
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: #12355c;
+  font-size: 8px;
+  font-weight: 1000;
+  letter-spacing: .08em;
+}
+
+.ve-track-tile {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  width: clamp(34px, 5.3vw, 52px);
+  height: clamp(32px, 4.4vw, 44px);
+  place-items: center;
+  border: 2px solid rgba(255, 255, 255, .84);
+  border-radius: 14px;
+  background: #0caa67;
+  box-shadow: 0 4px 0 rgba(0, 58, 46, .42), 0 4px 12px rgba(0, 0, 0, .3);
+  color: #fff;
+  font-size: clamp(17px, 2.4vw, 24px);
+  font-weight: 1000;
+  transform: translate(-50%, -50%);
+}
+
+.ve-track-tile:nth-of-type(4n + 1) { background: #0caa67; }
+.ve-track-tile:nth-of-type(4n + 3) { background: #e23b32; }
+.ve-track-tile.shield { outline: 2px solid #27e5e5; }
+.ve-track-tile.boost { outline: 2px solid #ffd439; }
+
+.ve-pawns {
+  position: absolute;
+  top: -17px;
+  left: 50%;
+  display: flex;
+  transform: translateX(-50%);
+}
+
+.ve-pawns i {
+  display: grid;
+  width: 23px;
+  height: 23px;
+  place-items: center;
+  border: 2px solid white;
+  border-radius: 50%;
+  background: var(--team-color);
+  font-size: 14px;
+  font-style: normal;
+  line-height: 1;
+}
+
+.ve-finish {
+  position: absolute;
+  z-index: 3;
+  padding: 6px 8px;
+  border: 2px solid white;
+  border-radius: 10px;
+  background: #0caa67;
+  color: white;
+  font-size: 10px;
+  font-weight: 1000;
+  line-height: 1.15;
+  text-align: center;
+  transform: translate(-50%, -50%);
+}
+
+.ve-spinner-card {
+  position: absolute;
+  z-index: 4;
+  top: 16px;
+  right: 16px;
+  display: grid;
+  justify-items: center;
+  gap: 7px;
+  padding: 10px 12px 12px;
+  border: 2px solid rgba(255, 223, 143, .75);
+  border-radius: 17px;
+  background: #18213a;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, .37);
+}
+
+.ve-spinner-caption {
+  color: #ffe295;
+  font-size: 9px;
+  font-weight: 1000;
+  letter-spacing: .12em;
+}
+
+.ve-wheel-wrap {
+  position: relative;
+  width: clamp(145px, 21vw, 210px);
+  aspect-ratio: 1;
+}
+
+.ve-wheel-pointer {
+  position: absolute;
+  z-index: 3;
+  top: -5px;
+  left: 50%;
+  color: #fff;
+  font-size: 28px;
+  line-height: 1;
+  filter: drop-shadow(0 2px 1px #192033);
+  transform: translateX(-50%);
+}
+
+.ve-wheel {
+  position: absolute;
+  inset: 3px;
+  overflow: hidden;
+  border: 4px solid #10192b;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    #08ae61 0deg 60deg,
+    #ff6a28 60deg 120deg,
+    #09a8e8 120deg 180deg,
+    #922ff2 180deg 240deg,
+    #c90008 240deg 300deg,
+    #08ae61 300deg 360deg
+  );
+  box-shadow: 0 4px 0 #11192a, inset 0 0 0 2px rgba(255, 255, 255, .65);
+  transition: transform 3.1s cubic-bezier(.08, .74, .11, 1);
+}
+
+.ve-wheel-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  width: 25%;
+  height: 25%;
+  place-items: center;
+  color: #fff;
+  font-size: clamp(20px, 3vw, 31px);
+  font-weight: 1000;
+  text-shadow: 0 2px 2px rgba(0, 0, 0, .28);
+  transform: translate(-50%, -50%) rotate(var(--angle)) translateY(calc(clamp(145px, 21vw, 210px) * -.31)) rotate(calc(var(--angle) * -1));
+}
+
+.ve-wheel-label-0 { --angle: 30deg; }
+.ve-wheel-label-1 { --angle: 90deg; }
+.ve-wheel-label-2 { --angle: 150deg; }
+.ve-wheel-label-3 { --angle: 210deg; }
+.ve-wheel-label-4 { --angle: 270deg; }
+.ve-wheel-label-5 { --angle: 330deg; }
+.ve-wheel-volcano { font-size: clamp(13px, 2vw, 20px); }
+
+.ve-wheel-hub {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  width: 25%;
+  height: 25%;
+  place-items: center;
+  border: 3px solid #fff7db;
+  border-radius: 50%;
+  background: #ffdc65;
+  color: #fff;
+  font-size: 21px;
+  transform: translate(-50%, -50%);
+}
+
+.ve-spin-button {
+  min-width: 120px;
+  min-height: 37px;
+  border: 0;
+  border-radius: 999px;
+  background: #ffca44;
+  color: #322315;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 1000;
+}
+
+.ve-spin-button:disabled { cursor: wait; opacity: .65; }
+.ve-spin-hint { color: #c5d0e4; font-size: 11px; font-weight: 800; }
+
+.ve-landmark {
+  position: absolute;
+  z-index: 2;
+  top: 75%;
+  left: 49%;
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border: 3px solid #ffdc65;
+  border-radius: 50%;
+  background: #922f21;
+  font-size: 29px;
+  transform: translate(-50%, -50%);
+}
+
+.ve-turn-panel {
+  min-height: 94px;
+  margin-top: 12px;
+  padding: 15px 18px;
+  border: 1px solid rgba(255, 255, 255, .11);
+  border-radius: 15px;
+  background: #252a42;
+}
+
+.is-playing .ve-turn-panel {
+  flex: 0 0 auto;
+  margin: 0;
+  border-radius: 0;
+}
+
+.ve-question,
+.ve-result {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.ve-question-content { width: 100%; }
+
+.ve-question h2 {
+  margin: 0;
+  font-size: clamp(17px, 2.5vw, 23px);
+}
+
+.ve-question .ve-eyebrow { margin-bottom: 5px; }
+
+.ve-answer-options {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.ve-answer-choice {
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid #65708f;
+  border-radius: 10px;
+  background: #171d31;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 850;
+}
+
+.ve-answer-choice:hover { border-color: #ffd05a; background: #30354b; }
+.ve-answer-choice:focus-visible { outline: 3px solid #fff3a6; outline-offset: 2px; }
+
+.ve-waiting,
+.ve-message {
+  margin: 4px 0;
+  color: #f8e9ba;
+  font-weight: 850;
+  text-align: center;
+}
+
+.ve-result { justify-content: center; flex-wrap: wrap; }
+.ve-result p { margin: 0; color: #ffe295; font-weight: 900; }
+
+.ve-winner {
+  display: grid;
+  min-height: 430px;
+  align-content: center;
+  justify-items: center;
+  padding: 28px;
+  background-image: url("/assets/images/volcano-bg-1.webp");
+  background-position: center;
+  background-size: cover;
+  text-align: center;
+}
+
+.ve-cup { font-size: 74px; }
+.ve-winner h1 { margin: 5px 0; font-size: clamp(30px, 5vw, 47px); }
+.ve-winner > p:not(.ve-eyebrow) { color: #f0e2d0; }
+.ve-link-button { margin-top: 12px; }
+
+@media (max-width: 720px) {
+  .ve-setup-grid { grid-template-columns: 1fr; }
+  .ve-mode-options { grid-template-columns: 1fr; }
+  .ve-mode-card { min-height: 130px; }
+  .ve-score-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ve-scene { min-height: 520px; background-position: center; }
+  .is-playing .ve-scene { min-height: 0; }
+  .ve-wheel-wrap { width: 150px; }
+  .ve-wheel-label { transform: translate(-50%, -50%) rotate(var(--angle)) translateY(-45px) rotate(calc(var(--angle) * -1)); }
+  .ve-spinner-card { top: 10px; right: 9px; }
+  .ve-track-tile { width: 34px; height: 31px; border-radius: 10px; font-size: 16px; }
+  .ve-start-boat { top: 60%; left: 1%; font-size: 24px; }
+  .ve-question { align-items: stretch; flex-direction: column; }
+  .ve-answer-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 430px) {
+  .ve-menu-button { min-height: 36px; padding: 6px 9px; font-size: 12px; }
+  .ve-scene { min-height: 480px; background-position: center; }
+  .ve-wheel-wrap { width: 126px; }
+  .ve-wheel-label { transform: translate(-50%, -50%) rotate(var(--angle)) translateY(-37px) rotate(calc(var(--angle) * -1)); }
+  .ve-spinner-card { top: 7px; right: 6px; padding: 7px; }
+  .ve-spinner-caption { font-size: 7px; }
+  .ve-spin-button { min-width: 100px; min-height: 33px; }
+  .ve-track-tile { width: 28px; height: 27px; border-width: 1px; border-radius: 8px; font-size: 13px; }
+  .ve-pawns { top: -13px; }
+  .ve-pawns i { width: 18px; height: 18px; font-size: 11px; }
+  .ve-landmark { width: 37px; height: 37px; font-size: 23px; }
+  .ve-finish { padding: 4px 5px; font-size: 8px; }
+  .ve-answer-options { grid-template-columns: 1fr; }
+  .ve-setup-actions { align-items: stretch; flex-direction: column-reverse; }
+}

@@ -108,14 +108,11 @@ const STYLES = `
   --shadow-sm: 0 8px 24px rgba(0,0,0,0.08);
 }
 
-.ff-root:not(.ff-root-emoji) { background-color:#18231f;background-image:linear-gradient(rgba(9,20,17,.25),rgba(9,20,17,.4)),url('/assets/games/find-my-food/find-my-food-general-bg.webp');background-position:center;background-size:cover;background-attachment:fixed; }
-.ff-root:not(.ff-root-emoji).ff-food-screen-welcome { background-image:linear-gradient(rgba(9,20,17,.18),rgba(9,20,17,.32)),url('/assets/games/find-my-food/find-my-food-welcome-bg.webp'); }
-.ff-root:not(.ff-root-emoji).ff-food-screen-welcome { position:relative; min-height:100%; height:100%; padding:0; }
-.ff-welcome-start-hotspot { position:absolute; z-index:20; left:50%; bottom:clamp(18px,5vh,48px); transform:translateX(-50%); min-width:190px; min-height:54px; padding:12px 24px; border:2px solid #fff; border-radius:999px; background:#00C853; box-shadow:0 5px 0 #063B2A,0 8px 24px rgba(0,0,0,.38); color:#000; font:800 1.1rem/1.2 system-ui,sans-serif; cursor:pointer; }
-.ff-welcome-start-hotspot:hover { background:#00FFFF; }
-.ff-welcome-start-hotspot:focus-visible { outline:4px solid #fff; outline-offset:4px; }
-.ff-root:not(.ff-root-emoji).ff-food-screen-player-info { background-image:linear-gradient(rgba(9,20,17,.24),rgba(9,20,17,.42)),url('/assets/games/find-my-food/find-my-food-user-input-bg.webp'); }
-.ff-root:not(.ff-root-emoji).ff-food-screen-game,.ff-root:not(.ff-root-emoji).ff-food-screen-mode,.ff-root:not(.ff-root-emoji).ff-food-screen-end { background-image:linear-gradient(rgba(9,20,17,.22),rgba(9,20,17,.38)),url('/assets/games/find-my-food/find-my-food-game-screen-bg.webp'); }
+.ff-root { background-color:#18231f;background-image:linear-gradient(rgba(9,20,17,.25),rgba(9,20,17,.4)),url('/assets/games/find-my-food/find-my-food-general-bg.webp');background-position:center;background-size:cover;background-attachment:fixed; }
+.ff-root.ff-food-screen-welcome { background-image:linear-gradient(rgba(9,20,17,.18),rgba(9,20,17,.32)),url('/assets/games/find-my-food/find-my-food-welcome-bg.webp'); }
+.ff-root.ff-food-screen-welcome { position:relative; min-height:100%; height:100%; padding:0; }
+.ff-root.ff-food-screen-player-info { background-image:linear-gradient(rgba(9,20,17,.24),rgba(9,20,17,.42)),url('/assets/games/find-my-food/find-my-food-user-input-bg.webp'); }
+.ff-root.ff-food-screen-mode,.ff-root.ff-food-screen-game,.ff-root.ff-food-screen-end { background-image:linear-gradient(rgba(9,20,17,.22),rgba(9,20,17,.38)),url('/assets/games/find-my-food/find-my-food-game-screen-bg.webp'); }
 
 .ff-noise {
   position: absolute; inset: 0;
@@ -272,17 +269,6 @@ const STYLES = `
 }
 
 @media (orientation: portrait) and (max-width: 700px) {
-  .ff-root-emoji .ff-screen,
-  .ff-root-emoji .ff-card { margin-inline: auto; }
-  .ff-root-emoji .ff-screen { display: flex; align-items: center; justify-content: center; min-height: 100%; }
-  .ff-root-emoji .ff-game-card { padding: 18px 12px 22px; }
-  .ff-root-emoji.ff-pairs-4 .ff-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .ff-root-emoji.ff-pairs-6 .ff-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-  .ff-root-emoji.ff-pairs-8 .ff-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .ff-root-emoji .ff-tile { min-height: 0; aspect-ratio: 1 / 1.12; }
-  .ff-root-emoji.ff-pairs-6 .ff-tile { aspect-ratio: 1 / 1.2; }
-  .ff-root-emoji .ff-tile-back .ff-emoji { font-size: 2rem; }
-  .ff-root-emoji .ff-tile-back .ff-word { font-size: .55rem; }
 }
 
 .ff-match-celebration { position:absolute; inset:0; z-index:30; display:flex; align-items:center; justify-content:center; padding:20px; background:rgba(5,5,7,.55); backdrop-filter:blur(5px); animation:ffCelebrationFade .22s ease both; }
@@ -399,8 +385,8 @@ const STYLES = `
   .ff-tile-back .ff-word { font-size:0.52rem; }
 }
 /* Find My Food welcome hero */
-  .ff-root:not(.ff-root-emoji) .ff-screen.ff-food-welcome-screen { width:100%; max-width:1450px; margin:20px auto 0; }
-.ff-root:not(.ff-root-emoji) .ff-food-welcome-card {
+  .ff-root .ff-screen.ff-food-welcome-screen { width:100%; max-width:1450px; margin:20px auto 0; }
+  .ff-root .ff-food-welcome-card {
   min-height:430px;
   display:grid;
   grid-template-columns:minmax(300px,.9fr) minmax(0,1.1fr);
@@ -421,28 +407,28 @@ const STYLES = `
 .ff-food-banana { right:0; bottom:9%; animation-delay:1.4s; }
 @keyframes ffFoodFloat { 0%,100%{translate:0 0} 50%{translate:0 -8px} }
 .ff-food-copy .ff-logo-badge { margin-bottom:12px; }
-.ff-root:not(.ff-root-emoji) .ff-food-copy .ff-hero-title { margin:0 0 8px; font-size:clamp(48px,5vw,76px); line-height:.98; letter-spacing:-.04em; }
+.ff-root .ff-food-copy .ff-hero-title { margin:0 0 8px; font-size:clamp(48px,5vw,76px); line-height:.98; letter-spacing:-.04em; }
 .ff-food-copy .ff-hero-sub { margin:0 0 18px; max-width:520px; }
 .ff-food-pair-preview { justify-content:flex-start; gap:10px; margin:0 0 20px; }
 .ff-pair-card { display:flex; width:72px; height:78px; flex-direction:column; align-items:center; justify-content:center; gap:0; border:1px solid var(--border-bright); border-radius:16px; background:var(--surface2); box-shadow:var(--shadow-sm); font-size:1.65rem; line-height:1.15; }
 .ff-pair-card span+span { margin-top:-1px; }
 .ff-food-copy .ff-btn { min-width:220px; }
 @media(max-width:760px) {
-  .ff-root:not(.ff-root-emoji) .ff-screen.ff-food-welcome-screen { margin-top:0; }
-  .ff-root:not(.ff-root-emoji) .ff-food-welcome-card { min-height:0; grid-template-columns:1fr; gap:8px; padding:24px 22px 30px; }
+  .ff-root .ff-screen.ff-food-welcome-screen { margin-top:0; }
+  .ff-root .ff-food-welcome-card { min-height:0; grid-template-columns:1fr; gap:8px; padding:24px 22px 30px; }
   .ff-food-art { min-height:200px; max-width:400px; width:100%; margin:auto; }
   .ff-food-orb { width:64px; border-radius:20px; font-size:2.6rem; }
   .ff-food-monkey { width:76px; }
   .ff-food-copy { text-align:center; }
   .ff-food-copy .ff-logo-badge { margin-bottom:10px; }
-  .ff-root:not(.ff-root-emoji) .ff-food-copy .ff-hero-title { font-size:clamp(42px,10vw,60px); }
+  .ff-root .ff-food-copy .ff-hero-title { font-size:clamp(42px,10vw,60px); }
   .ff-food-copy .ff-hero-sub { font-size:.95rem; }
   .ff-food-pair-preview { justify-content:center; flex-wrap:nowrap; gap:8px; }
   .ff-pair-card { width:56px; height:64px; font-size:1.35rem; }
 }
 
 /* Keep the two name forms compact and the six main avatars on the first row. */
-.ff-root:not(.ff-root-emoji).ff-food-screen-player-info .ff-screen.ff-setup-screen { max-width:1020px; }
+.ff-root.ff-food-screen-player-info .ff-screen.ff-setup-screen { max-width:1020px; }
 .ff-food-screen-player-info .ff-setup-card { padding:clamp(24px, 3vw, 38px); }
 .ff-food-screen-player-info .ff-player-setup > div { flex:0 1 390px !important; min-width:0 !important; }
 .ff-food-screen-player-info .ff-fancy-input { max-width:100%; }
@@ -475,11 +461,11 @@ const STYLES = `
 }
 
 @media (max-width:639px) and (orientation:portrait) {
-  .ff-root:not(.ff-root-emoji) {
+  .ff-root {
     background-image:url('/assets/games/find-my-food/find-my-food-general-phone-bg.webp') !important;
     background-attachment:scroll;
   }
-  .ff-root:not(.ff-root-emoji).ff-food-screen-welcome {
+  .ff-root.ff-food-screen-welcome {
     background-image:url('/assets/games/find-my-food/find-my-food-welcome-phone-bg.webp') !important;
   }
   .ff-root.ff-root-game {
@@ -636,10 +622,9 @@ export default function FindMyFood({ onComplete, themeId, variant = "food", prof
     "--bg": t.bg, "--surface": t.surface, "--surface2": t.surface2, "--surface3": t.surface3, "--green": t.accent2, "--green-glow": t.glow,
   };
 
-  if (screen === "welcome" && variant !== "emoji") return (
+  if (screen === "welcome" && variant === "food") return (
     <div className={rootClass} data-ff-theme={selectedTheme.key} style={cssVarOverrides}>
       <style>{STYLES}</style>
-      <button type="button" className="ff-welcome-start-hotspot" onClick={() => setScreen("player-info")}>Start Game</button>
     </div>
   );
 
@@ -650,19 +635,27 @@ export default function FindMyFood({ onComplete, themeId, variant = "food", prof
       <div className="ff-ambient ff-ambient-1" />
       <div className="ff-ambient ff-ambient-2" />
 
-      <div className={`ff-screen ff-setup-screen${variant === "emoji" ? "" : " ff-food-welcome-screen"}`}>
-        <div className={`ff-card ff-setup-card${variant === "emoji" ? "" : " ff-food-welcome-card"}`} style={{ textAlign:"center" }}>
+      <div className="ff-screen ff-setup-screen ff-food-welcome-screen">
+        <div className="ff-card ff-setup-card ff-food-welcome-card" style={{ textAlign:"center" }}>
           {variant === "emoji" ? <>
-            <div className="ff-logo-badge">✨ Two-Player Emoji Edition</div>
-            <h1 className="ff-hero-title">Emoji<br/>Match</h1>
-            <p className="ff-hero-sub">Match identical emojis.<br/>Compete with a friend to see who remembers best.</p>
-            <div className="ff-pair-preview">
-              <div className="ff-pair-chip">🐕<span className="ff-connector">×</span>🦴</div>
-              <div className="ff-pair-chip">🐱<span className="ff-connector">×</span>🐟</div>
-              <div className="ff-pair-chip">🐰<span className="ff-connector">×</span>🥕</div>
-              <div className="ff-pair-chip">🐵<span className="ff-connector">×</span>🍌</div>
+            <div className="ff-food-art" aria-hidden="true">
+              <span className="ff-food-orb ff-food-dog">🐶</span><span className="ff-food-orb ff-food-bone">🦴</span>
+              <span className="ff-food-orb ff-food-cat">🐱</span><span className="ff-food-orb ff-food-fish">🐟</span>
+              <span className="ff-food-orb ff-food-rabbit">🐰</span><span className="ff-food-orb ff-food-carrot">🥕</span>
+              <span className="ff-food-orb ff-food-monkey">🐵</span><span className="ff-food-orb ff-food-banana">🍌</span>
             </div>
-            <button className="ff-btn ff-btn-gold" onClick={() => setScreen("player-info")}>Start Game →</button>
+            <div className="ff-food-copy">
+              <div className="ff-logo-badge">✨ Two-Player Emoji Edition</div>
+              <h1 className="ff-hero-title">Emoji Match</h1>
+              <p className="ff-hero-sub">Match identical emojis.<br/>Compete with a friend to see who remembers best.</p>
+              <div className="ff-pair-preview ff-food-pair-preview">
+                <div className="ff-pair-card"><span>🐶</span><span>🦴</span></div>
+                <div className="ff-pair-card"><span>🐱</span><span>🐟</span></div>
+                <div className="ff-pair-card"><span>🐰</span><span>🥕</span></div>
+                <div className="ff-pair-card"><span>🐵</span><span>🍌</span></div>
+              </div>
+              <button className="ff-btn ff-btn-gold" onClick={() => setScreen("player-info")}>Start Game →</button>
+            </div>
           </> : <>
             <div className="ff-food-art" aria-hidden="true">
               <span className="ff-food-orb ff-food-dog">🐶</span><span className="ff-food-orb ff-food-bone">🦴</span>
@@ -764,7 +757,7 @@ export default function FindMyFood({ onComplete, themeId, variant = "food", prof
   if (screen === "end") {
     const winner = scores[1] > scores[2] ? p1 : scores[2] > scores[1] ? p2 : null;
     return (
-      <div className="ff-root" data-ff-theme={selectedTheme.key} style={cssVarOverrides}>
+      <div className={rootClass} data-ff-theme={selectedTheme.key} style={cssVarOverrides}>
         <style>{STYLES}</style>
         <div className="ff-noise" />
         <div className="ff-ambient ff-ambient-1" />

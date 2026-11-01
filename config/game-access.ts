@@ -47,10 +47,24 @@ export const TEACHER_PRO_GAME_IDS = new Set([
   'snowyslopes',
 ]);
 
+export const CREATOR_ONLY_GAME_IDS = new Set([
+  'cannonclash',
+  'volcanoescape',
+  'doordash',
+  'basketballshoot',
+  'miniracer',
+]);
+
 export function canAccessGame(gameId: string) {
   return !COMING_SOON_GAME_IDS.has(gameId);
 }
 
 export function isPublicGame(gameId: string) {
-  return canAccessGame(gameId) && !TEACHER_PRO_GAME_IDS.has(gameId);
+  return canAccessGame(gameId)
+    && !TEACHER_PRO_GAME_IDS.has(gameId)
+    && !CREATOR_ONLY_GAME_IDS.has(gameId);
+}
+
+export function isVisibleToUser(gameId: string, isCreator: boolean) {
+  return isCreator || !CREATOR_ONLY_GAME_IDS.has(gameId);
 }

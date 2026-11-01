@@ -7,11 +7,12 @@ import { useGame } from '@/lib/gameState';
 import { auth, isCreatorUser, loadUserState, onAuthStateChanged, saveStudentScore } from '@/lib/firebase';
 import { syncCurrentPlayerToLeaderboard } from '@/features/leaderboard/api';
 import { GAME_NAMES, GAME_ICONS } from '@/constants/index';
+import { GAME_CATALOG } from '@/games/catalog.data';
 import { GAME_COMPONENTS } from '@/games/catalog.components';
 import { GameShell } from '@/engine';
 import Connect4HeaderActions from '@/components/ui/controls/Connect4HeaderActions';
 import { TIC_TAC_ROLL_THEMES, type TicTacRollTheme } from '@/games/tictacroll/themes';
-import { canAccessGame, COMING_SOON_GAME_IDS, TEACHER_PRO_GAME_IDS } from '@/config/game-access';
+import { canAccessGame, COMING_SOON_GAME_IDS, CREATOR_ONLY_GAME_IDS, TEACHER_PRO_GAME_IDS } from '@/config/game-access';
 import BurgerSprite from '@/games/burger-run/BurgerSprite';
 
 // ── Types ─────────────────────────────────────────────────────
@@ -45,6 +46,26 @@ interface BlockFightHud {
   wins: [number, number];
 }
 
+interface LanguageTowerHud {
+  round: number;
+  rounds: number;
+  playerOne: { name: string; score: number };
+  playerTwo: { name: string; score: number };
+  turn: string;
+  againstAI: boolean;
+}
+
+function getCatalogShellTheme(gameId: string) {
+  const accent = GAME_CATALOG[gameId]?.barColor ?? '#64748b';
+  return {
+    nav: `color-mix(in srgb, ${accent} 42%, #101827)`,
+    navRaised: `color-mix(in srgb, ${accent} 68%, #1d2a40)`,
+    navText: '#f8fafc',
+    navMuted: `color-mix(in srgb, ${accent} 30%, #cbd5e1)`,
+    background: '#0b1628',
+  };
+}
+
 const GAMES_WITH_WELCOME = new Set([
   'airpuck', 'animalAdventureRace', 'blockfight', 'connect4', 'farmgame', 'findmyfood', 'flagmaster', 'emojimatch', 'emojicategories',
   'finnthefox', 'oceanquest', 'parachutedrop', 'weatherwizard',
@@ -59,6 +80,9 @@ const GAMES_WITH_WELCOME = new Set([
   'generalknowledgequiz',
   'alphabethunt', 'buildtower', 'whatsmissing', 'angryverbs', 'miniracer', 'burgerrun',
   'colourclash2', 'zoogame',
+  'volcanoescape',
+  'languagetower',
+  'duelofthevoid',
 ]);
 
 // ── Page ──────────────────────────────────────────────────────
@@ -73,6 +97,7 @@ export default function GamePage() {
   const [emojiSpellingStartAtMenu, setEmojiSpellingStartAtMenu] = useState(false);
   const [airPuckHud, setAirPuckHud] = useState<AirPuckHud | null>(null);
   const [blockFightHud, setBlockFightHud] = useState<BlockFightHud | null>(null);
+  const [languageTowerHud, setLanguageTowerHud] = useState<LanguageTowerHud | null>(null);
   // Connect 4 hands its in-match HUD (player badges + reset/home) up here so
   // it can render inside the GameShell navbar instead of the play area.
   const [c4Hud, setC4Hud] = useState<any>(null);
@@ -205,7 +230,11 @@ export default function GamePage() {
     void loadUserState(user.uid).then(profile => {
       const teacherPro = Boolean(profile?.teacherPro);
       setHasTeacherPro(teacherPro);
-      setCanPlay((creator || canAccessGame(gameId)) && (!TEACHER_PRO_GAME_IDS.has(gameId) || creator || teacherPro));
+      setCanPlay(
+        (creator || canAccessGame(gameId))
+        && (!TEACHER_PRO_GAME_IDS.has(gameId) || creator || teacherPro)
+        && (!CREATOR_ONLY_GAME_IDS.has(gameId) || creator),
+      );
       setAccessReady(true);
     });
   }), [gameId]);
@@ -276,6 +305,33 @@ export default function GamePage() {
     ocean: { nav: '#16445a', navRaised: '#2f8da3', navText: '#effcff', navMuted: '#bde8ec', background: '#8ed1d5' },
     jungle: { nav: '#183d2c', navRaised: '#3c8150', navText: '#f2ffe9', navMuted: '#c9e6af', background: '#9fc27b' },
   }[zooTheme] ?? { nav: '#4a3728', navRaised: '#b8863a', navText: '#fff8e7', navMuted: '#fce9c8', background: '#d9c9a8' };
+  const whatsMissingShellTheme = {
+    green: { nav: '#31532b', navRaised: '#8fd14f', navText: '#fff', navMuted: '#d7efbf', background: '#8fd14f' },
+    blue: { nav: '#15506d', navRaised: '#4fc3f7', navText: '#fff', navMuted: '#d4f1ff', background: '#4fc3f7' },
+    red: { nav: '#792b2b', navRaised: '#ef5350', navText: '#fff', navMuted: '#ffdddd', background: '#ef5350' },
+    yellow: { nav: '#765b13', navRaised: '#ffd54f', navText: '#fff', navMuted: '#fff5cc', background: '#ffd54f' },
+    white: { nav: '#454545', navRaised: '#f0f0f0', navText: '#fff', navMuted: '#e5e5e5', background: '#f0f0f0' },
+    black: { nav: '#111', navRaised: '#3a3a3a', navText: '#fff', navMuted: '#bbb', background: '#1a1a1a' },
+  }[whatsMissingTheme] ?? { nav: '#31532b', navRaised: '#8fd14f', navText: '#fff', navMuted: '#d7efbf', background: '#8fd14f' };
+  const shellThemeVars = isTicTacRoll
+    ? { nav: ticTheme.surface, navRaised: ticTheme.bg, navText: ticTheme.text, navMuted: ticTheme.muted, background: ticTheme.bg }
+    : isAlphabetHunt
+      ? { nav: alphabetTheme === 'ocean' ? '#087f8c' : alphabetTheme === 'arcade' ? '#352354' : '#1b1b1f', navRaised: alphabetTheme === 'ocean' ? '#e5a83b' : alphabetTheme === 'arcade' ? '#ff71ce' : '#c98a2c', navText: '#fffaf0', navMuted: '#eee8da', background: alphabetTheme === 'ocean' ? '#dff4f2' : alphabetTheme === 'arcade' ? '#24183d' : '#eee8da' }
+      : isWordFusion
+        ? { nav: wordFusionTheme === 'forest' ? '#214c3c' : wordFusionTheme === 'sunset' ? '#7b3f2e' : '#245b6c', navRaised: wordFusionTheme === 'forest' ? '#75b798' : wordFusionTheme === 'sunset' ? '#e29b52' : '#8ed1d5', navText: '#fffaf0', navMuted: '#d6eeee', background: wordFusionTheme === 'forest' ? '#dcefe2' : wordFusionTheme === 'sunset' ? '#f4d4b5' : '#d9eef0' }
+        : isZooGame
+          ? zooShellTheme
+          : isWhatsMissing
+            ? whatsMissingShellTheme
+            : isFruitWordHunt
+              ? { nav: '#a5662a', navRaised: '#f7b05e', navText: '#fffbee', navMuted: '#fff0cf', background: '#ffe0b5' }
+              : isFlagmaster
+                ? { nav: flagDarkMode ? '#05070d' : '#0b1628', navRaised: flagDarkMode ? '#121a2c' : '#1a3358', navText: flagDarkMode ? '#d4daf0' : '#f9f3e3', navMuted: flagDarkMode ? '#aebbd2' : '#f0e6c8', background: flagDarkMode ? '#05070d' : '#f9f3e3' }
+                : isFindMyFood || isEmojiMatch
+                  ? findMyFoodShellTheme
+                  : isMoneyBlocks
+                    ? moneyBlocksShellTheme
+                    : getCatalogShellTheme(gameId);
 
   // ── onComplete: called by React game components ──
   function handleComplete(score: number, accuracy: number) {
@@ -344,6 +400,12 @@ export default function GamePage() {
       setShowRouteWelcome(false);
     } else if (gameId === 'buildtower') {
       window.dispatchEvent(new Event('build-tower:main-menu'));
+    } else if (gameId === 'languagetower') {
+      setLanguageTowerHud(null);
+      window.dispatchEvent(new Event('languagetower:main-menu'));
+    } else if (gameId === 'duelofthevoid') {
+      setShowRouteWelcome(false);
+      window.dispatchEvent(new Event('duel-of-the-void:main-menu'));
     } else if (isFindMyFood || isEmojiMatch) {
       window.dispatchEvent(new Event('find-my-food:main-menu'));
     } else if (isEmojiSports) {
@@ -402,7 +464,9 @@ export default function GamePage() {
     }
   }
 
-  const requiresAccessCheck = TEACHER_PRO_GAME_IDS.has(gameId) || COMING_SOON_GAME_IDS.has(gameId);
+  const requiresAccessCheck = TEACHER_PRO_GAME_IDS.has(gameId)
+    || CREATOR_ONLY_GAME_IDS.has(gameId)
+    || COMING_SOON_GAME_IDS.has(gameId);
 
   if (!accessReady && requiresAccessCheck) {
     return (
@@ -425,6 +489,20 @@ export default function GamePage() {
           <h1>{gameName}</h1>
           <p>This game is available to Teacher Pro accounts and creators.</p>
           <Link href="/subscription" className="pill-btn" style={{ textDecoration: 'none' }}>View Teacher Pro</Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (CREATOR_ONLY_GAME_IDS.has(gameId) && !isCreator) {
+    return (
+      <div className="route-game-welcome">
+        <div className="route-game-welcome-card">
+          <div className="route-game-welcome-icon" aria-hidden="true">🔒</div>
+          <p className="route-game-welcome-kicker">Creator access</p>
+          <h1>{gameName}</h1>
+          <p>This game is temporarily available to the creator while it is being improved.</p>
+          <Link href="/games" className="pill-btn" style={{ textDecoration: 'none' }}>← Back to Games</Link>
         </div>
       </div>
     );
@@ -482,10 +560,10 @@ export default function GamePage() {
         hidePauseControl={isFlagmaster || (isAirPuck && airPuckHud?.mode === 'card')}
         hideExitControl={false}
         controls={null}
-        themeVars={isTicTacRoll ? { nav: ticTheme.surface, navRaised: ticTheme.bg, navText: ticTheme.text, navMuted: ticTheme.muted, background: ticTheme.bg } : isAlphabetHunt ? { nav: alphabetTheme === 'ocean' ? '#087f8c' : alphabetTheme === 'arcade' ? '#352354' : '#1b1b1f', navRaised: alphabetTheme === 'ocean' ? '#e5a83b' : alphabetTheme === 'arcade' ? '#ff71ce' : '#c98a2c', navText: '#fffaf0', navMuted: '#eee8da', background: alphabetTheme === 'ocean' ? '#dff4f2' : alphabetTheme === 'arcade' ? '#24183d' : '#eee8da' } : isWordFusion ? { nav: wordFusionTheme === 'forest' ? '#214c3c' : wordFusionTheme === 'sunset' ? '#7b3f2e' : '#245b6c', navRaised: wordFusionTheme === 'forest' ? '#75b798' : wordFusionTheme === 'sunset' ? '#e29b52' : '#8ed1d5', navText: '#fffaf0', navMuted: '#d6eeee', background: wordFusionTheme === 'forest' ? '#dcefe2' : wordFusionTheme === 'sunset' ? '#f4d4b5' : '#d9eef0' } : isZooGame ? zooShellTheme : isFruitWordHunt ? { nav: '#a5662a', navRaised: '#f7b05e', navText: '#fffbee', navMuted: '#fff0cf', background: '#ffe0b5' } : isFlagmaster ? { nav: flagDarkMode ? '#05070d' : '#0b1628', navRaised: flagDarkMode ? '#121a2c' : '#1a3358', navText: flagDarkMode ? '#d4daf0' : '#f9f3e3', navMuted: flagDarkMode ? '#aebbd2' : '#f0e6c8', background: flagDarkMode ? '#05070d' : '#f9f3e3' } : (isFindMyFood || isEmojiMatch) ? findMyFoodShellTheme : isMoneyBlocks ? moneyBlocksShellTheme : undefined}
+        themeVars={shellThemeVars}
         themeOptions={isTicTacRoll ? TIC_TAC_ROLL_THEMES.map(theme => ({ id: theme.id, name: theme.name })) : isAlphabetHunt ? [{ id: 'classroom', name: 'Classroom' }, { id: 'ocean', name: 'Ocean' }, { id: 'arcade', name: 'Arcade' }] : isWordFusion ? [{ id: 'ocean', name: 'Ocean' }, { id: 'forest', name: 'Forest' }, { id: 'sunset', name: 'Sunset' }] : isZooGame ? [{ id: 'savanna', name: 'Savanna' }, { id: 'ocean', name: 'Ocean' }, { id: 'jungle', name: 'Jungle' }] : isWhatsMissing ? [{ id: 'green', name: 'Green' }, { id: 'blue', name: 'Blue' }, { id: 'red', name: 'Red' }, { id: 'yellow', name: 'Yellow' }, { id: 'white', name: 'White' }, { id: 'black', name: 'Black' }] : isMoneyBlocks ? [{ id: 'black', name: 'Black' }, { id: 'gold', name: 'Gold' }, { id: 'white', name: 'White' }] : (isFindMyFood || isEmojiMatch) ? [{ id: 'forest', name: 'Enchanted Forest' }, { id: 'safari', name: 'African Safari' }, { id: 'ocean', name: 'Ocean Adventure' }, { id: 'arctic', name: 'Arctic Expedition' }, { id: 'dino', name: 'Dinosaur Island' }] : undefined}
-        themeValue={isTicTacRoll ? ticTheme.id : isAlphabetHunt ? alphabetTheme : isWordFusion ? wordFusionTheme : isZooGame ? zooTheme : isWhatsMissing ? whatsMissingTheme : isMoneyBlocks ? moneyBlocksTheme : isFindMyFood ? findMyFoodTheme : undefined}
-        onThemeChange={isTicTacRoll ? themeId => setTicTheme(TIC_TAC_ROLL_THEMES.find(theme => theme.id === themeId) ?? TIC_TAC_ROLL_THEMES[0]) : isAlphabetHunt ? setAlphabetTheme : isWordFusion ? setWordFusionTheme : isZooGame ? setZooTheme : isWhatsMissing ? setWhatsMissingTheme : isMoneyBlocks ? setMoneyBlocksTheme : isFindMyFood ? setFindMyFoodTheme : undefined}
+        themeValue={isTicTacRoll ? ticTheme.id : isAlphabetHunt ? alphabetTheme : isWordFusion ? wordFusionTheme : isZooGame ? zooTheme : isWhatsMissing ? whatsMissingTheme : isMoneyBlocks ? moneyBlocksTheme : isFindMyFood || isEmojiMatch ? findMyFoodTheme : undefined}
+        onThemeChange={isTicTacRoll ? themeId => setTicTheme(TIC_TAC_ROLL_THEMES.find(theme => theme.id === themeId) ?? TIC_TAC_ROLL_THEMES[0]) : isAlphabetHunt ? setAlphabetTheme : isWordFusion ? setWordFusionTheme : isZooGame ? setZooTheme : isWhatsMissing ? setWhatsMissingTheme : isMoneyBlocks ? setMoneyBlocksTheme : isFindMyFood || isEmojiMatch ? setFindMyFoodTheme : undefined}
         headerExtra={
           <>
             {isAirPuck && airPuckHud && (
@@ -493,22 +571,6 @@ export default function GamePage() {
                 <span className="game-shell-topbar-stat" aria-label={`${airPuckHud.name} ${airPuckHud.playerScore}, AI ${airPuckHud.aiScore}`}>
                   <b>🔵 {airPuckHud.playerScore}</b><span aria-hidden="true">:</span><b>🔴 {airPuckHud.aiScore}</b>
                 </span>
-                <label className="game-shell-header-action" style={{ gap: 3, minHeight: 34, padding: '5px 7px' }}>
-                  <span aria-hidden="true">🎚</span>
-                  <select
-                    value={airPuckHud.difficulty}
-                    onChange={event => window.dispatchEvent(new CustomEvent('air-puck:set-difficulty', { detail: event.target.value }))}
-                    aria-label="Choose Air Puck difficulty"
-                    style={{ border: 0, background: 'transparent', color: 'inherit', font: 'inherit', fontWeight: 800, outline: 0, cursor: 'pointer' }}
-                  >
-                    <option value="easy">Easy</option>
-                    <option value="medium">Medium</option>
-                    <option value="hard">Hard</option>
-                  </select>
-                </label>
-                <button className="game-shell-header-action" type="button" onClick={() => window.dispatchEvent(new Event('air-puck:restart'))} aria-label="Restart Air Puck match" title="Restart match" style={{ minHeight: 34, minWidth: 36, width: 36, padding: 5 }}>
-                  <span aria-hidden="true">↻</span>
-                </button>
               </span>
             )}
             {isBlockFight && blockFightHud && (
@@ -517,18 +579,16 @@ export default function GamePage() {
                   <span className="game-shell-topbar-stat"><b>Round {blockFightHud.round}</b></span>
                   <span className="game-shell-topbar-stat"><b className="bf-p1c">P1 {blockFightHud.wins[0]}</b><span>Wins</span></span>
                   <span className="game-shell-topbar-stat"><b className="bf-p2c">P2 {blockFightHud.wins[1]}</b><span>Wins</span></span>
-                  <button
-                    className="game-shell-header-action"
-                    type="button"
-                    onClick={() => window.dispatchEvent(new Event('block-fight:restart-duel'))}
-                    aria-label="Restart Block Fight duel"
-                    title="Restart match"
-                    style={{ minHeight: 34, minWidth: 36, width: 36, padding: 5 }}
-                  >
-                    <span aria-hidden="true">↻</span>
-                  </button>
                 </span>
               </>
+            )}
+            {gameId === 'languagetower' && languageTowerHud && (
+              <span className="game-shell-topbar-stats" aria-label="Language Tower sentence challenge score">
+                <span className="game-shell-topbar-stat"><b>Round {languageTowerHud.round}/{languageTowerHud.rounds}</b></span>
+                <span className="game-shell-topbar-stat"><b>{languageTowerHud.playerOne.score}</b><span>{languageTowerHud.playerOne.name}</span></span>
+                <span className="game-shell-topbar-stat"><b>{languageTowerHud.playerTwo.score}</b><span>{languageTowerHud.againstAI ? 'AI' : languageTowerHud.playerTwo.name}</span></span>
+                <span className="game-shell-topbar-stat"><b>{languageTowerHud.turn}</b><span>Turn</span></span>
+              </span>
             )}
             {isColourClash && colourClashHud && (
               <span className="game-shell-topbar-stats" aria-label="Colour Tunes game progress" style={{ flexWrap: 'wrap' }}>
@@ -539,27 +599,12 @@ export default function GamePage() {
                 <span className="game-shell-topbar-stat"><b>{colourClashHud.sequenceProgress}/{colourClashHud.sequenceLength}</b><span>Sequence</span></span>
               </span>
             )}
-            {isVocabValley && <button className="game-shell-header-action" type="button" onClick={() => window.dispatchEvent(new Event('vocab-valley:trail-map'))} aria-label="Trail map" title="Trail map"><span aria-hidden="true">←</span><span className="game-shell-action-label">Trail map</span></button>}
             {isCountAdd && countAddHud && (
               <>
                 <span className="game-shell-topbar-stats" aria-label="Count and Add progress">
                   <span className="game-shell-topbar-stat"><b>{Array.from({ length: 5 }, (_, index) => index < countAddHud.levelStars ? '⭐' : '☆').join('')}</b><span>Level {countAddHud.level}</span></span>
                   <span className="game-shell-topbar-stat"><b>{countAddHud.score}</b><span>Score</span></span>
                 </span>
-                <label className="game-shell-header-action" style={{ gap: 6 }}>
-                  <span aria-hidden="true">🎯</span>
-                  <select
-                    value={countAddHud.difficulty}
-                    onChange={event => window.dispatchEvent(new CustomEvent('count-add:set-difficulty', { detail: event.target.value }))}
-                    aria-label="Choose Count and Add difficulty"
-                    style={{ border: 0, background: 'transparent', color: 'inherit', font: 'inherit', fontWeight: 800, outline: 0, cursor: 'pointer' }}
-                  >
-                    <option value="easy">🐣 Easy</option>
-                    <option value="medium">🐥 Medium</option>
-                    <option value="hard">🦅 Hard</option>
-                    <option value="mixed">🎲 Mixed</option>
-                  </select>
-                </label>
               </>
             )}
             {gameId === 'riddlebombs' && riddleBombsHud?.phase === 'game' && (
@@ -622,33 +667,52 @@ export default function GamePage() {
                 <span className="game-shell-topbar-stat"><b>{animalClassHud.questionIndex + 1}/{animalClassHud.totalQuestions}</b></span>
               </span>
             )}
-            {isConnect4 && c4Hud ? <Connect4HeaderActions hud={c4Hud} /> : null}
             {isSentenceBuilder && sentenceBuilderHud && (
               <span className="game-shell-topbar-stats" aria-label="Sentence Builder progress">
                 <span className="game-shell-topbar-stat"><b>🎯 {sentenceBuilderHud.level}</b><span>Level</span></span>
                 <span className="game-shell-topbar-stat"><b>⭐ {sentenceBuilderHud.score}</b><span>Score</span></span>
               </span>
             )}
-            {isTicTacRoll && (
-              <>
-                <button className="game-shell-header-action" type="button" onClick={() => window.dispatchEvent(new Event('tictacroll:new-game'))}>
-                  <span aria-hidden="true">↻</span><span className="game-shell-action-label">New Game</span>
-                </button>
-              </>
-            )}
-            {isFindMyFood && (
-              <>
-                <button className="game-shell-header-action" type="button" onClick={() => window.dispatchEvent(new Event('find-my-food:new-game'))} aria-label="New game" title="New game"><span aria-hidden="true">↻</span><span className="game-shell-action-label">New game</span></button>
-                <button className="game-shell-header-action" type="button" onClick={() => window.dispatchEvent(new Event('find-my-food:play-again'))} aria-label="Play again" title="Play again"><span aria-hidden="true">▶</span><span className="game-shell-action-label">Play again</span></button>
-              </>
-            )}
-            {isFlagmaster && <button className="game-shell-header-action" type="button" onClick={() => setFlagDarkMode(value => !value)} aria-label="Toggle Flagmaster theme" title="Toggle Flagmaster theme"><span aria-hidden="true">{flagDarkMode ? '☀️' : '🌙'}</span><span className="game-shell-action-label">{flagDarkMode ? 'Light' : 'Dark'}</span></button>}
           </>
         }
         stats={isNumberClouds || isAirPuck || isBlockFight ? [] : [
           { label: 'Best', value: state.games[gameId]?.highScore ?? 0, icon: '⭐' },
           { label: 'Coins', value: state.coins, icon: '🪙' },
         ]}
+        mobileMenuExtra={
+          <>
+            {isAirPuck && airPuckHud && (
+              <>
+                <label className="game-shell-mobile-menu-theme">
+                  <span aria-hidden="true">🎚</span><span>Difficulty</span>
+                  <select value={airPuckHud.difficulty} onChange={event => window.dispatchEvent(new CustomEvent('air-puck:set-difficulty', { detail: event.target.value }))} aria-label="Choose Air Puck difficulty">
+                    <option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option>
+                  </select>
+                </label>
+                <button type="button" role="menuitem" onClick={() => window.dispatchEvent(new Event('air-puck:restart'))}><span aria-hidden="true">↻</span><span>Restart match</span></button>
+              </>
+            )}
+            {isBlockFight && blockFightHud && <button type="button" role="menuitem" onClick={() => window.dispatchEvent(new Event('block-fight:restart-duel'))}><span aria-hidden="true">↻</span><span>Restart duel</span></button>}
+            {isCountAdd && countAddHud && (
+              <label className="game-shell-mobile-menu-theme">
+                <span aria-hidden="true">🎯</span><span>Difficulty</span>
+                <select value={countAddHud.difficulty} onChange={event => window.dispatchEvent(new CustomEvent('count-add:set-difficulty', { detail: event.target.value }))} aria-label="Choose Count and Add difficulty">
+                  <option value="easy">🐣 Easy</option><option value="medium">🐥 Medium</option><option value="hard">🦅 Hard</option><option value="mixed">🎲 Mixed</option>
+                </select>
+              </label>
+            )}
+            {isVocabValley && <button type="button" role="menuitem" onClick={() => window.dispatchEvent(new Event('vocab-valley:trail-map'))}><span aria-hidden="true">←</span><span>Trail map</span></button>}
+            {isConnect4 && c4Hud && <Connect4HeaderActions hud={c4Hud} />}
+            {isTicTacRoll && <button type="button" role="menuitem" onClick={() => window.dispatchEvent(new Event('tictacroll:new-game'))}><span aria-hidden="true">↻</span><span>New game</span></button>}
+            {isFindMyFood && (
+              <>
+                <button type="button" role="menuitem" onClick={() => window.dispatchEvent(new Event('find-my-food:new-game'))}><span aria-hidden="true">↻</span><span>New game</span></button>
+                <button type="button" role="menuitem" onClick={() => window.dispatchEvent(new Event('find-my-food:play-again'))}><span aria-hidden="true">▶</span><span>Play again</span></button>
+              </>
+            )}
+            {isFlagmaster && <button type="button" role="menuitem" onClick={() => setFlagDarkMode(value => !value)}><span aria-hidden="true">{flagDarkMode ? '☀️' : '🌙'}</span><span>{flagDarkMode ? 'Light theme' : 'Dark theme'}</span></button>}
+          </>
+        }
       >
       <Suspense fallback={
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)' }}>
@@ -779,6 +843,7 @@ export default function GamePage() {
               {...(isColourClash ? { onHudUpdate: setColourClashHud } : {})}
               {...(isAirPuck ? { onHudUpdate: setAirPuckHud } : {})}
               {...(isBlockFight ? { onHudUpdate: setBlockFightHud } : {})}
+              {...(gameId === 'languagetower' ? { onHudUpdate: setLanguageTowerHud } : {})}
               {...(isAnimalClass ? { onHudUpdate: setAnimalClassHud } : {})}
               {...(isFlagmaster ? { darkMode: flagDarkMode, isCreator } : {})}
               {...(isZooGame ? { themeId: zooTheme } : {})}

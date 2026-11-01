@@ -1,0 +1,293 @@
+.banana-dash {
+  --jungle-ink: #183c30;
+  --jungle-deep: #12372d;
+  --jungle-leaf: #31744f;
+  --banana-gold: #f5c94d;
+  --banana-orange: #ef873e;
+  min-height: 680px;
+  box-sizing: border-box;
+  padding: clamp(14px, 2.4vw, 32px);
+  color: #18382f;
+  font-family: Nunito, "Trebuchet MS", system-ui, sans-serif;
+  background:
+    radial-gradient(ellipse at 50% -18%, #d4e7a9 0 8%, transparent 39%),
+    radial-gradient(ellipse at 0% 100%, #356b43 0 13%, transparent 43%),
+    radial-gradient(ellipse at 100% 100%, #275a41 0 12%, transparent 43%),
+    linear-gradient(155deg, #94bf73 0%, #c7d99d 36%, #7cae70 72%, #316449 100%);
+  overflow: hidden;
+  position: relative;
+  isolation: isolate;
+}
+
+.banana-dash::before,
+.banana-dash::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 38vw;
+  height: 40vw;
+  max-height: 430px;
+  border-radius: 0 100% 0 100%;
+  background: linear-gradient(130deg, #a6d478, #38794c 62%, #24533d);
+  opacity: .88;
+  pointer-events: none;
+}
+
+.banana-dash::before {
+  left: -29vw;
+  top: -18vw;
+  transform: rotate(12deg);
+}
+
+.banana-dash::after {
+  right: -29vw;
+  bottom: -23vw;
+  transform: rotate(190deg);
+}
+
+.banana-dash * { box-sizing: border-box; }
+.banana-dash button,
+.banana-dash input,
+.banana-dash select,
+.banana-dash textarea { font: inherit; }
+.banana-dash button:focus-visible,
+.banana-dash input:focus-visible,
+.banana-dash select:focus-visible,
+.banana-dash textarea:focus-visible {
+  outline: 3px solid #183c30;
+  outline-offset: 3px;
+}
+
+.banana-dash .panel {
+  border: 1px solid #d2dfc0;
+  border-radius: 24px;
+  background: #fbf8ec;
+  box-shadow: 0 18px 44px #173d2b38;
+}
+
+.banana-welcome,
+.banana-result-panel,
+.banana-winner,
+.banana-question-panel {
+  width: min(100%, 1040px);
+  margin: 18px auto;
+  padding: clamp(24px, 5vw, 62px);
+  text-align: center;
+}
+
+.banana-welcome { min-height: 600px; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+.banana-brand-row { display: flex; align-items: center; gap: 10px; color: #54735a; font-weight: 900; text-transform: uppercase; letter-spacing: .1em; font-size: 12px; }
+.banana-brand-mark { width: 36px; height: 36px; display: grid; place-items: center; background: #ffe58c; border-radius: 50%; font-size: 21px; }
+.banana-welcome-art { display: flex; justify-content: center; align-items: end; gap: clamp(10px, 3vw, 32px); min-height: 105px; margin: 18px 0 0; }
+.banana-welcome-art span { font-size: clamp(48px, 7vw, 82px); filter: drop-shadow(0 8px 4px #21462d33); animation: banana-bob 2.8s ease-in-out infinite; }
+.banana-welcome-art span:nth-child(2) { animation-delay: .2s; }
+.banana-welcome-art span:nth-child(3) { animation-delay: .4s; }
+.banana-welcome-art span:nth-child(4) { animation-delay: .6s; }
+.banana-kicker { margin: 0; color: #59805a; font-size: 11px; font-weight: 1000; letter-spacing: .16em; text-transform: uppercase; }
+.banana-welcome h1 { margin: 3px 0 0; color: #234c34; font-size: clamp(48px, 8vw, 88px); line-height: .98; letter-spacing: -.065em; text-shadow: 0 4px 0 #d2e0ae; }
+.banana-welcome h1 em { color: #e38d2e; font-style: normal; }
+.banana-lede { max-width: 550px; margin: 20px auto 0; color: #536d58; font-size: clamp(16px, 2vw, 20px); line-height: 1.5; }
+.banana-rule-row { display: flex; align-items: center; justify-content: center; gap: 14px; margin: 24px 0; color: #32583b; font-size: 15px; font-weight: 900; }
+.banana-rule-row span { padding: 10px 14px; border: 1px solid #d6e1c6; border-radius: 999px; background: #f0f4df; }
+.banana-rule-row b { color: #a8b99a; }
+.banana-small-note { color: #81917d; font-size: 12px; }
+
+.banana-button { min-height: 48px; border: 0; border-radius: 13px; padding: 12px 20px; display: inline-flex; justify-content: center; align-items: center; gap: 12px; font-weight: 1000; cursor: pointer; transition: transform .16s ease, box-shadow .16s ease, filter .16s ease; }
+.banana-button:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.04); }
+.banana-button:disabled { cursor: not-allowed; opacity: .55; }
+.banana-button-primary { color: #263a29; background: linear-gradient(135deg, #ffdc69, #f5b844); box-shadow: 0 8px 0 #cf9030, 0 14px 22px #9b712533; }
+.banana-button-primary:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 4px 0 #cf9030; }
+.banana-button-primary span { font-size: 20px; }
+.banana-button-secondary { color: #264e3a; border: 1px solid #b7d0b3; background: #e7f0db; }
+.banana-button-correct { color: #fff; background: #258556; box-shadow: 0 5px 0 #17623d; }
+.banana-button-wrong { color: #754b36; background: #f3e5d7; }
+.banana-icon-button { width: 42px; height: 42px; border: 1px solid #d4dfc6; border-radius: 12px; color: #385b43; background: #f0f4e6; font-size: 18px; cursor: pointer; }
+.banana-text-button { border: 0; padding: 8px 0; color: #4f7657; background: transparent; font-weight: 900; cursor: pointer; }
+.banana-text-button:hover { color: #264c35; text-decoration: underline; }
+
+.banana-setup { width: min(100%, 1180px); margin: 0 auto; padding: clamp(18px, 3vw, 34px); }
+.banana-screen-heading { display: flex; justify-content: space-between; gap: 20px; align-items: start; border-bottom: 1px solid #e2e8d8; padding-bottom: 20px; }
+.banana-screen-heading h1 { margin: 4px 0; color: #224b34; font-size: clamp(26px, 4vw, 38px); letter-spacing: -.04em; }
+.banana-screen-heading p:last-child { margin: 7px 0 0; color: #647660; }
+.banana-setup-grid { display: grid; grid-template-columns: minmax(280px, .8fr) minmax(0, 1.3fr); gap: 18px; margin: 22px 0; }
+.banana-setup-card { min-width: 0; border: 1px solid #e0e7d6; border-radius: 18px; padding: 20px; background: #f3f4e8; }
+.banana-field-row { display: grid; grid-template-columns: 1fr 150px; gap: 12px; align-items: center; margin-bottom: 12px; }
+.banana-field-row label { color: #365a3e; font-size: 14px; font-weight: 900; }
+.banana-field-row select,
+.banana-name-field input { width: 100%; min-width: 0; border: 1px solid #cbd9c4; border-radius: 10px; padding: 10px 12px; color: #244735; background: #fffef8; }
+.banana-team-editor { display: grid; gap: 9px; margin-top: 20px; }
+.banana-name-field { display: flex; align-items: center; gap: 10px; }
+.banana-name-field>span { width: 38px; height: 38px; display: grid; place-items: center; border: 2px solid var(--team-color); border-radius: 12px; background: #fffef7; font-size: 22px; }
+.banana-name-field input { flex: 1; }
+.banana-helper { margin: 10px 0 0; color: #71816e; font-size: 12px; line-height: 1.5; }
+.banana-editor-heading { display: flex; justify-content: space-between; gap: 12px; align-items: start; }
+.banana-editor-heading h2 { margin: 0; color: #244b35; font-size: 19px; }
+.banana-editor-heading p { max-width: 440px; margin: 5px 0 0; color: #71816e; font-size: 12px; line-height: 1.45; }
+.banana-editor-heading>span { flex: 0 0 auto; border-radius: 99px; padding: 5px 9px; color: #3d7653; background: #dcebd2; font-size: 11px; font-weight: 900; }
+.banana-format-example { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 13px 0 8px; color: #74816e; font-size: 11px; }
+.banana-format-example code { border-radius: 5px; padding: 4px 6px; color: #476246; background: #e5eadb; }
+.banana-question-editor textarea { width: 100%; resize: vertical; border: 1px solid #cbd9c4; border-radius: 12px; padding: 13px; color: #304b37; background: #fffef8; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; line-height: 1.65; }
+.banana-setup-footer { display: flex; justify-content: space-between; align-items: center; gap: 20px; border-top: 1px solid #e2e8d8; padding-top: 18px; }
+.banana-setup-footer>span { color: #658063; font-size: 12px; line-height: 1.5; }
+
+.banana-game-screen { width: 100%; }
+.banana-game-header { width: min(100%, 1320px); margin: 0 auto 14px; display: flex; justify-content: space-between; align-items: center; gap: 18px; padding: 14px 20px; }
+.banana-game-title { display: flex; align-items: center; gap: 13px; }
+.banana-game-title>span { width: 48px; height: 48px; display: grid; place-items: center; border: 2px solid #f0cc55; border-radius: 15px; background: #fff1bc; font-size: 27px; }
+.banana-game-title h1 { margin: 1px 0 0; color: #244c34; font-size: 25px; letter-spacing: -.04em; }
+.banana-game-header-right { display: flex; align-items: center; gap: 18px; }
+.banana-goal-pill { border: 1px solid #ead78e; border-radius: 999px; padding: 9px 13px; color: #795a20; background: #fff5ce; font-size: 12px; font-weight: 900; white-space: nowrap; }
+.banana-scoreboard,.banana-play-grid { width: min(100%, 1320px); margin: 0 auto 14px; }
+.banana-scoreboard { padding: 18px 20px; }
+.banana-section-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.banana-section-heading h2 { margin: 2px 0 0; color: #244a34; font-size: 19px; letter-spacing: -.025em; }
+.banana-section-heading>span { color: #79906d; font-size: 12px; font-weight: 900; }
+.banana-lanes { display: grid; gap: 8px; margin-top: 13px; }
+.banana-lane { display: grid; grid-template-columns: minmax(145px, 220px) minmax(0, 1fr); gap: 16px; align-items: center; }
+.banana-lane-team { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.banana-lane-animal { width: 33px; height: 33px; flex: 0 0 auto; display: grid; place-items: center; border: 2px solid var(--team-color); border-radius: 11px; background: #fffef8; font-size: 20px; }
+.banana-lane-name { overflow: hidden; color: #3c5942; font-size: 12px; font-weight: 900; text-overflow: ellipsis; white-space: nowrap; }
+.banana-lane-team strong { margin-left: auto; color: var(--team-color); font-size: 14px; white-space: nowrap; }
+.banana-lane-team strong small { color: #84917a; font-size: 10px; }
+.banana-lane-track { position: relative; display: grid; grid-template-columns: repeat(var(--banana-goal), minmax(0, 1fr)); align-items: center; height: 38px; padding: 3px 19px 3px 3px; border: 1px solid #d7e0ca; border-radius: 999px; background: repeating-linear-gradient(90deg, #e6edda 0 calc(100% / var(--banana-goal) - 1px), #d0ddc5 calc(100% / var(--banana-goal) - 1px) calc(100% / var(--banana-goal))); }
+.banana-step { z-index: 1; display: grid; place-items: center; height: 27px; color: #718e50; font-size: 16px; }
+.banana-step.earned { animation: banana-pop .35s ease-out; }
+.banana-runner { position: absolute; z-index: 2; top: -9px; display: grid; place-items: center; width: 42px; height: 42px; border: 3px solid var(--team-color); border-radius: 50%; background: #fffdf4; box-shadow: 0 4px 8px #1f462833; font-size: 23px; transform: translateX(-50%); transition: left .55s cubic-bezier(.2,.8,.2,1); }
+.banana-finish { position: absolute; right: 0; top: 3px; font-size: 20px; }
+
+.banana-play-grid { display: grid; grid-template-columns: minmax(280px, .78fr) minmax(0, 1.45fr); gap: 14px; align-items: stretch; }
+.banana-spinner-panel,.banana-letter-panel { min-width: 0; padding: 18px; }
+.banana-turns-left { border-radius: 999px; padding: 6px 9px; color: #5f775a !important; background: #edf0e0; font-size: 10px !important; white-space: nowrap; }
+.banana-wheel-area { width: min(100%, 340px); aspect-ratio: 1; position: relative; margin: 14px auto 8px; display: grid; place-items: center; }
+.banana-wheel-pointer { position: absolute; z-index: 5; top: -2px; color: #b56a30; font-size: 28px; line-height: 1; filter: drop-shadow(0 2px 0 #fbf8ec); }
+.banana-wheel { width: 88%; height: 88%; position: relative; border: 8px solid #fff8dc; border-radius: 50%; box-shadow: 0 0 0 3px #d5a843, 0 12px 24px #28483435; transition: transform 1.9s cubic-bezier(.12,.78,.18,1); }
+.banana-wheel-animal { position: absolute; z-index: 1; width: 47px; height: 47px; display: grid; place-items: center; border: 2px solid #ffffffb8; border-radius: 50%; background: #fffdf0; box-shadow: 0 3px 8px #183c3040; font-size: 25px; transform: translate(-50%, -50%); }
+.banana-wheel-center { position: absolute; left: 50%; top: 50%; width: 72px; height: 72px; display: grid; place-items: center; border: 5px solid #fff6d4; border-radius: 50%; background: #e9a938; box-shadow: 0 4px 0 #a86a26; font-size: 32px; transform: translate(-50%, -50%); }
+.banana-spin-button { display: flex; width: min(100%, 300px); margin: 0 auto; }
+.banana-center { text-align: center; }
+.banana-active-team-callout { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 13px 0 0; border: 1px solid color-mix(in srgb, var(--team-color) 38%, white); border-radius: 15px; padding: 12px; background: color-mix(in srgb, var(--team-color) 9%, white); }
+.banana-active-team-callout>div { display: flex; align-items: center; gap: 10px; }
+.banana-active-team-callout>div>span { font-size: 33px; }
+.banana-active-team-callout strong,.banana-active-team-callout small { display: block; }
+.banana-active-team-callout strong { color: var(--team-color); font-size: 15px; }
+.banana-active-team-callout small { margin-top: 2px; color: #647760; font-size: 11px; }
+.banana-step-badge { border-radius: 99px; padding: 6px 8px; color: var(--team-color); background: #fffdf2; font-size: 10px; font-weight: 1000; white-space: nowrap; }
+.banana-letter-panel .banana-helper { margin: 7px 0 12px; }
+.banana-legend { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.banana-legend i { width: 10px; height: 10px; border-radius: 50%; background: #f5be41; box-shadow: 0 0 0 3px #fff0bb; }
+.banana-letter-grid { display: grid; grid-template-columns: repeat(13, minmax(0, 1fr)); gap: 7px; }
+.banana-letter { min-width: 0; aspect-ratio: 1 / 1.12; position: relative; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 1px; border: 1px solid #d9e4ce; border-radius: 11px; color: #3c6341; background: #eff4e5; cursor: pointer; transition: transform .14s ease, box-shadow .14s ease, background .14s ease; }
+.banana-letter:hover:not(:disabled) { z-index: 1; transform: translateY(-3px) rotate(-2deg); box-shadow: 0 6px 12px #23492b25; }
+.banana-letter-fruit { font-size: clamp(13px, 1.4vw, 20px); line-height: 1; }
+.banana-letter b { font-size: clamp(10px, 1vw, 14px); line-height: 1; }
+.banana-letter.is-golden { border: 2px solid #e8b642; color: #6b4e19; background: linear-gradient(150deg, #fff1b4, #f7d66c); box-shadow: inset 0 0 0 2px #fff6ce; }
+.banana-letter.is-golden .banana-letter-fruit { filter: drop-shadow(0 0 3px #d79b2a); }
+.banana-letter>i { position: absolute; right: 3px; top: 2px; color: #bd7d1e; font-size: 9px; font-style: normal; }
+.banana-letter.is-used { border-color: #dfe4d7; color: #a9b29e; background: #e6e9df; filter: grayscale(1); }
+.banana-letter.is-used .banana-letter-fruit { opacity: .3; }
+.banana-dash button:disabled.banana-letter { cursor: not-allowed; }
+.banana-board-hint { margin: 9px 0; border-radius: 10px; padding: 8px; color: #64745d; background: #f0f1e5; text-align: center; font-size: 11px; }
+.banana-own-twist { display: flex; align-items: center; gap: 9px; margin-top: 13px; border-radius: 12px; padding: 9px 11px; color: #715b31; background: #fff5d7; }
+.banana-own-twist>span { font-size: 19px; }
+.banana-own-twist p { margin: 0; font-size: 11px; line-height: 1.4; }
+.banana-own-twist strong { margin-right: 4px; }
+.banana-game-footer { width: min(100%, 1320px); margin: 4px auto; display: flex; justify-content: space-between; align-items: center; color: #eff6df; font-size: 11px; text-shadow: 0 1px 2px #173d2b; }
+
+.banana-question-screen { display: grid; place-items: center; }
+.banana-question-panel { min-height: 530px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.banana-question-panel>.banana-text-button { align-self: flex-start; }
+.banana-question-meta { width: 100%; display: flex; justify-content: center; align-items: center; gap: 12px; margin: 25px 0 35px; }
+.banana-active-chip,.banana-letter-chip { border: 1px solid #d8e2cd; border-radius: 999px; padding: 9px 14px; color: #3b6948; background: #edf3e5; font-size: 13px; font-weight: 900; }
+.banana-active-chip { border-color: color-mix(in srgb, var(--team-color) 30%, white); color: var(--team-color); }
+.banana-letter-chip { min-width: 43px; color: #668349; background: #f4f3df; font-size: 18px; }
+.banana-letter-chip.is-golden { border-color: #e5b33e; color: #835e20; background: #fff1bd; }
+.banana-question-panel>.banana-kicker { margin-bottom: 12px; }
+.banana-question-panel h1 { max-width: 760px; margin: 0 auto; color: #233f2c; font-size: clamp(27px, 4.3vw, 48px); line-height: 1.18; letter-spacing: -.04em; }
+.banana-answer-hidden,.banana-answer { width: min(100%, 600px); min-height: 106px; margin: 28px auto 0; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 13px; border: 1px dashed #bed0b4; border-radius: 17px; padding: 18px; color: #75826f; background: #f2f3e7; font-size: 13px; }
+.banana-answer { border-style: solid; border-color: #a8cfaa; color: #28583a; background: #e4f2df; }
+.banana-answer span { color: #66816a; font-size: 10px; font-weight: 1000; letter-spacing: .14em; }
+.banana-answer strong { color: #28583a; font-size: 24px; }
+.banana-mark-actions { width: min(100%, 600px); margin-top: 23px; display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 10px; }
+.banana-mark-actions p { width: 100%; margin: 0 0 3px; color: #58705a; font-size: 13px; font-weight: 900; }
+.banana-mark-actions .banana-button span { font-size: 11px; opacity: .85; }
+.banana-question-footnote { margin: 20px 0 0; color: #87917e; font-size: 11px; }
+
+.banana-result-panel { max-width: 850px; min-height: 470px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.banana-result-art { margin-bottom: 14px; font-size: 67px; animation: banana-pop .5s cubic-bezier(.2,1.4,.5,1); }
+.banana-result-panel h1,.banana-winner h1 { margin: 7px 0 10px; color: #294d35; font-size: clamp(29px, 5vw, 48px); letter-spacing: -.05em; }
+.banana-result-panel>p:not(.banana-kicker),.banana-winner>p { max-width: 520px; margin: 0 auto 20px; color: #60755d; font-size: 15px; line-height: 1.5; }
+.banana-bonus-pill { margin: 3px; border-radius: 999px; padding: 7px 11px; color: #75581f; background: #ffefb7; font-size: 11px; font-weight: 900; }
+.banana-result-panel .banana-button { margin-top: 25px; }
+.banana-winner { max-width: 900px; min-height: 590px; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
+.banana-winner-animal { width: 132px; height: 132px; margin: 15px 0; display: grid; place-items: center; border: 6px solid var(--team-color); border-radius: 50%; background: #fffef6; box-shadow: 0 12px 0 color-mix(in srgb, var(--team-color) 20%, white), 0 18px 30px #28483427; font-size: 78px; animation: banana-bob 2s ease-in-out infinite; }
+.banana-winner-scoreboard { width: min(100%, 530px); display: grid; gap: 7px; margin: 8px auto 22px; }
+.banana-winner-scoreboard>div { display: flex; justify-content: space-between; gap: 12px; border-left: 5px solid var(--team-color); border-radius: 10px; padding: 10px 13px; color: #48624a; background: #f0f2e6; text-align: left; font-size: 13px; }
+.banana-winner-scoreboard strong { color: var(--team-color); white-space: nowrap; }
+.banana-winner-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; }
+
+@keyframes banana-bob { 0%,100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-7px) rotate(2deg); } }
+@keyframes banana-pop { 0% { transform: scale(.65); opacity: .4; } 70% { transform: scale(1.12); } 100% { transform: scale(1); opacity: 1; } }
+
+@media (max-width: 940px) {
+  .banana-play-grid { grid-template-columns: minmax(240px, .7fr) minmax(0, 1.3fr); }
+  .banana-spinner-panel,.banana-letter-panel { padding: 14px; }
+  .banana-letter-grid { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+  .banana-letter { aspect-ratio: 1; }
+  .banana-letter-fruit { font-size: 18px; }
+  .banana-letter b { font-size: 13px; }
+}
+
+@media (max-width: 680px) {
+  .banana-dash { min-height: 100vh; padding: 10px; }
+  .banana-dash .panel { border-radius: 17px; }
+  .banana-welcome { min-height: 580px; padding: 24px 15px; }
+  .banana-rule-row { gap: 6px; font-size: 12px; }
+  .banana-rule-row span { padding: 8px 10px; }
+  .banana-setup { padding: 15px; }
+  .banana-setup-grid { grid-template-columns: 1fr; gap: 12px; }
+  .banana-setup-card { padding: 15px; }
+  .banana-setup-footer { align-items: stretch; flex-direction: column; }
+  .banana-setup-footer .banana-button { width: 100%; }
+  .banana-game-header { padding: 10px 12px; }
+  .banana-game-title { gap: 8px; }
+  .banana-game-title>span { width: 39px; height: 39px; border-radius: 12px; font-size: 21px; }
+  .banana-game-title h1 { font-size: 19px; }
+  .banana-game-title .banana-kicker { font-size: 8px; }
+  .banana-game-header-right { gap: 8px; }
+  .banana-goal-pill { padding: 7px 8px; font-size: 10px; }
+  .banana-game-header-right .banana-text-button { font-size: 11px; }
+  .banana-scoreboard { padding: 13px; }
+  .banana-section-heading h2 { font-size: 17px; }
+  .banana-section-heading .banana-kicker { font-size: 9px; }
+  .banana-lane { grid-template-columns: 112px minmax(0, 1fr); gap: 8px; }
+  .banana-lane-name { max-width: 66px; font-size: 10px; }
+  .banana-lane-animal { width: 28px; height: 28px; font-size: 17px; }
+  .banana-lane-team strong { font-size: 11px; }
+  .banana-lane-track { height: 32px; padding-right: 15px; }
+  .banana-step { height: 22px; font-size: 12px; }
+  .banana-runner { top: -5px; width: 34px; height: 34px; font-size: 19px; }
+  .banana-finish { top: 2px; font-size: 16px; }
+  .banana-play-grid { grid-template-columns: 1fr; }
+  .banana-spinner-panel { order: 1; }
+  .banana-letter-panel { order: 2; }
+  .banana-wheel-area { width: min(80vw, 300px); }
+  .banana-wheel-animal { width: 41px; height: 41px; font-size: 22px; }
+  .banana-letter-grid { grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+  .banana-letter { border-radius: 9px; }
+  .banana-letter-fruit { font-size: 17px; }
+  .banana-letter b { font-size: 12px; }
+  .banana-own-twist { align-items: flex-start; }
+  .banana-game-footer { padding: 4px 3px; font-size: 9px; }
+  .banana-question-panel { min-height: 80vh; padding: 20px 15px; }
+  .banana-question-meta { margin: 20px 0 28px; }
+  .banana-question-panel h1 { font-size: clamp(25px, 8vw, 36px); }
+  .banana-answer strong { font-size: 20px; }
+  .banana-mark-actions { flex-direction: column; }
+  .banana-mark-actions .banana-button { width: 100%; }
+  .banana-winner { min-height: 80vh; padding: 24px 15px; }
+  .banana-winner-animal { width: 104px; height: 104px; font-size: 60px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .banana-dash *, .banana-dash *::before, .banana-dash *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 import { useGame, logOut } from '@/providers/GameProvider';
 import { GAME_CATALOG, THEMES } from '@/constants/index';
+import { isVisibleToUser } from '@/config/game-access';
 import { usePathname, useRouter } from 'next/navigation';
 import { useResponsive } from '@/hooks/useResponsive';
 import { isSoundEnabled, setSoundEnabled } from '@/lib/sound/beep';
@@ -103,7 +104,7 @@ export default function Navbar() {
   const searchTerm = gameSearch.trim().toLowerCase();
   const gameResults = Object.entries(GAME_CATALOG).filter(([gameId, game]) => {
     const searchable = `${gameId} ${game.name} ${game.desc} ${game.tag.label} ${game.badge}`.toLowerCase();
-    return !searchTerm || searchable.includes(searchTerm);
+    return isVisibleToUser(gameId, creator) && (!searchTerm || searchable.includes(searchTerm));
   }).slice(0, 12);
 
   function openGameSearch() {

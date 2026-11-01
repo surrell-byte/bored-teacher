@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="420" viewBox="0 0 640 420">
+  <defs>
+    <linearGradient id="sky" x2="0" y2="1">
+      <stop stop-color="#55bee1"/>
+      <stop offset=".47" stop-color="#d5f6ef"/>
+      <stop offset=".49" stop-color="#44bfd1"/>
+      <stop offset="1" stop-color="#075178"/>
+    </linearGradient>
+    <linearGradient id="metal" x2="0" y2="1">
+      <stop stop-color="#c5d2e1"/>
+      <stop offset=".55" stop-color="#74839b"/>
+      <stop offset="1" stop-color="#34425c"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="420" rx="32" fill="url(#sky)"/>
+  <g fill="#f3ffff" opacity=".8">
+    <ellipse cx="93" cy="80" rx="105" ry="43"/>
+    <ellipse cx="540" cy="61" rx="130" ry="45"/>
+    <ellipse cx="324" cy="34" rx="120" ry="32"/>
+  </g>
+  <path d="M0 247q90-22 174 1t171 0 162 0 133 1v171H0z" fill="#087499"/>
+  <path d="M0 283q98-19 196 0t194 0 250 0M0 326q103-17 206 0t213 0 221 0" fill="none" stroke="#a5f2f3" stroke-width="8" opacity=".48"/>
+  <g font-family="Arial,sans-serif" text-anchor="middle">
+    <text x="150" y="221" font-size="94">⛵</text>
+    <text x="320" y="206" font-size="119">🚢</text>
+    <text x="490" y="221" font-size="94">⛵</text>
+  </g>
+  <path d="M25 333h590v87H25z" fill="#744439" stroke="#311f32" stroke-width="9"/>
+  <path d="M34 352h572M45 377h554M58 401h530" stroke="#d28557" stroke-width="10"/>
+  <g fill="url(#metal)" stroke="#202a40" stroke-width="8">
+    <circle cx="158" cy="324" r="52"/><circle cx="320" cy="324" r="52"/><circle cx="482" cy="324" r="52"/>
+  </g>
+  <g fill="#111a2b">
+    <circle cx="158" cy="324" r="23"/><circle cx="320" cy="324" r="23"/><circle cx="482" cy="324" r="23"/>
+  </g>
+  <text x="32" y="62" fill="#17375c" font-family="Arial,sans-serif" font-size="18" font-weight="700" letter-spacing="4">CLASSROOM SEA BATTLE</text>
+  <text x="31" y="111" fill="#fff" font-family="Arial,sans-serif" font-size="48" font-weight="900">CANNON CLASH</text>
+</svg>

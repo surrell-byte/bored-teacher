@@ -46,6 +46,7 @@ export type GameComponentProps = {
 
 export const GAME_COMPONENTS: Partial<Record<string, React.LazyExoticComponent<React.ComponentType<any>>>> = {
   bowlingbattle: lazyGame('bowlingbattle', () => import('@/games/bowling-battle/BowlingBattle.jsx')),
+  duelofthevoid: lazyGame('duelofthevoid', () => import('@/games/duel-of-the-void/DuelOfTheVoid.jsx')),
   airpuck: lazyGame('airpuck', () => import('@/AirPuck.jsx')),
   alphabethunt: lazyGame('alphabethunt', () => import('@/games/alphabet-hunt/AlphabetHunt')),
   powerpointslide: lazyGame('powerpointslide', () => import('@/games/powerpoint-slide/PowerPointSlide.jsx')),
@@ -74,6 +75,11 @@ export const GAME_COMPONENTS: Partial<Record<string, React.LazyExoticComponent<R
   deepseaReveal: lazyGame('deepseaReveal', () => import('@/games/deep-sea-reveal/DeepSeaReveal.jsx')),
   dragonslingshot: lazyGame('dragonslingshot', () => import('@/games/dragon-slingshot/DragonSlingshot')),
   emojimatch: lazyGame('emojimatch', () => import('@/games/emoji-match/EmojiMatch.jsx')),
+  basketballshoot: lazyGame('basketballshoot', () => import('@/games/basketball-shoot/BasketballShoot.jsx')),
+  doordash: lazyGame('doordash', () => import('@/games/door-dash/DoorDash.jsx')),
+  cannonclash: lazyGame('cannonclash', () => import('@/games/cannon-clash/CannonClash.jsx')),
+  volcanoescape: lazyGame('volcanoescape', () => import('@/games/volcano-escape/VolcanoEscape.jsx')),
+  languagetower: lazyGame('languagetower', () => import('@/games/language-tower/LanguageTower.jsx')),
   emojicategories: lazyGame('emojicategories', () => import('@/games/emoji-category-sort/EmojiCategorySort.jsx')),
   wordfusion: lazyGame('wordfusion', () => import('@/games/word-fusion/WordFusion.jsx')),
   knowitall: lazyGame('knowitall', () => import('@/games/know-it-all/KnowItAll.jsx')),

@@ -10,7 +10,7 @@ import GameCard from '@/components/cards/GameCard';
 import { getSortedLeaderboard, type LBPlayerWithScore } from '@/features/leaderboard/api';
 import { ACHIEVEMENTS } from '@/features/achievements/achievements';
 import { LATEST_SHOP_ITEMS } from '@/features/shop/catalog';
-import { COMING_SOON_GAME_IDS } from '@/config/game-access';
+import { COMING_SOON_GAME_IDS, isVisibleToUser } from '@/config/game-access';
 import ReviewPanel from '@/components/reviews/ReviewPanel';
 import ProfileAvatar, { isImageAvatar } from '@/components/profile/ProfileAvatar';
 
@@ -30,7 +30,10 @@ export default function HubPage() {
   }, [router]);
   useEffect(() => { if (ready) setLeaders(getSortedLeaderboard().slice(0, 3)); }, [ready]);
   const play = useCallback((gameId: string) => router.push(`/games/${gameId}`), [router]);
-  const visibleGameIds = useMemo(() => GAME_KEYS.filter(id => isCreator || !COMING_SOON_GAME_IDS.has(id)), [isCreator]);
+  const visibleGameIds = useMemo(
+    () => GAME_KEYS.filter(id => isCreator || (!COMING_SOON_GAME_IDS.has(id) && isVisibleToUser(id, isCreator))),
+    [isCreator],
+  );
   const advertisedNewGames = useMemo(
     () => getLatestGameKeys(visibleGameIds),
     [visibleGameIds],

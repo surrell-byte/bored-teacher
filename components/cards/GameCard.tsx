@@ -10,7 +10,7 @@ import {
   GAME_COVERS,
 } from '@/constants/index';
 import { preloadGame } from '@/games/catalog.components';
-import { TEACHER_PRO_GAME_IDS } from '@/config/game-access';
+import { CREATOR_ONLY_GAME_IDS, TEACHER_PRO_GAME_IDS } from '@/config/game-access';
 
 interface GameCardProps {
   gameId: string;
@@ -28,10 +28,12 @@ function GameCard({
   const accent = GAME_BAR_COLOR[gameId] ?? 'var(--teal)';
   const coverStyle = { '--cover-accent': accent } as React.CSSProperties;
   const premium = TEACHER_PRO_GAME_IDS.has(gameId);
+  const creatorOnly = CREATOR_ONLY_GAME_IDS.has(gameId);
+  const locked = premium || creatorOnly;
 
   return (
     <button
-      className={`game-card${premium ? ' game-card-premium' : ''}`}
+      className={`game-card${locked ? ' game-card-premium' : ''}`}
       onClick={() => {
         preloadGame(gameId);
         onClick(gameId);
@@ -51,8 +53,8 @@ function GameCard({
         <div className="card-cover-icon">
           {GAME_ICONS[gameId] ?? '🎮'}
         </div>
-        {premium && (
-          <span className="game-card-lock-wrap" aria-label="Teacher Pro game">
+        {locked && (
+          <span className="game-card-lock-wrap" aria-label={creatorOnly ? 'Creator-only game' : 'Teacher Pro game'}>
             <span className="game-card-lock">🔒</span>
           </span>
         )}
@@ -62,6 +64,7 @@ function GameCard({
         {GAME_NAMES[gameId] ?? gameId}
       </h3>
       {premium && <span className="game-card-premium-label">Teacher Pro</span>}
+      {creatorOnly && <span className="game-card-premium-label">Creator access</span>}
 
       {comingSoon && <span className="game-card-coming-soon">Coming soon</span>}
 

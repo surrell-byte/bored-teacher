@@ -35,6 +35,7 @@ const RESOURCES: Resource[] = [
   { id: 'r5', icon: '🔤', title: 'Phonics Integration Guide',           desc: 'Use Phonics Adventure and Phonics World as warm-up activities aligned to phonics stages.',     type: 'guide',     subject: 'English',        dateAdded: '2025-04-28' },
   { id: 'r6', icon: '🔤', title: 'A Beginner\'s Guide to Teaching ESL',    desc: '36 practical tips for new English teachers—from classroom management and grammar teaching to motivation, scaffolding, and building confidence.', type: 'guide', subject: 'English', dateAdded: '2026-08-18', link: '/blog/beginners-guide-teaching-esl' },
   { id: 'r7', icon: '🎓', title: 'Classroom Management and Conflict Resolution', desc: '40 practical strategies for ESL teachers—from establishing expectations and building relationships to handling conflicts, bullying, and maintaining authority.', type: 'guide', subject: 'English', dateAdded: '2026-08-18', link: '/blog/classroom-management-conflict-resolution' },
+  { id: 'cpe-speaking', icon: '🎙️', title: 'Cambridge C2 Proficiency Speaking Course', desc: 'Seven practical lessons for developing clear answers, comparing ideas, collaborating, and preparing for the Proficiency Speaking paper.', type: 'guide', subject: 'English', dateAdded: '2026-10-26', link: '/resources/cpe-speaking' },
   { id: 't1', icon: '💡', title: 'Setting Up the Leaderboard',          desc: 'Import your class list, assign students to accounts, and sync scores automatically.',          type: 'tip',       subject: 'Life Skills',    dateAdded: '2025-04-30' },
   { id: 't2', icon: '🏆', title: 'Running a Games Tournament',          desc: 'Step-by-step guide to hosting a 30-minute in-class games tournament using the Hub.',          type: 'tip',       subject: 'Life Skills',    dateAdded: '2025-05-01', link: '/resources/t2' },
   { id: 't3', icon: '📊', title: 'Reading Trophy Room Data',            desc: 'How to interpret badge progress to identify struggling vs. advanced learners.',               type: 'tip',       subject: 'Life Skills',    dateAdded: '2025-05-02' },
@@ -47,7 +48,7 @@ const RESOURCES: Resource[] = [
   { id: 'c2', icon: '📥', title: 'Export Leaderboard to CSV',           desc: 'Download your class leaderboard as a spreadsheet to share with parents or admin.',           type: 'tool',      subject: 'Life Skills',    dateAdded: '2025-05-09' },
 ];
 
-const FEATURED_IDS = ['r1', 't2', 'w3', 'w4'];
+const FEATURED_IDS = ['cpe-speaking', 'r1', 't2', 'w3', 'w4'];
 
 const FORMAT_OPTIONS: Array<{ label: string; value: 'All' | Resource['type'] }> = [
   { label: 'All Formats', value: 'All' },
@@ -233,7 +234,8 @@ export default function ResourcesPage() {
                           router.push('/subscription');
                           return;
                         }
-                        if (r.link) window.open(r.link, '_blank', 'noopener,noreferrer');
+                        if (r.link?.startsWith('/')) router.push(r.link);
+                        else if (r.link) window.open(r.link, '_blank', 'noopener,noreferrer');
                       }}
                     >
                       {(!hasTeacherPro && premiumResourceIds.has(r.id)) ? 'Unlock Teacher Pro' : TYPE_META[r.type].action}
@@ -307,7 +309,8 @@ export default function ResourcesPage() {
                             router.push('/subscription');
                             return;
                           }
-                          if (r.link) window.open(r.link, '_blank', 'noopener,noreferrer');
+                          if (r.link?.startsWith('/')) router.push(r.link);
+                          else if (r.link) window.open(r.link, '_blank', 'noopener,noreferrer');
                         }}
                       >
                         {(!hasTeacherPro && premiumResourceIds.has(r.id)) ? 'Unlock Teacher Pro' : TYPE_META[r.type].action}
