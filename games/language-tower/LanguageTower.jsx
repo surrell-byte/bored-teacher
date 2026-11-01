@@ -1133,7 +1133,7 @@ export default function LanguageTower({ onComplete, onHudUpdate, profileName }) 
       : challenge.players[0].score > challenge.players[1].score ? 0 : 1
     : null;
   return (
-    <div className={`lt-root${screen?.startsWith('challenge') ? ' is-challenge' : ''}`}>
+    <div className={`lt-root${screen?.startsWith('challenge') ? ' is-challenge' : ''}${screen ? ' has-overlay' : ''}`}>
       <main className="lt-board" aria-label="Language Tower game" data-challenge-phase={challengeView?.phase}>
         <canvas
           ref={canvasRef}
@@ -1463,6 +1463,46 @@ const STYLES = `
 @keyframes lt-pop { from { transform:scale(.86); opacity:0; } to { transform:scale(1); opacity:1; } }
 @media (max-width:480px) { .lt-panel { padding-right:20px; padding-left:20px; } .lt-panel h1 { font-size:38px; } .lt-mode-btn { padding:10px 12px; } .lt-mode-btn strong { font-size:15px; } .lt-mode-btn span { font-size:11px; } .lt-overlay { padding:14px 0; } .lt-letter-blocks { grid-template-columns:repeat(auto-fit,minmax(40px,1fr)); gap:6px; } .lt-letter-block { min-height:42px; font-size:18px; } .lt-challenge-results { gap:8px; } .lt-result-card { padding:11px; } }
 @media (max-width:360px) { .lt-challenge-results { grid-template-columns:1fr; } .lt-challenge-points { font-size:11px; } .lt-button { padding:13px 18px; font-size:14px; } }
+@media (max-height:700px) {
+  .lt-overlay { padding-top:8px; padding-bottom:8px; }
+  .lt-menu-panel h1 { margin-bottom:10px; font-size:34px; }
+  .lt-menu-panel .lt-hello { margin-bottom:6px; font-size:10px; }
+  .lt-menu-panel .lt-modes { gap:6px; }
+  .lt-menu-panel .lt-mode-btn { padding:8px 10px; border-radius:12px; }
+  .lt-menu-panel .lt-mode-btn strong { font-size:14px; }
+  .lt-menu-panel .lt-mode-btn span { font-size:10px; line-height:1.3; }
+  .lt-menu-panel .lt-mode-btn small { margin-top:4px; padding:2px 8px; font-size:9px; }
+  .lt-menu-panel .lt-hint { margin-top:10px; padding:5px 8px; font-size:8px; }
+  .lt-menu-panel .lt-tip { margin-top:6px; font-size:9px; }
+  .lt-challenge-setup h2 { font-size:22px; }
+  .lt-challenge-setup p { margin-bottom:10px; font-size:12px; line-height:1.45; }
+  .lt-challenge-setup .lt-field { margin-bottom:12px; }
+  .lt-challenge-setup .lt-field span { margin-bottom:4px; }
+  .lt-challenge-setup .lt-field input { padding:11px 12px; }
+  .lt-challenge-setup .lt-button { padding:12px 16px; font-size:14px; }
+}
 @media (max-height:520px) { .lt-overlay { align-items:flex-start; padding:8px 0; } .lt-panel { flex:0 0 auto; margin:0 auto; } .lt-panel h1 { font-size:34px; } .lt-fail-icon { margin-bottom:2px; font-size:30px; } .lt-panel p { margin-bottom:10px; } .lt-challenge-sentence { padding:8px; } .lt-letter-block { min-height:38px; } }
-@media (orientation:landscape) and (max-height:520px) { .lt-root.is-challenge .lt-board { width:100%; height:100%; max-width:none; aspect-ratio:auto; } .lt-root.is-challenge .lt-challenge-panel { max-width:760px; } .lt-root.is-challenge .lt-challenge-setup { max-width:540px; } .lt-root.is-challenge .lt-challenge-victory { max-width:800px; } .lt-root.is-challenge .lt-challenge-panel h2 { font-size:20px; } .lt-root.is-challenge .lt-challenge-panel p { font-size:12px; } .lt-root.is-challenge .lt-challenge-sentence { margin-bottom:8px; padding:7px; font-size:16px; } .lt-root.is-challenge .lt-letter-blocks { gap:5px; margin-bottom:8px; } .lt-root.is-challenge .lt-letter-block { min-height:34px; } .lt-root.is-challenge .lt-challenge-feedback { margin-bottom:6px !important; } .lt-root.is-challenge .lt-challenge-results { margin:8px 0; } }
+@media (orientation:landscape) and (max-height:520px) {
+  .lt-root.has-overlay .lt-board { width:100%; height:100%; max-width:none; aspect-ratio:auto; }
+  .lt-root.has-overlay .lt-overlay { padding-block:4px; }
+  .lt-root.has-overlay .lt-menu-panel { display:grid; grid-template-columns:minmax(170px,.8fr) minmax(0,1.5fr); grid-template-rows:auto auto 1fr auto; grid-template-areas:"hello modes" "title modes" "hint modes" "tip modes"; gap:0 20px; align-items:center; max-width:760px; padding:12px 20px; text-align:left; }
+  .lt-root.has-overlay .lt-menu-panel .lt-hello { grid-area:hello; }
+  .lt-root.has-overlay .lt-menu-panel h1 { grid-area:title; }
+  .lt-root.has-overlay .lt-menu-panel .lt-modes { grid-area:modes; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .lt-root.has-overlay .lt-menu-panel .lt-hint { grid-area:hint; margin:4px 0; }
+  .lt-root.has-overlay .lt-menu-panel .lt-tip { grid-area:tip; margin:4px 0; }
+  .lt-root.is-challenge .lt-challenge-setup { display:grid; grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr); gap:4px 20px; align-items:center; max-width:700px; padding:12px 20px; text-align:left; }
+  .lt-root.is-challenge .lt-challenge-setup form { grid-column:2; grid-row:1 / 4; min-width:0; }
+  .lt-root.is-challenge .lt-challenge-setup .lt-field { margin-bottom:8px; }
+  .lt-root.is-challenge .lt-challenge-setup .lt-button-row { gap:6px; }
+  .lt-root.is-challenge .lt-challenge-panel { max-width:760px; }
+  .lt-root.is-challenge .lt-challenge-victory { max-width:800px; }
+  .lt-root.is-challenge .lt-challenge-panel h2 { font-size:20px; }
+  .lt-root.is-challenge .lt-challenge-panel p { font-size:12px; }
+  .lt-root.is-challenge .lt-challenge-sentence { margin-bottom:8px; padding:7px; font-size:16px; }
+  .lt-root.is-challenge .lt-letter-blocks { gap:5px; margin-bottom:8px; }
+  .lt-root.is-challenge .lt-letter-block { min-height:34px; }
+  .lt-root.is-challenge .lt-challenge-feedback { margin-bottom:6px !important; }
+  .lt-root.is-challenge .lt-challenge-results { margin:8px 0; }
+}
 `;
