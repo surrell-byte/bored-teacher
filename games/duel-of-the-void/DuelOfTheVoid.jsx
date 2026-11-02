@@ -1251,10 +1251,10 @@ function createGame(root) {
      ========================================================= */
   const WINS_NEEDED = 3;
   const CARD_DEFS = [
-    { id: 'heavy', icon: '☄️', name: 'HEAVY ATTACK', desc: 'Deal 30% damage to your opponent',
-      color: '#ff7a45', kind: 'attack', pct: 0.30, shots: 3 },
-    { id: 'light', icon: '✦', name: 'LIGHT ATTACK', desc: 'Deal 15% damage to your opponent',
-      color: '#ffd166', kind: 'attack', pct: 0.15, shots: 1 },
+    { id: 'heavy', icon: '☄️', name: 'HEAVY ATTACK', desc: 'Deal 35% damage to your opponent',
+      color: '#ff7a45', kind: 'attack', pct: 0.35, shots: 3 },
+    { id: 'light', icon: '✦', name: 'LIGHT ATTACK', desc: 'Deal 25% damage to your opponent',
+      color: '#ffd166', kind: 'attack', pct: 0.25, shots: 1 },
     { id: 'heal', icon: '✚', name: 'HEAL', desc: 'Recover 10% of your own health',
       color: '#4be0ff', kind: 'heal', pct: 0.10 },
     { id: 'bomb', icon: '💥', name: 'BOMB', desc: 'Lose 10% of your own health',
@@ -1566,9 +1566,9 @@ function createGame(root) {
     CardGame.busy = true;
     CardGame.superShot = true;
     CardGame.pending = 4;
-    CardGame.dmg = foe.maxHp * 0.20 / 4;
+    CardGame.dmg = foe.maxHp * 0.50 / 4;
     for (let k = 0; k < 4; k++) later(() => spawnStrike(me, true), 250 + k * 140);
-    elMsg.textContent = `SUPER SHOT  ·  ${foe.name} takes ${Math.round(foe.maxHp * 0.20)} damage!`;
+    elMsg.textContent = `SUPER SHOT  ·  ${foe.name} takes ${Math.round(foe.maxHp * 0.50)} damage!`;
     elMsg.style.color = THEME.sup;
     elMsg.classList.add('show');
     renderCardUI();
