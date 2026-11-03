@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { isSoundEnabled, playBeep, setSoundEnabled } from '@/lib/sound/beep';
+import { GameHelpText } from '@/engine/layout/GameTranslationContext';
 
 const TARGET_SCORE = 3;
 const CHARACTER_OPTIONS = [
@@ -299,8 +300,8 @@ export default function ParachuteDrop({ onComplete, profileName = '' }) {
               <button className="pd-mode-card" onClick={() => setScreen('howto')}>
                 <span className="pd-mode-icon">📖</span>
                 <div>
-                  <strong>How to Play</strong>
-                  <small>Learn the rules and match flow.</small>
+                  <strong><GameHelpText english="How to Play" /></strong>
+                  <small><GameHelpText english="Learn the rules and match flow." /></small>
                 </div>
               </button>
             </div>
@@ -313,14 +314,14 @@ export default function ParachuteDrop({ onComplete, profileName = '' }) {
         <div className="pd-screen">
           <div className="pd-panel pd-panel-medium">
             <div className="pd-header-row">
-              <button className="pd-link-button" onClick={() => setScreen('menu')}>← Back</button>
-              <h2>How to Play</h2>
+              <button className="pd-link-button" onClick={() => setScreen('menu')}><GameHelpText english="Back" /></button>
+              <h2><GameHelpText english="How to Play" /></h2>
             </div>
             <ul className="pd-rules">
-              <li>Each player starts with 10 lives.</li>
-              <li>In Roll Mode, each roll makes the parachuter lose one life.</li>
-              <li>In Card Mode, choose a hidden red, blue, green, or yellow card.</li>
-              <li>Cards randomly become Cut, Wind, Safe, or Wild each round.</li>
+              <li><GameHelpText english="Each player starts with 10 lives." /></li>
+              <li><GameHelpText english="In Roll Mode, each roll makes the parachuter lose one life." /></li>
+              <li><GameHelpText english="In Card Mode, choose a hidden red, blue, green, or yellow card." /></li>
+              <li><GameHelpText english="Cards randomly become Cut, Wind, Safe, or Wild each round." /></li>
             </ul>
           </div>
         </div>

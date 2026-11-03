@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useGame } from "@/lib/gameState";
+import { GameHelpText } from "@/engine/layout/GameTranslationContext";
 
 const PAIRS = [
   { animal:"🐕", animalWord:"DOG",    food:"🦴", foodWord:"BONE" },
@@ -709,7 +710,7 @@ export default function FindMyFood({ onComplete, themeId, variant = "food", prof
             ))}
           </div>
 
-          <div className="ff-btn-row"><button className="ff-btn ff-btn-outline" onClick={() => setScreen("welcome")}>← Back</button><button className="ff-btn ff-btn-gold" onClick={() => setScreen("how-to-play")}>How to Play →</button></div>
+          <div className="ff-btn-row"><button className="ff-btn ff-btn-outline" onClick={() => setScreen("welcome")}>← Back</button><button className="ff-btn ff-btn-gold" onClick={() => setScreen("how-to-play")}><GameHelpText english="How to Play →" /></button></div>
         </div>
       </div>
     </div>
@@ -723,20 +724,20 @@ export default function FindMyFood({ onComplete, themeId, variant = "food", prof
       <div className="ff-ambient ff-ambient-2" />
       <div className="ff-screen ff-howto-screen">
         <div className="ff-card ff-howto-card" style={{ textAlign:"center" }}>
-          <div className="ff-logo-badge">📖 How to Play</div>
-          <h1 className="ff-hero-title" style={{ fontSize:"clamp(2.2rem, 5vw, 3.1rem)" }}>{variant === "emoji" ? "Emoji Match" : "Find My Food"}</h1>
-          <p className="ff-hero-sub">{variant === "emoji" ? "Find two matching emojis in the 4 × 4 memory grid." : "Find every animal&apos;s favourite food in the 4 × 4 memory grid."}</p>
+          <div className="ff-logo-badge">📖 <GameHelpText english="How to Play" /></div>
+          <h1 className="ff-hero-title" style={{ fontSize:"clamp(2.2rem, 5vw, 3.1rem)" }}><GameHelpText english={variant === "emoji" ? "Emoji Match" : "Find My Food"} /></h1>
+          <p className="ff-hero-sub"><GameHelpText english={variant === "emoji" ? "Find two matching emojis in the 4 × 4 memory grid." : "Find every animal's favourite food in the 4 × 4 memory grid."} /></p>
           <div className="ff-howto-content">
             <div className="ff-howto-grid" aria-label="Example 4 by 4 game grid">
               {howToCards.map((card, index) => <div className="ff-howto-tile" key={`${card}-${index}`}>{card}</div>)}
             </div>
             <div className="ff-howto-steps">
-              <div className="ff-howto-step"><span className="ff-howto-num">1</span><span><strong>Take turns.</strong> Choose any two cards to reveal.</span></div>
-              <div className="ff-howto-step"><span className="ff-howto-num">2</span><span><strong>Find a pair.</strong> Match an animal with the food it loves for 10 points. A second pair in a row earns a bonus.</span></div>
-              <div className="ff-howto-step"><span className="ff-howto-num">3</span><span><strong>Switch turns.</strong> After every turn, the other player chooses next.</span></div>
+              <div className="ff-howto-step"><span className="ff-howto-num">1</span><span><GameHelpText english="Take turns. Choose any two cards to reveal." /></span></div>
+              <div className="ff-howto-step"><span className="ff-howto-num">2</span><span><GameHelpText english="Find a pair. Match an animal with the food it loves for 10 points. A second pair in a row earns a bonus." /></span></div>
+              <div className="ff-howto-step"><span className="ff-howto-num">3</span><span><GameHelpText english="Switch turns. After every turn, the other player chooses next." /></span></div>
             </div>
           </div>
-          <button className="ff-btn ff-btn-gold" onClick={() => setScreen("mode")}>Choose pairs →</button>
+          <button className="ff-btn ff-btn-gold" onClick={() => setScreen("mode")}><GameHelpText english="Choose pairs →" /></button>
         </div>
       </div>
     </div>

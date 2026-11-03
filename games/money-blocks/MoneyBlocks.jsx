@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import "./MoneyBlocks.css";
+import { GameHelpText } from "@/engine/layout/GameTranslationContext";
 
 const GOAL = 1_000_000;
 const AVATARS = [
@@ -228,17 +229,21 @@ function HowToPlay({ onClose }) {
       <div className="htp-modal">
         <div className="htp-header">
           <div>
-            <div className="htp-eyebrow">Private Table</div>
-            <h2 className="htp-title">How to Play</h2>
+            <div className="htp-eyebrow"><GameHelpText english="Private Table" /></div>
+            <h2 className="htp-title"><GameHelpText english="How to Play" /></h2>
           </div>
           <button className="htp-close" type="button" onClick={onClose}>✕</button>
         </div>
 
         <div className="htp-rule" />
 
-        <p className="htp-intro">
+        <GameHelpText
+          english="Two players take turns picking hidden tiles from the board. Each tile conceals a coloured block — and every colour triggers a different event. First to reach $1,000,000 wins. If the board empties first, the richer player takes the table."
+          as="p"
+          className="htp-intro"
+        >
           Two players take turns picking hidden tiles from the board. Each tile conceals a coloured block — and every colour triggers a different event. First to reach <strong>$1,000,000</strong> wins. If the board empties first, the richer player takes the table.
-        </p>
+        </GameHelpText>
 
         <div className="htp-rule htp-rule-sm" />
 
@@ -247,8 +252,8 @@ function HowToPlay({ onClose }) {
             <div className="htp-row" key={rule.type}>
               <span className={`htp-icon type-${rule.type}`}>{rule.icon}</span>
               <div>
-                <div className="htp-block-name">{rule.title}</div>
-                <div className="htp-block-desc">{rule.text}</div>
+                <div className="htp-block-name"><GameHelpText english={rule.title} /></div>
+                <div className="htp-block-desc"><GameHelpText english={rule.text} /></div>
               </div>
             </div>
           ))}
@@ -257,12 +262,12 @@ function HowToPlay({ onClose }) {
         <div className="htp-rule htp-rule-sm" />
 
         <div className="htp-tips">
-          <div className="htp-tip">🔠 Each tile shows a letter A–Z. The letter gives no clue about the colour hidden beneath.</div>
-          <div className="htp-tip">⚡ A hidden multiplier (×2 or ×3) lurks behind some tiles.</div>
-          <div className="htp-tip">🌈 One tile is Rainbow — a special black wild card with animated colour.</div>
+          <div className="htp-tip"><GameHelpText english="🔠 Each tile shows a letter A–Z. The letter gives no clue about the colour hidden beneath." /></div>
+          <div className="htp-tip"><GameHelpText english="⚡ A hidden multiplier (×2 or ×3) lurks behind some tiles." /></div>
+          <div className="htp-tip"><GameHelpText english="🌈 One tile is Rainbow — a special black wild card with animated colour." /></div>
         </div>
 
-        <button className="htp-start" type="button" onClick={onClose}>Got It — Let&apos;s Play</button>
+        <button className="htp-start" type="button" onClick={onClose}><GameHelpText english="Got It — Let's Play" /></button>
       </div>
     </div>
   );
@@ -696,7 +701,7 @@ export default function MoneyBlocks({ themeId = "black", profileName = '' }) {
             <div className="side">
               <div className="side-controls">
                 <div className="side-buttons">
-                  <button className="side-btn" type="button" onClick={() => setShowHowTo(true)}>How to Play</button>
+                  <button className="side-btn" type="button" onClick={() => setShowHowTo(true)}><GameHelpText english="How to Play" /></button>
                   <button className="side-btn" type="button" onClick={resetBoardState}>Reset Table</button>
                 </div>
 

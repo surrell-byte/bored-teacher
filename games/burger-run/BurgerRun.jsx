@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { GameHelpText } from "@/engine/layout/GameTranslationContext";
 import { drawBurger } from "./burger-sprite";
 import { createRunnerViewport, runnerBoxesOverlap } from "./runner-coordinate.mjs";
 import { finishDuelBonusRound, resolveDuelPick } from "./duel-round.mjs";
@@ -901,7 +902,7 @@ export default function BurgerRun({ onComplete, startAtMenu = false }) {
               </article>
             </div>
             <div className="burger-run-menu-footer">
-              <Btn onClick={() => setScr("howto")}>📖 How to Play</Btn>
+              <Btn onClick={() => setScr("howto")}>📖 <GameHelpText english="How to Play" /></Btn>
               <Btn onClick={() => setScr("info")}>👤 Edit profiles</Btn>
             </div>
             <Sub>Best — Classic: {best.classic} · Card: {best.card}</Sub>
@@ -909,16 +910,16 @@ export default function BurgerRun({ onComplete, startAtMenu = false }) {
         )}
         {scr === "howto" && (
           <section style={{ width: "100%", maxWidth: 760, maxHeight: "85vh", overflowY: "auto", padding: 20, boxSizing: "border-box", border: `2px solid ${MUTE}`, borderRadius: 10, textAlign: "left" }}>
-            <h2 className="text-2xl font-bold" style={{ textAlign: "center", color: ACC, marginTop: 0 }}>How to Play Burger Run</h2>
-            <p>Choose a mode from the main menu. In runner modes, jump over cacti and dinosaurs, duck under pterodactyls, and reach the goal.</p>
-            <h3 style={{ color: ACC }}>Classic Run</h3>
-            <p>Run solo and aim for 1,000 points. Use <b>Space</b>, <b>↑</b>, or tap the track to jump. Hold <b>↓</b> or press the Duck button to crouch. Press <b>R</b> to restart.</p>
-            <h3 style={{ color: ACC }}>Solo Card Mode</h3>
-            <p>Run solo and choose one of three cards each time you reach another 200 points. Pickle Shield blocks a hit; Cheese Float changes your jumps; Lettuce Boost doubles points; Bacon Shrink makes you smaller; Honey Slow slows the run; Hot Sauce speeds it up; Mega Size makes you bigger; and Ketchup Boots weaken your jumps. Keep dodging between picks.</p>
-            <h3 style={{ color: ACC }}>2P Card Duel</h3>
-            <p>Take turns picking one of four cards. Turbo moves forward 3 steps, Boost moves forward 2, Slow moves back 2, and Freeze holds position and skips that player&apos;s next turn. If both players are due to skip, each frozen turn is skipped before play resumes. First to 18 steps wins. Both burgers automatically jump cacti and dinosaurs and duck under pterodactyls; frozen burgers are safe from low-flying pterodactyls.</p>
-            <h3 style={{ color: ACC }}>2P Race</h3>
-            <p>Race side by side to 1,200 points with three lives each. Player 1 uses <b>W</b> to jump and <b>S</b> to duck; Player 2 uses <b>↑</b> to jump and <b>↓</b> to duck. First to the finish wins, or the last burger standing wins if the other runs out of lives.</p>
+            <h2 className="text-2xl font-bold" style={{ textAlign: "center", color: ACC, marginTop: 0 }}><GameHelpText english="How to Play Burger Run" /></h2>
+            <p><GameHelpText english="Choose a mode from the main menu. In runner modes, jump over cacti and dinosaurs, duck under pterodactyls, and reach the goal." /></p>
+            <h3 style={{ color: ACC }}><GameHelpText english="Classic Run" /></h3>
+            <p><GameHelpText english="Run solo and aim for 1,000 points. Use Space, ↑, or tap the track to jump. Hold ↓ or press the Duck button to crouch. Press R to restart." /></p>
+            <h3 style={{ color: ACC }}><GameHelpText english="Solo Card Mode" /></h3>
+            <p><GameHelpText english="Run solo and choose one of three cards each time you reach another 200 points. Pickle Shield blocks a hit; Cheese Float changes your jumps; Lettuce Boost doubles points; Bacon Shrink makes you smaller; Honey Slow slows the run; Hot Sauce speeds it up; Mega Size makes you bigger; and Ketchup Boots weaken your jumps. Keep dodging between picks." /></p>
+            <h3 style={{ color: ACC }}><GameHelpText english="2P Card Duel" /></h3>
+            <p><GameHelpText english="Take turns picking one of four cards. Turbo moves forward 3 steps, Boost moves forward 2, Slow moves back 2, and Freeze holds position and skips that player's next turn. If both players are due to skip, each frozen turn is skipped before play resumes. First to 18 steps wins. Both burgers automatically jump cacti and dinosaurs and duck under pterodactyls; frozen burgers are safe from low-flying pterodactyls." /></p>
+            <h3 style={{ color: ACC }}><GameHelpText english="2P Race" /></h3>
+            <p><GameHelpText english="Race side by side to 1,200 points with three lives each. Player 1 uses W to jump and S to duck; Player 2 uses ↑ to jump and ↓ to duck. First to the finish wins, or the last burger standing wins if the other runs out of lives." /></p>
             <div style={{ display: "flex", justifyContent: "center", marginTop: 18 }}>
               <Btn pri onClick={menu}>Back to modes</Btn>
             </div>

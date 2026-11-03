@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { GameHelpText } from "@/engine/layout/GameTranslationContext";
 import {
   createEmojiCategoryRound,
   createEmojiWordQuestions,
@@ -116,7 +117,7 @@ export default function EmojiCategorySort({ onComplete, profileName = "" }) {
             <div className="ecs-hero-emoji" aria-hidden="true"><span>🍎</span><span>🚆</span><span>🐼</span><span>🌈</span></div>
             <div className="ecs-actions">
               <button className="ecs-button" type="button" onClick={() => setScreen("setup")}>Let&apos;s play!</button>
-              <button className="ecs-button secondary" type="button" onClick={() => setScreen("how-to")}>How to play</button>
+              <button className="ecs-button secondary" type="button" onClick={() => setScreen("how-to")}><GameHelpText english="How to play" /></button>
             </div>
           </>
         )}
@@ -162,7 +163,7 @@ export default function EmojiCategorySort({ onComplete, profileName = "" }) {
             )}
             <div className="ecs-actions">
               <button className="ecs-button" type="button" onClick={startGame}>{level === "mixed" ? "Start sorting" : "Start word match"}</button>
-              <button className="ecs-button secondary" type="button" onClick={() => setScreen("how-to")}>How to play</button>
+              <button className="ecs-button secondary" type="button" onClick={() => setScreen("how-to")}><GameHelpText english="How to play" /></button>
               <button className="ecs-button secondary" type="button" onClick={() => setScreen("setup")}>Change name</button>
             </div>
           </>
@@ -170,14 +171,14 @@ export default function EmojiCategorySort({ onComplete, profileName = "" }) {
 
         {screen === "how-to" && (
           <>
-            <h1 className="ecs-heading">How to play</h1>
-            <p className="ecs-subtitle">Look at each emoji, say its name, and sort it into the matching category.</p>
+            <h1 className="ecs-heading"><GameHelpText english="How to play" /></h1>
+            <p className="ecs-subtitle"><GameHelpText english="Look at each emoji, say its name, and sort it into the matching category." /></p>
             <div className="ecs-howto-steps">
-              <div className="ecs-howto-step"><span aria-hidden="true">👀</span><p>Choose an emoji card to see which one you are sorting.</p></div>
-              <div className="ecs-howto-step"><span aria-hidden="true">🗣️</span><p>Say the word out loud, then choose Food, Transport, Animals, or Nature.</p></div>
-              <div className="ecs-howto-step"><span aria-hidden="true">🏆</span><p>Sort every item correctly to finish the round. A wrong category lets you try again.</p></div>
+              <div className="ecs-howto-step"><span aria-hidden="true">👀</span><p><GameHelpText english="Choose an emoji card to see which one you are sorting." /></p></div>
+              <div className="ecs-howto-step"><span aria-hidden="true">🗣️</span><p><GameHelpText english="Say the word out loud, then choose Food, Transport, Animals, or Nature." /></p></div>
+              <div className="ecs-howto-step"><span aria-hidden="true">🏆</span><p><GameHelpText english="Sort every item correctly to finish the round. A wrong category lets you try again." /></p></div>
             </div>
-            <p className="ecs-subtitle">Mixed rounds: Easy 3 · Medium 5 · Hard 7 items. Category levels match a larger vocabulary set to words.</p>
+            <p className="ecs-subtitle"><GameHelpText english="Mixed rounds: Easy 3 · Medium 5 · Hard 7 items. Category levels match a larger vocabulary set to words." /></p>
             <div className="ecs-actions">
               <button className="ecs-button" type="button" onClick={() => setScreen(playerName.trim() ? "menu" : "setup")}>Continue</button>
             </div>

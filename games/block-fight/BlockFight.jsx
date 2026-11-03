@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useReducer } from "react";
+import { GameHelpText } from "@/engine/layout/GameTranslationContext";
 
 /* ════════════════════════════════════════════════════════════════
    BLOCK FIGHT — React port
@@ -978,22 +979,22 @@ function HowTo({ onClose }) {
   return (
     <div className="bf-howto" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="bf-howto-box">
-        <h3>🗡️ Adventure</h3>
+        <h3>🗡️ <GameHelpText english="Adventure" /></h3>
         <ul>
-          <li><kbd>◀</kbd> <kbd>▶</kbd> move · <kbd>␣</kbd> / <kbd>▲</kbd> jump (hold for higher)</li>
-          <li><kbd>X</kbd> slash enemies · <kbd>R</kbd> restart · <kbd>Esc</kbd> menu</li>
-          <li>Collect every gem to win. You have 3 hearts.</li>
+          <li><kbd>◀</kbd> <kbd>▶</kbd> <GameHelpText english="move" /> · <kbd>␣</kbd> / <kbd>▲</kbd> <GameHelpText english="jump (hold for higher)" /></li>
+          <li><kbd>X</kbd> <GameHelpText english="slash enemies" /> · <kbd>R</kbd> <GameHelpText english="restart" /> · <kbd>Esc</kbd> <GameHelpText english="menu" /></li>
+          <li><GameHelpText english="Collect every gem to win. You have 3 hearts." /></li>
         </ul>
-        <h4>🃏 Card Duel (2 players, same screen)</h4>
+        <h4>🃏 <GameHelpText english="Card Duel (2 players, same screen)" /></h4>
         <ul>
-          <li>Both players start with 5 hearts and take turns.</li>
-          <li>On your turn, pick 1 of 4 face-down cards (click, tap or press <kbd>1</kbd>–<kbd>4</kbd>). The cards are shuffled every turn.</li>
-          <li>⚔️ Sword Strike — your opponent loses 2 hearts. 🔥 Fireball — your opponent loses 1 heart.</li>
-          <li>🛡️ Shield — nothing happens.</li>
-          <li>💣 Bomb — it backfires, <b>you</b> lose a heart!</li>
-          <li>First player to reach 0 hearts loses.</li>
+          <li><GameHelpText english="Both players start with 5 hearts and take turns." /></li>
+          <li><GameHelpText english="On your turn, pick 1 of 4 face-down cards (click, tap or press 1–4). The cards are shuffled every turn." /></li>
+          <li><GameHelpText english="⚔️ Sword Strike — your opponent loses 2 hearts. 🔥 Fireball — your opponent loses 1 heart." /></li>
+          <li><GameHelpText english="🛡️ Shield — nothing happens." /></li>
+          <li><GameHelpText english="💣 Bomb — it backfires, you lose a heart!" /></li>
+          <li><GameHelpText english="First player to reach 0 hearts loses." /></li>
         </ul>
-        <button className="bf-big" onClick={onClose}>Got it</button>
+        <button className="bf-big" onClick={onClose}><GameHelpText english="Got it" /></button>
       </div>
     </div>
   );
@@ -1052,7 +1053,7 @@ export default function BlockFight({ onComplete, onHudUpdate }) {
               <span className="ico">🃏</span><b>Card Duel</b><small>2 players · pick a card, risk a heart</small>
             </button>
             <button className="bf-menu-btn" onClick={() => setHowto(true)}>
-              <span className="ico">❓</span><b>How to Play</b><small>Controls and card rules</small>
+              <span className="ico">❓</span><b><GameHelpText english="How to Play" /></b><small><GameHelpText english="Controls and card rules" /></small>
             </button>
           </div>
           <button className="bf-link" onClick={() => setScreen("splash")}>← Title screen</button>

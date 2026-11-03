@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useGame } from "@/lib/gameState";
+import { GameHelpText } from "@/engine/layout/GameTranslationContext";
 
 // ── Data (ported 1:1 from the original index.html) ──
 const COLORS = [
@@ -572,7 +573,7 @@ export default function TileBattle({ onComplete, themeId, profileName = '' }) {
       </div>
 
       <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", justifyContent: "center" }}>
-        <button style={ghostBtn} onClick={() => { playSound("click"); setHowtoReturn("setup"); setScreen("howto"); }}>How to Play</button>
+        <button style={ghostBtn} onClick={() => { playSound("click"); setHowtoReturn("setup"); setScreen("howto"); }}><GameHelpText english="How to Play" /></button>
         <button style={primaryBtn} onClick={() => { playSound("click"); startGame(); }}>Start Battle</button>
       </div>
     </div>
@@ -582,23 +583,21 @@ export default function TileBattle({ onComplete, themeId, profileName = '' }) {
   if (screen === "howto") return (
     <div style={screenWrap}>
       {fx}
-      <h1 style={{ fontSize: "1.8rem", fontWeight: 500 }}>📖 How to Play</h1>
+      <h1 style={{ fontSize: "1.8rem", fontWeight: 500 }}>📖 <GameHelpText english="How to Play" /></h1>
       <p style={{ color: t.text2, maxWidth: 900, lineHeight: 1.6, fontSize: 17 }}>
-        Players take turns flipping a tile on the board. Every tile hides one of these effects —
-        you never know which until you flip it. Knock your opponent&rsquo;s health to 0% (or have
-        the most health left when all tiles are flipped) to win!
+        <GameHelpText english="Players take turns flipping a tile on the board. Every tile hides one of these effects — you never know which until you flip it. Knock your opponent’s health to 0% (or have the most health left when all tiles are flipped) to win!" />
       </p>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: "1.25rem", width: "100%", maxWidth: 1200 }}>
         {Object.keys(OD).map((k) => (
           <div key={k} style={{ ...glass, borderRadius: 14, padding: "1.6rem", display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
             <span style={{ fontSize: 36 }}>{OD[k].e}</span>
-            <span style={{ fontSize: 15, color: t.text2, fontWeight: 500 }}>{OD[k].l}</span>
+            <span style={{ fontSize: 15, color: t.text2, fontWeight: 500 }}><GameHelpText english={OD[k].l} /></span>
           </div>
         ))}
       </div>
       <div style={{ display: "flex", gap: "1rem" }}>
-        <button style={ghostBtn} onClick={() => { playSound("click"); setScreen(howtoReturn); }}>Back</button>
-        <button style={primaryBtn} onClick={() => { playSound("click"); startGame(); }}>Start Battle ⚔️</button>
+        <button style={ghostBtn} onClick={() => { playSound("click"); setScreen(howtoReturn); }}><GameHelpText english="Back" /></button>
+        <button style={primaryBtn} onClick={() => { playSound("click"); startGame(); }}><GameHelpText english="Start Battle ⚔️" /></button>
       </div>
     </div>
   );

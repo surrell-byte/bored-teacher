@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useReducer } from "react";
+import { GameHelpText } from "@/engine/layout/GameTranslationContext";
 
 const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap');
@@ -445,23 +446,23 @@ export default function ColourClash2({ profileName = '' }) {
 
       {screen === "how" && (
         <div className="screen how-screen">
-          <h2>📖 How To Play</h2>
+          <h2>📖 <GameHelpText english="How To Play" /></h2>
           <div className="how-content">
             <div className="how-text">
-              <p>🔢 Tap a <strong>numbered tile</strong> to reveal its hidden colour.</p>
-              <p>🎯 Find <strong>5 of YOUR colour</strong> to win.</p>
-              <p>⚠️ Reveal your <strong>opponent's colour</strong> — they get the point!</p>
-              <p>🔥 Score <strong>3 in a row</strong> of your colour for an extra turn!</p>
-              <p>🏆 First to <strong>5 points</strong> wins.</p>
+              <p><GameHelpText english="🔢 Tap a numbered tile to reveal its hidden colour." /></p>
+              <p><GameHelpText english="🎯 Find 5 of YOUR colour to win." /></p>
+              <p><GameHelpText english="⚠️ Reveal your opponent's colour — they get the point!" /></p>
+              <p><GameHelpText english="🔥 Score 3 in a row of your colour for an extra turn!" /></p>
+              <p><GameHelpText english="🏆 First to 5 points wins." /></p>
             </div>
             <div className="power-legend">
-              <span>⭐ Star = Extra turn</span>
-              <span>💣 Bomb = Lose 1 point</span>
-              <span>🔄 Swap = Swap scores</span>
-              <span>👁️ Eye = Peek nearby (no score)</span>
+              <span><GameHelpText english="⭐ Star = Extra turn" /></span>
+              <span><GameHelpText english="💣 Bomb = Lose 1 point" /></span>
+              <span><GameHelpText english="🔄 Swap = Swap scores" /></span>
+              <span><GameHelpText english="👁️ Eye = Peek nearby (no score)" /></span>
             </div>
           </div>
-          <button className="btn btn-primary" onClick={startGame}>🚀 &nbsp;Start Game</button>
+          <button className="btn btn-primary" onClick={startGame}>🚀 &nbsp;<GameHelpText english="Start Game" /></button>
         </div>
       )}
 

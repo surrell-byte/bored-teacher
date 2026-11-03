@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import './alphabetHunt.css';
+import { GameHelpText } from '@/engine/layout/GameTranslationContext';
 
 const AVATARS = ['🚗', '🐱', '⭐', '🚀', '🐸', '🍩', '🎈', '🦖', '⚽', '🌵', '🐳', '🎧', '🍕', '🦋', '🐧', '🍄', '🎩', '🐝', '🌙', '🎲', '🦉', '🍉', '🐢', '🎯', '🐙', '🍦'];
 const CELEBRATION_PIECES = ['🎉', '⭐', '✨', '🎊', '🏆', '🎈'];
@@ -339,7 +340,7 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom', profil
             </button>
           </div>
           <label className="ah-mode-toggle"><input type="checkbox" checked={hardRules} onChange={(event) => setHardRules(event.target.checked)} /> Hard rules: correct picks earn another turn</label>
-          <button className="ah-btn" onClick={() => setScreen('howto')}>How to play</button>
+          <button className="ah-btn" onClick={() => setScreen('howto')}><GameHelpText english="How to play" /></button>
         </div>
       </div>
     );
@@ -349,10 +350,10 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom', profil
     return (
       <div className="alphabet-hunt ah-screen ah-welcome-screen" style={{ '--paper': theme.paper, '--panel': theme.panel, '--ink': theme.ink, '--p1': theme.p1, '--p2': theme.p2, '--p1-soft': theme.p1Soft, '--p2-soft': theme.p2Soft, '--muted': theme.muted, '--tile-hover': theme.tileHover, '--gold': theme.gold }}>
         <div className="ah-card">
-          <h1>How to play</h1>
-          <p className="ah-tag">Find your seven matching tiles before your opponent.</p>
-          <p className="ah-rules">In Emoji mode, choose an emoji avatar and reveal it under the letter tiles. In Letter mode, choose a letter and reveal it under the emoji tiles. Take turns choosing tiles: finding your own target earns points and another turn; an opponent target or event tile passes play. Earn a bonus tile reveal for each 1,000 net points. Use Skip when you want to give up the turn.</p>
-          <button className="ah-btn" onClick={() => setScreen('welcome')}>Choose a mode</button>
+          <h1><GameHelpText english="How to play" /></h1>
+          <p className="ah-tag"><GameHelpText english="Find your seven matching tiles before your opponent." /></p>
+          <p className="ah-rules"><GameHelpText english="In Emoji mode, choose an emoji avatar and reveal it under the letter tiles. In Letter mode, choose a letter and reveal it under the emoji tiles. Take turns choosing tiles: finding your own target earns points and another turn; an opponent target or event tile passes play. Earn a bonus tile reveal for each 1,000 net points. Use Skip when you want to give up the turn." /></p>
+          <button className="ah-btn" onClick={() => setScreen('welcome')}><GameHelpText english="Choose a mode" /></button>
         </div>
       </div>
     );

@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback, useRef } from "react";
 import { TIC_TAC_ROLL_THEMES, type TicTacRollTheme } from "./themes";
+import { GameHelpText } from "@/engine/layout/GameTranslationContext";
 
 const AVATARS = ["🎮","🦁","🐺","🦊","🐸","🐧","🦄","🌟","⚡","🔥","🌙","💎"];
 
@@ -537,20 +538,20 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
       {screen === "howtoplay" && (
         <div style={{ display: "flex", alignItems: "safe center", justifyContent: "center", boxSizing: "border-box", width: "100%", height: "100%", minHeight: "100%", overflowY: "auto", padding: "clamp(0.75rem, 2vw, 1.5rem)", backgroundImage: `url(${inputBackground})`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" }}>
           <div style={{ width: "100%", maxWidth: 700, boxSizing: "border-box", margin: "auto", padding: "clamp(1.5rem, 3vw, 2.5rem)", backgroundColor: `${theme.surface}ee`, borderRadius: "clamp(16px, 3vw, 24px)", border: `1px solid ${theme.border}`, boxShadow: theme.shadow }}>
-          <button onClick={() => { tone(500, 0.08, 0.07); setScreen("welcome"); }} style={{ background: "none", border: "none", color: theme.muted, cursor: "pointer", fontSize: "0.9rem", marginBottom: "1rem" }}>← Back</button>
-          <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.5rem, 4vw, 2.5rem)", margin: "0 0 1rem" }}>How to Play</h2>
+          <button onClick={() => { tone(500, 0.08, 0.07); setScreen("welcome"); }} style={{ background: "none", border: "none", color: theme.muted, cursor: "pointer", fontSize: "0.9rem", marginBottom: "1rem" }}>← <GameHelpText english="Back" /></button>
+          <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.5rem, 4vw, 2.5rem)", margin: "0 0 1rem" }}><GameHelpText english="How to Play" /></h2>
           <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem" }}>
             {["classic", "roll", "ai", "grid"].map(t => (
               <button key={t} onClick={() => setHtpTab(t)} style={{ flex: 1, padding: "0.5rem", borderRadius: 50, border: htpTab === t ? "none" : `1px solid ${theme.border}`, background: htpTab === t ? theme.accent : theme.card, color: htpTab === t ? "#fff" : theme.text, cursor: "pointer", fontSize: "0.75rem", fontWeight: 600, textTransform: "uppercase" }}>{t}</button>
             ))}
           </div>
           <div style={{ fontSize: "0.9rem", lineHeight: 1.7, color: theme.muted }}>
-            {htpTab === "classic" && <><p>Take turns placing your mark on empty tiles. First player to get the required number in a row — horizontally, vertically, or diagonally — wins the round.</p><p style={{ marginTop: "0.75rem" }}>On 3×3, get 3 in a row. On larger grids, get 4 in a row.</p></>}
-            {htpTab === "roll" && <><p>Roll before each turn. On 1, 3, or 5, place a mark. On 2, place a mark and your opponent skips their next turn. On 4, convert an opponent tile; if there is no opponent tile yet, place a normal mark. On 6, place a mark, then roll again for an extra turn.</p></>}
-            {htpTab === "ai" && <><p>Play solo against the computer. Easy = mostly random moves. Normal = blocks and seeks openings. Hard = unbeatable on 3×3, strong heuristics on larger grids.</p></>}
-            {htpTab === "grid" && <><p>Choose from 3×3 (classic, need 3), 5×5 (medium, need 4), 6×6 (large, need 4), or 7×7 (epic, need 4) in the main menu before starting.</p></>}
+            {htpTab === "classic" && <><p><GameHelpText english="Take turns placing your mark on empty tiles. First player to get the required number in a row — horizontally, vertically, or diagonally — wins the round." /></p><p style={{ marginTop: "0.75rem" }}><GameHelpText english="On 3×3, get 3 in a row. On larger grids, get 4 in a row." /></p></>}
+            {htpTab === "roll" && <><p><GameHelpText english="Roll before each turn. On 1, 3, or 5, place a mark. On 2, place a mark and your opponent skips their next turn. On 4, convert an opponent tile; if there is no opponent tile yet, place a normal mark. On 6, place a mark, then roll again for an extra turn." /></p></>}
+            {htpTab === "ai" && <><p><GameHelpText english="Play solo against the computer. Easy = mostly random moves. Normal = blocks and seeks openings. Hard = unbeatable on 3×3, strong heuristics on larger grids." /></p></>}
+            {htpTab === "grid" && <><p><GameHelpText english="Choose from 3×3 (classic, need 3), 5×5 (medium, need 4), 6×6 (large, need 4), or 7×7 (epic, need 4) in the main menu before starting." /></p></>}
           </div>
-          <button type="button" onClick={() => { tone(500, 0.08, 0.07); setScreen("menu"); }} style={{ width: "100%", marginTop: "1.25rem", padding: "0.95rem", border: 0, borderRadius: 50, background: `linear-gradient(160deg, ${theme.accent}, ${theme.accent2 || theme.accent})`, color: "white", fontWeight: 800, cursor: "pointer" }}>Continue to Main Menu →</button>
+          <button type="button" onClick={() => { tone(500, 0.08, 0.07); setScreen("menu"); }} style={{ width: "100%", marginTop: "1.25rem", padding: "0.95rem", border: 0, borderRadius: 50, background: `linear-gradient(160deg, ${theme.accent}, ${theme.accent2 || theme.accent})`, color: "white", fontWeight: 800, cursor: "pointer" }}><GameHelpText english="Continue to Main Menu →" /></button>
           </div>
         </div>
       )}

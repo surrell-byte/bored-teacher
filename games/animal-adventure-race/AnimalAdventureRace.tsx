@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { GameHelpText } from '@/engine/layout/GameTranslationContext';
 
 interface Props {
   onComplete: (score: number, accuracy: number) => void;
@@ -383,7 +384,7 @@ export default function AnimalAdventureRace({ onComplete }: Props) {
             </p>
             <div style={styles.btnRow}>
               <button style={{ ...styles.bigBtn, ...styles.primary }} onClick={() => setScreen('mode')}>▶ Start Game</button>
-              <button style={{ ...styles.bigBtn, ...styles.secondary }} onClick={() => { setScreen('howTo'); }}>❓ How to Play</button>
+              <button style={{ ...styles.bigBtn, ...styles.secondary }} onClick={() => { setScreen('howTo'); }}>❓ <GameHelpText english="How to Play" /></button>
             </div>
           </div>
         </section>
@@ -391,15 +392,15 @@ export default function AnimalAdventureRace({ onComplete }: Props) {
 
       {screen === 'howTo' && (
         <section style={styles.screen}>
-          <h2 style={styles.screenTitle}>How to Play</h2>
+          <h2 style={styles.screenTitle}><GameHelpText english="How to Play" /></h2>
           <ol style={styles.howToList}>
-            <li>Choose your animal avatar to begin (each player picks their own).</li>
-            <li>On your turn, tap one of the four coloured cards.</li>
-            <li>Watch the card flip over to reveal your move and points!</li>
-            <li>Special tiles can help or hinder you: ⭐ bonus, 🎁 treasure, 🚀 boost, 🐌 trap.</li>
-            <li>First animal to reach the finish tile wins!</li>
+            <li><GameHelpText english="Choose your animal avatar to begin (each player picks their own)." /></li>
+            <li><GameHelpText english="On your turn, tap one of the four coloured cards." /></li>
+            <li><GameHelpText english="Watch the card flip over to reveal your move and points!" /></li>
+            <li><GameHelpText english="Special tiles can help or hinder you: ⭐ bonus, 🎁 treasure, 🚀 boost, 🐌 trap." /></li>
+            <li><GameHelpText english="First animal to reach the finish tile wins!" /></li>
           </ol>
-          <p style={styles.sub}>Try a quick practice round below on a mini board before the real race.</p>
+          <p style={styles.sub}><GameHelpText english="Try a quick practice round below on a mini board before the real race." /></p>
 
           <div style={styles.practiceWrap}>
             <div style={styles.practiceBoard}>
@@ -420,7 +421,7 @@ export default function AnimalAdventureRace({ onComplete }: Props) {
                 );
               })}
             </div>
-            <div style={{ ...styles.sub, marginBottom: 14 }}>{practiceMessage}</div>
+            <div style={{ ...styles.sub, marginBottom: 14 }}><GameHelpText english={practiceMessage} /></div>
             <div style={{ ...styles.cards, gridTemplateColumns: 'repeat(4, 1fr)' }}>
               {COLOURS.map(colour => (
                 <button
@@ -441,14 +442,14 @@ export default function AnimalAdventureRace({ onComplete }: Props) {
                   }}
                 >
                   <span style={styles.cardIcon}>{colourEmoji[colour]}</span>
-                  {colour.charAt(0).toUpperCase() + colour.slice(1)}
+                  <GameHelpText english={colour.charAt(0).toUpperCase() + colour.slice(1)} />
                 </button>
               ))}
             </div>
           </div>
 
           <div style={styles.practiceFooter}>
-            <button style={{ ...styles.bigBtn, ...styles.ghost }} onClick={() => setScreen('mode')}>Skip, I know how to play →</button>
+            <button style={{ ...styles.bigBtn, ...styles.ghost }} onClick={() => setScreen('mode')}><GameHelpText english="Skip, I know how to play →" /></button>
           </div>
         </section>
       )}
