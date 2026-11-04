@@ -1376,7 +1376,7 @@ export default function LanguageTower({ onComplete, onHudUpdate, profileName }) 
 
 const STYLES = `
 .lt-root { width:100%; height:100%; min-height:100%; display:grid; place-items:center; overflow:hidden; background:#060b14; color:#fff; font-family:system-ui,-apple-system,"Segoe UI",sans-serif; -webkit-tap-highlight-color:transparent; user-select:none; }
-.lt-board { position:relative; width:auto; height:min(100%,calc(100vw * 1.5556),700px); max-width:100%; aspect-ratio:450 / 700; overflow:hidden; background:#060b14; box-shadow:0 0 80px rgba(0,0,0,.8); }
+.lt-board { position:relative; width:auto; height:min(100%,calc(100vw * 1.5556),900px); max-width:100%; aspect-ratio:450 / 700; overflow:hidden; background:#060b14; box-shadow:0 0 80px rgba(0,0,0,.8); }
 .lt-canvas { display:block; width:100%; height:100%; touch-action:manipulation; }
 .lt-hud { position:absolute; inset:0; pointer-events:none; color:#fff; }
 .lt-topbar { position:absolute; top:0; left:0; right:0; height:66px; display:flex; align-items:center; justify-content:space-between; padding:8px 12px 0; }

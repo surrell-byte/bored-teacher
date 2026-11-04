@@ -436,7 +436,7 @@ function createGame(root) {
       track: 'rgba(255,255,255,0.06)', trackLine: 'rgba(255,255,255,0.16)',
       text: '#ffffff', dim: 'rgba(255,255,255,0.55)', veil: 'rgba(2,3,10,0.55)',
       fight: '#ffe066', sup: '#ffe066',
-      cards: { heavy: '#ff7a45', light: '#ffd166', heal: '#4be0ff', bomb: '#c084fc' },
+      cards: { heavy: '#ff7a45', light: '#ffd166', heal: '#4be0ff', asteroid: '#c084fc' },
       css: Object.assign({ '--p1': p1, '--p2': p2 }, css)
     };
   }
@@ -450,7 +450,7 @@ function createGame(root) {
       track: a(.08), trackLine: a(.18),
       text: `rgb(${ink})`, dim: a(.6), veil: 'rgba(255,255,255,.55)',
       fight: '#c98a00', sup: '#c98a00',
-      cards: { heavy: '#e0531f', light: '#c98a00', heal: '#0b9a74', bomb: '#8a3fd1' },
+      cards: { heavy: '#e0531f', light: '#c98a00', heal: '#0b9a74', asteroid: '#8a3fd1' },
       css: {
         '--text': `rgb(${ink})`, '--h': a(.82), '--dim': a(.66), '--dim2': a(.56), '--dim3': a(.44), '--desc': a(.72),
         '--line': a(.2), '--surface': 'rgba(255,255,255,.72)', '--panel': 'rgba(255,255,255,.88)',
@@ -1257,8 +1257,8 @@ function createGame(root) {
       color: '#ffd166', kind: 'attack', pct: 0.25, shots: 1 },
     { id: 'heal', icon: '✚', name: 'HEAL', desc: 'Recover 10% of your own health',
       color: '#4be0ff', kind: 'heal', pct: 0.10 },
-    { id: 'bomb', icon: '💥', name: 'BOMB', desc: 'Lose 10% of your own health',
-      color: '#c084fc', kind: 'bomb', pct: 0.10 }
+    { id: 'asteroid', icon: '☄️', name: 'ASTEROID HIT', desc: 'Asteroids hit you for 20 damage',
+      color: '#c084fc', kind: 'asteroid', damage: 20 }
   ];
 
   const CardGame = {
@@ -1312,7 +1312,7 @@ function createGame(root) {
       { name: App.names.p1, hp: 100, maxHp: 100, color: shipCol(0), wins: 0, superUsed: false },
       { name: App.names.p2, hp: 100, maxHp: 100, color: shipCol(1), wins: 0, superUsed: false }
     ];
-    CardGame.first = Math.random() < 0.5 ? 0 : 1;
+    CardGame.first = 0;
     elOver.classList.remove('show');
 
     game.mode = 'card';
@@ -1457,11 +1457,11 @@ function createGame(root) {
       spawnParticles(sh.x, sh.y, card.color, 26, 170, 0.9, 3);
       spawnParticles(sh.x, sh.y, '#ffffff', 10, 110, 0.7, 2);
       later(finishTurn, 1300);
-    } else {
-      self.hp = Math.max(0, self.hp - self.maxHp * card.pct);
-      text = `${self.name} is caught in the blast! −${Math.round(self.maxHp * card.pct)} HP`;
+    } else if (card.kind === 'asteroid') {
+      self.hp = Math.max(0, self.hp - card.damage);
+      text = `${self.name} is hit by asteroids! −${card.damage} HP`;
       const sh = game.ships[me];
-      spawnParticles(sh.x, sh.y, card.color, 32, 430, 0.85, 4.5);
+      spawnParticles(sh.x, sh.y, '#9ca3af', 32, 430, 0.85, 5);
       spawnParticles(sh.x, sh.y, '#ffc24d', 20, 340, 0.7, 3.5);
       game.shake = Math.max(game.shake, 13);
       sh.vx += rand(-260, 260); sh.vy += rand(-160, 160);

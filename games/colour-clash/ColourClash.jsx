@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useGame } from "@/lib/gameState";
 import { playBeep } from "@/lib/sound/beep";
+import { getSequenceProgress } from "./sequence-progress.mjs";
 
 const COLOURS = [
   { id:"red",    label:"RED",    bg:"linear-gradient(135deg,#ef4444,#b91c1c)", sound:261 },
@@ -66,12 +67,7 @@ export default function ColourClash({ onComplete, onHudUpdate }) {
   const activeColours = gameType === "memory" ? (memoryMode === "hard" ? COLOURS : COLOURS.slice(0, 4)) : COLOURS;
   const startLives = gameType === "memory" ? (memoryMode === "hard" ? 1 : 3) : 3;
   const sequenceLength = Math.max(sequence.length, 1);
-  const firstIncorrectIndex = playerSeq.findIndex((colour, index) => colour !== sequence[index]);
-  const sequenceProgress = phase === "showing"
-    ? 0
-    : firstIncorrectIndex === -1
-      ? Math.min(playerSeq.length, sequenceLength)
-      : firstIncorrectIndex;
+  const sequenceProgress = getSequenceProgress(sequence, playerSeq, phase);
 
   const showSequence = useCallback((seq) => {
     setPhase("showing");

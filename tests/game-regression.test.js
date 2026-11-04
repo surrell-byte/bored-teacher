@@ -603,9 +603,44 @@ test('Colour Tunes start target, menu controls, and sequence counter stay usable
   assert.match(component, /fontSize:"5rem"/);
   assert.match(component, /padding:"24px 30px"/);
   assert.match(component, /padding:"24px 68px"/);
-  assert.match(component, /const firstIncorrectIndex = playerSeq\.findIndex\(\(colour, index\) => colour !== sequence\[index\]\)/);
-  assert.match(component, /const sequenceProgress = phase === "showing"[\s\S]*?firstIncorrectIndex === -1[\s\S]*?firstIncorrectIndex/);
+  assert.match(component, /getSequenceProgress\(sequence, playerSeq, phase\)/);
   assert.match(component, /Sequence \{sequenceProgress\}\/\{sequenceLength\}/);
+});
+
+test('Colour Tunes sequence counter tracks only the correct prefix', async () => {
+  const { getSequenceProgress } = await import('../games/colour-clash/sequence-progress.mjs');
+  const sequence = ['red', 'blue', 'green'];
+
+  assert.equal(getSequenceProgress(sequence, [], 'input'), 0);
+  assert.equal(getSequenceProgress(sequence, ['red'], 'input'), 1);
+  assert.equal(getSequenceProgress(sequence, ['red', 'wrong'], 'input'), 1);
+  assert.equal(getSequenceProgress(sequence, sequence, 'correct'), 3);
+  assert.equal(getSequenceProgress(sequence, [...sequence, 'extra'], 'input'), 3);
+  assert.equal(getSequenceProgress(sequence, ['red'], 'showing'), 0);
+});
+
+test('Language Tower scales its portrait board for taller screens', () => {
+  const component = read('games/language-tower/LanguageTower.jsx');
+
+  assert.match(component, /\.lt-board \{[^}]*height:min\(100%,calc\(100vw \* 1\.5556\),900px\)[^}]*aspect-ratio:450 \/ 700/);
+});
+
+test('Duel of the Void starts with Player 1 and alternates each completed turn', () => {
+  const component = read('games/duel-of-the-void/DuelOfTheVoid.jsx');
+
+  assert.match(component, /CardGame\.first = 0;/);
+  assert.match(component, /CardGame\.turn = CardGame\.first;/);
+  assert.match(component, /CardGame\.turn = 1 - CardGame\.turn;/);
+  assert.match(component, /CardGame\.first = loser;/);
+});
+
+test('Duel of the Void asteroid card damages its chooser for 20 HP', () => {
+  const component = read('games/duel-of-the-void/DuelOfTheVoid.jsx');
+
+  assert.match(component, /id: 'asteroid', icon: '☄️', name: 'ASTEROID HIT', desc: 'Asteroids hit you for 20 damage'/);
+  assert.match(component, /cards: \{[^}]*asteroid:/);
+  assert.match(component, /else if \(card\.kind === 'asteroid'\) \{\s*self\.hp = Math\.max\(0, self\.hp - card\.damage\);\s*text = `\$\{self\.name\} is hit by asteroids! −\$\{card\.damage\} HP`/);
+  assert.match(component, /kind: 'asteroid', damage: 20/);
 });
 
 test('Hub avatar is enlarged and public reviews require an attributed profile', () => {
