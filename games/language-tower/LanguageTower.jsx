@@ -161,12 +161,17 @@ export default function LanguageTower({ onComplete, onHudUpdate, profileName }) 
     let previousTime = performance.now();
     let isDisposed = false;
     let challengeTransitionAt = 0;
+    let canvasWidth = WIDTH;
 
     function fitCanvas() {
       const ratio = Math.min(window.devicePixelRatio || 1, 2);
-      canvas.width = Math.round(WIDTH * ratio);
-      canvas.height = Math.round(HEIGHT * ratio);
-      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+      const { width, height } = canvas.getBoundingClientRect();
+      const scale = height / HEIGHT;
+      if (!scale) return;
+      canvasWidth = width / scale;
+      canvas.width = Math.round(width * ratio);
+      canvas.height = Math.round(height * ratio);
+      ctx.setTransform(ratio * scale, 0, 0, ratio * scale, 0, 0);
     }
 
     function nextColor() {
@@ -266,7 +271,7 @@ export default function LanguageTower({ onComplete, onHudUpdate, profileName }) 
 
     function newRainDrop(anywhere) {
       return {
-        x: Math.random() * (WIDTH + 120) - 60,
+        x: Math.random() * (canvasWidth + 120) - 60,
         y: anywhere ? Math.random() * (HEIGHT + 60) - 60 : -40 - Math.random() * 120,
         length: 12 + Math.random() * 22,
         speed: 520 + Math.random() * 560,
@@ -281,7 +286,7 @@ export default function LanguageTower({ onComplete, onHudUpdate, profileName }) 
 
     function resetTower() {
       clearTimeout(game.overTimer);
-      game.bricks = [{ x: (WIDTH - INITIAL_WIDTH) / 2, w: INITIAL_WIDTH, y: 0, color: nextColor(), label: null }];
+      game.bricks = [{ x: (canvasWidth - INITIAL_WIDTH) / 2, w: INITIAL_WIDTH, y: 0, color: nextColor(), label: null }];
       game.camY = game.camTarget = HEIGHT * 0.85;
       game.falling = [];
       game.sparks = [];
@@ -312,7 +317,7 @@ export default function LanguageTower({ onComplete, onHudUpdate, profileName }) 
         }
       }
       const minX = -width * 0.55;
-      const maxX = WIDTH - width * 0.45;
+      const maxX = canvasWidth - width * 0.45;
       game.moving = {
         w: width,
         baseW: width,
@@ -327,14 +332,14 @@ export default function LanguageTower({ onComplete, onHudUpdate, profileName }) 
         label: nextLabel(),
       };
       if (gotBonus) {
-        game.floaters.push({ x: WIDTH / 2, y: game.moving.y + game.camY - 34, text: '+ WIDTH BONUS', life: 1.25, color: '#7CFF9B', size: 18 });
+        game.floaters.push({ x: canvasWidth / 2, y: game.moving.y + game.camY - 34, text: '+ WIDTH BONUS', life: 1.25, color: '#7CFF9B', size: 18 });
         [784, 988, 1319].forEach((frequency, index) => playTone(frequency, 0.14, 'sine', 0.07, index * 0.06));
       }
     }
 
     function buildDemo() {
       game.bricks = [];
-      let x = (WIDTH - INITIAL_WIDTH) / 2;
+      let x = (canvasWidth - INITIAL_WIDTH) / 2;
       let width = INITIAL_WIDTH;
       for (let index = 0; index < 6; index += 1) {
         game.bricks.push({ x, w: width, y: -index * BRICK_HEIGHT, color: nextColor(), label: null });
@@ -858,7 +863,7 @@ export default function LanguageTower({ onComplete, onHudUpdate, profileName }) 
             game.moving.w -= shrink;
             game.moving.x += shrink / 2;
             game.moving.minX = -game.moving.w * 0.55;
-            game.moving.maxX = WIDTH - game.moving.w * 0.45;
+            game.moving.maxX = canvasWidth - game.moving.w * 0.45;
             if (Math.random() < 0.7) {
               const edge = Math.random() < 0.5 ? game.moving.x : game.moving.x + game.moving.w;
               game.sparks.push({ x: edge, y: game.moving.y + game.camY + Math.random() * BRICK_HEIGHT, vx: (Math.random() - 0.5) * 50, vy: 70 + Math.random() * 120, life: 0.5, maxLife: 0.65, radius: 2, color: '#9FD3FF' });
@@ -927,19 +932,19 @@ export default function LanguageTower({ onComplete, onHudUpdate, profileName }) 
       gradient.addColorStop(0.55, game.rainOn ? '#0e1f38' : '#14284a');
       gradient.addColorStop(1, game.rainOn ? '#173350' : '#1e3d63');
       ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, WIDTH, HEIGHT);
+      ctx.fillRect(0, 0, canvasWidth, HEIGHT);
 
-      const glow = ctx.createRadialGradient(WIDTH * 0.5, HEIGHT * 0.18, 0, WIDTH * 0.5, HEIGHT * 0.18, WIDTH * 0.95);
+      const glow = ctx.createRadialGradient(canvasWidth * 0.5, HEIGHT * 0.18, 0, canvasWidth * 0.5, HEIGHT * 0.18, canvasWidth * 0.95);
       glow.addColorStop(0, 'rgba(90,160,255,.13)');
       glow.addColorStop(1, 'rgba(90,160,255,0)');
       ctx.fillStyle = glow;
-      ctx.fillRect(0, 0, WIDTH, HEIGHT);
+      ctx.fillRect(0, 0, canvasWidth, HEIGHT);
 
       ctx.fillStyle = 'rgba(190,220,255,.16)';
       const span = HEIGHT + 200;
       for (let index = 0; index < 46; index += 1) {
         const seed = index * 127.31;
-        const x = ((Math.sin(seed) * 0.5 + 0.5) * WIDTH + WIDTH) % WIDTH;
+        const x = ((Math.sin(seed) * 0.5 + 0.5) * canvasWidth + canvasWidth) % canvasWidth;
         const baseY = (Math.cos(seed * 1.7) * 0.5 + 0.5) * span;
         const y = ((baseY + game.camY * 0.18) % span) - 100;
         ctx.beginPath();
@@ -1482,6 +1487,9 @@ const STYLES = `
   .lt-challenge-setup .lt-button { padding:12px 16px; font-size:14px; }
 }
 @media (max-height:520px) { .lt-overlay { align-items:flex-start; padding:8px 0; } .lt-panel { flex:0 0 auto; margin:0 auto; } .lt-panel h1 { font-size:34px; } .lt-fail-icon { margin-bottom:2px; font-size:30px; } .lt-panel p { margin-bottom:10px; } .lt-challenge-sentence { padding:8px; } .lt-letter-block { min-height:38px; } }
+@media (min-width:900px) and (min-height:640px) {
+  .lt-board { width:100%; height:100%; max-width:none; aspect-ratio:auto; }
+}
 @media (orientation:landscape) and (max-height:520px) {
   .lt-root.has-overlay .lt-board { width:100%; height:100%; max-width:none; aspect-ratio:auto; }
   .lt-root.has-overlay .lt-overlay { padding-block:4px; }
