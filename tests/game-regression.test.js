@@ -6,6 +6,18 @@ const test = require('node:test');
 const root = process.cwd();
 const read = relativePath => fs.readFileSync(path.join(root, relativePath), 'utf8');
 
+test('Games catalog defers modal, game chunks, and offscreen cover images', () => {
+  const games = read('app/games/page.tsx');
+  const gameCard = read('components/cards/GameCard.tsx');
+
+  assert.match(games, /const ManagePlayersModal = lazy\(\(\) => import\(/);
+  assert.doesNotMatch(games, /router\.prefetch|preloadGame/);
+  assert.match(gameCard, /onMouseEnter=\{\(\) => preloadGame\(gameId\)\}/);
+  assert.match(gameCard, /onFocus=\{\(\) => preloadGame\(gameId\)\}/);
+  assert.match(gameCard, /loading="lazy"/);
+  assert.match(gameCard, /decoding="async"/);
+});
+
 test('selected games are restricted to creator access', () => {
   const access = read('config/game-access.ts');
   const teacherProIds = access.match(/export const TEACHER_PRO_GAME_IDS = new Set\(\[([\s\S]*?)\]\);/);

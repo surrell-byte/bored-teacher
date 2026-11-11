@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useGame } from '@/lib/gameState';
@@ -10,10 +10,11 @@ import { GAME_NAMES, GAME_ICONS } from '@/constants/index';
 import { GAME_CATALOG } from '@/games/catalog.data';
 import { GAME_COMPONENTS } from '@/games/catalog.components';
 import { GameShell } from '@/engine';
-import Connect4HeaderActions from '@/components/ui/controls/Connect4HeaderActions';
 import { TIC_TAC_ROLL_THEMES, type TicTacRollTheme } from '@/games/tictacroll/themes';
 import { canAccessGame, COMING_SOON_GAME_IDS, CREATOR_ONLY_GAME_IDS, TEACHER_PRO_GAME_IDS } from '@/config/game-access';
-import BurgerSprite from '@/games/burger-run/BurgerSprite';
+
+const BurgerSprite = lazy(() => import('@/games/burger-run/BurgerSprite').then(module => ({ default: module.default })));
+const Connect4HeaderActions = lazy(() => import('@/components/ui/controls/Connect4HeaderActions').then(module => ({ default: module.default })));
 
 // ── Types ─────────────────────────────────────────────────────
 interface GameResult {
@@ -255,7 +256,11 @@ export default function GamePage() {
 
   const gameName  = GAME_NAMES[gameId] ?? 'Game';
   const gameIcon  = gameId === 'burgerrun'
-    ? <BurgerSprite bun="#e8a24a" size={48} />
+    ? (
+        <Suspense fallback={<span aria-hidden="true">🍔</span>}>
+          <BurgerSprite bun="#e8a24a" size={48} />
+        </Suspense>
+      )
     : gameId === 'fruitwordhunt' ? '' : GAME_ICONS[gameId] ?? '🎮';
   const GameComp  = GAME_COMPONENTS[gameId];
   const isKnowItAll = gameId === 'knowitall';
@@ -702,7 +707,11 @@ export default function GamePage() {
               </label>
             )}
             {isVocabValley && <button type="button" role="menuitem" onClick={() => window.dispatchEvent(new Event('vocab-valley:trail-map'))}><span aria-hidden="true">←</span><span>Trail map</span></button>}
-            {isConnect4 && c4Hud && <Connect4HeaderActions hud={c4Hud} />}
+            {isConnect4 && c4Hud && (
+              <Suspense fallback={null}>
+                <Connect4HeaderActions hud={c4Hud} />
+              </Suspense>
+            )}
             {isTicTacRoll && <button type="button" role="menuitem" onClick={() => window.dispatchEvent(new Event('tictacroll:new-game'))}><span aria-hidden="true">↻</span><span>New game</span></button>}
             {isFindMyFood && (
               <>

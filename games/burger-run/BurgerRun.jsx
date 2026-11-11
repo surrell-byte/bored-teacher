@@ -885,19 +885,19 @@ export default function BurgerRun({ onComplete, startAtMenu = false }) {
             </header>
             <div className="burger-run-menu-grid">
               <article className="burger-run-menu-mode">
-                <Btn pri onClick={() => play("classic")}>▶ Classic Run</Btn>
+                <Btn pri onClick={() => play("classic")}>Classic Run</Btn>
                 <Sub>Solo race to 1000 points</Sub>
               </article>
               <article className="burger-run-menu-mode">
-                <Btn pri onClick={() => play("card")}>🃏 Card Mode</Btn>
+                <Btn pri onClick={() => play("card")}>Solo Card Mode</Btn>
                 <Sub>Solo · pick a card every 200 points</Sub>
               </article>
               <article className="burger-run-menu-mode">
-                <Btn pri onClick={() => play("duel")}>🃏🃏 2P Card Duel</Btn>
+                <Btn pri onClick={() => play("duel")}>2P Card Duel</Btn>
                 <Sub>Pick cards to move forward, move back or freeze</Sub>
               </article>
               <article className="burger-run-menu-mode">
-                <Btn pri onClick={() => play("race")}>🏁 2P Race</Btn>
+                <Btn pri onClick={() => play("race")}>2P Race</Btn>
                 <Sub>Same screen · 3 lives each · W/S vs ↑/↓</Sub>
               </article>
             </div>

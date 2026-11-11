@@ -1,18 +1,18 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { lazy, Suspense, useEffect, useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { isCreatorUser, onAuthStateChanged } from '@/lib/firebase';
 import { useGame } from '@/providers/GameProvider';
 import {
-  FEATURED_GAME_IDS, GAME_KEYS, NEW_GAME_KEYS, getLatestGameKeys, GAME_NAMES, GAME_TAGS,
+  FEATURED_GAME_IDS, GAME_KEYS, getLatestGameKeys, GAME_NAMES, GAME_TAGS,
   GAME_DIFFICULTY, GAME_DESC,
 } from '@/constants/index';
 import GameCard from '@/components/cards/GameCard';
-import ManagePlayersModal from '@/features/players/components/ManagePlayersModal';
-import { preloadGame } from '@/games/catalog.components';
 import { COMING_SOON_GAME_IDS, isVisibleToUser } from '@/config/game-access';
+
+const ManagePlayersModal = lazy(() => import('@/features/players/components/ManagePlayersModal'));
 
 const CATEGORY_OPTIONS = [
   'All Categories',
@@ -91,14 +91,6 @@ export default function GamesPage() {
 
   const totalPlayed = GAME_KEYS.filter(k => (state.games[k]?.completions ?? 0) > 0).length;
   const totalScore  = Object.values(state.games).reduce((a, g) => a + (g.highScore ?? 0), 0);
-  const likelyNextGame = filteredGames[0] ?? NEW_GAME_KEYS[0] ?? GAME_KEYS[0];
-
-  useEffect(() => {
-    if (!likelyNextGame) return;
-    router.prefetch(`/games/${likelyNextGame}`);
-    preloadGame(likelyNextGame);
-  }, [likelyNextGame, router]);
-
   const hasActiveFilters = category !== 'All Categories' || difficulty !== 'All Difficulties' || !!search || playedOnly;
   const advertisedNewGames = getLatestGameKeys(availableGameIds);
 
@@ -289,7 +281,11 @@ export default function GamesPage() {
         )}
       </section>
 
-      {showManage && <ManagePlayersModal onClose={() => setShowManage(false)} />}
+      {showManage && (
+        <Suspense fallback={null}>
+          <ManagePlayersModal onClose={() => setShowManage(false)} />
+        </Suspense>
+      )}
     </div>
   );
 }

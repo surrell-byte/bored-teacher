@@ -34,6 +34,8 @@ function GameCard({
   return (
     <button
       className={`game-card${locked ? ' game-card-premium' : ''}`}
+      onMouseEnter={() => preloadGame(gameId)}
+      onFocus={() => preloadGame(gameId)}
       onClick={() => {
         preloadGame(gameId);
         onClick(gameId);
@@ -44,9 +46,12 @@ function GameCard({
         style={coverStyle}
       >
         {cover && (
-          <div
+          <img
             className="card-cover-img"
-            style={{ backgroundImage: `url(${cover})` }}
+            src={cover}
+            alt=""
+            loading="lazy"
+            decoding="async"
           />
         )}
         <div className="card-cover-pattern" />
