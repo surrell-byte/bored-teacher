@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, type CSSProperties } from "react";
 
 const AVATARS = ["🎮","🦁","🐺","🦊","🐸","🐧","🦄","🌟","⚡","🔥","🌙","💎"];
 
@@ -573,10 +573,9 @@ export default function TicTacRoll({ onComplete }: Props) {
                         boxShadow: `0 0 8px ${p.color}`,
                         transform: `translate(-50%,-50%)`,
                         animation: `dustFly 0.6s ease-out forwards`,
-                        // @ts-ignore custom props read by keyframes via CSS vars
-                        ["--dx" as any]: `${Math.cos(ang) * dist}px`,
-                        ["--dy" as any]: `${Math.sin(ang) * dist}px`,
-                      }} />
+                        ["--dx" as string]: `${Math.cos(ang) * dist}px`,
+                        ["--dy" as string]: `${Math.sin(ang) * dist}px`,
+                      } as CSSProperties} />
                     );
                   })}
                 </div>

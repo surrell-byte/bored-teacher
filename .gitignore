@@ -17,6 +17,9 @@
 /.next/
 /.next-dev/
 /out/
+/.kilo/
+/backup/
+/.vercel/
 
 # production
 /build

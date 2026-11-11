@@ -140,7 +140,7 @@ export default function Monsterbound({ onComplete } = {}) {
     setBattleMsg(`${champ.name}, the ${champ.title}, challenges you!`);
   }
 
-  function useMove(idx) {
+  function doMove(idx) {
     if (!battle || busy) return;
     const player = party[active];
     const moveData = player.moves[idx];
@@ -478,7 +478,7 @@ export default function Monsterbound({ onComplete } = {}) {
 
           <div style={battleMenuStyle}>
             {player?.moves.map((m, i) => (
-              <button key={i} disabled={busy} onClick={() => useMove(i)} style={{ ...moveBtn, background: MOVE_COLOR[m.type] }}>
+              <button key={i} disabled={busy} onClick={() => doMove(i)} style={{ ...moveBtn, background: MOVE_COLOR[m.type] }}>
                 {m.name}
               </button>
             ))}
