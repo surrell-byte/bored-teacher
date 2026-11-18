@@ -92,6 +92,8 @@ const QUICK_RULES: Partial<Record<string, string>> = {
   pluralquest: 'Progress through plural noun rules from simple endings to tricky irregular forms.',
   victoryvet: 'Answer animal-care questions to help patients and build knowledge.',
   airpuck: 'Play fast air hockey or switch to a card mode and be the first to score seven.',
+  hiddentreasure: 'Pick a shape, choose a numbered tile, and score a point for each correct guess. First to 3 wins.',
+  tidaldash: 'Read each current signal and choose Paddle, Anchor, or Steer before the timer ends. First player to 5 steps wins.',
 };
 
 const FULL_RULES: Partial<Record<string, string>> = {
@@ -103,6 +105,8 @@ const FULL_RULES: Partial<Record<string, string>> = {
   tilebattle: 'Each turn brings a new tile reveal. Matching the right tile triggers attacks, heals, and lifesteal as players try to knock out the opponent.',
   quiztrail: 'Players answer questions while moving along a trail that gets harder as they progress. The goal is to stay on the trail and reach the end before the clock runs out.',
   airpuck: 'Players either play a fast air hockey mode or switch to a card-based mode. The first player to reach seven points wins the match.',
+  hiddentreasure: 'Choose 2–4 players and take turns. On each turn, pick the shape you think is behind a numbered tile, then reveal that tile. A correct guess earns one point; a wrong guess passes the turn without a point. The first player to reach three correct guesses wins the round.',
+  tidaldash: 'Two players take turns reading a changing current signal. Match Surge with Paddle, Slack tide with Anchor, and Crosscurrent with Steer before the five-second timer ends. A correct move advances one step; a wrong or missed move passes the turn. The first player to reach five steps wins the dash.',
 };
 
 function getRuleText(gameId: string, mode: 'quick' | 'full') {

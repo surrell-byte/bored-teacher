@@ -15,6 +15,7 @@ const BOARD = { left: 0.19, top: 0.225, width: 0.62, height: 0.55 };
 const CARD_BOARD = { left: 0.125, top: 0.245, width: 0.53, height: 0.49 };
 const ASSETS = {
   welcome: "/games/air-puck/air-puck-welcome-screen-bg.webp",
+  welcomePhone: "/games/air-puck/air-puck-welcome-bg-phone.webp",
   name: "/games/air-puck/air-puck-user-input-bg.webp",
   menu: "/games/air-puck/air-puck-main-menu-bg.webp",
   board: "/games/air-puck/air-hockey-game-screen-bg.webp",
@@ -208,8 +209,10 @@ const CSS = `
   .sprite{position:absolute;left:0;top:0;display:block;object-fit:contain;pointer-events:none;will-change:transform;
     transform:translate3d(0,0,0) translate(-50%,-50%);z-index:1}
   .sprite-mallet{width:10.4cqw;aspect-ratio:1}
+  .sprite-mallet.player-mallet{width:11.7cqw}
   .sprite-puck{width:4.2cqw;aspect-ratio:1}
   .playfield.portrait .sprite-mallet{width:10.4cqh}
+  .playfield.portrait .sprite-mallet.player-mallet{width:11.7cqh}
   .playfield.portrait .sprite-puck{width:4.2cqh}
 
   .message{position:absolute;inset:5px;display:flex;align-items:center;justify-content:center;padding:20px;
@@ -337,6 +340,7 @@ const CSS = `
     .card-board-goal{font-size:8px;padding:5px}}
 }
 @media (max-width:700px) and (orientation:portrait){
+  .ap[data-screen="welcome"]{background-image:url('/games/air-puck/air-puck-welcome-bg-phone.webp')}
   .ap[data-screen="game"]::before{inset:auto;left:50%;top:50%;width:100cqh;height:100cqw;
     transform:translate(-50%,-50%) rotate(90deg)}
 }
@@ -423,7 +427,8 @@ export default function AirPuck({ onHudUpdate } = {}) {
     let cancelled = false;
     setAssetsReady(false);
     setAssetsFailed(false);
-    const required = screen === "welcome" ? [ASSETS.welcome]
+    const required = screen === "welcome"
+      ? [window.matchMedia("(max-width: 700px) and (orientation: portrait)").matches ? ASSETS.welcomePhone : ASSETS.welcome]
       : screen === "name" ? [ASSETS.name]
         : screen === "menu" ? [ASSETS.menu]
           : mode === "card" ? [ASSETS.cardBoard, ASSETS.player, ASSETS.ai, ASSETS.puck]
@@ -988,9 +993,9 @@ export default function AirPuck({ onHudUpdate } = {}) {
                 <div className="playfield" ref={playfieldRef}
                   onPointerMove={(e) => movePlayer(e.clientX, e.clientY)}
                   onPointerDown={(e) => { movePlayer(e.clientX, e.clientY); if (!audioCtx) sfx("hit"); }}>
-                  <img ref={aiElRef} className="sprite sprite-mallet" src={ASSETS.ai} alt="AI mallet" draggable="false"
+                  <img ref={aiElRef} className="sprite sprite-mallet ai-mallet" src={ASSETS.ai} alt="AI mallet" draggable="false"
                     style={{ transform: "translate3d(89cqw,50cqh,0) translate(-50%,-50%)" }} />
-                  <img ref={playerElRef} className="sprite sprite-mallet" src={ASSETS.player} alt={`${name} mallet`} draggable="false"
+                  <img ref={playerElRef} className="sprite sprite-mallet player-mallet" src={ASSETS.player} alt={`${name} mallet`} draggable="false"
                     style={{ transform: "translate3d(11cqw,50cqh,0) translate(-50%,-50%)" }} />
                   <img ref={puckElRef} className="sprite sprite-puck" src={ASSETS.puck} alt="Puck" draggable="false"
                     style={{ transform: "translate3d(50cqw,50cqh,0) translate(-50%,-50%)" }} />
@@ -1017,9 +1022,9 @@ export default function AirPuck({ onHudUpdate } = {}) {
                   <div className="playfield card-board-field" ref={playfieldRef}>
                     <div className="card-board-goal ai">AI GOAL</div>
                     <div className="card-board-goal you">YOUR GOAL</div>
-                    <img ref={aiElRef} className="sprite sprite-mallet" src={ASSETS.ai} alt="AI mallet" draggable="false"
+                    <img ref={aiElRef} className="sprite sprite-mallet ai-mallet" src={ASSETS.ai} alt="AI mallet" draggable="false"
                       style={{ transform: "translate3d(55.4cqw,49.5cqh,0) translate(-50%,-50%)" }} />
-                    <img ref={playerElRef} className="sprite sprite-mallet" src={ASSETS.player} alt={`${name} mallet`} draggable="false"
+                    <img ref={playerElRef} className="sprite sprite-mallet player-mallet" src={ASSETS.player} alt={`${name} mallet`} draggable="false"
                       style={{ transform: "translate3d(22.6cqw,49.5cqh,0) translate(-50%,-50%)" }} />
                     <img ref={puckElRef} className="sprite sprite-puck card-puck" src={ASSETS.puck} alt="Puck" draggable="false"
                       style={{ transform: "translate3d(39.8cqw,49.5cqh,0) translate(-50%,-50%)" }} />

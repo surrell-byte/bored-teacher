@@ -83,7 +83,6 @@ export default function ZooGame({ themeId = 'savanna', onComplete }) {
           <div className="zoo-menu-hero">
             <div className="zoo-menu-icon">🦁</div>
             <p className="zoo-menu-kicker">Welcome to the wild</p>
-            <h1>Zoo Game</h1>
             <p>Choose a habitat and a level to begin.</p>
           </div>
           <div className="zoo-menu-section">

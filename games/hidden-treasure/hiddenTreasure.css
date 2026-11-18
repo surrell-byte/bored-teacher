@@ -1,0 +1,584 @@
+.ht-root {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  color: #f3fbff;
+  font-family: var(--font-body, system-ui, sans-serif);
+  background-color: #075176;
+  background-image: url('/assets/games/hidden-treasure/hidden-treasure-underwater-bg.webp');
+  background-position: center;
+  background-size: cover;
+}
+
+.ht-root * {
+  box-sizing: border-box;
+}
+
+.ht-root button,
+.ht-root input {
+  font: inherit;
+}
+
+.ht-root button {
+  color: inherit;
+}
+
+.ht-panel {
+  border: 1px solid rgba(187, 241, 255, .48);
+  border-radius: 22px;
+  background: rgba(3, 31, 57, .88);
+  box-shadow: 0 14px 40px rgba(0, 20, 45, .28), inset 0 1px 0 rgba(255, 255, 255, .12);
+  backdrop-filter: blur(7px);
+}
+
+.ht-welcome {
+  width: min(680px, calc(100% - 32px));
+  margin: auto;
+  padding: clamp(22px, 4vw, 40px);
+  text-align: center;
+}
+
+.ht-kicker {
+  color: #fff7c8;
+  font-size: .75rem;
+  font-weight: 900;
+  letter-spacing: .18em;
+  text-shadow: 0 2px 5px rgba(0, 30, 50, .95);
+  text-transform: uppercase;
+}
+
+.ht-root h1 {
+  margin: 8px 0 0;
+  color: #fff5c9;
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  font-weight: 950;
+  line-height: 1;
+  letter-spacing: .025em;
+  text-shadow: 0 3px 0 rgba(3, 53, 87, .8);
+}
+
+.ht-intro {
+  max-width: 520px;
+  margin: 16px auto 0;
+  color: #e0f7ff;
+  font-size: clamp(.95rem, 2vw, 1.08rem);
+  line-height: 1.55;
+}
+
+.ht-how-to {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+  margin: 25px 0;
+  text-align: left;
+}
+
+.ht-how-to span {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px 10px;
+  border: 1px solid rgba(179, 237, 255, .18);
+  border-radius: 13px;
+  background: rgba(3, 59, 88, .66);
+  color: #e7faff;
+  font-size: .8rem;
+  line-height: 1.35;
+}
+
+.ht-how-to b {
+  display: grid;
+  flex: 0 0 23px;
+  width: 23px;
+  height: 23px;
+  place-items: center;
+  border-radius: 50%;
+  background: #00b8be;
+  color: #062d48;
+}
+
+.ht-player-setup {
+  padding: 15px;
+  border: 1px solid rgba(179, 237, 255, .18);
+  border-radius: 16px;
+  background: rgba(2, 49, 77, .7);
+  text-align: left;
+}
+
+.ht-setup-heading,
+.ht-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: .9rem;
+  font-weight: 900;
+}
+
+.ht-player-count {
+  display: flex;
+  gap: 5px;
+}
+
+.ht-player-count button {
+  width: 34px;
+  height: 32px;
+  border: 1px solid rgba(193, 239, 255, .34);
+  border-radius: 9px;
+  background: rgba(12, 88, 123, .7);
+  cursor: pointer;
+}
+
+.ht-player-count button.is-selected {
+  border-color: #a7f5e1;
+  background: #1acaa9;
+  color: #063a4c;
+  font-weight: 900;
+}
+
+.ht-name-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.ht-name-field {
+  display: grid;
+  gap: 5px;
+  color: var(--player-color);
+  font-size: .72rem;
+  font-weight: 850;
+}
+
+.ht-name-field input {
+  width: 100%;
+  min-width: 0;
+  height: 38px;
+  padding: 0 10px;
+  border: 1px solid rgba(190, 235, 255, .27);
+  border-radius: 9px;
+  outline: none;
+  background: rgba(0, 27, 51, .72);
+  color: #fff;
+}
+
+.ht-name-field input:focus-visible,
+.ht-root button:focus-visible {
+  outline: 3px solid #fff1a8;
+  outline-offset: 2px;
+}
+
+.ht-primary-button,
+.ht-secondary-button {
+  min-height: 46px;
+  padding: 0 22px;
+  border: 1px solid #b2fff0;
+  border-radius: 13px;
+  background: linear-gradient(180deg, #51e4c3, #16b9ad);
+  color: #063b4c !important;
+  font-weight: 950 !important;
+  cursor: pointer;
+  box-shadow: 0 5px 0 rgba(0, 72, 91, .55);
+}
+
+.ht-welcome > .ht-primary-button {
+  width: min(300px, 100%);
+  margin-top: 20px;
+}
+
+.ht-primary-button:hover,
+.ht-secondary-button:hover {
+  filter: brightness(1.08);
+}
+
+.ht-game {
+  position: relative;
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+  width: min(1280px, 100%);
+  min-height: 100%;
+  margin: 0 auto;
+  padding: clamp(12px, 2vw, 24px);
+}
+
+.ht-game-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.ht-game-heading h1 {
+  font-size: clamp(1.5rem, 3vw, 2.4rem);
+}
+
+.ht-turn-banner {
+  padding: 10px 16px;
+  border: 1px solid rgba(186, 244, 255, .42);
+  border-radius: 999px;
+  background: rgba(3, 37, 62, .88);
+  color: #ffeda8;
+  font-weight: 900;
+  text-align: center;
+}
+
+.ht-scoreboard {
+  display: grid;
+  grid-template-columns: repeat(var(--player-count), minmax(0, 1fr));
+  gap: 9px;
+  margin-bottom: 12px;
+}
+
+.ht-player-score {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 58px;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--player-color) 45%, transparent);
+  border-radius: 15px;
+  background: rgba(3, 33, 56, .86);
+  opacity: .8;
+}
+
+.ht-player-score.is-active {
+  border: 2px solid var(--player-color);
+  background: rgba(3, 41, 63, .96);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--player-color) 32%, transparent);
+  opacity: 1;
+}
+
+.ht-player-avatar {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 2px solid var(--player-color);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--player-color) 18%, #052640);
+  color: var(--player-color);
+  font-size: 1rem;
+  font-weight: 950;
+}
+
+.ht-score-name {
+  overflow: hidden;
+  color: #e4faff;
+  font-size: .82rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ht-score-points {
+  color: var(--player-color);
+  font-size: 1.65rem;
+  font-weight: 950;
+  line-height: 1;
+}
+
+.ht-score-target {
+  color: #b6dce9;
+  font-size: .8rem;
+  font-weight: 800;
+}
+
+.ht-play-area {
+  flex: 1;
+  min-height: 0;
+}
+
+.ht-board-panel {
+  padding: clamp(12px, 2vw, 20px);
+}
+
+.ht-section-title {
+  color: #f5fcff;
+}
+
+.ht-remaining,
+.ht-guess-hint {
+  color: #b5dce9;
+  font-size: .76rem;
+  font-weight: 700;
+}
+
+.ht-tile-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: clamp(5px, 1vw, 10px);
+  margin-top: 12px;
+}
+
+.ht-tile {
+  display: grid;
+  aspect-ratio: 1.3;
+  min-width: 0;
+  place-items: center;
+  border: 1px solid rgba(210, 249, 255, .66);
+  border-radius: 13px;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255, 255, 255, .38), transparent 30%),
+    linear-gradient(145deg, #28b9d1, #0879a8 75%);
+  color: #fff !important;
+  font-size: clamp(1rem, 2.2vw, 1.8rem);
+  font-weight: 950 !important;
+  text-shadow: 0 2px 3px rgba(0, 35, 57, .75);
+  cursor: pointer;
+  box-shadow: 0 4px 0 rgba(0, 47, 74, .55), inset 0 1px 0 rgba(255, 255, 255, .28);
+  transition: transform .14s ease, filter .14s ease, background .2s ease;
+}
+
+.ht-tile:not(:disabled):hover {
+  filter: brightness(1.14);
+  transform: translateY(-2px);
+}
+
+.ht-tile:disabled:not(.is-revealed) {
+  cursor: default;
+}
+
+.ht-tile.is-revealed {
+  border-color: rgba(252, 227, 151, .7);
+  background: rgba(6, 42, 64, .88);
+  color: #ffe6a1 !important;
+  cursor: default;
+  text-shadow: none;
+}
+
+.ht-tile-shape {
+  width: 52%;
+  height: 52%;
+  fill: #ffdf86;
+  stroke: #fff2c2;
+  stroke-width: 2;
+}
+
+.ht-guess-area {
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid rgba(195, 240, 255, .2);
+}
+
+.ht-shape-choices {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.ht-shape-choice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 52px;
+  padding: 7px 10px;
+  border: 1px solid rgba(199, 240, 255, .34);
+  border-radius: 12px;
+  background: rgba(5, 65, 92, .86);
+  color: #effbff;
+  font-size: .83rem;
+  font-weight: 850 !important;
+  cursor: pointer;
+}
+
+.ht-shape-choice.is-selected {
+  border: 2px solid #fff1a8;
+  background: rgba(13, 144, 151, .96);
+  box-shadow: 0 0 0 2px rgba(255, 241, 168, .17);
+}
+
+.ht-shape-choice:disabled {
+  cursor: default;
+}
+
+.ht-choice-shape {
+  flex: 0 0 25px;
+  width: 25px;
+  height: 25px;
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
+.ht-feedback {
+  min-height: 25px;
+  margin: 10px 0 0;
+  color: #fff0aa;
+  font-size: .92rem;
+  font-weight: 850;
+  text-align: center;
+}
+
+.ht-winner-backdrop {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+}
+
+.ht-winner-card {
+  width: min(500px, 100%);
+  padding: clamp(24px, 5vw, 40px);
+  text-align: center;
+}
+
+.ht-winner-treasure {
+  color: #ffe28c;
+  font-size: 3.5rem;
+  line-height: 1;
+  text-shadow: 0 0 22px rgba(255, 215, 91, .45);
+}
+
+.ht-winner-card h2 {
+  margin: 9px 0;
+  color: #fff3bd;
+  font-size: clamp(1.45rem, 4vw, 2rem);
+}
+
+.ht-winner-card p {
+  color: #d3eff8;
+}
+
+.ht-winner-actions {
+  display: grid;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.ht-secondary-button {
+  border-color: rgba(206, 242, 255, .5);
+  background: rgba(8, 77, 109, .9);
+  color: #effbff !important;
+}
+
+.ht-text-button {
+  min-height: 38px;
+  border: 0;
+  background: transparent;
+  color: #c1e6f0;
+  cursor: pointer;
+}
+
+@media (max-width: 620px) {
+  .ht-root {
+    min-height: 100%;
+    height: auto;
+  }
+
+  .ht-welcome {
+    margin: 12px auto;
+    padding: 21px 16px;
+  }
+
+  .ht-how-to {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    margin: 17px 0;
+  }
+
+  .ht-how-to span {
+    align-items: center;
+    padding: 8px 10px;
+  }
+
+  .ht-player-setup {
+    padding: 12px;
+  }
+
+  .ht-game {
+    padding: 10px;
+  }
+
+  .ht-game-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .ht-turn-banner {
+    align-self: stretch;
+    padding: 7px 12px;
+    font-size: .9rem;
+  }
+
+  .ht-scoreboard {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .ht-player-score {
+    grid-template-columns: 30px minmax(0, 1fr) auto auto;
+    gap: 5px;
+    min-height: 48px;
+    padding: 5px 7px;
+  }
+
+  .ht-player-avatar {
+    width: 29px;
+    height: 29px;
+    font-size: .85rem;
+  }
+
+  .ht-score-name {
+    font-size: .73rem;
+  }
+
+  .ht-score-points {
+    font-size: 1.35rem;
+  }
+
+  .ht-tile-grid {
+    gap: 5px;
+  }
+
+  .ht-tile {
+    aspect-ratio: 1.24;
+    border-radius: 9px;
+  }
+
+  .ht-shape-choices {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 5px;
+  }
+
+  .ht-shape-choice {
+    flex-direction: column;
+    gap: 3px;
+    min-height: 62px;
+    padding: 5px 2px;
+    font-size: .64rem;
+  }
+
+  .ht-choice-shape {
+    width: 22px;
+    height: 22px;
+  }
+
+  .ht-guess-hint {
+    max-width: 45%;
+    text-align: right;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ht-root *,
+  .ht-root *::before,
+  .ht-root *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+  }
+}

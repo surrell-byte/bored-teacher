@@ -5,8 +5,8 @@
   box-sizing: border-box;
 }
 
-.zoo-menu-start { display: block; margin: 28px auto 0; padding: 14px 30px; border: 0; border-radius: 999px; background: #b8863a; color: #fff8e7; font: inherit; font-weight: 900; font-size: 1.05rem; cursor: pointer; box-shadow: 0 4px 0 #8d672d; }
-.zoo-menu-grid button.selected { background: #fcdb8a; border-color: #dba555; box-shadow: 0 4px 0 #b8863a; }
+.zoogame-root .zoo-menu-start { display: block; margin: 28px auto 0; padding: 14px 30px; border: 0; border-radius: 999px; background: #b8863a; color: #fff8e7; font: inherit; font-weight: 900; font-size: 1.05rem; cursor: pointer; box-shadow: 0 4px 0 #8d672d; }
+.zoogame-root .zoo-menu-grid button.selected { background: #fcdb8a; border-color: #dba555; box-shadow: 0 4px 0 #b8863a; }
 
 .zoogame-root {
   font-family: 'Comic Sans MS', 'Chalkboard SE', cursive, sans-serif;
@@ -20,7 +20,7 @@
   padding: 0;
 }
 
-.game-wrapper {
+.zoogame-root .game-wrapper {
   max-width: none;
   width: 100%;
   min-height: 100%;
@@ -35,7 +35,7 @@
   flex-direction: column;
 }
 
-.game-wrapper::before {
+.zoogame-root .game-wrapper::before {
   display: none;
   content: '🌿🌿🌿';
   position: absolute;
@@ -50,7 +50,7 @@
   white-space: nowrap;
 }
 
-.question-counter {
+.zoogame-root .question-counter {
   text-align: center;
   color: #7a6248;
   font-weight: bold;
@@ -58,7 +58,7 @@
   margin: 4px 0 12px;
 }
 
-.zoo-victory {
+.zoogame-root .zoo-victory {
   position: absolute;
   inset: 0;
   z-index: 30;
@@ -74,7 +74,7 @@
   font-weight: bold;
 }
 
-.zoo-victory button {
+.zoogame-root .zoo-victory button {
   font: inherit;
   font-size: 1rem;
   padding: 12px 22px;
@@ -85,7 +85,7 @@
   cursor: pointer;
 }
 
-.category-tabs {
+.zoogame-root .category-tabs {
   display: flex;
   gap: 8px;
   margin-bottom: 12px;
@@ -93,7 +93,7 @@
   justify-content: center;
 }
 
-.cat-btn {
+.zoogame-root .cat-btn {
   background: #efe3cd;
   border: 4px solid #c7b28b;
   padding: 8px 20px;
@@ -111,20 +111,20 @@
   flex: 0 1 auto;
 }
 
-.cat-btn:hover {
+.zoogame-root .cat-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 0 #b8a07c;
   background: #f5ecd9;
 }
 
-.cat-btn.active {
+.zoogame-root .cat-btn.active {
   background: #fcdb8a;
   border-color: #dba555;
   box-shadow: 0 4px 0 #b8863a;
   transform: translateY(0);
 }
 
-.tabs {
+.zoogame-root .tabs {
   display: flex;
   gap: 10px;
   margin-bottom: 14px;
@@ -132,7 +132,7 @@
   justify-content: center;
 }
 
-.tab-btn {
+.zoogame-root .tab-btn {
   background: #efe3cd;
   border: 4px solid #c7b28b;
   padding: 10px 22px;
@@ -152,25 +152,25 @@
   gap: 8px;
 }
 
-.tab-btn:hover {
+.zoogame-root .tab-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 0 #b8a07c;
   background: #f5ecd9;
 }
 
-.tab-btn.active {
+.zoogame-root .tab-btn.active {
   background: #fcdb8a;
   border-color: #dba555;
   box-shadow: 0 4px 0 #b8863a;
   transform: translateY(0);
 }
 
-.panel {
+.zoogame-root .panel {
   display: none;
   animation: fadeUp 0.4s ease;
 }
 
-.panel.active {
+.zoogame-root .panel.active {
   display: block;
 }
 
@@ -185,7 +185,7 @@
   }
 }
 
-.instruction {
+.zoogame-root .instruction {
   text-align: center;
   font-size: 18px;
   color: #4a3728;
@@ -198,13 +198,13 @@
   letter-spacing: 0.5px;
 }
 
-.instruction small {
+.zoogame-root .instruction small {
   font-weight: normal;
   font-size: 15px;
   color: #7a6248;
 }
 
-.animal-display {
+.zoogame-root .animal-display {
   background: #fcf6e8;
   border-radius: 40px;
   padding: 20px 20px 16px;
@@ -219,25 +219,25 @@
   position: relative;
 }
 
-.animal-emoji {
+.zoogame-root .animal-emoji {
   font-size: 140px;
   line-height: 1;
   transition: filter 0.4s ease, transform 0.4s ease;
   user-select: none;
 }
 
-.animal-emoji.partial {
+.zoogame-root .animal-emoji.partial {
   filter: blur(10px) brightness(0.65);
   transform: scale(0.85);
   transition: none;
 }
 
-.animal-emoji.revealed {
+.zoogame-root .animal-emoji.revealed {
   filter: blur(0) brightness(1);
   transform: scale(1);
 }
 
-.animal-name {
+.zoogame-root .animal-name {
   font-size: 28px;
   font-weight: bold;
   color: #4a3728;
@@ -251,14 +251,14 @@
   transition: all 0.3s;
 }
 
-.animal-name.hidden {
+.zoogame-root .animal-name.hidden {
   visibility: hidden;
   opacity: 0;
   transform: scale(0.8);
   min-height: 40px;
 }
 
-.sentence-builder {
+.zoogame-root .sentence-builder {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -274,14 +274,14 @@
   border: 3px solid #c7b28b;
 }
 
-.sentence-builder .word {
+.zoogame-root .sentence-builder .word {
   background: white;
   padding: 3px 14px;
   border-radius: 26px;
   border: 3px solid #d9c9a8;
 }
 
-.sentence-builder .blank {
+.zoogame-root .sentence-builder .blank {
   background: #fce9c8;
   padding: 3px 20px;
   border-radius: 26px;
@@ -294,13 +294,13 @@
   transition: 0.2s;
 }
 
-.sentence-builder .blank.filled {
+.zoogame-root .sentence-builder .blank.filled {
   border: 4px solid #6a9b5a;
   background: #d4edc9;
   color: #2d5a1e;
 }
 
-.action-buttons {
+.zoogame-root .action-buttons {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
@@ -308,7 +308,7 @@
   margin-top: 12px;
 }
 
-.btn {
+.zoogame-root .btn {
   padding: 10px 26px;
   border: none;
   border-radius: 60px;
@@ -324,22 +324,22 @@
   border: 3px solid rgba(255, 255, 255, 0.4);
 }
 
-.btn:active {
+.zoogame-root .btn:active {
   transform: translateY(6px);
   box-shadow: 0 0px 0 rgba(0, 0, 0, 0.15);
 }
 
-.btn-success {
+.zoogame-root .btn-success {
   background: #8bc78b;
   color: #1f4a1f;
 }
 
-.btn-blue {
+.zoogame-root .btn-blue {
   background: #89c2e8;
   color: #1a405a;
 }
 
-.feedback {
+.zoogame-root .feedback {
   margin-top: 12px;
   padding: 8px 16px;
   border-radius: 50px;
@@ -356,25 +356,25 @@
   transition: all 0.3s;
 }
 
-.feedback.correct {
+.zoogame-root .feedback.correct {
   background: #d4edc9;
   border-color: #6a9b5a;
   color: #2d5a1e;
 }
 
-.feedback.wrong {
+.zoogame-root .feedback.wrong {
   background: #fdd5d5;
   border-color: #c95a5a;
   color: #6a1e1e;
 }
 
-.feedback.hint {
+.zoogame-root .feedback.hint {
   background: #fce9c8;
   border-color: #dba555;
   color: #7a5a2a;
 }
 
-.options-grid {
+.zoogame-root .options-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
   gap: 10px;
@@ -390,7 +390,7 @@
   .zoogame-root #panel-guess .options-grid { margin-top: 18px; }
 }
 
-.option-btn {
+.zoogame-root .option-btn {
   background: #fcf6e8;
   border: 4px solid #d9c9a8;
   border-radius: 34px;
@@ -408,37 +408,37 @@
   box-shadow: 0 4px 0 #c7b28b;
 }
 
-.option-btn .opt-label {
+.zoogame-root .option-btn .opt-label {
   font-size: 18px;
 }
 
-.option-btn:hover {
+.zoogame-root .option-btn:hover {
   transform: translateY(-3px);
   background: #f5ecd9;
   box-shadow: 0 6px 0 #c7b28b;
 }
 
-.option-btn.selected-correct {
+.zoogame-root .option-btn.selected-correct {
   background: #8bc78b;
   border-color: #4a8a4a;
   box-shadow: 0 4px 0 #3a6a3a;
   transform: scale(1.02);
 }
 
-.option-btn.selected-wrong {
+.zoogame-root .option-btn.selected-wrong {
   background: #e88a8a;
   border-color: #b84a4a;
   box-shadow: 0 4px 0 #8a3a3a;
 }
 
-.option-btn:disabled {
-  opacity: 0.7;
+.zoogame-root .option-btn:disabled {
+  opacity: 1;
   transform: translateY(0) !important;
   cursor: not-allowed;
   box-shadow: 0 2px 0 #c7b28b;
 }
 
-.act-card {
+.zoogame-root .act-card {
   background: #fcf6e8;
   border-radius: 34px;
   padding: 12px 20px 16px;
@@ -446,7 +446,7 @@
   text-align: center;
 }
 
-.act-card .speech-bubble {
+.zoogame-root .act-card .speech-bubble {
   background: white;
   padding: 10px 24px;
   border-radius: 50px;
@@ -460,7 +460,7 @@
   position: relative;
 }
 
-.act-card .speech-bubble::before {
+.zoogame-root .act-card .speech-bubble::before {
   content: '💬';
   position: absolute;
   left: -34px;
@@ -468,14 +468,14 @@
   font-size: 26px;
 }
 
-.attempts-track {
+.zoogame-root .attempts-track {
   display: flex;
   justify-content: center;
   gap: 8px;
   margin-top: 10px;
 }
 
-.attempts-track .dot {
+.zoogame-root .attempts-track .dot {
   width: 14px;
   height: 14px;
   border-radius: 50%;
@@ -484,82 +484,82 @@
   transition: all 0.25s ease;
 }
 
-.attempts-track .dot.used {
+.zoogame-root .attempts-track .dot.used {
   background: #e88a8a;
   border-color: #b84a4a;
 }
 
 @media (max-width: 600px) {
-  .game-wrapper {
+  .zoogame-root .game-wrapper {
     padding: 16px 14px 18px;
     border-radius: 32px;
   }
 
-  .cat-btn {
+  .zoogame-root .cat-btn {
     font-size: 16px;
     padding: 8px 14px;
   }
 
-  .tab-btn {
+  .zoogame-root .tab-btn {
     font-size: 16px;
     padding: 10px 16px;
     min-width: 100px;
   }
 
-  .instruction {
+  .zoogame-root .instruction {
     font-size: 18px;
     padding: 10px 14px;
   }
 
-  .animal-display {
+  .zoogame-root .animal-display {
     min-height: 270px;
   }
 
-  .animal-emoji {
+  .zoogame-root .animal-emoji {
     font-size: 100px;
   }
 
-  .animal-name {
+  .zoogame-root .animal-name {
     font-size: 28px;
     padding: 2px 20px;
     min-width: 100px;
   }
 
-  .sentence-builder {
+  .zoogame-root .sentence-builder {
     font-size: 24px;
     padding: 12px 14px;
   }
 
-  .sentence-builder .blank {
+  .zoogame-root .sentence-builder .blank {
     min-width: 80px;
     padding: 2px 12px;
   }
 
-  .btn {
+  .zoogame-root .btn {
     font-size: 18px;
     padding: 10px 20px;
   }
 
-  .options-grid {
+  .zoogame-root .options-grid {
     grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
     gap: 8px;
   }
 
-  .option-btn {
+  .zoogame-root .option-btn {
     font-size: 20px;
     padding: 8px 4px;
   }
 
-  .option-btn .opt-label {
+  .zoogame-root .option-btn .opt-label {
     font-size: 15px;
   }
 
-  .act-card .speech-bubble {
+  .zoogame-root .act-card .speech-bubble {
     font-size: 26px;
     padding: 12px 20px;
   }
 
-  .feedback {
+  .zoogame-root .feedback {
     font-size: 20px;
     min-height: 56px;
     padding: 10px 14px;
@@ -567,45 +567,45 @@
 }
 
 @media (max-width: 420px) {
-  .category-tabs {
+  .zoogame-root .category-tabs {
     gap: 6px;
   }
 
-  .cat-btn {
+  .zoogame-root .cat-btn {
     font-size: 14px;
     padding: 6px 10px;
   }
 
-  .tab-btn {
+  .zoogame-root .tab-btn {
     font-size: 14px;
     padding: 8px 10px;
     min-width: 70px;
   }
 
-  .sentence-builder {
+  .zoogame-root .sentence-builder {
     font-size: 20px;
   }
 
-  .sentence-builder .blank {
+  .zoogame-root .sentence-builder .blank {
     min-width: 60px;
     font-size: 20px;
   }
 
-  .btn {
+  .zoogame-root .btn {
     font-size: 16px;
     padding: 8px 16px;
   }
 
-  .act-card .speech-bubble {
+  .zoogame-root .act-card .speech-bubble {
     font-size: 22px;
     padding: 10px 16px;
   }
 
-  .animal-emoji {
+  .zoogame-root .animal-emoji {
     font-size: 84px;
   }
 
-  .animal-display {
+  .zoogame-root .animal-display {
     min-height: 220px;
   }
 }
@@ -621,7 +621,7 @@
 }
 
 /* The menu owns the full play surface so a previous theme cannot show through. */
-.zoo-main-menu {
+.zoogame-root .zoo-main-menu {
   position: relative;
   min-height: 100%;
   width: 100%;
@@ -638,7 +638,7 @@
   background-repeat: no-repeat;
 }
 
-.zoo-welcome {
+.zoogame-root .zoo-welcome {
   position: relative;
   width: 100%;
   height: 100%;
@@ -646,7 +646,7 @@
   background: url('/assets/games/zoo-game/zoo-game-welcome-bg.webp') center / cover no-repeat;
 }
 
-.zoo-welcome-start {
+.zoogame-root .zoo-welcome-start {
   position: absolute;
   left: 38%;
   top: 50%;
@@ -658,17 +658,17 @@
   cursor: pointer;
 }
 
-.zoo-welcome-start:focus-visible {
+.zoogame-root .zoo-welcome-start:focus-visible {
   outline: 4px solid #fff;
   outline-offset: 5px;
 }
 
 @media (max-width: 600px) and (orientation: portrait) {
-  .zoo-welcome {
+  .zoogame-root .zoo-welcome {
     background-image: url('/assets/games/zoo-game/zoo-game-welcome-phone-bg.webp');
   }
 
-  .zoo-welcome-start {
+  .zoogame-root .zoo-welcome-start {
     left: 17%;
     top: 34%;
     width: 66%;
@@ -676,15 +676,15 @@
   }
 }
 
-.zoo-menu-hero,
-.zoo-menu-section {
+.zoogame-root .zoo-menu-hero,
+.zoogame-root .zoo-menu-section {
   position: relative;
   z-index: 2;
   width: min(100%, 1000px);
   text-align: center;
 }
 
-.zoo-menu-hero {
+.zoogame-root .zoo-menu-hero {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -694,13 +694,13 @@
   box-shadow:0 12px 35px rgba(65,55,30,.12),inset 0 1px 0 rgba(255,255,255,.8);
 }
 
-.zoo-menu-icon {
+.zoogame-root .zoo-menu-icon {
   font-size: 82px;
   line-height: 1;
   filter: drop-shadow(0 10px 8px rgba(63, 57, 30, 0.15));
 }
 
-.zoo-menu-kicker {
+.zoogame-root .zoo-menu-kicker {
   margin: 12px 0 5px;
   color: #1f6746;
   font-size: 14px;
@@ -709,7 +709,7 @@
   text-transform: uppercase;
 }
 
-.zoo-menu-hero h1 {
+.zoogame-root .zoo-menu-hero h1 {
   margin: 0;
   color: #173b2b;
   font-size: clamp(38px, 5vw, 64px);
@@ -718,7 +718,7 @@
   text-shadow: 0 3px 0 rgba(255, 255, 255, 0.75);
 }
 
-.zoo-menu-hero > p:last-child {
+.zoogame-root .zoo-menu-hero > p:last-child {
   margin: 12px 0 0;
   color: #55705d;
   font-size: 18px;
@@ -726,11 +726,11 @@
   font-weight: 600;
 }
 
-.zoo-menu-section {
+.zoogame-root .zoo-menu-section {
   margin-top: 28px;
 }
 
-.zoo-menu-section h2 {
+.zoogame-root .zoo-menu-section h2 {
   display:inline-flex; align-items:center;
   margin: 0 0 10px; padding:6px 16px; border-radius:999px; background:rgba(255,250,235,.82);
   color: #173b2b;
@@ -738,14 +738,14 @@
   font-weight: 900;
 }
 
-.zoo-menu-grid {
+.zoogame-root .zoo-menu-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
   width: 100%;
 }
 
-.zoo-menu-grid button {
+.zoogame-root .zoo-menu-grid button {
   min-height: 86px;
   padding: 15px;
   border: 1px solid rgba(255, 255, 255, 0.9);
@@ -760,20 +760,20 @@
   transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
-.zoo-menu-grid button:hover,
-.zoo-menu-grid button.selected {
+.zoogame-root .zoo-menu-grid button:hover,
+.zoogame-root .zoo-menu-grid button.selected {
   transform: translateY(-3px);
   background: rgba(255, 255, 255, 0.94);
   box-shadow: 0 12px 24px rgba(80, 70, 35, 0.14);
 }
 
-.zoo-menu-grid button.selected {
+.zoogame-root .zoo-menu-grid button.selected {
   border: 3px solid #c4862e;
   background: #fff3cf;
   box-shadow:0 10px 24px rgba(120,80,25,.20),0 0 0 4px rgba(196,134,46,.16),inset 0 1px 0 rgba(255,255,255,.9);
 }
 
-.zoo-menu-grid button small {
+.zoogame-root .zoo-menu-grid button small {
   display: block;
   margin-top: 5px;
   color: #55705d;
@@ -781,7 +781,7 @@
   font-weight: 600;
 }
 
-.zoo-menu-start {
+.zoogame-root .zoo-menu-start {
   position: relative;
   z-index: 2;
   display: inline-flex;
@@ -832,13 +832,13 @@
 .zoogame-root.zoo-theme-jungle .zoo-menu-grid button { color: #173b2b; }
 
 @media (max-width: 600px) {
-  .zoo-main-menu { padding: 25px 15px 30px; }
-  .zoo-menu-hero { padding:14px 16px; }
-  .zoo-menu-grid { grid-template-columns: repeat(2, 1fr); gap: 9px; }
-  .zoo-menu-grid button { min-height: 80px; padding: 10px; font-size: 13px; }
-  .zoo-menu-hero h1 { font-size: 38px; }
-  .zoo-menu-hero > p:last-child { font-size: 15px; }
-  .zoo-menu-start { width: 90%; min-width: 0; padding: 15px 25px; font-size: 18px; }
+  .zoogame-root .zoo-main-menu { padding: 25px 15px 30px; }
+  .zoogame-root .zoo-menu-hero { padding:14px 16px; }
+  .zoogame-root .zoo-menu-grid { grid-template-columns: repeat(2, 1fr); gap: 9px; }
+  .zoogame-root .zoo-menu-grid button { min-height: 80px; padding: 10px; font-size: 13px; }
+  .zoogame-root .zoo-menu-hero h1 { font-size: 38px; }
+  .zoogame-root .zoo-menu-hero > p:last-child { font-size: 15px; }
+  .zoogame-root .zoo-menu-start { width: 90%; min-width: 0; padding: 15px 25px; font-size: 18px; }
 }
 
 .zoogame-root.zoo-theme-ocean .game-wrapper {

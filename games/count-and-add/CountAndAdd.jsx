@@ -289,4 +289,9 @@ const COUNT_ADD_STYLES = `
   .count-add-game__card { min-height:0; border-radius:22px; padding:18px 12px; }
   .count-add-game__equation { margin-bottom:14px; }
 }
+@media (max-width:600px) and (orientation:portrait) {
+  .count-add-game--welcome { background-image:url('/assets/games/count-and-add/count-and-add-welcome-phone-bg.webp'); }
+  .count-add-game--menu { background-image:url('/assets/games/count-and-add/count-and-add-main-menu-phone-bg.webp'); }
+  .count-add-game--play { background-image:url('/assets/games/count-and-add/count-and-add-game-bg-phone.webp'); }
+}
 `;

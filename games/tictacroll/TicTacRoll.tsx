@@ -444,10 +444,39 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
 
       {/* WELCOME SCREEN */}
       {screen === "welcome" && (
-        <div style={{ position: "relative", width: "100%", height: "100%", minHeight: "100%", backgroundImage: `url(${welcomeBackground})`, backgroundPosition: "center", backgroundSize: "cover", backgroundRepeat: "no-repeat" }}>
-          <button aria-label="Play Now" onClick={() => { tone(500, 0.08, 0.07); setScreen("setup"); }} style={{ position: "absolute", left: "37.2%", top: "66.2%", width: "25.8%", height: "13.5%", border: 0, background: "transparent", cursor: "pointer" }} />
-          <button aria-label="How to Play" onClick={() => { tone(500, 0.08, 0.07); setScreen("howtoplay"); }} style={{ position: "absolute", left: "37.8%", top: "82.5%", width: "24.5%", height: "10.5%", border: 0, background: "transparent", cursor: "pointer" }} />
-        </div>
+        <div style={{
+            position: "relative",
+            width: "100%",
+            height: "100%",
+            minHeight: "100%",
+            backgroundImage: `url(${welcomeBackground})`,
+            backgroundPosition: "center",
+            backgroundSize: "cover",
+            backgroundRepeat: "no-repeat",
+          }}>
+            <button aria-label="Play Now" onClick={() => { tone(500, 0.08, 0.07); setScreen("setup"); }} style={{
+              position: "absolute",
+              left: isPortraitPhone ? "23.5%" : "37.2%",
+              top: isPortraitPhone ? "53.5%" : "66.2%",
+              width: isPortraitPhone ? "53%" : "25.8%",
+              height: isPortraitPhone ? "9%" : "13.5%",
+              border: 0,
+              background: "transparent",
+              cursor: "pointer",
+              touchAction: "manipulation",
+            }} />
+            <button aria-label="How to Play" onClick={() => { tone(500, 0.08, 0.07); setScreen("howtoplay"); }} style={{
+              position: "absolute",
+              left: isPortraitPhone ? "26%" : "37.8%",
+              top: isPortraitPhone ? "62.8%" : "82.5%",
+              width: isPortraitPhone ? "48%" : "24.5%",
+              height: isPortraitPhone ? "7.5%" : "10.5%",
+              border: 0,
+              background: "transparent",
+              cursor: "pointer",
+              touchAction: "manipulation",
+            }} />
+          </div>
       )}
 
       {/* SETUP SCREEN */}

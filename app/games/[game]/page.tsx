@@ -56,6 +56,27 @@ interface LanguageTowerHud {
   againstAI: boolean;
 }
 
+interface TracingTrialsHud {
+  screen: 'player' | 'menu' | 'game';
+  character: string;
+  mode: 'letters' | 'numbers' | 'mixed';
+  totalStars: number;
+  done: number;
+  total: number;
+  upper: boolean;
+  sound: boolean;
+  showGuide: boolean;
+  canSwitchCase: boolean;
+}
+
+interface FryTheEggHud {
+  screen: string;
+  round: number;
+  scores: [number, number];
+  playerNames: [string, string];
+  muted: boolean;
+}
+
 function getCatalogShellTheme(gameId: string) {
   const accent = GAME_CATALOG[gameId]?.barColor ?? '#64748b';
   return {
@@ -81,6 +102,9 @@ const GAMES_WITH_WELCOME = new Set([
   'generalknowledgequiz',
   'alphabethunt', 'buildtower', 'whatsmissing', 'angryverbs', 'miniracer', 'burgerrun',
   'colourclash2', 'zoogame',
+  'tracingtrials',
+  'frytheegg',
+  'hiddentreasure',
   'volcanoescape',
   'languagetower',
   'duelofthevoid',
@@ -99,6 +123,8 @@ export default function GamePage() {
   const [airPuckHud, setAirPuckHud] = useState<AirPuckHud | null>(null);
   const [blockFightHud, setBlockFightHud] = useState<BlockFightHud | null>(null);
   const [languageTowerHud, setLanguageTowerHud] = useState<LanguageTowerHud | null>(null);
+  const [tracingTrialsHud, setTracingTrialsHud] = useState<TracingTrialsHud | null>(null);
+  const [fryTheEggHud, setFryTheEggHud] = useState<FryTheEggHud | null>(null);
   // Connect 4 hands its in-match HUD (player badges + reset/home) up here so
   // it can render inside the GameShell navbar instead of the play area.
   const [c4Hud, setC4Hud] = useState<any>(null);
@@ -269,6 +295,8 @@ export default function GamePage() {
     ? (state.name.trim() && state.name !== 'Explorer' ? state.name.trim() : auth.currentUser.displayName?.trim() ?? '')
     : '';
   const isAirPuck = gameId === 'airpuck';
+  const isTracingTrials = gameId === 'tracingtrials';
+  const isFryTheEgg = gameId === 'frytheegg';
   const isBlockFight = gameId === 'blockfight';
   const isConnect4 = gameId === 'connect4';
   const isReadingRescue = gameId === 'finnthefox';
@@ -372,13 +400,19 @@ export default function GamePage() {
     setC4Hud(null);
     setAirPuckHud(null);
     setBlockFightHud(null);
+    setTracingTrialsHud(null);
+    setFryTheEggHud(null);
     setGameSession(session => session + 1);
   }
 
   function handleMainMenu() {
     setResult(null);
     setC4Hud(null);
-    if (isAirPuck) {
+    if (gameId === 'tracingtrials') {
+      window.dispatchEvent(new Event('tracing-trials:main-menu'));
+    } else if (gameId === 'frytheegg') {
+      window.dispatchEvent(new Event('fry-the-egg:main-menu'));
+    } else if (isAirPuck) {
       setAirPuckHud(null);
       window.dispatchEvent(new Event('air-puck:main-menu'));
     } else if (isBlockFight) {
@@ -563,6 +597,7 @@ export default function GamePage() {
         onMainMenu={handleMainMenu}
         hideMainMenuButton={gameId === 'dragonslingshot'}
         hidePauseControl={isFlagmaster || (isAirPuck && airPuckHud?.mode === 'card')}
+        hideSoundControl={isTracingTrials || isFryTheEgg}
         hideExitControl={false}
         controls={null}
         themeVars={shellThemeVars}
@@ -571,6 +606,82 @@ export default function GamePage() {
         onThemeChange={isTicTacRoll ? themeId => setTicTheme(TIC_TAC_ROLL_THEMES.find(theme => theme.id === themeId) ?? TIC_TAC_ROLL_THEMES[0]) : isAlphabetHunt ? setAlphabetTheme : isWordFusion ? setWordFusionTheme : isZooGame ? setZooTheme : isWhatsMissing ? setWhatsMissingTheme : isMoneyBlocks ? setMoneyBlocksTheme : isFindMyFood || isEmojiMatch ? setFindMyFoodTheme : undefined}
         headerExtra={
           <>
+            {isTracingTrials && tracingTrialsHud?.screen === 'game' && (
+              <span className="game-shell-topbar-stats" aria-label="Tracing Trials controls">
+                <span className="game-shell-topbar-stat">
+                  <b>{tracingTrialsHud.mode === 'mixed' ? 'Mixed' : tracingTrialsHud.mode === 'numbers' ? 'Number' : 'Letter'} {tracingTrialsHud.character}</b>
+                </span>
+                <span className="game-shell-topbar-stat"><b>⭐ {tracingTrialsHud.totalStars}</b></span>
+                {tracingTrialsHud.canSwitchCase && (
+                  <button
+                    type="button"
+                    className="game-shell-header-action"
+                    onClick={() => window.dispatchEvent(new Event('tracing-trials:toggle-case'))}
+                    aria-label="Switch letter case"
+                    title="Switch letter case"
+                  >
+                    {tracingTrialsHud.upper ? 'aA' : 'Aa'}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="game-shell-header-action"
+                  onClick={() => window.dispatchEvent(new Event('tracing-trials:toggle-guide'))}
+                  aria-label={tracingTrialsHud.showGuide ? 'Hide tracing route' : 'Show tracing route'}
+                  aria-pressed={tracingTrialsHud.showGuide}
+                  title={tracingTrialsHud.showGuide ? 'Hide tracing route' : 'Show tracing route'}
+                >
+                  {tracingTrialsHud.showGuide ? '⋯→' : 'Route'}
+                </button>
+                <button
+                  type="button"
+                  className="game-shell-header-action"
+                  onClick={() => window.dispatchEvent(new Event('tracing-trials:undo'))}
+                  aria-label="Undo last stroke"
+                  title="Undo last stroke"
+                >
+                  ↶
+                </button>
+                <button
+                  type="button"
+                  className="game-shell-header-action"
+                  onClick={() => window.dispatchEvent(new Event('tracing-trials:clear'))}
+                  aria-label="Clear tracing"
+                  title="Clear tracing"
+                >
+                  🧽
+                </button>
+                <button
+                  type="button"
+                  className="game-shell-header-action"
+                  onClick={() => window.dispatchEvent(new Event('tracing-trials:toggle-sound'))}
+                  aria-label={tracingTrialsHud.sound ? 'Turn tracing sounds off' : 'Turn tracing sounds on'}
+                  title={tracingTrialsHud.sound ? 'Turn tracing sounds off' : 'Turn tracing sounds on'}
+                >
+                  {tracingTrialsHud.sound ? '🔊' : '🔇'}
+                </button>
+              </span>
+            )}
+            {isFryTheEgg && fryTheEggHud && (
+              <span className="game-shell-topbar-stats" aria-label="Fry the Egg match status">
+                {fryTheEggHud.screen !== 'menu' && (
+                  <>
+                    <span className="game-shell-topbar-stat"><b>Round {fryTheEggHud.round}</b></span>
+                    <span className="game-shell-topbar-stat"><b>🔵 {fryTheEggHud.scores[0]}</b><span>{fryTheEggHud.playerNames[0]}</span></span>
+                    <span className="game-shell-topbar-stat"><b>🔴 {fryTheEggHud.scores[1]}</b><span>{fryTheEggHud.playerNames[1]}</span></span>
+                  </>
+                )}
+                <button
+                  type="button"
+                  className="game-shell-header-action"
+                  onClick={() => window.dispatchEvent(new Event('fry-the-egg:toggle-sound'))}
+                  aria-label={fryTheEggHud.muted ? 'Unmute sounds' : 'Mute sounds'}
+                  title={fryTheEggHud.muted ? 'Unmute sounds' : 'Mute sounds'}
+                >
+                  {fryTheEggHud.muted ? '🔇' : '🔊'}
+                </button>
+              </span>
+            )}
             {isAirPuck && airPuckHud && (
               <span className="game-shell-topbar-stats" aria-label="Air Puck controls" style={{ maxWidth: '58vw' }}>
                 <span className="game-shell-topbar-stat" aria-label={`${airPuckHud.name} ${airPuckHud.playerScore}, AI ${airPuckHud.aiScore}`}>
@@ -686,6 +797,36 @@ export default function GamePage() {
         ]}
         mobileMenuExtra={
           <>
+            {isTracingTrials && tracingTrialsHud?.screen === 'game' && (
+              <>
+                <button type="button" role="menuitemcheckbox" onClick={() => window.dispatchEvent(new Event('tracing-trials:toggle-guide'))} aria-checked={tracingTrialsHud.showGuide}>
+                  <span aria-hidden="true">⋯→</span>
+                  <span>{tracingTrialsHud.showGuide ? 'Hide tracing route' : 'Show tracing route'}</span>
+                  <small>{tracingTrialsHud.showGuide ? 'On' : 'Off'}</small>
+                </button>
+                {tracingTrialsHud.canSwitchCase && (
+                  <button type="button" role="menuitem" onClick={() => window.dispatchEvent(new Event('tracing-trials:toggle-case'))}>
+                    <span aria-hidden="true">Aa</span><span>Switch letter case</span>
+                  </button>
+                )}
+                <button type="button" role="menuitem" onClick={() => window.dispatchEvent(new Event('tracing-trials:undo'))}>
+                  <span aria-hidden="true">↶</span><span>Undo last stroke</span>
+                </button>
+                <button type="button" role="menuitem" onClick={() => window.dispatchEvent(new Event('tracing-trials:clear'))}>
+                  <span aria-hidden="true">🧽</span><span>Clear tracing</span>
+                </button>
+                <button type="button" role="menuitem" onClick={() => window.dispatchEvent(new Event('tracing-trials:toggle-sound'))}>
+                  <span aria-hidden="true">{tracingTrialsHud.sound ? '🔊' : '🔇'}</span>
+                  <span>{tracingTrialsHud.sound ? 'Turn tracing sounds off' : 'Turn tracing sounds on'}</span>
+                </button>
+              </>
+            )}
+            {isFryTheEgg && fryTheEggHud && (
+              <button type="button" role="menuitem" onClick={() => window.dispatchEvent(new Event('fry-the-egg:toggle-sound'))}>
+                <span aria-hidden="true">{fryTheEggHud.muted ? '🔇' : '🔊'}</span>
+                <span>{fryTheEggHud.muted ? 'Unmute sounds' : 'Mute sounds'}</span>
+              </button>
+            )}
             {isAirPuck && airPuckHud && (
               <>
                 <label className="game-shell-mobile-menu-theme">
@@ -853,6 +994,8 @@ export default function GamePage() {
               {...(isAirPuck ? { onHudUpdate: setAirPuckHud } : {})}
               {...(isBlockFight ? { onHudUpdate: setBlockFightHud } : {})}
               {...(gameId === 'languagetower' ? { onHudUpdate: setLanguageTowerHud } : {})}
+              {...(isTracingTrials ? { onHudUpdate: setTracingTrialsHud } : {})}
+              {...(isFryTheEgg ? { onHudUpdate: setFryTheEggHud } : {})}
               {...(isAnimalClass ? { onHudUpdate: setAnimalClassHud } : {})}
               {...(isFlagmaster ? { darkMode: flagDarkMode, isCreator } : {})}
               {...(isZooGame ? { themeId: zooTheme } : {})}

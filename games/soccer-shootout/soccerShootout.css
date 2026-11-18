@@ -1,0 +1,494 @@
+.soccer-shootout {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  background-color: #168b20;
+  background-image: url("/assets/games/soccer-shootout/stadium-background.png");
+  background-position: center center;
+  background-size: cover;
+  color: #fff;
+  font-family: var(--font-display, "Arial", sans-serif);
+}
+
+.ss-scoreboard {
+  position: absolute;
+  z-index: 3;
+  top: 16px;
+  left: 50%;
+  display: grid;
+  justify-items: center;
+  min-width: 240px;
+  padding: 10px 24px 9px;
+  transform: translateX(-50%);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 16px;
+  background: rgba(8, 24, 44, 0.82);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+  text-align: center;
+}
+
+.ss-match-label,
+.ss-shot-count {
+  font-size: 0.67rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+}
+
+.ss-match-label {
+  color: #b7f46d;
+}
+
+.ss-match-label span {
+  margin-right: 5px;
+}
+
+.ss-score-line {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 1px 0;
+}
+
+.ss-score-line strong {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 1.8rem;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+
+.ss-score-line strong span,
+.ss-team-name {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.ss-team-name {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.ss-shot-count {
+  color: #ffe98a;
+}
+
+.ss-live-message {
+  position: absolute;
+  z-index: 3;
+  top: 55%;
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 180px;
+  padding: 7px 15px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: rgba(8, 24, 44, 0.72);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-align: center;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.55);
+}
+
+.ss-live-message strong {
+  color: #c7ff70;
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+}
+
+.ss-live-message .is-result {
+  color: #fff08a;
+  font-size: 1.1rem;
+  font-weight: 1000;
+  letter-spacing: 0.16em;
+}
+
+.ss-goal-targets {
+  position: absolute;
+  z-index: 2;
+  top: 28%;
+  left: 34%;
+  display: grid;
+  width: 32%;
+  height: 23%;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.ss-goal-target {
+  display: grid;
+  place-items: center;
+  padding: 5px;
+  border: 0;
+  border-right: 1px dashed rgba(255, 255, 255, 0.4);
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 140ms ease, box-shadow 140ms ease;
+}
+
+.ss-goal-target:last-child {
+  border-right: 0;
+}
+
+.ss-goal-target span {
+  padding: 4px 7px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 999px;
+  background: rgba(8, 24, 44, 0.6);
+  font-size: clamp(0.48rem, 0.8vw, 0.72rem);
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  opacity: 0;
+  transition: opacity 140ms ease, transform 140ms ease;
+}
+
+.ss-goal-target:hover,
+.ss-goal-target:focus-visible,
+.ss-goal-target.is-selected {
+  background: rgba(185, 255, 78, 0.2);
+  box-shadow: inset 0 0 22px rgba(210, 255, 103, 0.34);
+}
+
+.ss-goal-target:hover span,
+.ss-goal-target:focus-visible span,
+.ss-goal-target.is-selected span {
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+.ss-goal-target:focus-visible,
+.ss-aim-button:focus-visible,
+.ss-shoot-button:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
+
+.ss-goal-target:disabled {
+  cursor: default;
+}
+
+.ss-keeper {
+  position: absolute;
+  z-index: 1;
+  top: 41%;
+  display: grid;
+  width: 180px;
+  height: 200px;
+  left: var(--keeper-position);
+  transform: translate(-50%, -50%);
+  background-image: url("/assets/games/soccer-shootout/goalkeeper-sprites-v2.png");
+  background-repeat: no-repeat;
+  background-size: 500% 300%;
+  transition: left 260ms cubic-bezier(0.2, 0.8, 0.2, 1), transform 260ms ease;
+  pointer-events: none;
+}
+
+.ss-keeper--ready {
+  background-position: 50% 0%;
+}
+
+.ss-keeper--dive-left,
+.ss-keeper--dive-right {
+  background-position: 0% 50%;
+}
+
+.ss-keeper--dive-center {
+  background-position: 25% 50%;
+}
+
+.ss-keeper--save-left {
+  background-position: 50% 50%;
+}
+
+.ss-keeper--save-center {
+  background-position: 75% 50%;
+}
+
+.ss-keeper--save-right {
+  background-position: 100% 50%;
+}
+
+.ss-keeper--celebrate {
+  background-position: 25% 100%;
+}
+
+.ss-keeper--disappointed {
+  background-position: 0% 100%;
+}
+
+.ss-keeper.is-diving {
+  transform: translate(-50%, -50%) rotate(-10deg) scale(1.08);
+}
+
+.ss-keeper--dive-right.is-diving {
+  transform: translate(-50%, -50%) scaleX(-1) rotate(-10deg) scale(1.08);
+}
+
+.ss-ball {
+  position: absolute;
+  z-index: 2;
+  top: 68%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  filter: drop-shadow(0 8px 5px rgba(0, 0, 0, 0.45));
+  pointer-events: none;
+}
+
+.ss-ball.is-kicking {
+  animation: ss-kick 850ms cubic-bezier(0.2, 0.68, 0.32, 1) forwards;
+}
+
+@keyframes ss-kick {
+  0% {
+    left: 50%;
+    top: 68%;
+    transform: translate(-50%, -50%) rotate(0) scale(1);
+  }
+  72% {
+    left: var(--shot-x);
+    top: var(--shot-y);
+    transform: translate(-50%, -50%) rotate(510deg) scale(0.52);
+  }
+  100% {
+    left: var(--shot-x);
+    top: var(--shot-y);
+    transform: translate(-50%, -50%) rotate(650deg) scale(0.42);
+  }
+}
+
+.ss-controls {
+  position: absolute;
+  z-index: 4;
+  right: 12px;
+  bottom: 46px;
+  left: 12px;
+  display: grid;
+  justify-items: center;
+  gap: 9px;
+}
+
+.ss-aim-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.ss-aim-button,
+.ss-shoot-button {
+  min-height: 42px;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 12px;
+  color: #fff;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: transform 120ms ease, background-color 120ms ease, opacity 120ms ease;
+}
+
+.ss-aim-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 108px;
+  padding: 7px 12px;
+  background: rgba(8, 24, 44, 0.84);
+}
+
+.ss-aim-button kbd {
+  display: grid;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.19);
+  color: #d7ff9a;
+  font: inherit;
+}
+
+.ss-aim-button:hover:not(:disabled),
+.ss-shoot-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.ss-aim-button.is-selected {
+  border-color: #e6ff9a;
+  background: rgba(68, 118, 24, 0.94);
+  box-shadow: 0 0 16px rgba(213, 255, 103, 0.38);
+}
+
+.ss-shoot-button {
+  min-width: 192px;
+  padding: 10px 24px;
+  border-color: #e9ffad;
+  background: linear-gradient(180deg, #c0f45c, #5cae20);
+  box-shadow: 0 5px 0 #347716, 0 8px 18px rgba(0, 0, 0, 0.25);
+  color: #153409;
+  font-size: 1rem;
+}
+
+.ss-shoot-button:disabled,
+.ss-aim-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.ss-hint {
+  margin: 0;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(8, 24, 44, 0.62);
+  color: rgba(255, 255, 255, 0.94);
+  font-size: 0.67rem;
+  font-weight: 700;
+}
+
+.ss-shot-dots {
+  position: absolute;
+  z-index: 4;
+  right: 18px;
+  bottom: 16px;
+  left: 18px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.ss-shot-dot {
+  display: grid;
+  width: 25px;
+  height: 25px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: 50%;
+  background: rgba(8, 24, 44, 0.72);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.ss-shot-dot.is-goal {
+  border-color: #c6fa72;
+  background: #347d1c;
+}
+
+.ss-shot-dot.is-saved {
+  border-color: #ffd2c9;
+  background: #a63530;
+}
+
+@media (max-width: 640px) {
+  .soccer-shootout {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    border: 0;
+    border-radius: 0;
+    background-position: center center;
+  }
+
+  .ss-scoreboard {
+    top: 10px;
+    min-width: 205px;
+    padding: 8px 18px 7px;
+  }
+
+  .ss-score-line strong {
+    font-size: 1.5rem;
+  }
+
+  .ss-live-message {
+    top: 20%;
+    max-width: calc(100% - 24px);
+    font-size: 0.75rem;
+  }
+
+  .ss-goal-targets {
+    top: 28%;
+    left: 26%;
+    width: 48%;
+    height: 23%;
+  }
+
+  .ss-keeper {
+    top: 41%;
+    width: 126px;
+    height: 140px;
+  }
+
+  .ss-keeper-position--left {
+    --keeper-position: 34%;
+  }
+
+  .ss-keeper-position--right {
+    --keeper-position: 66%;
+  }
+
+  .ss-ball {
+    top: 68%;
+  }
+
+  @keyframes ss-kick {
+    0% {
+      left: 50%;
+      top: 68%;
+      transform: translate(-50%, -50%) rotate(0) scale(1);
+    }
+    100% {
+      left: var(--shot-x);
+      top: var(--shot-y);
+      transform: translate(-50%, -50%) rotate(650deg) scale(0.42);
+    }
+  }
+
+  .ss-controls {
+    bottom: 48px;
+    gap: 8px;
+  }
+
+  .ss-aim-controls {
+    width: min(100%, 370px);
+    gap: 5px;
+  }
+
+  .ss-aim-button {
+    flex: 1;
+    min-width: 0;
+    padding: 7px 5px;
+    font-size: 0.66rem;
+  }
+
+  .ss-hint {
+    font-size: 0.58rem;
+  }
+
+  .ss-shot-dots {
+    bottom: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ss-keeper,
+  .ss-goal-target,
+  .ss-goal-target span,
+  .ss-aim-button,
+  .ss-shoot-button {
+    transition: none;
+  }
+
+  .ss-ball.is-kicking {
+    animation-duration: 1ms;
+  }
+}

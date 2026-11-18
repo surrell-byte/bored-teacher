@@ -435,6 +435,9 @@ test('new game backgrounds follow screen state and reserve phone art for portrai
   const zooGame = read('games/zoo-game/ZooGame.jsx');
   const zooStyles = read('games/zoo-game/styles/zooGame.css');
   const gameRoute = read('app/games/[game]/page.tsx');
+  const airPuck = read('AirPuck.jsx');
+  const ticTacRoll = read('games/tictacroll/TicTacRoll.tsx');
+  const countAdd = read('games/count-and-add/CountAndAdd.jsx');
 
   assert.match(colourClash, /data-screen="welcome"[\s\S]*colour-clash-2-welcome-bg\.webp/);
   assert.match(colourClash, /data-screen="setup"[\s\S]*colour-clash-2-user-input-bg\.webp/);
@@ -442,7 +445,25 @@ test('new game backgrounds follow screen state and reserve phone art for portrai
   assert.match(colourClash, /data-screen="game"[\s\S]*colour-clash-2-game-screen-bg\.webp/);
   assert.match(zooGame, /const \[showWelcome, setShowWelcome\] = useState\(true\)/);
   assert.match(zooGame, /aria-label="Start Zoo Game"/);
+  assert.doesNotMatch(zooGame, /<h1>Zoo Game<\/h1>/);
   assert.match(zooStyles, /@media \(max-width: 600px\) and \(orientation: portrait\)[\s\S]*zoo-game-welcome-phone-bg\.webp[\s\S]*top: 34%;[\s\S]*height: 10%/);
+  assert.match(zooStyles, /\.zoogame-root \.game-wrapper \{[\s\S]*zoo-game-game-bg\.webp/);
+  assert.match(zooStyles, /\.zoogame-root \.option-btn:disabled \{\s*opacity: 1;/);
+  assert.match(airPuck, /@media \(max-width:700px\) and \(orientation:portrait\)\{[\s\S]*?air-puck-welcome-bg-phone\.webp/);
+  assert.match(ticTacRoll, /width: "100%",\s+height: "100%",\s+minHeight: "100%"/);
+  assert.match(ticTacRoll, /top: isPortraitPhone \? "53\.5%" : "66\.2%"/);
+  assert.match(ticTacRoll, /top: isPortraitPhone \? "62\.8%" : "82\.5%"/);
+  assert.match(countAdd, /count-and-add-welcome-phone-bg\.webp/);
+  assert.match(countAdd, /count-and-add-main-menu-phone-bg\.webp/);
+  assert.match(countAdd, /count-and-add-game-bg-phone\.webp/);
+  for (const asset of [
+    'public/games/air-puck/air-puck-welcome-bg-phone.webp',
+    'public/assets/games/count-and-add/count-and-add-welcome-phone-bg.webp',
+    'public/assets/games/count-and-add/count-and-add-main-menu-phone-bg.webp',
+    'public/assets/games/count-and-add/count-and-add-game-bg-phone.webp',
+  ]) {
+    assert.ok(fs.existsSync(path.join(root, asset)), `${asset} exists`);
+  }
   assert.match(gameRoute, /'colourclash2', 'zoogame'/);
 });
 
@@ -974,7 +995,6 @@ test('Emoji Category Sort has category rounds and all requested game screens', a
   assert.ok(EMOJI_CATEGORIES.flatMap((category) => category.items).some((item) => item.word === 'Train' && item.emoji === '🚆'));
   assert.match(catalog, /emojicategories:\s*\{\s*name: "Emoji Category Sort"[\s\S]*?hasComponent: true/);
   const catalogKeys = [...catalog.matchAll(/^  ([a-z][\w]*): \{/gm)].map((match) => match[1]);
-  assert.equal(catalogKeys.at(-1), 'emojicategories');
   assert.ok(catalogKeys.slice(-4).includes('emojicategories'));
   assert.match(componentCatalog, /emojicategories: lazyGame\('emojicategories', \(\) => import\('@\/games\/emoji-category-sort\/EmojiCategorySort\.jsx'\)\)/);
   assert.match(route, /'emojicategories'/);

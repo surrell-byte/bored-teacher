@@ -14,8 +14,12 @@ test('Air Puck card mode schedules AI turns, reveals cards, and animates doubled
   assert.doesNotMatch(component, /<canvas\b|createElement\(['"]canvas['"]\)/);
   assert.match(component, /className="welcome-hitbox"[^>]*aria-label="Start Air Puck"/);
   assert.match(component, /\.playfield\{position:absolute;inset:0;width:100%;height:100%;overflow:hidden/);
-  assert.equal((component.match(/className="sprite sprite-mallet"/g) || []).length, 4);
+  assert.equal((component.match(/className="sprite sprite-mallet (?:ai|player)-mallet"/g) || []).length, 4);
   assert.match(component, /\.sprite-mallet\{width:10\.4cqw/);
+  assert.match(component, /\.sprite-mallet\.player-mallet\{width:11\.7cqw/);
+  assert.match(component, /\.sprite-mallet\.player-mallet\{width:11\.7cqh/);
+  assert.match(component, /welcomePhone: "\/games\/air-puck\/air-puck-welcome-bg-phone\.webp"/);
+  assert.match(component, /@media \(max-width:700px\) and \(orientation:portrait\)\{[\s\S]*air-puck-welcome-bg-phone\.webp/);
   assert.match(component, /\.sprite-puck\{width:4\.2cqw/);
   assert.match(component, /r: 84/);
   assert.match(component, /r: 34/);
@@ -52,6 +56,7 @@ test('Air Puck card mode schedules AI turns, reveals cards, and animates doubled
 
   for (const asset of [
     'air-puck-welcome-screen-bg.webp',
+    'air-puck-welcome-bg-phone.webp',
     'air-puck-user-input-bg.webp',
     'air-puck-main-menu-bg.webp',
     'air-hockey-game-screen-bg.webp',

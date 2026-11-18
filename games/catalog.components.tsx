@@ -46,6 +46,7 @@ export type GameComponentProps = {
 
 export const GAME_COMPONENTS: Partial<Record<string, React.LazyExoticComponent<React.ComponentType<any>>>> = {
   bowlingbattle: lazyGame('bowlingbattle', () => import('@/games/bowling-battle/BowlingBattle.jsx')),
+  soccershootout: lazyGame('soccershootout', () => import('@/games/soccer-shootout/SoccerShootout.jsx')),
   duelofthevoid: lazyGame('duelofthevoid', () => import('@/games/duel-of-the-void/DuelOfTheVoid.jsx')),
   airpuck: lazyGame('airpuck', () => import('@/AirPuck.jsx')),
   alphabethunt: lazyGame('alphabethunt', () => import('@/games/alphabet-hunt/AlphabetHunt')),
@@ -144,4 +145,8 @@ export const GAME_COMPONENTS: Partial<Record<string, React.LazyExoticComponent<R
   whatsmissing: lazyGame('whatsmissing', () => import('@/games/whats-missing/WhatsMissing.jsx')),
   wordquest: lazyGame('wordquest', () => import('@/games/word-quest/WordQuest.jsx')),
   burgerrun: lazyGame('burgerrun', () => import('@/games/burger-run/BurgerRun.jsx')),
+  frytheegg: lazyGame('frytheegg', () => import('@/games/fry-the-egg/FryTheEgg.jsx')),
+  tracingtrials: lazyGame('tracingtrials', () => import('@/games/tracing-trials/TracingTrials.jsx')),
+  hiddentreasure: lazyGame('hiddentreasure', () => import('@/games/hidden-treasure/HiddenTreasure.jsx')),
+  tidaldash: lazyGame('tidaldash', () => import('@/games/tidal-dash/TidalDash.jsx')),
 };

@@ -61,6 +61,7 @@ export interface GameShellProps {
   hideExitControl?: boolean;
   hideMainMenuButton?: boolean;
   hideHeader?: boolean;
+  hideSoundControl?: boolean;
   themeVars?: {
     nav: string;
     navRaised: string;
@@ -77,7 +78,7 @@ export interface GameShellProps {
  */
 export default function GameShell({
   gameId, title, icon, stats, controls, headerExtra, mobileMenuExtra, children, sessionKey = 0,
-  completion, onContinue, onRestart, onMainMenu, onSessionEvent, themeVars, hidePauseControl = false, hideExitControl = false, hideMainMenuButton = false, hideHeader = false,
+  completion, onContinue, onRestart, onMainMenu, onSessionEvent, themeVars, hidePauseControl = false, hideExitControl = false, hideMainMenuButton = false, hideHeader = false, hideSoundControl = false,
   themeOptions, themeValue, onThemeChange,
 }: GameShellProps) {
   const [paused, setPaused] = useState(false);
@@ -493,7 +494,7 @@ export default function GameShell({
                     </select>
                   </label>
                   {headerExtra}
-                  <button
+                  {!hideSoundControl && <button
                     type="button"
                     className="game-shell-header-action game-shell-mobile-secondary"
                     onClick={() => setSoundOn(value => !value)}
@@ -502,7 +503,7 @@ export default function GameShell({
                   >
                     <span aria-hidden="true">{soundOn ? '🔊' : '🔇'}</span>
                     <span className="game-shell-action-label">{shellLabel(soundOn ? 'Sound' : 'Sound off')}</span>
-                  </button>
+                  </button>}
                   <button
                     type="button"
                     className={`game-shell-header-action game-shell-recorder-control${recordingState === 'recording' ? ' is-recording' : ''}`}
@@ -582,11 +583,11 @@ export default function GameShell({
                             {themeOptions.map(theme => <option key={theme.id} value={theme.id}>{theme.name}</option>)}
                           </select>
                         </label>}
-                        <button type="button" role="menuitem" onClick={() => setSoundOn(value => !value)}>
+                        {!hideSoundControl && <button type="button" role="menuitem" onClick={() => setSoundOn(value => !value)}>
                           <span aria-hidden="true">{soundOn ? '🔊' : '🔇'}</span>
                           <span>{shellLabel('Sound')}</span>
                           <small>{shellLabel(soundOn ? 'On' : 'Off')}</small>
-                        </button>
+                        </button>}
                         <button
                           type="button"
                           role="menuitem"

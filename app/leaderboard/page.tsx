@@ -172,13 +172,7 @@ export default function LeaderboardPage() {
     <div className="lb-page">
 
       {/* ── Hero ──────────────────────────────────────────── */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'minmax(0, 1.15fr) minmax(280px, 0.85fr)',
-        gap: 20,
-        marginBottom: 20,
-        alignItems: 'start',
-      }}>
+      <div className="lb-hero">
         <div className="lb-hero-panel shell-card">
           <div className="lb-hero-eyebrow">Class Rankings</div>
           <div className="lb-hero-title">Leaderboard</div>
