@@ -125,11 +125,11 @@ export default function AnimalClassQuest({ onComplete, onHudUpdate }) {
       justifyContent:"center",...backgroundStyle,
       fontFamily:"'Segoe UI',sans-serif",color:"#ecfdf5",padding:24,textAlign:"center"}}>
       <div style={{fontSize:"3.5rem",marginBottom:8}}>🐾</div>
-      <h1 style={{fontSize:"2.2rem",margin:"0 0 6px",color:"#6ee7b7"}}>Animal Class Quest</h1>
-      <p style={{color:"#a7f3d0",marginBottom:8}}>Classify every creature!</p>
+      <h1 style={{fontSize:"2.2rem",margin:"0 0 6px",color:"#fff",textShadow:"0 2px 8px rgba(0,0,0,0.9), 0 0 18px rgba(0,0,0,0.75)"}}>Animal Class Quest</h1>
+      <p style={{color:"#fff",marginBottom:8,textShadow:"0 2px 6px rgba(0,0,0,0.95)"}}>Classify every creature!</p>
       <div style={{display:"flex",gap:8,flexWrap:"wrap",justifyContent:"center",marginBottom:32,fontSize:"0.8rem"}}>
         {CLASSES.map(c=>(
-          <span key={c} style={{background:"rgba(255,255,255,0.1)",padding:"4px 12px",borderRadius:999,color:"#d1fae5"}}>{c}</span>
+          <span key={c} style={{background:"rgba(4,26,38,0.82)",border:"1px solid rgba(255,255,255,0.4)",padding:"4px 12px",borderRadius:999,color:"#fff",fontWeight:700}}>{c}</span>
         ))}
       </div>
       <div style={{display:"flex",gap:14,flexWrap:"wrap",justifyContent:"center"}}>
@@ -182,8 +182,8 @@ export default function AnimalClassQuest({ onComplete, onHudUpdate }) {
           transition:"border 0.2s",
         }}>
           <div style={{fontSize:"clamp(3.2rem, 8vw, 6.5rem)",marginBottom:10}}>{current.emoji}</div>
-          <h2 style={{fontSize:"2rem",margin:"0 0 6px",color:"#6ee7b7"}}>{current.name}</h2>
-          {answered&&<p style={{color:"#a7f3d0",fontSize:"0.9rem",margin:0}}>{FACTS[current.cls]}</p>}
+          <h2 style={{fontSize:"2rem",margin:"0 0 6px",color:"#fff",textShadow:"0 2px 8px rgba(0,0,0,0.9)"}}>{current.name}</h2>
+          {answered&&<p style={{color:"#fff",fontSize:"0.9rem",margin:0,textShadow:"0 1px 5px rgba(0,0,0,0.9)"}}>{FACTS[current.cls]}</p>}
         </div>
 
         {/* Class buttons */}
@@ -195,7 +195,7 @@ export default function AnimalClassQuest({ onComplete, onHudUpdate }) {
               <button key={cls} onClick={()=>answer(cls)} style={{
                 padding:"clamp(13px,2vw,20px) clamp(16px,2vw,22px)",borderRadius:14,
                 cursor:answered?"default":"pointer",fontWeight:700,fontSize:"clamp(0.95rem,1.6vw,1.25rem)",
-                background:isRight?"#166534":isWrong?"#7f1d1d":"rgba(255,255,255,0.1)",
+                background:isRight?"#166534":isWrong?"#7f1d1d":"rgba(4,26,38,0.82)",
                 color:isRight?"#4ade80":isWrong?"#fca5a5":"#ecfdf5",
                 border:`2px solid ${isRight?"#22c55e":isWrong?"#ef4444":"transparent"}`,
                 transition:"all 0.15s",

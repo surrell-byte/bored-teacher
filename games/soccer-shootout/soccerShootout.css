@@ -16,6 +16,219 @@
   font-family: var(--font-display, "Arial", sans-serif);
 }
 
+.ss-screen {
+  position: absolute;
+  z-index: 8;
+  top: 50%;
+  left: 50%;
+  width: min(620px, calc(100% - 32px));
+  max-height: calc(100% - 32px);
+  overflow-y: auto;
+  padding: clamp(20px, 4vw, 34px);
+  transform: translate(-50%, -50%);
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-radius: 22px;
+  background: rgba(8, 24, 44, 0.94);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.38);
+  text-align: center;
+}
+
+.ss-screen-eyebrow,
+.ss-question-eyebrow {
+  margin: 0 0 8px;
+  color: #b7f46d;
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+}
+
+.ss-screen h1 {
+  margin: 0;
+  font-size: clamp(1.7rem, 5vw, 2.5rem);
+  line-height: 1.05;
+}
+
+.ss-screen-description {
+  max-width: 470px;
+  margin: 10px auto 22px;
+  color: rgba(255, 255, 255, 0.82);
+  line-height: 1.45;
+}
+
+.ss-mode-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.ss-mode-option {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  min-height: 156px;
+  padding: 18px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 140ms ease, background-color 140ms ease, transform 140ms ease;
+}
+
+.ss-mode-option:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.ss-mode-option.is-selected {
+  border-color: #c7ff70;
+  background: rgba(114, 166, 49, 0.26);
+  box-shadow: inset 0 0 20px rgba(199, 255, 112, 0.1);
+}
+
+.ss-mode-option strong {
+  font-size: 1.15rem;
+}
+
+.ss-mode-option > span:last-of-type {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.ss-mode-icon {
+  font-size: 1.7rem;
+}
+
+.ss-mode-option small {
+  color: #e5ffa2;
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+
+.ss-screen-primary,
+.ss-screen-secondary,
+.ss-player-count-button {
+  min-height: 42px;
+  border-radius: 11px;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: transform 120ms ease, background-color 120ms ease, opacity 120ms ease;
+}
+
+.ss-screen-primary:hover:not(:disabled),
+.ss-screen-secondary:hover,
+.ss-player-count-button:hover {
+  transform: translateY(-1px);
+}
+
+.ss-screen-primary {
+  min-width: 190px;
+  padding: 10px 22px;
+  border: 1px solid #e9ffad;
+  background: linear-gradient(180deg, #c0f45c, #5cae20);
+  box-shadow: 0 4px 0 #347716;
+  color: #153409;
+}
+
+.ss-screen-primary:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.ss-screen-secondary {
+  min-width: 116px;
+  padding: 9px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.ss-player-count {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 0 auto 18px;
+}
+
+.ss-player-count-button {
+  min-width: 130px;
+  padding: 8px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+}
+
+.ss-player-count-button.is-selected {
+  border-color: #c7ff70;
+  background: rgba(114, 166, 49, 0.28);
+  color: #e5ffa2;
+}
+
+.ss-player-inputs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+  text-align: left;
+}
+
+.ss-player-field {
+  display: grid;
+  gap: 7px;
+  color: #d8f6a0;
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+}
+
+.ss-player-field input {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 10px;
+  outline: none;
+  background: rgba(0, 0, 0, 0.24);
+  color: #fff;
+  font: inherit;
+  font-size: 0.9rem;
+  letter-spacing: normal;
+}
+
+.ss-player-field input:focus {
+  border-color: #c7ff70;
+  box-shadow: 0 0 0 3px rgba(199, 255, 112, 0.18);
+}
+
+.ss-player-field input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.ss-setup-rule {
+  margin: 0 auto 20px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.ss-screen-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.soccer-shootout.is-setup-screen {
+  background-image: url("/assets/games/soccer-shootout/overhead-background.png");
+}
+
 .ss-scoreboard {
   position: absolute;
   z-index: 3;
@@ -73,6 +286,10 @@
   font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.1em;
+  overflow: hidden;
+  max-width: 120px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .ss-shot-count {
@@ -111,6 +328,64 @@
   font-size: 1.1rem;
   font-weight: 1000;
   letter-spacing: 0.16em;
+}
+
+.ss-question-panel {
+  position: absolute;
+  z-index: 6;
+  top: 50%;
+  left: 50%;
+  width: min(560px, calc(100% - 28px));
+  max-height: calc(100% - 32px);
+  overflow-y: auto;
+  padding: clamp(18px, 3.5vw, 28px);
+  transform: translate(-50%, -50%);
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  border-radius: 20px;
+  background: rgba(8, 24, 44, 0.96);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.4);
+  text-align: center;
+}
+
+.ss-question-panel h2 {
+  margin: 0;
+  font-size: clamp(1.1rem, 3.5vw, 1.55rem);
+  line-height: 1.3;
+}
+
+.ss-question-feedback {
+  min-height: 1.3em;
+  margin: 10px 0 14px;
+  color: #dce8f1;
+  font-size: 0.82rem;
+}
+
+.ss-answer-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.ss-answer-option {
+  min-height: 44px;
+  padding: 9px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.ss-answer-option:hover {
+  border-color: #c7ff70;
+  background: rgba(199, 255, 112, 0.13);
+}
+
+.ss-answer-option.is-incorrect {
+  border-color: #ff9a8f;
+  background: rgba(166, 53, 48, 0.42);
 }
 
 .ss-goal-targets {
@@ -194,12 +469,16 @@
 }
 
 .ss-keeper--ready {
-  background-position: 50% 0%;
+  background-image: url("/assets/games/soccer-shootout/goalkeeper-anticipation.png");
+  background-position: center;
+  background-size: contain;
 }
 
 .ss-keeper--dive-left,
 .ss-keeper--dive-right {
-  background-position: 0% 50%;
+  background-image: url("/assets/games/soccer-shootout/goalkeeper-dive-left.png");
+  background-position: center;
+  background-size: contain;
 }
 
 .ss-keeper--dive-center {
@@ -207,31 +486,67 @@
 }
 
 .ss-keeper--save-left {
-  background-position: 50% 50%;
+  background-image: url("/assets/games/soccer-shootout/goalkeeper-save-left.png");
+  background-position: center;
+  background-size: contain;
 }
 
 .ss-keeper--save-center {
-  background-position: 75% 50%;
+  background-image: url("/assets/games/soccer-shootout/goalkeeper-save-center.png");
+  background-position: center;
+  background-size: contain;
 }
 
 .ss-keeper--save-right {
-  background-position: 100% 50%;
+  background-image: url("/assets/games/soccer-shootout/goalkeeper-save-left.png");
+  background-position: center;
+  background-size: contain;
 }
 
 .ss-keeper--celebrate {
-  background-position: 25% 100%;
+  background-image: url("/assets/games/soccer-shootout/goalkeeper-celebration.png");
+  background-position: center;
+  background-size: contain;
 }
 
 .ss-keeper--disappointed {
-  background-position: 0% 100%;
+  background-image: url("/assets/games/soccer-shootout/goalkeeper-defeated.png");
+  background-position: center;
+  background-size: contain;
 }
 
 .ss-keeper.is-diving {
-  transform: translate(-50%, -50%) rotate(-10deg) scale(1.08);
+  transition: left 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.ss-keeper--dive-right.is-diving {
-  transform: translate(-50%, -50%) scaleX(-1) rotate(-10deg) scale(1.08);
+.ss-keeper--dive-left.is-diving,
+.ss-keeper--save-left.is-diving {
+  animation: ss-keeper-jump-left 850ms cubic-bezier(0.2, 0.68, 0.32, 1) both;
+}
+
+.ss-keeper--dive-center.is-diving,
+.ss-keeper--save-center.is-diving {
+  animation: ss-keeper-jump-center 850ms cubic-bezier(0.2, 0.68, 0.32, 1) both;
+}
+
+.ss-keeper--dive-right.is-diving,
+.ss-keeper--save-right.is-diving {
+  animation: ss-keeper-jump-right 850ms cubic-bezier(0.2, 0.68, 0.32, 1) both;
+}
+
+@keyframes ss-keeper-jump-left {
+  0%, 100% { transform: translate(-50%, -50%) rotate(0) scale(1); }
+  38%, 72% { transform: translate(-50%, -67%) rotate(-10deg) scale(1.08); }
+}
+
+@keyframes ss-keeper-jump-center {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  38%, 72% { transform: translate(-50%, -78%) scale(1.08); }
+}
+
+@keyframes ss-keeper-jump-right {
+  0%, 100% { transform: translate(-50%, -50%) scaleX(-1) rotate(-10deg) scale(1); }
+  38%, 72% { transform: translate(-50%, -67%) scaleX(-1) rotate(-10deg) scale(1.08); }
 }
 
 .ss-ball {
@@ -364,6 +679,9 @@
   display: flex;
   justify-content: center;
   gap: 8px;
+  flex-wrap: wrap;
+  max-width: min(440px, calc(100% - 24px));
+  margin: 0 auto;
 }
 
 .ss-shot-dot {
@@ -377,6 +695,12 @@
   color: #fff;
   font-size: 0.72rem;
   font-weight: 900;
+}
+
+.ss-shot-dots--two-player .ss-shot-dot {
+  width: 21px;
+  height: 21px;
+  font-size: 0.65rem;
 }
 
 .ss-shot-dot.is-goal {
@@ -476,6 +800,64 @@
 
   .ss-shot-dots {
     bottom: 12px;
+  }
+
+  .ss-shot-dots--two-player {
+    gap: 4px;
+  }
+
+  .ss-mode-options {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .ss-mode-option {
+    grid-template-columns: 34px 1fr;
+    justify-items: start;
+    min-height: 88px;
+    padding: 12px;
+    text-align: left;
+  }
+
+  .ss-mode-icon {
+    grid-row: span 3;
+    align-self: center;
+  }
+
+  .ss-mode-option > span:last-of-type {
+    font-size: 0.76rem;
+  }
+
+  .ss-mode-option small {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+  }
+
+  .ss-player-count-button {
+    min-width: 0;
+    flex: 1;
+  }
+}
+
+@media (max-width: 760px) and (orientation: portrait) {
+  .soccer-shootout:not(.is-setup-screen) {
+    background-image: url("/assets/games/soccer-shootout/stadium-background-phone.png");
+  }
+}
+
+@media (max-width: 420px) {
+  .ss-screen-actions {
+    gap: 8px;
+  }
+
+  .ss-screen-actions .ss-screen-primary {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .ss-player-inputs {
+    grid-template-columns: 1fr;
   }
 }
 

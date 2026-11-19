@@ -60,6 +60,7 @@ export interface GameShellProps {
   hidePauseControl?: boolean;
   hideExitControl?: boolean;
   hideMainMenuButton?: boolean;
+  mainMenuInDropdownOnly?: boolean;
   hideHeader?: boolean;
   hideSoundControl?: boolean;
   themeVars?: {
@@ -78,7 +79,7 @@ export interface GameShellProps {
  */
 export default function GameShell({
   gameId, title, icon, stats, controls, headerExtra, mobileMenuExtra, children, sessionKey = 0,
-  completion, onContinue, onRestart, onMainMenu, onSessionEvent, themeVars, hidePauseControl = false, hideExitControl = false, hideMainMenuButton = false, hideHeader = false, hideSoundControl = false,
+  completion, onContinue, onRestart, onMainMenu, onSessionEvent, themeVars, hidePauseControl = false, hideExitControl = false, hideMainMenuButton = false, mainMenuInDropdownOnly = false, hideHeader = false, hideSoundControl = false,
   themeOptions, themeValue, onThemeChange,
 }: GameShellProps) {
   const [paused, setPaused] = useState(false);
@@ -528,7 +529,7 @@ export default function GameShell({
                     <span aria-hidden="true">⛶</span>
                     <span className="game-shell-action-label">{shellLabel(isFullscreen ? 'Exit full screen' : 'Full screen')}</span>
                   </button>
-                  {!hideMainMenuButton && onMainMenu && (
+                  {!hideMainMenuButton && !mainMenuInDropdownOnly && onMainMenu && (
                     <button type="button" className="game-shell-header-action game-shell-mobile-secondary" onClick={onMainMenu} aria-label={shellText('Main menu')} title={shellText('Main menu')}>
                       <span aria-hidden="true">⌂</span>
                       <span className="game-shell-action-label">{shellLabel('Main menu')}</span>

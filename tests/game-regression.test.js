@@ -42,6 +42,28 @@ test('selected games are restricted to creator access', () => {
   assert.match(gameCard, /creatorOnly \? 'Creator-only game' : 'Teacher Pro game'/);
 });
 
+test('work-in-progress games are marked coming soon and excluded from public listings', () => {
+  const access = read('config/game-access.ts');
+  const games = read('app/games/page.tsx');
+  const dashboard = read('app/hub/page.tsx');
+  const wipIds = access.match(/export const COMING_SOON_GAME_IDS = new Set\(\[([\s\S]*?)\]\);/);
+
+  assert.ok(wipIds, 'work-in-progress game IDs should be configured');
+  for (const gameId of ['airpuck', 'tidaldash', 'emojicategories', 'languagetower', 'angryverbs', 'wordquest']) {
+    assert.match(wipIds[1], new RegExp(`'${gameId}'`), `${gameId} should be in the work-in-progress list`);
+  }
+  assert.match(games, /comingSoon=\{COMING_SOON_GAME_IDS\.has\(gameId\)\}/);
+  assert.match(dashboard, /comingSoon=\{COMING_SOON_GAME_IDS\.has\(id\)\}/);
+});
+
+test('Animal Class Quest text uses strong contrast over its illustrated backgrounds', () => {
+  const component = read('games/animal-class-quest/AnimalClassQuest.jsx');
+
+  assert.match(component, /color:"#fff",textShadow:"0 2px 8px rgba\(0,0,0,0\.9\)/);
+  assert.match(component, /background:"rgba\(4,26,38,0\.82\)"/);
+  assert.match(component, /border:"1px solid rgba\(255,255,255,0\.4\)"/);
+});
+
 test('Know It All offers Chinese and Thai help through the shared game navbar', () => {
   const component = read('games/know-it-all/KnowItAll.jsx');
   const route = read('app/games/[game]/page.tsx');

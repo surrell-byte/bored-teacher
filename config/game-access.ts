@@ -30,6 +30,12 @@ export const COMING_SOON_GAME_IDS = new Set([
   'wgrandprix',
   'wordfusion',
   'shapebuilder',
+  'airpuck',
+  'tidaldash',
+  'emojicategories',
+  'languagetower',
+  'angryverbs',
+  'wordquest',
 ]);
 
 export const TEACHER_PRO_GAME_IDS = new Set([

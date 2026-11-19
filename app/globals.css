@@ -4801,6 +4801,16 @@ a { color: inherit; }
 .game-shell--findmyfood,
 .game-shell--findmyfood .game-shell-play-area { background: #0d0d0f; }
 .game-shell--finnthefox .game-shell-play-area { background: #fffdf7; }
+.game-shell--soccershootout .route-game-welcome.soccer-shootout-route-welcome {
+  position: relative; display: block; min-height: 100%; height: 100%; padding: 0; overflow: hidden;
+  background: #123d26 url('/assets/games/soccer-shootout/splash-desktop.png') center / cover no-repeat;
+}
+.soccer-shootout-welcome-start {
+  position: absolute; top: 73%; left: 12%; width: 40%; height: 19%; padding: 0;
+  overflow: hidden; border: 0; border-radius: 999px; background: transparent;
+  color: transparent; font-size: 0; cursor: pointer;
+}
+.soccer-shootout-welcome-start:focus-visible { outline: 4px solid #fff; outline-offset: -6px; }
 .game-shell--pizzafractions .route-game-welcome { background: linear-gradient(rgba(35,14,5,.16),rgba(35,14,5,.16)), url('/games/pizza-fractions/welcome-screen-bg.png') center / cover fixed; }
 .game-shell--knowitall .route-game-welcome.know-it-all-route-welcome { position: relative; display: block; min-height: 100%; height: 100%; padding: 0; background: url('/assets/games/know-it-all/know-it-all-welcome-bg.webp') center / cover no-repeat; }
 .game-shell--colourclash .route-game-welcome.colour-tunes-route-welcome { position: relative; display: block; min-height: 100%; height: 100%; padding: 0; background: url('/assets/games/colour-clash/colour-tunes-welcome-bg.webp') center / cover no-repeat; }
@@ -5056,6 +5066,10 @@ a { color: inherit; }
 .route-game-welcome-card h1 { margin: 0 0 12px; font-family: var(--font-display, Syne); font-size: clamp(1.7rem, 4vw, 2.5rem); }
 .route-game-welcome-card > p:not(.route-game-welcome-kicker) { margin: 0 0 24px; color: var(--muted); }
 @media (max-width: 760px) and (orientation: portrait) {
+  .game-shell--soccershootout .route-game-welcome.soccer-shootout-route-welcome {
+    background-image: url('/assets/games/soccer-shootout/splash-phone.png');
+  }
+  .soccer-shootout-welcome-start { top: 84%; left: 7%; width: 86%; height: 13%; }
   .game-shell--knowitall .route-game-welcome.know-it-all-route-welcome { background-image: url('/assets/games/know-it-all/know-it-all-welcome-phone-bg.webp'); }
   .know-it-all-welcome-start { top: 77%; left: 20%; width: 60%; height: 16%; }
   .game-shell--emojispelling .route-game-welcome.emoji-spelling-route-welcome {

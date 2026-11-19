@@ -180,6 +180,12 @@ export default function GamePage() {
       ],
       buildtower: ['/assets/games/build-the-tower/build-the-tower-welcome-screen.png', '/assets/games/build-the-tower/build-the-tower-floating-islands-bg.png', '/assets/games/build-the-tower/build-the-tower-jungle-bg.png', '/assets/games/build-the-tower/build-the-tower-game-bg.png'],
       connect4: ['/assets/games/connect-4/connect-4-welcome.webp', '/assets/games/connect-4/connect-4-welcome-phone-bg.webp', '/assets/games/connect-4/connect-4-general-phone-bg.webp', '/assets/games/connect-4/connect-4-main-menu.webp', '/assets/games/connect-4/connect-4-user-input.webp', '/assets/games/connect-4/connect-4-game-screen.webp'],
+      soccershootout: [
+        '/assets/games/soccer-shootout/splash-desktop.png',
+        '/assets/games/soccer-shootout/splash-phone.png',
+        '/assets/games/soccer-shootout/overhead-background.png',
+        '/assets/games/soccer-shootout/stadium-background-phone.png',
+      ],
       colourclash: ['/assets/games/colour-clash/colour-tunes-welcome-bg.webp', '/assets/games/colour-clash/colour-tunes-general-bg.webp'],
       colourclash2: ['/assets/games/colour-clash-2/colour-clash-2-welcome-bg.webp', '/assets/games/colour-clash-2/colour-clash-2-welcome-phone-bg.webp', '/assets/games/colour-clash-2/colour-clash-2-general-phone-bg.webp', '/assets/games/colour-clash-2/colour-clash-2-main-menu-bg.webp', '/assets/games/colour-clash-2/colour-clash-2-user-input-bg.webp', '/assets/games/colour-clash-2/colour-clash-2-game-screen-bg.webp'],
       emojisportsquiz: ['/assets/games/sports-quiz/sports-quiz-welcome-bg.webp', '/assets/games/sports-quiz/sports-quiz-welcome-phone-bg.webp', '/assets/games/sports-quiz/vocab-game-bg.png', '/assets/games/sports-quiz/spelling-game-bg.png', '/assets/games/sports-quiz/sentence-game-bg.png'],
@@ -408,7 +414,9 @@ export default function GamePage() {
   function handleMainMenu() {
     setResult(null);
     setC4Hud(null);
-    if (gameId === 'tracingtrials') {
+    if (gameId === 'soccershootout') {
+      window.dispatchEvent(new Event('soccer-shootout:main-menu'));
+    } else if (gameId === 'tracingtrials') {
       window.dispatchEvent(new Event('tracing-trials:main-menu'));
     } else if (gameId === 'frytheegg') {
       window.dispatchEvent(new Event('fry-the-egg:main-menu'));
@@ -595,6 +603,7 @@ export default function GamePage() {
         onContinue={handleContinue}
         onRestart={handleContinue}
         onMainMenu={handleMainMenu}
+        mainMenuInDropdownOnly={gameId === 'soccershootout'}
         hideMainMenuButton={gameId === 'dragonslingshot'}
         hidePauseControl={isFlagmaster || (isAirPuck && airPuckHud?.mode === 'card')}
         hideSoundControl={isTracingTrials || isFryTheEgg}
@@ -916,7 +925,17 @@ export default function GamePage() {
                 </div>
               </section>
             ) : (
-              isEmojiSpelling ? (
+              gameId === 'soccershootout' ? (
+                <section className="route-game-welcome soccer-shootout-route-welcome" aria-label="Soccer Shootout welcome screen">
+                  <button
+                    type="button"
+                    className="soccer-shootout-welcome-start"
+                    onClick={() => setShowRouteWelcome(false)}
+                  >
+                    START GAME
+                  </button>
+                </section>
+              ) : isEmojiSpelling ? (
                 <section className="route-game-welcome emoji-spelling-route-welcome" aria-label="Emoji Spelling welcome screen">
                   <div className="emoji-spelling-welcome-art">
                     <button

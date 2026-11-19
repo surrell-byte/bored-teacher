@@ -197,7 +197,7 @@ export default function GamesPage() {
           </div>
           <div className="hub-featured-grid">
             {FEATURED_GAME_IDS.filter(gameId => !COMING_SOON_GAME_IDS.has(gameId)).map(gameId => (
-              <GameCard key={gameId} gameId={gameId} onClick={handlePlay} />
+              <GameCard key={gameId} gameId={gameId} onClick={handlePlay} comingSoon={COMING_SOON_GAME_IDS.has(gameId)} />
             ))}
           </div>
         </section>
@@ -207,7 +207,7 @@ export default function GamesPage() {
         <h2 className="hub-section-title" id="games-latest-heading">🆕 New Games</h2>
         <div className="hub-featured-grid">
           {advertisedNewGames.map(gameId => (
-            <GameCard key={gameId} gameId={gameId} onClick={handlePlay} />
+            <GameCard key={gameId} gameId={gameId} onClick={handlePlay} comingSoon={COMING_SOON_GAME_IDS.has(gameId)} />
           ))}
         </div>
       </section>
@@ -261,7 +261,7 @@ export default function GamesPage() {
                     className="card-stagger"
                     style={{ '--stagger-i': i } as React.CSSProperties}
                   >
-                    <GameCard gameId={gameId} onClick={handlePlay} />
+                    <GameCard gameId={gameId} onClick={handlePlay} comingSoon={COMING_SOON_GAME_IDS.has(gameId)} />
                   </div>
                 ))}
               </div>
@@ -272,7 +272,7 @@ export default function GamesPage() {
               <div className="hub-game-grid">
                 {gameIds.map((gameId, i) => (
                   <div key={gameId} className="card-stagger" style={{ '--stagger-i': i } as React.CSSProperties}>
-                    <GameCard gameId={gameId} onClick={handlePlay} />
+                    <GameCard gameId={gameId} onClick={handlePlay} comingSoon={COMING_SOON_GAME_IDS.has(gameId)} />
                   </div>
                 ))}
               </div>
