@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 
 // Each background image's focal point — the point that should stay
@@ -9,8 +9,7 @@ import { usePathname } from 'next/navigation';
 const BACKGROUNDS: Record<string, { src: string; position: string }> = {
   plain:        { src: '/assets/.optimized/images/plain-bg.webp',  position: 'center' },
   general:      { src: '/assets/images/general-bg.webp',           position: 'center' },
-  welcome:      { src: '/assets/images/welcome-page.webp',        position: 'center' },
-  startPlaying: { src: '/assets/images/start-playing-page.webp',  position: 'center' },
+  home:         { src: '/assets/images/startup-background-desktop.png', position: 'center' },
   auth:         { src: '/assets/images/auth-screen-bg.webp',     position: 'center' },
   hub:          { src: '/assets/images/hub-bg-desktop.webp',      position: 'center' },
   games:        { src: '/assets/images/games-bg-desktop.webp',    position: '75% center' },
@@ -23,29 +22,11 @@ const BACKGROUNDS: Record<string, { src: string; position: string }> = {
 };
 export default function AppBackground() {
   const pathname = usePathname();
-  const [splashStage, setSplashStage] = useState<'welcome' | 'start-playing'>('welcome');
-
-  useEffect(() => {
-    function handleStageChange(event: Event) {
-      const detail = (event as CustomEvent<{ stage: string }>).detail;
-      if (detail?.stage === 'start-playing') {
-        setSplashStage('start-playing');
-      }
-    }
-    window.addEventListener('splashBackgroundChange', handleStageChange as EventListener);
-    return () => window.removeEventListener('splashBackgroundChange', handleStageChange as EventListener);
-  }, []);
-
-  useEffect(() => {
-    if (pathname !== '/') {
-      setSplashStage('welcome');
-    }
-  }, [pathname]);
 
   let entry = BACKGROUNDS.plain;
 
   if (pathname === '/') {
-    entry = splashStage === 'start-playing' ? BACKGROUNDS.startPlaying : BACKGROUNDS.welcome;
+    entry = BACKGROUNDS.home;
   } else if (pathname === '/auth') {
     entry = BACKGROUNDS.auth;
   } else if (pathname.startsWith('/hub')) {
@@ -80,6 +61,7 @@ export default function AppBackground() {
       <div
         key={entry.src}
         className="app-background"
+        data-page={pathname === '/' ? 'home' : undefined}
         style={{
           backgroundImage: `url(${entry.src})`,
           ['--bg-pos' as any]: entry.position,

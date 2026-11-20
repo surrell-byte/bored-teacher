@@ -18,6 +18,32 @@ test('Games catalog defers modal, game chunks, and offscreen cover images', () =
   assert.match(gameCard, /decoding="async"/);
 });
 
+test('home landing invites visitors to play as guests before registration', () => {
+  const home = read('app/page.tsx');
+  const background = read('components/AppBackground.tsx');
+  const shell = read('components/AppShell.tsx');
+  const auth = read('app/auth/page.tsx');
+
+  assert.match(home, /Practice English with fun games and challenges/);
+  assert.match(home, /Play a game/);
+  assert.match(home, /localStorage\.setItem\('guestUser', 'true'\)/);
+  assert.match(home, /router\.push\('\/games'\)/);
+  assert.match(home, /router\.push\('\/hub'\)/);
+  assert.match(background, /home:\s*\{ src: '\/assets\/images\/startup-background-desktop\.png'/);
+  assert.match(home, /pendingPlayRef\.current = true/);
+  assert.match(home, /disabled=\{isStarting\}/);
+  assert.match(read('app/globals.css'), /startup-background-portrait\.png/);
+  assert.match(read('app/globals.css'), /startup-background-tablet\.png/);
+  assert.match(read('app/globals.css'), /@media \(min-width: 761px\) and \(max-width: 1100px\) and \(min-aspect-ratio: 5\/4\) and \(max-aspect-ratio: 3\/2\)/);
+  assert.doesNotMatch(home, /AUTH_FALLBACK_DELAY_MS|router\.replace\('\/auth'\)/);
+  assert.match(shell, /guestSaveProgressPromptShown/);
+  assert.match(shell, /Create a free account to save your progress and rewards across devices/);
+  assert.match(shell, /\/auth\?tab=register&reason=save-progress/);
+  assert.match(auth, /searchParams\.get\('tab'\) === 'register'/);
+  assert.match(auth, /Create a free account to save your progress and keep your rewards across devices/);
+  assert.match(auth, /localStorage\.removeItem\('guestUser'\)/);
+});
+
 test('selected games are restricted to creator access', () => {
   const access = read('config/game-access.ts');
   const teacherProIds = access.match(/export const TEACHER_PRO_GAME_IDS = new Set\(\[([\s\S]*?)\]\);/);

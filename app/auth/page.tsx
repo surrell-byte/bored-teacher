@@ -12,7 +12,7 @@ type Tab = 'login' | 'register';
 function AuthPageInner() {
   const router       = useRouter();
   const searchParams = useSearchParams();
-  const [tab, setTab]         = useState<Tab>('login');
+  const [tab, setTab]         = useState<Tab>(() => searchParams.get('tab') === 'register' ? 'register' : 'login');
   const [email, setEmail]     = useState('');
   const [password, setPwd]    = useState('');
   const [name, setName]       = useState('');
@@ -39,7 +39,9 @@ function AuthPageInner() {
   }, [router]);
 
   useEffect(() => {
-    if (searchParams.get('reason') === 'timeout') {
+    if (searchParams.get('reason') === 'save-progress') {
+      setInfo('Create a free account to save your progress and keep your rewards across devices.');
+    } else if (searchParams.get('reason') === 'timeout') {
       setInfo('You were signed out after 20 minutes of inactivity.');
     }
   }, [searchParams]);
@@ -50,6 +52,7 @@ function AuthPageInner() {
     try {
       if (tab === 'login') {
         await signIn(email.trim(), password);
+        localStorage.removeItem('guestUser');
         router.replace(returnTo);
         return;
       }
@@ -59,6 +62,7 @@ function AuthPageInner() {
       if (role !== 'student' && role !== 'teacher') { setError('Please choose Student or Teacher.'); setLoading(false); return; }
 
       const user = await signUp(email.trim(), password, name.trim(), role);
+      localStorage.removeItem('guestUser');
       const idToken = await user.getIdToken();
       const sendRes = await fetch('/api/auth/verify', {
         method: 'POST',

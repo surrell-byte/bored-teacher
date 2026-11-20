@@ -2,7 +2,7 @@
 // components/AppShell.tsx
 
 import { usePathname, useRouter } from 'next/navigation';
-import { type ReactNode, useContext } from 'react';
+import { type ReactNode, useContext, useRef } from 'react';
 import Navbar from './Navbar';
 import Toast from './ui/Toast';
 import AchievementToast from '@/features/achievements/components/AchievementToast';
@@ -30,6 +30,8 @@ export default function AppShell({ children }: { children: ReactNode }) {
   const clearPendingAchievement = gameContext?.clearPendingAchievement ?? (() => {});
   const addPlayTime = gameContext?.addPlayTime;
   const [reward, setReward] = useState<any>(null);
+  const [showSaveProgressPrompt, setShowSaveProgressPrompt] = useState(false);
+  const savePromptTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!isGameRoute || !addPlayTime) return;
@@ -67,9 +69,26 @@ export default function AppShell({ children }: { children: ReactNode }) {
   }, [isGameRoute, addPlayTime]);
 
   useEffect(() => {
-    const handleReward = (event: Event) => setReward((event as CustomEvent).detail);
+    const handleReward = (event: Event) => {
+      setReward((event as CustomEvent).detail);
+      if (
+        localStorage.getItem('guestUser') !== 'true'
+        || sessionStorage.getItem('guestSaveProgressPromptShown') === 'true'
+      ) return;
+
+      if (savePromptTimerRef.current) clearTimeout(savePromptTimerRef.current);
+      savePromptTimerRef.current = setTimeout(() => {
+        savePromptTimerRef.current = null;
+        if (localStorage.getItem('guestUser') !== 'true') return;
+        sessionStorage.setItem('guestSaveProgressPromptShown', 'true');
+        setShowSaveProgressPrompt(true);
+      }, 5000);
+    };
     window.addEventListener('esl-game-reward', handleReward);
-    return () => window.removeEventListener('esl-game-reward', handleReward);
+    return () => {
+      window.removeEventListener('esl-game-reward', handleReward);
+      if (savePromptTimerRef.current) clearTimeout(savePromptTimerRef.current);
+    };
   }, []);
 
   useEffect(() => {
@@ -118,6 +137,32 @@ export default function AppShell({ children }: { children: ReactNode }) {
           color={reward.color}
           onDone={() => setReward(null)}
         />
+      )}
+      {showSaveProgressPrompt && (
+        <section className="save-progress-prompt" role="dialog" aria-modal="true" aria-labelledby="save-progress-title">
+          <div className="save-progress-card">
+            <span className="save-progress-icon" aria-hidden="true">🏆</span>
+            <p className="save-progress-eyebrow">NICE WORK!</p>
+            <h2 id="save-progress-title">Keep your progress</h2>
+            <p>Create a free account to save your progress and rewards across devices, or join a class.</p>
+            <div className="save-progress-actions">
+              <button
+                type="button"
+                className="save-progress-primary"
+                onClick={() => {
+                  setShowSaveProgressPrompt(false);
+                  router.push('/auth?tab=register&reason=save-progress&returnTo=/hub');
+                }}
+              >
+                Create a free account
+              </button>
+              <button type="button" className="save-progress-secondary" onClick={() => setShowSaveProgressPrompt(false)}>
+                Keep playing as a guest
+              </button>
+            </div>
+            <small>Guest progress stays saved on this device.</small>
+          </div>
+        </section>
       )}
     </div>
   );

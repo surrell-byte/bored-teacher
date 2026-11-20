@@ -1,224 +1,87 @@
 'use client';
-// app/page.tsx — Splash screen + auth redirect (replaces index.html)
 
-import { useEffect, useState, useRef } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 import { onAuthStateChanged } from '@/lib/firebase';
 
-const MIN_SPLASH_DURATION_MS = 650;
-const AUTH_FALLBACK_DELAY_MS = 2500;
-const STATUS_MESSAGES = [
-  'Preparing achievements...',
-  'Loading classroom...',
-  'Sharpening pencils...',
-  'Checking attendance...',
-  'Powering up games...',
-  'Summoning teachers...',
-  'Unlocking rewards...',
-  'Almost ready...',
-];
-
-export default function SplashPage() {
+export default function HomePage() {
   const router = useRouter();
-  const [progress, setProgress] = useState(0);
-  const [displayedProgress, setDisplayedProgress] = useState(0);
-  const [status, setStatus] = useState(STATUS_MESSAGES[0]);
-  const [exiting, setExiting] = useState(false);
-  const [clickable, setClickable] = useState(false);
-  const destinationRef = useRef('/auth');
-  const finishRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const redirectRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingPlayRef = useRef(false);
+  const [authReady, setAuthReady] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isStarting, setIsStarting] = useState(false);
 
-  useEffect(() => {
-    let resolved = false;
-    let finishing = false;
-    const startedAt = performance.now();
-    const timers: ReturnType<typeof setTimeout>[] = [];
+  useEffect(() => onAuthStateChanged(user => {
+    setIsAuthenticated(Boolean(user));
+    setAuthReady(true);
+    if (!pendingPlayRef.current) return;
 
-    function finish() {
-      if (finishing) return;
-      finishing = true;
-      if (finishRef.current) clearTimeout(finishRef.current);
-      const remaining = Math.max(0, MIN_SPLASH_DURATION_MS - (performance.now() - startedAt));
-      redirectRef.current = setTimeout(() => {
-        setProgress(100);
-        setExiting(true);
-        router.replace(destinationRef.current);
-      }, remaining);
+    pendingPlayRef.current = false;
+    if (user) {
+      router.push('/hub');
+      return;
     }
 
-    function queue(ms: number, nextProgress: number, nextStatus: string) {
-      timers.push(setTimeout(() => {
-        setProgress(nextProgress);
-        setStatus(nextStatus);
-      }, ms));
+    localStorage.setItem('guestUser', 'true');
+    localStorage.removeItem('currentUser');
+    router.push('/games');
+  }), [router]);
+
+  function playNow() {
+    if (isStarting) return;
+    setIsStarting(true);
+    if (!authReady) {
+      pendingPlayRef.current = true;
+      return;
     }
 
-    queue(120, 18, STATUS_MESSAGES[0]);
-    queue(280, 38, STATUS_MESSAGES[1]);
-    queue(450, 62, STATUS_MESSAGES[4]);
-    queue(600, 82, STATUS_MESSAGES[7]);
-
-    finishRef.current = setTimeout(() => {
-      if (!resolved) destinationRef.current = '/auth';
-      finish();
-    }, AUTH_FALLBACK_DELAY_MS);
-
-    const unsub = onAuthStateChanged((user) => {
-      if (resolved) return;
-      resolved = true;
-      destinationRef.current = user ? '/hub' : '/auth';
-      finish();
-    });
-
-    return () => {
-      unsub();
-      if (finishRef.current) clearTimeout(finishRef.current);
-      if (redirectRef.current) clearTimeout(redirectRef.current);
-      timers.forEach(clearTimeout);
-    };
-  }, [router]);
-
-  useEffect(() => {
-    router.prefetch('/auth');
-    router.prefetch('/hub');
-  }, [router]);
-
-  useEffect(() => {
-    if (progress >= 100) {
-      setClickable(true);
-      window.dispatchEvent(new CustomEvent('splashBackgroundChange', { detail: { stage: 'start-playing' } }));
-    }
-  }, [progress]);
-
-  // Smoothly tween the numeric progress so the percentage counts up
-  useEffect(() => {
-    let raf = 0 as number;
-    const start = performance.now();
-    const from = displayedProgress;
-    const to = progress;
-    const duration = 600;
-
-    function step(now: number) {
-      const t = Math.min(1, (now - start) / duration);
-      const eased = 1 - Math.pow(1 - t, 3); // ease-out cubic
-      const val = Math.round(from + (to - from) * eased);
-      setDisplayedProgress(val);
-      if (t < 1) raf = requestAnimationFrame(step);
+    if (isAuthenticated) {
+      router.push('/hub');
+      return;
     }
 
-    if (to < from) {
-      setDisplayedProgress(to);
-    } else {
-      raf = requestAnimationFrame(step);
-    }
-
-    return () => cancelAnimationFrame(raf);
-  }, [progress]);
-
-  function handleContinue() {
-    if (exiting) return;
-    setExiting(true);
-    setClickable(false);
-    if (finishRef.current) clearTimeout(finishRef.current);
-    if (redirectRef.current) clearTimeout(redirectRef.current);
-    router.replace(destinationRef.current);
+    localStorage.setItem('guestUser', 'true');
+    localStorage.removeItem('currentUser');
+    router.push('/games');
   }
 
   return (
-    <div className={`splash-wrapper${exiting ? ' exiting' : ''}`}>
-      {clickable && (
-        <button
-          type="button"
-          className="splash-click-target"
-          onClick={handleContinue}
-          aria-label="Continue to start playing"
-        />
-      )}
-      <style suppressHydrationWarning>{`
-        .splash-wrapper {
-          position: fixed; inset: 0;
-          z-index: 99999;
-          display: flex; flex-direction: column;
-          align-items: center; justify-content: flex-end;
-          background: transparent;
-          overflow: hidden;
-          padding: 0 28px 64px;
-          color: #f0ede0;
-          opacity: 1;
-          transition: opacity 0.45s ease;
-        }
-        .splash-wrapper.exiting {
-          opacity: 0;
-        }
-        .splash-loading {
-          width: min(420px, 88vw);
-          animation: fadeUp 0.55s ease 0.3s both;
-        }
-        .splash-track {
-          height: 14px;
-          background: rgba(0,0,0,0.35);
-          border-radius: 999px;
-          overflow: hidden;
-          border: 1px solid rgba(255,215,110,0.35);
-          box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
-        }
-        .splash-bar {
-          position: relative;
-          height: 100%;
-          width: 0%;
-          border-radius: 999px;
-          background: linear-gradient(90deg, #ffd76e, #ffb347);
-          box-shadow: 0 0 20px rgba(255,199,90,0.55);
-          transition: width 0.85s cubic-bezier(0.22,0.61,0.36,1);
-          overflow: hidden;
-        }
-        .splash-bar::after {
-          content: '';
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(90deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.05) 20%, transparent 40%);
-          transform: translateX(-120%);
-          animation: splashShimmer 2.2s linear infinite;
-          mix-blend-mode: screen;
-        }
-        .splash-status {
-          display: flex;
-          justify-content: space-between;
-          gap: 12px;
-          margin-top: 14px;
-          color: #ffe9b8;
-          font-size: 0.8rem;
-          font-weight: 700;
-          text-shadow: 0 1px 6px rgba(0,0,0,0.6);
-        }
-        .splash-click-target {
-          position: absolute;
-          inset: 0;
-          border: none;
-          background: transparent;
-          cursor: pointer;
-          z-index: 1;
-        }
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(16px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes splashShimmer {
-          from { transform: translateX(-120%); }
-          to   { transform: translateX(120%); }
-        }
-      `}</style>
+    <section className="visitor-landing" aria-label="Bored Teacher Online">
+      <Link className="visitor-landing-signin" href="/auth">Sign in</Link>
 
-      <div className="splash-loading">
-        <div className="splash-track">
-          <div className="splash-bar" style={{ width: `${displayedProgress}%` }} />
-        </div>
-        <div className="splash-status">
-          <span>{status}</span>
-          <span>{displayedProgress}%</span>
-        </div>
+      <div className="visitor-landing-desktop-cta">
+        <p className="visitor-landing-eyebrow">BORED TEACHER ONLINE</p>
+        <h1>Learn English.<br />Play big.</h1>
+        <p className="visitor-landing-copy">
+          Practice English with fun games and challenges. Play free right away—no account needed.
+        </p>
+        <button type="button" className="visitor-landing-play" onClick={playNow} disabled={isStarting}>
+          {isStarting ? authReady ? 'Loading games…' : 'Getting things ready…' : isAuthenticated ? 'Explore games' : 'Play a game'}
+        </button>
       </div>
-    </div>
+
+      <div className="visitor-landing-mobile">
+        <div className="visitor-landing-mobile-brand" aria-hidden="true">🎓</div>
+        <p className="visitor-landing-eyebrow">BORED TEACHER ONLINE</p>
+        <h1>Learn English.<br />Play big.</h1>
+        <p className="visitor-landing-copy">
+          Practice English with fun games and challenges. Play free right away—no account needed.
+        </p>
+
+        <div className="visitor-landing-benefits">
+          <div><span aria-hidden="true">🎮</span><strong>100+ games</strong><small>Play and practice</small></div>
+          <div><span aria-hidden="true">🏆</span><strong>Earn rewards</strong><small>Collect achievements</small></div>
+          <div><span aria-hidden="true">📈</span><strong>Track progress</strong><small>Keep improving</small></div>
+        </div>
+
+        <button type="button" className="visitor-landing-play" onClick={playNow} disabled={isStarting}>
+          {isStarting ? authReady ? 'Loading games…' : 'Getting things ready…' : isAuthenticated ? 'Explore games' : 'Play a game'}
+          {!isStarting && <span aria-hidden="true">→</span>}
+        </button>
+        <p className="visitor-landing-no-account">Free to start · No sign-up required</p>
+        <Link className="visitor-landing-mobile-signin" href="/auth">Already have an account? Sign in</Link>
+      </div>
+    </section>
   );
 }
