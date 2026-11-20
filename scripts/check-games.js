@@ -113,7 +113,8 @@ for (const folder of physicalFolders) {
 // ---- 4. compare cover paths against public/assets/covers ----
 console.log('\nChecking catalog cover paths against public/assets/covers...');
 const coversDir = path.join(ROOT, 'public/assets/covers');
-const validExtensions = new Set(['.webp', '.png', '.jpg', '.jpeg', '.avif']);
+const validExtensions = new Set(['.webp']);
+const maxCardCoverBytes = 120 * 1024;
 const coverFiles = new Set(fs.readdirSync(coversDir)
   .filter((f) => validExtensions.has(path.extname(f).toLowerCase())));
 for (const id of catalogIds) {
@@ -121,6 +122,13 @@ for (const id of catalogIds) {
   if (!cover) { fail(`"${id}" has no cover set`); continue; }
   const filename = cover.split('/').pop();
   if (!coverFiles.has(filename)) fail(`"${id}" points to cover "${filename}" which does not exist in public/assets/covers`);
+  const optimizedFilename = `${path.parse(filename).name}-card.webp`;
+  const optimizedPath = path.join(ROOT, 'public/assets/.optimized/covers', optimizedFilename);
+  if (!fs.existsSync(optimizedPath)) {
+    fail(`"${id}" is missing its optimized card cover "${optimizedFilename}" — run npm run optimize-images`);
+  } else if (fs.statSync(optimizedPath).size > maxCardCoverBytes) {
+    fail(`"${id}" card cover "${optimizedFilename}" exceeds the 120 KiB image budget`);
+  }
 }
 
 console.log('\n' + '─'.repeat(50));

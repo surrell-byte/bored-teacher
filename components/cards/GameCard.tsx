@@ -24,6 +24,9 @@ function GameCard({
   comingSoon = false,
 }: GameCardProps) {
   const cover = GAME_COVERS[gameId];
+  const cardCover = cover?.startsWith('/assets/covers/') && cover.endsWith('.webp')
+    ? cover.replace('/assets/covers/', '/assets/.optimized/covers/').replace(/\.webp$/, '-card.webp')
+    : cover;
   const tag = GAME_TAGS[gameId];
   const accent = GAME_BAR_COLOR[gameId] ?? 'var(--teal)';
   const coverStyle = { '--cover-accent': accent } as React.CSSProperties;
@@ -48,7 +51,7 @@ function GameCard({
         {cover && (
           <img
             className="card-cover-img"
-            src={cover}
+            src={cardCover}
             alt=""
             loading="lazy"
             decoding="async"

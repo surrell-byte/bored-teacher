@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bored-teacher-runtime-v4';
+const CACHE_NAME = 'bored-teacher-runtime-v5';
 
 self.addEventListener('install', event => {
   event.waitUntil(self.skipWaiting());
@@ -18,9 +18,25 @@ self.addEventListener('fetch', event => {
 
   const url = new URL(request.url);
   const isPublicAsset = url.pathname.startsWith('/assets/');
-  if (!isPublicAsset) return;
+  const isPwaIcon = /^\/icons\/app-icon-\d+\.png$/i.test(url.pathname);
+  const isLegacyPng = request.destination === 'image'
+    && /\.png$/i.test(url.pathname)
+    && !isPwaIcon;
+  if (!isPublicAsset && !isLegacyPng) return;
 
   let preferredRequest = request;
+  let fallbackRequest = request;
+  if (isLegacyPng && !isPublicAsset) {
+    const webpUrl = new URL(url);
+    webpUrl.pathname = webpUrl.pathname.replace(/\.png$/i, '.webp');
+    webpUrl.search = '';
+    preferredRequest = new Request(webpUrl, {
+      method: 'GET',
+      headers: request.headers,
+      redirect: 'follow',
+    });
+  }
+
   if (request.destination === 'image' && url.pathname.startsWith('/assets/') && !url.pathname.includes('/.optimized/')) {
     const optimizedUrl = new URL(url);
     const originalPath = optimizedUrl.pathname
@@ -36,6 +52,16 @@ self.addEventListener('fetch', event => {
     });
 
     preferredRequest = optimizedRequest;
+    if (isLegacyPng) {
+      const fallbackUrl = new URL(url);
+      fallbackUrl.pathname = fallbackUrl.pathname.replace(/\.png$/i, '.webp');
+      fallbackUrl.search = '';
+      fallbackRequest = new Request(fallbackUrl, {
+        method: 'GET',
+        headers: request.headers,
+        redirect: 'follow',
+      });
+    }
   }
 
   event.respondWith(
@@ -48,9 +74,9 @@ self.addEventListener('fetch', event => {
 
       if (cached) return cached;
 
-      if (request.destination === 'image' && url.pathname.startsWith('/assets/') && !url.pathname.includes('/.optimized/')) {
-        const fallback = await fetch(request).then(res => {
-          if (res.ok) cache.put(request, res.clone());
+      if (isLegacyPng && isPublicAsset && fallbackRequest !== request) {
+        const fallback = await fetch(fallbackRequest).then(res => {
+          if (res.ok) cache.put(fallbackRequest, res.clone());
           return res;
         }).catch(() => cached);
         return fallback;

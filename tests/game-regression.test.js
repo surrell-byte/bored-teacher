@@ -791,8 +791,11 @@ test('Service worker never caches Next.js chunks and clears stale runtime caches
   const serviceWorker = read('public/sw.js');
   const registration = read('components/ServiceWorkerRegistration.tsx');
 
-  assert.match(serviceWorker, /const CACHE_NAME = 'bored-teacher-runtime-v4'/);
-  assert.match(serviceWorker, /if \(!isPublicAsset\) return/);
+  assert.match(serviceWorker, /const CACHE_NAME = 'bored-teacher-runtime-v5'/);
+  assert.match(serviceWorker, /if \(!isPublicAsset && !isLegacyPng\) return/);
+  assert.match(serviceWorker, /const isLegacyPng = request\.destination === 'image'/);
+  assert.match(serviceWorker, /fallbackRequest = new Request\(fallbackUrl/);
+  assert.match(serviceWorker, /fetch\(fallbackRequest\)/);
   assert.doesNotMatch(serviceWorker, /_next\/static/);
   assert.match(registration, /process\.env\.NODE_ENV !== 'production'/);
   assert.match(registration, /registration\.unregister\(\)/);

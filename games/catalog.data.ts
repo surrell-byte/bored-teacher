@@ -1145,7 +1145,7 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     name: "Hoop Hero",
     icon: "🏀",
     desc: "Line up the shot, set the power, and sink baskets in a responsive arcade free-throw challenge.",
-    cover: "/assets/covers/basketball-shoot-cover.jpg",
+    cover: "/assets/covers/basketball-shoot-cover.webp",
     tag: { label: "Sports", color: "tag-bio" },
     badge: "Skill Shot",
     difficulty: "Skill Shot",

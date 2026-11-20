@@ -37,25 +37,45 @@ function toWebpPath(filePath) {
   return path.join(optimizedDir, `${parsed.name}.webp`);
 }
 
+function toCardWebpPath(filePath) {
+  const relative = path.relative(assetRoot, filePath);
+  if (path.dirname(relative) !== 'covers') return null;
+
+  const parsed = path.parse(filePath);
+  const optimizedDir = path.join(outputRoot, 'covers');
+  ensureDir(optimizedDir);
+  return path.join(optimizedDir, `${parsed.name}-card.webp`);
+}
+
 async function optimizeFile(filePath) {
   const outPath = toWebpPath(filePath);
   const sourceStat = fs.statSync(filePath);
 
-  if (fs.existsSync(outPath)) {
-    const outStat = fs.statSync(outPath);
-    if (outStat.mtimeMs >= sourceStat.mtimeMs) {
-      return;
-    }
+  if (!fs.existsSync(outPath) || fs.statSync(outPath).mtimeMs < sourceStat.mtimeMs) {
+    await sharp(filePath)
+      .webp({ quality: 78, effort: 6 })
+      .toFile(outPath);
   }
 
-  await sharp(filePath)
-    .webp({ quality: 78, effort: 6 })
-    .toFile(outPath);
+  const cardPath = toCardWebpPath(filePath);
+  if (cardPath && (!fs.existsSync(cardPath) || fs.statSync(cardPath).mtimeMs < sourceStat.mtimeMs)) {
+    await sharp(filePath)
+      .resize({ width: 720, withoutEnlargement: true })
+      .webp({ quality: 78, effort: 6 })
+      .toFile(cardPath);
+  }
 }
 
 async function main() {
   ensureDir(outputRoot);
-  const files = collectFiles(assetRoot).filter(file => !file.includes('/.optimized/'));
+  const files = collectFiles(assetRoot)
+    .filter(file => !file.includes('/.optimized/'))
+    .filter(file => {
+      if (path.extname(file).toLowerCase() !== '.webp') return true;
+
+      const { dir, name } = path.parse(file);
+      return !['.png', '.jpg', '.jpeg'].some(extension => fs.existsSync(path.join(dir, `${name}${extension}`)));
+    });
 
   let index = 0;
   const workers = Array.from({ length: Math.min(MAX_PARALLEL, files.length || 1) }, async () => {
