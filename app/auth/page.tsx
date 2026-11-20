@@ -43,6 +43,10 @@ function AuthPageInner() {
       setInfo('Create a free account to save your progress and keep your rewards across devices.');
     } else if (searchParams.get('reason') === 'timeout') {
       setInfo('You were signed out after 20 minutes of inactivity.');
+    } else if (searchParams.get('reason') === 'account-deleted') {
+      setInfo(searchParams.get('email') === 'unavailable'
+        ? 'Your account was deleted, but we could not send the confirmation email. Contact boredteacherapp@gmail.com if you need help.'
+        : 'Your account was deleted. A confirmation email was sent to your inbox.');
     }
   }, [searchParams]);
 

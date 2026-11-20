@@ -403,6 +403,18 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     barColor: "var(--purple)",
     hasComponent: true,
   },
+  spellcheckersofasgard: {
+    name: "Spellcheckers of Asgard",
+    icon: "⚔️",
+    desc: "Correct three realms of tricky spellings and guide your warrior across the Bifrost.",
+    cover: "/assets/covers/spellcheckers-of-asgard-cover.webp",
+    tag: { label: "Spelling", color: "tag-words" },
+    badge: "Spell the Runes",
+    difficulty: "Intermediate",
+    barColor: "var(--purple)",
+    isNew: true,
+    hasComponent: true,
+  },
   familyquest: {
     name: "Family Quest",
     icon: "👨‍👩‍👧",

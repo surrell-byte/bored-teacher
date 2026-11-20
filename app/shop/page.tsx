@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged } from '@/lib/firebase';
 import { useGame } from '@/providers/GameProvider';
-import { SHOP_ITEMS } from '@/features/shop/catalog';
+import { SHOP_ITEMS, UNLOCKABLE_AVATARS } from '@/features/shop/catalog';
 import ProfileAvatar, { isImageAvatar } from '@/components/profile/ProfileAvatar';
 
 const AVATAR_ITEMS = SHOP_ITEMS.filter(item => item.type === 'avatar');
@@ -82,6 +82,34 @@ export default function ShopPage() {
                 <button className="pill-btn" type="button" disabled={owned || purchasing !== null} onClick={() => purchase(item.id)}>
                   {owned ? 'Owned' : purchasing === item.id ? 'Buying…' : `🪙 ${item.cost}`}
                 </button>
+              </div>
+            </article>
+          );
+        })}
+      </section>
+
+      <div className="hub-preview-header">
+        <h2 className="hub-section-title">Earnable avatars</h2>
+      </div>
+      <section className="shop-items-grid">
+        {UNLOCKABLE_AVATARS.map(item => {
+          const unlocked = state.unlockedAvatars.includes(item.id);
+          const completions = state.games[item.unlock.gameId]?.completions || 0;
+          return (
+            <article className="shell-card shop-item" key={item.id}>
+              <div className="shop-item-image-wrap">
+                <ProfileAvatar value={item.value} alt={item.name} className="shop-item-image" />
+              </div>
+              <div className="shop-item-copy">
+                <h3>{item.name}</h3>
+                <p>{item.description}</p>
+                <p>{unlocked ? 'Unlocked — choose it in your profile.' : item.unlock.label}</p>
+                <p className="shop-item-unlock-progress">
+                  {unlocked ? 'Ready to use' : `Progress: ${Math.min(completions, item.unlock.completions)} / ${item.unlock.completions}`}
+                </p>
+                <Link className="pill-btn" href={unlocked ? '/profile' : `/games/${item.unlock.gameId}`}>
+                  {unlocked ? 'Choose avatar' : 'Play to unlock'}
+                </Link>
               </div>
             </article>
           );

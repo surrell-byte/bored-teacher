@@ -11,6 +11,30 @@ npm run dev
 
 Open http://localhost:3000
 
+## Transactional email
+
+Account verification, password reset, support receipts, and account deletion
+notices are sent from `boredteacherapp@gmail.com`. Configure these values in
+`.env.local` for local development and in the deployment's secret settings:
+
+```env
+GMAIL_USER=boredteacherapp@gmail.com
+GMAIL_APP_PASSWORD=your-google-app-password
+FIREBASE_ADMIN_SERVICE_ACCOUNT_JSON=your-service-account-json
+```
+
+Create a Google App Password for the `boredteacherapp@gmail.com` account (with
+two-step verification enabled). Do not use the account's normal password or
+commit either secret. The Firebase Admin service account must belong to the same
+Firebase project as the `NEXT_PUBLIC_FIREBASE_*` configuration. Firebase
+authorized domains must include the app's domain so password-reset links can
+return to the app.
+
+Signed-in users can permanently delete their accounts from **Profile** after
+confirming their password. The deletion endpoint rechecks recent authentication
+and removes the account's profile, game progress, reviews, support messages,
+class records, and league/lobby memberships.
+
 ## File structure
 
 ```

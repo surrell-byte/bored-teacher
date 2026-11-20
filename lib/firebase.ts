@@ -9,10 +9,11 @@ import {
   signInWithEmailAndPassword,
   signInWithCustomToken,
   deleteUser,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
   signOut as firebaseSignOut,
   onAuthStateChanged as _onAuthStateChanged,
   updateProfile,
-  sendPasswordResetEmail,
   setPersistence,
   browserLocalPersistence,
   User,
@@ -286,10 +287,7 @@ export async function signOut() {
 }
 
 export async function resetPassword(email: string) {
-  if (!auth) {
-    throw new Error('Firebase is not configured. Set NEXT_PUBLIC_FIREBASE_* values in your environment before resetting passwords.');
-  }
-  await sendPasswordResetEmail(auth, email.trim());
+  await resetPasswordByUsername(email);
 }
 
 export async function resetPasswordByUsername(usernameOrEmail: string) {
@@ -311,6 +309,33 @@ export async function resetPasswordByUsername(usernameOrEmail: string) {
   if (!response.ok) {
     throw new Error(typeof result.error === 'string' ? result.error : 'Password reset is temporarily unavailable.');
   }
+}
+
+export async function deleteAccount(password: string): Promise<{ emailSent: boolean }> {
+  const user = auth?.currentUser;
+  if (!auth || !user?.email) {
+    throw new Error('Sign in with an email account before deleting it.');
+  }
+  if (!password) throw new Error('Enter your password to confirm account deletion.');
+
+  const credential = EmailAuthProvider.credential(user.email, password);
+  await reauthenticateWithCredential(user, credential);
+  const idToken = await user.getIdToken(true);
+  const response = await fetch('/api/account/delete', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${idToken}`,
+    },
+    body: JSON.stringify({}),
+  });
+  const result = await response.json() as { ok?: unknown; error?: unknown; emailSent?: unknown };
+  if (!response.ok || result.ok !== true) {
+    throw new Error(typeof result.error === 'string' ? result.error : 'Account deletion could not be completed.');
+  }
+
+  await firebaseSignOut(auth);
+  return { emailSent: result.emailSent === true };
 }
 
 export async function setDisplayName(user: User, name: string) {
@@ -347,6 +372,7 @@ interface UserState {
   lastLogin: unknown; loginStreak: number; sound: boolean; games: GameState;
   classId?: string; role?: AccountRole | null;
   ownedItems?: string[];
+  unlockedAvatars?: string[];
   createdAt?: unknown;
   totalPlaySeconds?: number;
   isActive?: boolean;
@@ -385,6 +411,8 @@ async function createUserProfile(uid: string, name: string, email: string, role:
     totalPlaySeconds: 0,
     classId: '',
     role,
+    ownedItems: [],
+    unlockedAvatars: [],
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
@@ -396,7 +424,7 @@ export async function saveUserState(uid: string, state: Partial<UserState>) {
   if (!uid || !db) return;
   const writableState = Object.fromEntries(Object.entries(state).filter(([key]) => [
     'name', 'username', 'usernameLower', 'avatar', 'theme', 'sound', 'games', 'xp', 'level', 'coins',
-    'lastGame', 'loginStreak', 'classId', 'welcomeGiftClaimed', 'welcomeGiftId', 'ownedItems', 'lastLogin', 'isActive'
+    'lastGame', 'loginStreak', 'classId', 'welcomeGiftClaimed', 'welcomeGiftId', 'ownedItems', 'unlockedAvatars', 'lastLogin', 'isActive'
   ].includes(key)));
   try {
     const username = typeof writableState.usernameLower === 'string' ? writableState.usernameLower : '';

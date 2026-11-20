@@ -7,6 +7,7 @@ import { useGame } from '@/lib/gameState';
 import { auth, isCreatorUser, loadUserState, onAuthStateChanged, saveStudentScore } from '@/lib/firebase';
 import { syncCurrentPlayerToLeaderboard } from '@/features/leaderboard/api';
 import { GAME_NAMES, GAME_ICONS } from '@/constants/index';
+import { UNLOCKABLE_AVATARS } from '@/features/shop/catalog';
 import { GAME_CATALOG } from '@/games/catalog.data';
 import { GAME_COMPONENTS } from '@/games/catalog.components';
 import { GameShell } from '@/engine';
@@ -108,6 +109,7 @@ const GAMES_WITH_WELCOME = new Set([
   'volcanoescape',
   'languagetower',
   'duelofthevoid',
+  'spellcheckersofasgard',
 ]);
 
 // ── Page ──────────────────────────────────────────────────────
@@ -385,10 +387,21 @@ export default function GamePage() {
       lastAccuracy: acc,
     };
     const updatedGames = { ...state.games, [gameId]: updatedRecord };
+    const unlockedAvatars = new Set(state.unlockedAvatars);
+    const newlyUnlockedAvatars = UNLOCKABLE_AVATARS.filter(avatar => {
+      if (avatar.unlock.gameId !== gameId || updatedRecord.completions < avatar.unlock.completions) return false;
+      if (unlockedAvatars.has(avatar.id)) return false;
+      unlockedAvatars.add(avatar.id);
+      return true;
+    });
 
     updateGameStats(gameId, updatedRecord);
     addXP(Math.round(acc / 2));
-    setState({ lastGame: gameId, coins: state.coins + Math.round(acc / 10) });
+    setState({
+      lastGame: gameId,
+      coins: state.coins + Math.round(acc / 10),
+      unlockedAvatars: [...unlockedAvatars],
+    });
     syncCurrentPlayerToLeaderboard();
 
     const currentUser = auth?.currentUser;
@@ -396,7 +409,15 @@ export default function GamePage() {
       saveStudentScore(currentUser.uid, state.classId, state.name, updatedGames).catch(() => {});
     }
     window.dispatchEvent(new CustomEvent('esl-game-reward', {
-      detail: { id: `${gameId}-${Date.now()}`, icon: '🏆', title: `${gameName} complete`, description: `+${Math.round(acc / 2)} XP  •  +${Math.round(acc / 10)} coins  •  ${scr} points`, color: 'var(--gold)' },
+      detail: {
+        id: `${gameId}-${Date.now()}`,
+        icon: newlyUnlockedAvatars[0]?.icon || '🏆',
+        title: newlyUnlockedAvatars.length
+          ? `${newlyUnlockedAvatars.map(avatar => avatar.name).join(', ')} unlocked`
+          : `${gameName} complete`,
+        description: `+${Math.round(acc / 2)} XP  •  +${Math.round(acc / 10)} coins  •  ${scr} points`,
+        color: 'var(--gold)',
+      },
     }));
   }
 
@@ -598,6 +619,8 @@ export default function GamePage() {
         gameId={gameId}
         title={gameName}
         icon={gameIcon}
+        playerAvatar={state.avatar}
+        playerName={state.name}
         sessionKey={gameSession}
         completion={result}
         onContinue={handleContinue}
@@ -1000,6 +1023,7 @@ export default function GamePage() {
               {...(gameId === 'burgerrun' ? { startAtMenu: burgerRunStartAtMenu } : {})}
               {...(gameId === 'emojispelling' ? { startAtMenu: emojiSpellingStartAtMenu } : {})}
               profileName={profileName}
+              {...(isFindMyFood || isEmojiMatch ? { profileAvatar: state.avatar } : {})}
               {...(gameId === 'riddlebombs' ? { onHudUpdate: setRiddleBombsHud } : {})}
               {...(isTicTacRoll ? { themeId: ticTheme.id, onThemeChange: setTicTheme } : {})}
               {...(isConnect4 ? { onHudUpdate: setC4Hud } : {})}

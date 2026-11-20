@@ -1,5 +1,6 @@
 export type ShopItem = { id:string; type:'avatar'|'theme'|'effect'; name:string; icon:string; description:string; cost:number; addedAt:string; value:string };
 export const SHOP_ITEMS: ShopItem[] = [
+  { id:'avatar-128-bit-trophy', type:'avatar', name:'128-Bit Trophy', icon:'🏆', description:'Show off a golden trophy for your biggest game wins.', cost:128, addedAt:'2026-11-20', value:'/assets/images/avatars/128-bit-trophy-avatar.webp' },
   { id:'avatar-brax', type:'avatar', name:'Brax', icon:'🧑', description:'A bold new profile companion.', cost:85, addedAt:'2026-09-02', value:'/assets/.optimized/images/avatars/brax-avatar.webp' },
   { id:'avatar-brax-full-body', type:'avatar', name:'Brax Full Body', icon:'🧍', description:'Show off Brax from head to toe.', cost:105, addedAt:'2026-09-02', value:'/assets/.optimized/images/avatars/brax-full-body-avatar.webp' },
   { id:'avatar-cho', type:'avatar', name:'Cho', icon:'🌟', description:'A bright new look for your profile.', cost:90, addedAt:'2026-09-02', value:'/assets/.optimized/images/avatars/cho-avatar.webp' },
@@ -17,4 +18,33 @@ export const SHOP_ITEMS: ShopItem[] = [
   { id:'effect-gold', type:'effect', name:'Gold Name Glow', icon:'✨', description:'A golden profile highlight.', cost:75, addedAt:'2026-07-10', value:'gold-glow' },
   { id:'avatar-unicorn', type:'avatar', name:'Rainbow Unicorn', icon:'🦄', description:'A magical profile avatar.', cost:110, addedAt:'2026-07-04', value:'/assets/images/avatars/rainbow-unicorn-avatar.svg' },
 ];
+
+export type UnlockableAvatar = {
+  id: string;
+  name: string;
+  icon: string;
+  description: string;
+  value: string;
+  unlock: { gameId: string; completions: number; label: string };
+};
+
+export const UNLOCKABLE_AVATARS: UnlockableAvatar[] = [
+  {
+    id: 'avatar-mjolnir',
+    name: 'Mjolnir',
+    icon: '🔨',
+    description: 'A legendary hammer for a master of the Asgard spelling realms.',
+    value: '/assets/images/avatars/mjolnir-avatar.webp',
+    unlock: { gameId: 'spellcheckersofasgard', completions: 1, label: 'Complete all three Asgard realms' },
+  },
+  {
+    id: 'avatar-bunny',
+    name: 'Bunny',
+    icon: '🐰',
+    description: 'A cheerful companion for dedicated food finders.',
+    value: '/assets/images/avatars/bunny-avatar.webp',
+    unlock: { gameId: 'findmyfood', completions: 5, label: 'Complete Find My Food 5 times' },
+  },
+];
+
 export const LATEST_SHOP_ITEMS = [...SHOP_ITEMS].sort((a,b) => b.addedAt.localeCompare(a.addedAt)).slice(0,3);

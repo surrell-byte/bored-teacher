@@ -7,17 +7,21 @@
 // GameLayout's `header` prop directly instead — see BlockFight for that case.
 
 import { type ReactNode } from 'react';
+import AvatarDisplay from '@/engine/ui/AvatarDisplay';
 
 export interface GameHeaderProps {
   title: string;
   icon?: ReactNode;
   actions?: ReactNode;
+  playerAvatar?: string;
+  playerName?: string;
 }
 
-export default function GameHeader({ title, icon, actions }: GameHeaderProps) {
+export default function GameHeader({ title, icon, actions, playerAvatar, playerName }: GameHeaderProps) {
   return (
     <div className="game-header-default">
       <span className="game-header-title">
+        {playerAvatar && <AvatarDisplay value={playerAvatar} size={30} alt={`${playerName || 'Player'} avatar`} className="game-header-player-avatar" />}
         {icon && <span className="game-header-icon">{icon}</span>}
         {title}
       </span>

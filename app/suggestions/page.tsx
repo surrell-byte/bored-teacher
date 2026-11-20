@@ -13,7 +13,7 @@ export default function SuggestionsPage() {
   const [ready, setReady] = useState(false);
   const [feedbackType, setFeedbackType] = useState<FeedbackType>('suggestion');
   const [message, setMessage] = useState('');
-  const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error' | 'permission'>('idle');
+  const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error' | 'permission' | 'saved-email-error' | 'saved-no-receipt'>('idle');
   const [rating, setRating] = useState(5);
 
   useEffect(() => {
@@ -35,16 +35,35 @@ export default function SuggestionsPage() {
     event.preventDefault();
     if (!message.trim()) return;
     setStatus('sending');
+    let feedbackSaved = false;
     try {
       if (feedbackType === 'review') {
         await submitReview({ userId: auth?.currentUser?.uid ?? null, userName: auth?.currentUser?.displayName || state.name || 'Guest', userEmail: auth?.currentUser?.email ?? null, rating, comment: message, page: '/suggestions' });
       } else {
         await submitFeedback({ message, type: feedbackType, page: '/suggestions', userId: auth?.currentUser?.uid, userName: state.name });
+        feedbackSaved = true;
+        const user = auth?.currentUser;
+        if (!user) throw new Error('Sign in to send a support email.');
+        const idToken = await user.getIdToken();
+        const response = await fetch('/api/support/feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+          body: JSON.stringify({ message, type: feedbackType, page: '/suggestions' }),
+        });
+        const result = await response.json() as { ok?: unknown; receiptSent?: unknown; error?: unknown };
+        if (!response.ok || result.ok !== true) {
+          setMessage('');
+          setStatus('saved-email-error');
+          return;
+        }
+        setMessage('');
+        setStatus(result.receiptSent === false ? 'saved-no-receipt' : 'sent');
+        return;
       }
       setMessage('');
       setStatus('sent');
     } catch (error: any) {
-      setStatus(error?.code === 'permission-denied' ? 'permission' : 'error');
+      setStatus(feedbackSaved ? 'saved-email-error' : error?.code === 'permission-denied' ? 'permission' : 'error');
     }
   }
 
@@ -87,6 +106,8 @@ export default function SuggestionsPage() {
             </button>
           </div>
           {status === 'sent' && <p className="feedback-status success" role="status">Thank you. Your feedback has been received and saved.</p>}
+          {status === 'saved-no-receipt' && <p className="feedback-status success" role="status">Your message was sent to support and saved. We could not send a receipt to your inbox.</p>}
+          {status === 'saved-email-error' && <p className="feedback-status error" role="alert">Your message was saved, but the support email could not be delivered. Please try again later or contact boredteacherapp@gmail.com.</p>}
           {status === 'error' && <p className="feedback-status error" role="alert">That did not send. Please try again.</p>}
           {status === 'permission' && <p className="feedback-status error" role="alert">Feedback storage is not enabled yet. Please ask the app creator to update the Firebase rules.</p>}
         </form>

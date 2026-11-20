@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useGame } from "@/lib/gameState";
 import { GameHelpText } from "@/engine/layout/GameTranslationContext";
+import AvatarDisplay from "@/engine/ui/AvatarDisplay";
 
 const PAIRS = [
   { animal:"🐕", animalWord:"DOG",    food:"🦴", foodWord:"BONE" },
@@ -502,13 +503,14 @@ const STYLES = `
 }
 `;
 
-export default function FindMyFood({ onComplete, themeId, variant = "food", profileName = '' }) {
+export default function FindMyFood({ onComplete, themeId, variant = "food", profileName = '', profileAvatar = '' }) {
   const { completeGame } = useGame();
   const [screen, setScreen] = useState("welcome");
   const selectedTheme = THEMES.find(item => item.key === themeId) || THEMES[0];
   const theme = Math.max(0, THEMES.indexOf(selectedTheme));
-  const [p1, setP1] = useState({ name: profileName || "Player 1", avatar:"🐶" });
+  const [p1, setP1] = useState({ name: profileName || "Player 1", avatar: profileAvatar || "🐶" });
   const [p2, setP2] = useState({ name:"Player 2", avatar:"🐼" });
+  const avatarOptions = [...new Set([profileAvatar, ...AVATARS].filter(Boolean))];
   const [cards, setCards] = useState([]);
   const [flipped, setFlipped] = useState([]);
   const [matched, setMatched] = useState(new Set());
@@ -699,10 +701,10 @@ export default function FindMyFood({ onComplete, themeId, variant = "food", prof
                     onChange={e => pi===0?setP1(x=>({...x,name:e.target.value})):setP2(x=>({...x,name:e.target.value}))} />
                 </div>
                 <div className="ff-avatar-row">
-                  {AVATARS.map(av => (
+                  {avatarOptions.map(av => (
                     <button key={av} type="button" onClick={() => pi===0?setP1(x=>({...x,avatar:av})):setP2(x=>({...x,avatar:av}))}
                       className={`ff-avatar-btn${p.avatar===av?" selected":""}`}>
-                      {av}
+                      <AvatarDisplay value={av} size={32} alt="" />
                     </button>
                   ))}
                 </div>
@@ -774,12 +776,12 @@ export default function FindMyFood({ onComplete, themeId, variant = "food", prof
 
             <div className="ff-final-scores">
               <div className={`ff-final-score-item${scores[1]>scores[2]?" winner-item":""}`}>
-                <div className="ff-fsi-avatar">{p1.avatar}</div>
+                <div className="ff-fsi-avatar"><AvatarDisplay value={p1.avatar} size={40} alt="" /></div>
                 <div className="ff-fsi-name">{p1.name}</div>
                 <div className="ff-fsi-score">{scores[1]}</div>
               </div>
               <div className={`ff-final-score-item${scores[2]>scores[1]?" winner-item":""}`}>
-                <div className="ff-fsi-avatar">{p2.avatar}</div>
+                <div className="ff-fsi-avatar"><AvatarDisplay value={p2.avatar} size={40} alt="" /></div>
                 <div className="ff-fsi-name">{p2.name}</div>
                 <div className="ff-fsi-score">{scores[2]}</div>
               </div>
@@ -845,7 +847,7 @@ export default function FindMyFood({ onComplete, themeId, variant = "food", prof
               <div className="ff-scoreboard">
                 <div className={`ff-score-card${currentPlayer===1?" active":""}`}>
                   <div className="ff-sc-top">
-                    <span className="ff-sc-avatar">{p1.avatar}</span>
+                    <span className="ff-sc-avatar"><AvatarDisplay value={p1.avatar} size={28} alt="" /></span>
                     <span className="ff-sc-name">{p1.name}</span>
                   </div>
                   <div className="ff-sc-score">{scores[1]}</div>
@@ -853,7 +855,7 @@ export default function FindMyFood({ onComplete, themeId, variant = "food", prof
                 </div>
                 <div className={`ff-score-card${currentPlayer===2?" active":""}`}>
                   <div className="ff-sc-top">
-                    <span className="ff-sc-avatar">{p2.avatar}</span>
+                    <span className="ff-sc-avatar"><AvatarDisplay value={p2.avatar} size={28} alt="" /></span>
                     <span className="ff-sc-name">{p2.name}</span>
                   </div>
                   <div className="ff-sc-score">{scores[2]}</div>
@@ -863,7 +865,7 @@ export default function FindMyFood({ onComplete, themeId, variant = "food", prof
 
               <div className="ff-turn-bar">
                 <div className="ff-turn-dot" />
-                <span>{currentPlayer===1?p1.avatar:p2.avatar} {currentPlayer===1?p1.name:p2.name}'s turn</span>
+                <span><AvatarDisplay value={currentPlayer===1?p1.avatar:p2.avatar} size={24} alt="" /> {currentPlayer===1?p1.name:p2.name}&apos;s turn</span>
               </div>
               <div className={`ff-match-popup ff-match-popup-desktop${popup.mismatch?" mismatch":""}`} aria-live="polite">{popup.msg}</div>
             </aside>

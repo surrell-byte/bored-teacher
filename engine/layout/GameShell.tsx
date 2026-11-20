@@ -40,6 +40,8 @@ export interface GameShellProps {
   gameId: string;
   title: string;
   icon?: ReactNode;
+  playerAvatar?: string;
+  playerName?: string;
   stats?: GameStat[];
   controls?: ReactNode;
   /** Extra buttons rendered inline in the top bar, alongside stats/Pause/Full screen/Exit. */
@@ -78,7 +80,7 @@ export interface GameShellProps {
  * while each game remains responsible only for its own mechanics and UI.
  */
 export default function GameShell({
-  gameId, title, icon, stats, controls, headerExtra, mobileMenuExtra, children, sessionKey = 0,
+  gameId, title, icon, playerAvatar, playerName, stats, controls, headerExtra, mobileMenuExtra, children, sessionKey = 0,
   completion, onContinue, onRestart, onMainMenu, onSessionEvent, themeVars, hidePauseControl = false, hideExitControl = false, hideMainMenuButton = false, mainMenuInDropdownOnly = false, hideHeader = false, hideSoundControl = false,
   themeOptions, themeValue, onThemeChange,
 }: GameShellProps) {
@@ -451,6 +453,8 @@ export default function GameShell({
             <GameHeader
               title={title}
               icon={icon}
+              playerAvatar={playerAvatar}
+              playerName={playerName}
               actions={
                 <>
                   {topBarStats.length > 0 && (

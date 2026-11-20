@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getFirebaseAdminServices } from '@/lib/firebase-admin';
 import { isValidUsername, normalizeUsername } from '@/lib/auth-utils';
+import { sendPasswordResetEmail } from '@/lib/email-sender';
 
 export const runtime = 'nodejs';
 
@@ -149,7 +150,7 @@ async function handleUsernameSignIn(username: string, password: string) {
   }
 }
 
-async function handlePasswordReset(identifier: string) {
+async function handlePasswordReset(identifier: string, appOrigin: string) {
   let email = identifier.trim().toLowerCase();
 
   if (!email.includes('@')) {
@@ -165,18 +166,19 @@ async function handlePasswordReset(identifier: string) {
     if (!email) return jsonResponse({ message: RESET_MESSAGE });
   }
 
-  const resetResponse = await callIdentityToolkit('sendOobCode', {
-    requestType: 'PASSWORD_RESET',
-    email,
-  });
-  if (!resetResponse) {
-    return jsonResponse({ error: 'Password reset is temporarily unavailable. Please try again later.' }, 503);
-  }
-
-  const code = resetResponse.result?.error?.message;
-  if (!resetResponse.response.ok && code !== 'EMAIL_NOT_FOUND') {
-    console.error('Firebase password reset failed with code:', code ?? resetResponse.response.status);
-    return jsonResponse({ error: 'Password reset is temporarily unavailable. Please try again later.' }, 503);
+  try {
+    const services = getFirebaseAdminServices();
+    const resetUrl = await services.auth.generatePasswordResetLink(email, {
+      url: new URL('/auth?reason=password-reset', appOrigin).toString(),
+    });
+    await sendPasswordResetEmail(email, resetUrl);
+  } catch (error) {
+    const code = isRecord(error) && typeof error.code === 'string' ? error.code : '';
+    if (code === 'auth/user-not-found' || code === 'auth/invalid-email') {
+      return jsonResponse({ message: RESET_MESSAGE });
+    }
+    console.error('Password reset email could not be sent.', error);
+    return jsonResponse({ error: 'Password reset email could not be sent. Please try again later.' }, 503);
   }
 
   return jsonResponse({ message: RESET_MESSAGE });
@@ -186,7 +188,7 @@ export async function GET() {
   return jsonResponse({
     ok: true,
     route: 'auth',
-    message: 'Email sign-in is handled by Firebase on the client. Username sign-in and password reset use private server-side account lookup.',
+    message: 'Email sign-in is handled by Firebase on the client. Username sign-in and password reset use private server-side account lookup and email delivery.',
     supportedMethods: ['GET', 'POST'],
   });
 }
@@ -217,7 +219,7 @@ export async function POST(request: Request) {
   }
 
   if (payload.action === 'passwordReset' && typeof payload.identifier === 'string' && payload.identifier.trim()) {
-    return handlePasswordReset(payload.identifier);
+    return handlePasswordReset(payload.identifier, new URL(request.url).origin);
   }
 
   return jsonResponse({ error: 'Unsupported authentication action.' }, 400);

@@ -36,7 +36,7 @@ export const FEATURED_GAME_IDS = [
   'knowitall',
 ] as const;
 
-export const DEFAULT_PLAYER_AVATAR = '/assets/images/avatars/astro-explorer-avatar.svg';
+export const DEFAULT_PLAYER_AVATAR = '/assets/images/avatars/robot-avatar.webp';
 
 // ── Non-game constants (unrelated to the registry, stay here) ──
 

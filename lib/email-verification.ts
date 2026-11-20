@@ -11,5 +11,6 @@ export function getAvatarGiftOptions() {
 }
 
 export function isEmailDeliveryConfigured() {
-  return Boolean(process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD);
+  const sender = process.env.GMAIL_USER?.trim().toLowerCase() || 'boredteacherapp@gmail.com';
+  return sender === 'boredteacherapp@gmail.com' && Boolean(process.env.GMAIL_APP_PASSWORD?.trim());
 }

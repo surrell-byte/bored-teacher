@@ -126,7 +126,7 @@ service cloud.firestore {
           'name', 'username', 'usernameLower', 'avatar', 'theme', 'sound', 'games',
           'xp', 'level', 'coins', 'lastGame', 'loginStreak', 'classId',
           'totalPlaySeconds',
-          'welcomeGiftClaimed', 'welcomeGiftId', 'ownedItems', 'lastLogin',
+          'welcomeGiftClaimed', 'welcomeGiftId', 'ownedItems', 'unlockedAvatars', 'lastLogin',
           'isActive', 'updatedAt'
         ]))
         && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['totalPlaySeconds'])
@@ -147,6 +147,10 @@ service cloud.firestore {
     }
 
     match /emailVerificationRateLimits/{emailHash} {
+      allow read, write: if false;
+    }
+
+    match /supportEmailRateLimits/{userId} {
       allow read, write: if false;
     }
 

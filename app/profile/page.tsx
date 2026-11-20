@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { auth, onAuthStateChanged, setDisplayName } from '@/lib/firebase';
+import { auth, deleteAccount, onAuthStateChanged, setDisplayName } from '@/lib/firebase';
 import { useGame } from '@/providers/GameProvider';
 import { AVATARS, DEFAULT_PLAYER_AVATAR, THEMES } from '@/constants/index';
-import { SHOP_ITEMS } from '@/features/shop/catalog';
+import { SHOP_ITEMS, UNLOCKABLE_AVATARS } from '@/features/shop/catalog';
 import ProfileAvatar from '@/components/profile/ProfileAvatar';
 
 const baseAvatars = [...new Set(Object.values(AVATARS).flat())];
@@ -21,6 +21,9 @@ export default function ProfilePage() {
   const [feedback, setFeedback] = useState('');
   const [saving, setSaving] = useState(false);
   const [isGuest, setIsGuest] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteFeedback, setDeleteFeedback] = useState('');
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   useEffect(() => {
     const guestMode = localStorage.getItem('guestUser') === 'true';
@@ -61,9 +64,39 @@ export default function ProfilePage() {
     setAvatar(value);
   }
 
+  async function handleDeleteAccount() {
+    if (!deletePassword) {
+      setDeleteFeedback('Enter your password to confirm account deletion.');
+      return;
+    }
+    if (!window.confirm('Permanently delete your account and its saved progress, feedback, and reviews? This cannot be undone.')) return;
+
+    setDeletingAccount(true);
+    setDeleteFeedback('');
+    try {
+      const result = await deleteAccount(deletePassword);
+      localStorage.removeItem('eslhub_data');
+      localStorage.removeItem('eslhub_data_backup');
+      localStorage.removeItem('eslhub_leagues_v1');
+      localStorage.removeItem('eslhub_lobbies_v1');
+      localStorage.removeItem('currentUser');
+      localStorage.removeItem('guestUser');
+      router.replace(result.emailSent
+        ? '/auth?reason=account-deleted'
+        : '/auth?reason=account-deleted&email=unavailable');
+    } catch (error) {
+      setDeleteFeedback(error instanceof Error ? error.message : 'Account deletion could not be completed.');
+    } finally {
+      setDeletingAccount(false);
+    }
+  }
+
   if (!ready) return null;
   const purchased = avatarItems.filter(item => state.ownedItems.includes(item.id)).map(item => item.value);
-  const available = [...new Set([DEFAULT_PLAYER_AVATAR, ...baseAvatars, ...purchased])];
+  const earnedAvatars = UNLOCKABLE_AVATARS
+    .filter(item => state.unlockedAvatars.includes(item.id))
+    .map(item => item.value);
+  const available = [...new Set([DEFAULT_PLAYER_AVATAR, ...baseAvatars, ...purchased, ...earnedAvatars])];
 
   return <main className="profile-page hub-page">
     <div className="profile-page-header"><div><p className="suggestions-kicker">Your account</p><h1 className="hub-welcome-title">Profile</h1><p className="hub-welcome-sub">Manage your identity, avatar, and learning look.</p></div><div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}><button type="button" className="pill-btn" onClick={() => router.push('/profile/demo')}>Preview student &amp; teacher profiles</button><button type="button" className="pill-btn" onClick={() => router.push('/hub')}>← Dashboard</button></div></div>
@@ -72,6 +105,20 @@ export default function ProfilePage() {
       <section className="shell-card profile-preview"><div className="profile-preview-avatar"><ProfileAvatar value={avatar} size={124} /></div><h2>{name.trim() || 'Explorer'}</h2><p>{username ? `@${username.replace(/^@/, '')}` : 'Choose a username'}</p><div className="profile-preview-stats"><span><b>{state.level}</b><small>Level</small></span><span><b>{state.coins}</b><small>Coins</small></span><span><b>{state.xp}</b><small>XP</small></span></div></section>
       <section className="shell-card profile-form"><h2>Profile details</h2><label className="lb-field-label" htmlFor="profile-name">Display name</label><input id="profile-name" className="lb-input" value={name} maxLength={32} readOnly={isGuest} onChange={event => setName(event.target.value)} placeholder="Your name" /><label className="lb-field-label" htmlFor="profile-username">Username</label><input id="profile-username" className="lb-input" value={username} maxLength={24} readOnly={isGuest} onChange={event => setUsername(event.target.value)} placeholder="yourhandle" /><label className="lb-field-label" htmlFor="profile-theme">Preferred theme</label><select id="profile-theme" className="lb-input" value={state.theme} disabled={isGuest} onChange={event => changeTheme(event.target.value)}>{THEMES.map(theme => <option key={theme.value} value={theme.value}>{theme.label}</option>)}</select><div className="profile-save-row"><button type="button" className="btn-primary" onClick={save} disabled={saving || isGuest}>{saving ? 'Saving…' : 'Save Changes'}</button>{feedback && <span role="status">{feedback}</span>}</div></section>
     </div>
-    <section className="shell-card profile-avatars"><div className="profile-section-heading"><div><h2>Choose your avatar</h2><p>Owned shop avatars appear alongside the starter collection.</p></div><button type="button" className="pill-btn" onClick={() => router.push('/shop')}>Visit shop</button></div><div className="profile-avatar-grid">{available.map(value => <button type="button" key={value} className={`profile-avatar-option${value === avatar ? ' selected' : ''}`} onClick={() => chooseAvatar(value)} disabled={isGuest} aria-label="Choose avatar" aria-pressed={value === avatar}><ProfileAvatar value={value} size={72} /></button>)}</div></section>
+    <section className="shell-card profile-avatars"><div className="profile-section-heading"><div><h2>Choose your avatar</h2><p>Shop purchases and earned game rewards appear alongside the starter collection.</p></div><button type="button" className="pill-btn" onClick={() => router.push('/shop')}>Visit shop</button></div><div className="profile-avatar-grid">{available.map(value => <button type="button" key={value} className={`profile-avatar-option${value === avatar ? ' selected' : ''}`} onClick={() => chooseAvatar(value)} disabled={isGuest} aria-label="Choose avatar" aria-pressed={value === avatar}><ProfileAvatar value={value} size={72} /></button>)}</div></section>
+    {!isGuest && <section className="shell-card profile-danger-zone">
+      <div>
+        <h2>Delete account</h2>
+        <p>This permanently removes your account, profile, saved game progress, reviews, and support messages.</p>
+        <label className="lb-field-label" htmlFor="delete-account-password">Confirm with your password</label>
+        <input id="delete-account-password" className="lb-input" type="password" autoComplete="current-password" value={deletePassword} onChange={event => { setDeletePassword(event.target.value); setDeleteFeedback(''); }} disabled={deletingAccount} />
+      </div>
+      <div className="profile-danger-actions">
+        <button type="button" className="profile-danger-button" onClick={handleDeleteAccount} disabled={deletingAccount || !deletePassword}>
+          {deletingAccount ? 'Deleting account…' : 'Permanently delete account'}
+        </button>
+        {deleteFeedback && <p role="alert">{deleteFeedback}</p>}
+      </div>
+    </section>}
   </main>;
 }

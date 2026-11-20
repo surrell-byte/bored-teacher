@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
+const vm = require('node:vm');
 
 const root = process.cwd();
 const read = relativePath => fs.readFileSync(path.join(root, relativePath), 'utf8');
@@ -179,8 +180,9 @@ test('player badge, playtime tracking, and Emoji Spelling HUD use persistent pro
   const profile = read('app/profile/page.tsx');
   const coverStyle = read('lib/use-cover-art-style.ts');
 
-  assert.match(constants, /DEFAULT_PLAYER_AVATAR = '\/assets\/images\/avatars\/astro-explorer-avatar\.svg'/);
-  assert.ok(fs.existsSync(path.join(root, 'public/assets/images/avatars/astro-explorer-avatar.svg')));
+  assert.match(constants, /DEFAULT_PLAYER_AVATAR = '\/assets\/images\/avatars\/robot-avatar\.webp'/);
+  assert.ok(fs.existsSync(path.join(root, 'public/assets/images/avatars/robot-avatar.webp')));
+  assert.match(provider, /savedAvatar === '\/assets\/images\/avatars\/astro-explorer-avatar\.svg' && !ownedItems\.includes\('avatar-astronaut'\)/);
   assert.match(provider, /totalPlaySeconds: number/);
   assert.match(provider, /joinedAt: string/);
   assert.match(provider, /Math\.max\(local\.totalPlaySeconds \|\| 0, remote\.totalPlaySeconds \|\| 0\)/);
@@ -806,12 +808,14 @@ test('Service worker never caches Next.js chunks and clears stale runtime caches
 test('Profile editing opens the dedicated page and centers the avatar glyph', () => {
   const navbar = read('components/Navbar.tsx');
   const profileAvatar = read('components/profile/ProfileAvatar.tsx');
+  const avatarDisplay = read('engine/ui/AvatarDisplay.tsx');
   const profilePage = read('app/profile/page.tsx');
 
   assert.match(navbar, /<Link\s+className="dropdown-item"\s+role="menuitem"\s+href="\/profile"/);
   assert.match(navbar, /<Link href="\/profile" className="mobile-nav-item"/);
   assert.doesNotMatch(navbar, /ProfileModal|setShowProfile\(|showProfile &&/);
-  assert.match(profileAvatar, /display: 'inline-grid', placeItems: 'center'/);
+  assert.match(profileAvatar, /@\/engine\/ui\/AvatarDisplay/);
+  assert.match(avatarDisplay, /display: 'inline-grid', placeItems: 'center'/);
   assert.match(profilePage, /className="profile-preview-avatar"/);
   assert.match(profilePage, /profile-avatar-option\$\{/);
 });
@@ -1270,4 +1274,74 @@ test('Burger Run is registered with the catalog and reports game completion', ()
   assert.match(manifest, /app-icon-512\.png/);
   assert.match(rootLayout, /viewportFit: 'cover'/);
   assert.match(rootLayout, /appleWebApp:\s*\{\s*capable: true/);
+});
+
+test('earned avatars unlock from game completions and are available in profile and games', () => {
+  const avatars = read('features/shop/catalog.ts');
+  const route = read('app/games/[game]/page.tsx');
+  const provider = read('providers/GameProvider.tsx');
+  const profile = read('app/profile/page.tsx');
+  const shop = read('app/shop/page.tsx');
+  const findMyFood = read('games/find-my-food/FindMyFood.jsx');
+  const shell = read('engine/layout/GameShell.tsx');
+
+  assert.match(avatars, /id: 'avatar-mjolnir'[\s\S]*?gameId: 'spellcheckersofasgard', completions: 1/);
+  assert.match(avatars, /id: 'avatar-bunny'[\s\S]*?gameId: 'findmyfood', completions: 5/);
+  assert.match(route, /updatedRecord\.completions < avatar\.unlock\.completions/);
+  assert.match(route, /unlockedAvatars: \[\.\.\.unlockedAvatars\]/);
+  assert.match(provider, /games\[avatar\.unlock\.gameId\]\?\.completions/);
+  assert.match(profile, /state\.unlockedAvatars\.includes\(item\.id\)/);
+  assert.match(shop, /Progress: \$\{Math\.min\(completions, item\.unlock\.completions\)\}/);
+  assert.match(findMyFood, /avatar: profileAvatar \|\| "🐶"/);
+  assert.match(findMyFood, /<AvatarDisplay value=\{p1\.avatar\}/);
+  assert.match(shell, /playerAvatar=\{playerAvatar\}/);
+  for (const asset of ['mjolnir-avatar.webp', 'bunny-avatar.webp', 'robot-avatar.webp']) {
+    assert.ok(fs.existsSync(path.join(root, 'public/assets/images/avatars', asset)), `${asset} is published`);
+  }
+});
+
+test('Spellcheckers of Asgard has a spelling level for each of the nine realms', () => {
+  const component = read('games/spellcheckers-of-asgard/SpellcheckersOfAsgard.jsx');
+  const levelsMatch = component.match(/const LEVELS = (\[[\s\S]*?\n\]);\n\nconst RUNES/);
+
+  assert.ok(levelsMatch, 'realm level data is present');
+  const levels = vm.runInNewContext(levelsMatch[1]);
+  assert.deepEqual(Array.from(levels, level => level.name), [
+    'ASGARD', 'MIDGARD', 'JOTUNHEIM', 'VANAHEIM', 'ALFHEIM',
+    'SVARTALFHEIM', 'NIFLHEIM', 'MUSPELHEIM', 'HELHEIM',
+  ]);
+  assert.ok(levels.every(level => level.words.length >= 10));
+  assert.match(component, /"LEVEL " \+ \(S\.level \+ 1\) \+ " \/ " \+ LEVELS\.length/);
+  assert.match(component, /LEVELS\.length \* GOAL/);
+  assert.match(component, /<article><strong>\{LEVELS\.length\}<\/strong><span>Norse realms<\/span><\/article>/);
+  assert.match(component, /All \{LEVELS\.length\} realms are cleared/);
+});
+
+test('128-Bit Trophy is a purchasable avatar with optimized artwork', () => {
+  const catalog = read('features/shop/catalog.ts');
+  const shop = read('app/shop/page.tsx');
+
+  assert.match(catalog, /id:'avatar-128-bit-trophy', type:'avatar', name:'128-Bit Trophy'[\s\S]*?cost:128[\s\S]*?value:'\/assets\/images\/avatars\/128-bit-trophy-avatar\.webp'/);
+  assert.match(shop, /const AVATAR_ITEMS = SHOP_ITEMS\.filter\(item => item\.type === 'avatar'\)/);
+  assert.match(shop, /ownedItems: \[\.\.\.state\.ownedItems, item\.id\]/);
+  assert.ok(fs.existsSync(path.join(root, 'public/assets/images/avatars/128-bit-trophy-avatar.webp')));
+});
+
+test('account and support communications use the requested sender and protected server flows', () => {
+  const sender = read('lib/email-sender.ts');
+  const authRoute = read('app/api/auth/route.ts');
+  const supportRoute = read('app/api/support/feedback/route.ts');
+  const deleteRoute = read('app/api/account/delete/route.ts');
+  const rules = read('firestore.rules');
+
+  assert.match(sender, /const COMMUNICATION_EMAIL = 'boredteacherapp@gmail\.com'/);
+  assert.match(authRoute, /generatePasswordResetLink/);
+  assert.match(authRoute, /sendPasswordResetEmail\(email, resetUrl\)/);
+  assert.match(supportRoute, /verifyIdToken/);
+  assert.match(supportRoute, /sendSupportQuestionEmail/);
+  assert.match(supportRoute, /sendSupportReceiptEmail/);
+  assert.match(deleteRoute, /RECENT_AUTH_WINDOW_SECONDS = 5 \* 60/);
+  assert.match(deleteRoute, /services\.auth\.deleteUser\(user\.uid\)/);
+  assert.match(deleteRoute, /removeLeagueMemberships/);
+  assert.match(rules, /match \/supportEmailRateLimits\/\{userId\}[\s\S]*?allow read, write: if false/);
 });

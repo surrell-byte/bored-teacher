@@ -6,6 +6,7 @@
     import { auth, onAuthStateChanged, saveUserState, loadUserState, addUserPlayTime } from '@/lib/firebase';
     import { DEFAULT_PLAYER_AVATAR, GAME_KEYS } from '@/constants/index';
     import { getEarnedIds, getNewlyUnlocked, type Achievement } from '@/features/achievements/achievements';
+    import { UNLOCKABLE_AVATARS } from '@/features/shop/catalog';
     import { syncCurrentPlayerToLeaderboard } from '@/features/leaderboard/api';
 
     // ── Types ─────────────────────────────────────────────────────
@@ -54,6 +55,7 @@
       classId: string;
       role: Role;
       ownedItems: string[];
+      unlockedAvatars: string[];
       games: Record<string, GameRecord>;
       /** ISO timestamp of when each achievement id was first earned. */
       earnedAt: Record<string, string>;
@@ -67,6 +69,7 @@
       xp: 0, level: 1, totalPlaySeconds: 0, joinedAt: '', coins: 0, lastLogin: '', loginStreak: 0,
       classId: '', role: null,
       ownedItems: [],
+      unlockedAvatars: [],
       games: Object.fromEntries(GAME_KEYS.map(k => [k, { ...DEFAULT_GAME }])),
       earnedAt: {},
     };
@@ -124,17 +127,34 @@
     }
 
     function normalizeState(value: Partial<HubState>): HubState {
+      const ownedItems = Array.isArray(value.ownedItems) ? value.ownedItems : [];
+      const savedAvatar = value.avatar;
+      const games = { ...DEFAULT_STATE.games, ...(value.games || {}) };
+      const unlockedAvatars = new Set(
+        Array.isArray(value.unlockedAvatars)
+          ? value.unlockedAvatars.filter((avatarId): avatarId is string => typeof avatarId === 'string')
+          : [],
+      );
+      for (const avatar of UNLOCKABLE_AVATARS) {
+        if ((games[avatar.unlock.gameId]?.completions || 0) >= avatar.unlock.completions) {
+          unlockedAvatars.add(avatar.id);
+        }
+      }
       return {
         ...DEFAULT_STATE,
         ...value,
-        avatar: !value.avatar || value.avatar === '👤' ? DEFAULT_PLAYER_AVATAR : value.avatar,
+        avatar: !savedAvatar || savedAvatar === '👤'
+          || (savedAvatar === '/assets/images/avatars/astro-explorer-avatar.svg' && !ownedItems.includes('avatar-astronaut'))
+          ? DEFAULT_PLAYER_AVATAR
+          : savedAvatar,
         joinedAt: value.joinedAt || new Date().toISOString(),
         totalPlaySeconds: typeof value.totalPlaySeconds === 'number' && Number.isFinite(value.totalPlaySeconds)
           ? Math.max(0, value.totalPlaySeconds)
           : 0,
-        games: { ...DEFAULT_STATE.games, ...(value.games || {}) },
+        games,
         earnedAt: { ...(value.earnedAt || {}) },
-        ownedItems: Array.isArray(value.ownedItems) ? value.ownedItems : [],
+        ownedItems,
+        unlockedAvatars: [...unlockedAvatars],
       };
     }
 
@@ -193,7 +213,14 @@
         ...local,
         name:        chooseProfileValue(remote.name, local.name, DEFAULT_STATE.name),
         username:    chooseProfileValue(remote.username, local.username, DEFAULT_STATE.username),
-        avatar:      chooseProfileValue(remote.avatar === '👤' ? DEFAULT_PLAYER_AVATAR : remote.avatar, local.avatar, DEFAULT_STATE.avatar),
+        avatar:      chooseProfileValue(
+          !remote.avatar || remote.avatar === '👤'
+            || (remote.avatar === '/assets/images/avatars/astro-explorer-avatar.svg' && !remote.ownedItems?.includes('avatar-astronaut'))
+            ? DEFAULT_PLAYER_AVATAR
+            : remote.avatar,
+          local.avatar,
+          DEFAULT_STATE.avatar,
+        ),
         theme:       chooseProfileValue(remote.theme, local.theme, DEFAULT_STATE.theme),
         xp:          useRemoteXp ? (remote.xp ?? local.xp) : local.xp,
         level:       useRemoteXp ? (remote.level ?? local.level) : local.level,
@@ -207,6 +234,10 @@
         classId:     remote.classId || local.classId,
         role:        remote.role ?? local.role,
         ownedItems:  [...new Set([...(local.ownedItems || []), ...(remote.ownedItems || [])])],
+        unlockedAvatars: [...new Set([
+          ...(local.unlockedAvatars || []),
+          ...(remote.unlockedAvatars || []).filter((avatarId): avatarId is string => typeof avatarId === 'string'),
+        ])],
         games:       { ...DEFAULT_STATE.games },
         earnedAt:    mergeEarnedAt(local.earnedAt, remote.earnedAt),
       };
@@ -220,6 +251,11 @@
           lastAccuracy:  l.lastAccuracy || r.lastAccuracy || 0,
           totalQuestions: l.totalQuestions || r.totalQuestions || 100,
         };
+      }
+      for (const avatar of UNLOCKABLE_AVATARS) {
+        if ((merged.games[avatar.unlock.gameId]?.completions || 0) >= avatar.unlock.completions) {
+          merged.unlockedAvatars = [...new Set([...merged.unlockedAvatars, avatar.id])];
+        }
       }
       return merged;
     }
