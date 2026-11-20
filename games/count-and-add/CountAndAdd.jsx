@@ -291,6 +291,7 @@ const COUNT_ADD_STYLES = `
 }
 @media (max-width:600px) and (orientation:portrait) {
   .count-add-game--welcome { background-image:url('/assets/games/count-and-add/count-and-add-welcome-phone-bg.webp'); }
+  .count-add-game--welcome .count-add-game__welcome-start { left:14%; top:79%; width:72%; height:17%; }
   .count-add-game--menu { background-image:url('/assets/games/count-and-add/count-and-add-main-menu-phone-bg.webp'); }
   .count-add-game--play { background-image:url('/assets/games/count-and-add/count-and-add-game-bg-phone.webp'); }
 }

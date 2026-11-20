@@ -113,6 +113,8 @@ const STYLES = `
 .ff-root { background-color:#18231f;background-image:linear-gradient(rgba(9,20,17,.25),rgba(9,20,17,.4)),url('/assets/games/find-my-food/find-my-food-general-bg.webp');background-position:center;background-size:cover;background-attachment:fixed; }
 .ff-root.ff-food-screen-welcome { background-image:linear-gradient(rgba(9,20,17,.18),rgba(9,20,17,.32)),url('/assets/games/find-my-food/find-my-food-welcome-bg.webp'); }
 .ff-root.ff-food-screen-welcome { position:relative; min-height:100%; height:100%; padding:0; }
+.ff-food-start-hitbox { position:absolute; z-index:2; left:68%; top:61%; width:28%; height:23%; padding:0; border:0; border-radius:999px; background:transparent; cursor:pointer; touch-action:manipulation; }
+.ff-food-start-hitbox:focus-visible { outline:4px solid #fff; outline-offset:4px; }
 .ff-root.ff-food-screen-player-info { background-image:linear-gradient(rgba(9,20,17,.24),rgba(9,20,17,.42)),url('/assets/games/find-my-food/find-my-food-user-input-bg.webp'); }
 .ff-root.ff-food-screen-mode,.ff-root.ff-food-screen-game,.ff-root.ff-food-screen-end { background-image:linear-gradient(rgba(9,20,17,.22),rgba(9,20,17,.38)),url('/assets/games/find-my-food/find-my-food-game-screen-bg.webp'); }
 
@@ -470,6 +472,7 @@ const STYLES = `
   .ff-root.ff-food-screen-welcome {
     background-image:url('/assets/games/find-my-food/find-my-food-welcome-phone-bg.webp') !important;
   }
+  .ff-root.ff-food-screen-welcome .ff-food-start-hitbox { left:24%; top:86%; width:52%; height:12%; }
   .ff-root.ff-root-game {
     height:100%;
     min-height:100%;
@@ -628,6 +631,7 @@ export default function FindMyFood({ onComplete, themeId, variant = "food", prof
   if (screen === "welcome" && variant === "food") return (
     <div className={rootClass} data-ff-theme={selectedTheme.key} style={cssVarOverrides}>
       <style>{STYLES}</style>
+      <button type="button" className="ff-food-start-hitbox" aria-label="Start Find My Food" onClick={() => setScreen("player-info")} />
     </div>
   );
 

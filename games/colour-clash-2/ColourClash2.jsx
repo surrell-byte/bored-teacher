@@ -121,6 +121,7 @@ font-family:'DM Sans',sans-serif;background:var(--bg-deep);color:var(--text);hei
 @media(max-height:600px){.cc .how-screen{height:100%;min-height:100%;gap:8px;padding:8px 18px}.cc .how-screen h2{font-size:1.2rem}.cc .how-text{gap:6px;padding:12px;font-size:1rem}.cc .power-legend{gap:6px}.cc .power-legend span{min-height:0;padding:7px 10px;font-size:.9rem}.cc[data-screen="how"] .btn-primary{padding:9px 24px;font-size:1rem}}
 @media(max-width:639px) and (orientation:portrait){
 .cc[data-screen="welcome"] .screen{background-image:url('/assets/games/colour-clash-2/colour-clash-2-welcome-phone-bg.webp');background-position:center;background-size:cover}
+.cc[data-screen="welcome"] .welcome-start-hitbox{left:20%;top:87%;width:60%;height:12%}
 .cc[data-screen="setup"] .screen,.cc[data-screen="how"] .screen,.cc[data-screen="game"],.cc[data-screen="winner"]{background-image:url('/assets/games/colour-clash-2/colour-clash-2-general-phone-bg.webp');background-position:center;background-size:cover}
 }
 `;

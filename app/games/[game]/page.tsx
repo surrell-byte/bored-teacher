@@ -435,7 +435,10 @@ export default function GamePage() {
   function handleMainMenu() {
     setResult(null);
     setC4Hud(null);
-    if (gameId === 'soccershootout') {
+    if (gameId === 'spellcheckersofasgard') {
+      setShowRouteWelcome(false);
+      window.dispatchEvent(new Event('spellcheckersofasgard:main-menu'));
+    } else if (gameId === 'soccershootout') {
       window.dispatchEvent(new Event('soccer-shootout:main-menu'));
     } else if (gameId === 'tracingtrials') {
       window.dispatchEvent(new Event('tracing-trials:main-menu'));

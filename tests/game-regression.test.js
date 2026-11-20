@@ -396,15 +396,15 @@ test('Look and Say validates question data and has a visible empty-state guard',
   assert.match(styles, /\.look-and-say-game \.finish .*display: flex/);
 });
 
-test('portrait game controls remain usable and Find My Food splash is background-only', () => {
+test('portrait game controls remain usable and Find My Food splash has an aligned start control', () => {
   const lookAndSay = read('games/look-and-say/LookAndSay.css');
   const findMyFood = read('games/find-my-food/FindMyFood.jsx');
   const miniRacer = read('games/mini-racer/MiniRacer.jsx');
   const mobileShell = read('app/globals.css');
 
   assert.match(lookAndSay, /\.start-hotspot[\s\S]*background: #075985;[\s\S]*color: #fff/);
-  assert.match(findMyFood, /if \(screen === "welcome" && variant === "food"\) return \([\s\S]*?<style>\{STYLES\}<\/style>\s*<\/div>\s*\);/);
-  assert.doesNotMatch(findMyFood, /ff-welcome-start-hotspot/);
+  assert.match(findMyFood, /className="ff-food-start-hitbox"[^>]*onClick=\{\(\) => setScreen\("player-info"\)\}/);
+  assert.match(findMyFood, /ff-food-start-hitbox \{ left:24%; top:86%; width:52%; height:12%; \}/);
   assert.match(miniRacer, /aria-label="Steer left"[\s\S]*onPointerDown/);
   assert.match(miniRacer, /aria-label="Accelerate"[\s\S]*onPointerDown/);
   assert.match(mobileShell, /game-shell-topbar-stats > label\.game-shell-header-action[\s\S]*width: 116px/);
@@ -471,7 +471,9 @@ test('Connect 4 status cards flank a brighter board with readable cell coordinat
   assert.match(component, /\.c4-board-frame \{ --cell: min\(10\.5vw, 52px\); \}/);
   assert.match(component, /connect-4-welcome-phone-bg\.webp/);
   assert.match(component, /connect-4-general-phone-bg\.webp/);
-  assert.match(component, /left:20%; top:62%; width:60%; height:14%;/);
+  assert.match(component, /left:18%; top:33%; width:64%; height:14%;/);
+  assert.match(component, /\.c4-side-panel\.active \.c4-side-avatar \{ animation: c4Glow/);
+  assert.doesNotMatch(component, /\.c4-side-panel\.active \.c4-side-avatar \{ animation: c4Float/);
 });
 
 test('Number Clouds menu label and game navbar controls stay grouped', () => {
@@ -500,7 +502,7 @@ test('new game backgrounds follow screen state and reserve phone art for portrai
   assert.match(zooGame, /const \[showWelcome, setShowWelcome\] = useState\(true\)/);
   assert.match(zooGame, /aria-label="Start Zoo Game"/);
   assert.doesNotMatch(zooGame, /<h1>Zoo Game<\/h1>/);
-  assert.match(zooStyles, /@media \(max-width: 600px\) and \(orientation: portrait\)[\s\S]*zoo-game-welcome-phone-bg\.webp[\s\S]*top: 34%;[\s\S]*height: 10%/);
+  assert.match(zooStyles, /@media \(max-width: 600px\) and \(orientation: portrait\)[\s\S]*zoo-game-welcome-phone-bg\.webp[\s\S]*top: 40%;[\s\S]*height: 14%/);
   assert.match(zooStyles, /\.zoogame-root \.game-wrapper \{[\s\S]*zoo-game-game-bg\.webp/);
   assert.match(zooStyles, /\.zoogame-root \.option-btn:disabled \{\s*opacity: 1;/);
   assert.match(airPuck, /@media \(max-width:700px\) and \(orientation:portrait\)\{[\s\S]*?air-puck-welcome-bg-phone\.webp/);
@@ -1302,6 +1304,7 @@ test('earned avatars unlock from game completions and are available in profile a
 
 test('Spellcheckers of Asgard has a spelling level for each of the nine realms', () => {
   const component = read('games/spellcheckers-of-asgard/SpellcheckersOfAsgard.jsx');
+  const route = read('app/games/[game]/page.tsx');
   const levelsMatch = component.match(/const LEVELS = (\[[\s\S]*?\n\]);\n\nconst RUNES/);
 
   assert.ok(levelsMatch, 'realm level data is present');
@@ -1315,6 +1318,25 @@ test('Spellcheckers of Asgard has a spelling level for each of the nine realms',
   assert.match(component, /LEVELS\.length \* GOAL/);
   assert.match(component, /<article><strong>\{LEVELS\.length\}<\/strong><span>Norse realms<\/span><\/article>/);
   assert.match(component, /All \{LEVELS\.length\} realms are cleared/);
+  assert.match(component, /const PORTRAIT_W = 360, PORTRAIT_H = 640/);
+  assert.match(component, /const drawPortraitScene = \(t\) =>/);
+  assert.match(component, /portraitRef\.current = isPortrait/);
+  assert.doesNotMatch(component, /Exit to menu/);
+  assert.match(component, /spellcheckersofasgard:main-menu/);
+  assert.match(route, /gameId === 'spellcheckersofasgard'[\s\S]*spellcheckersofasgard:main-menu/);
+});
+
+test('Reading Rescue keeps full background artwork and portrait game content within the screen', () => {
+  const readingRescue = read('games/finn-the-fox/ReadingRescue.jsx');
+  const globalStyles = read('app/globals.css');
+  const riddleBombs = read('games/riddle-bombs/RiddleBombs.jsx');
+
+  assert.match(readingRescue, /\.finn-fox--welcome \{[\s\S]*?background: url\('\/assets\/games\/finn-the-fox\/reading-rescue-welcome-bg\.webp'\) center \/ cover no-repeat/);
+  assert.match(readingRescue, /\.finn-fox--welcome::before \{ display: none; \}/);
+  assert.match(readingRescue, /\.finn-fox--welcome \.ff-welcome-screen \{[\s\S]*?background: transparent;[\s\S]*?backdrop-filter: none;/);
+  assert.doesNotMatch(globalStyles, /\.game-route-wrap \.game-shell--emojisportsquiz[^{]*\{[^}]*width:/);
+  assert.match(riddleBombs, /@media\(max-width:639px\) and \(orientation:portrait\)\{\.riddle-bombs--game\{display:block;height:100%;min-height:0;padding:8px;overflow:hidden\}[\s\S]*?\.rb-game-grid\{height:100%;grid-template-columns:minmax\(76px,.3fr\) minmax\(0,1fr\)/);
+  assert.match(riddleBombs, /\.rb-answers\{grid-template-columns:1fr;gap:6px\}\.rb-answers button\{min-height:38px;padding:8px 10px/);
 });
 
 test('128-Bit Trophy is a purchasable avatar with optimized artwork', () => {
@@ -1344,4 +1366,165 @@ test('account and support communications use the requested sender and protected 
   assert.match(deleteRoute, /services\.auth\.deleteUser\(user\.uid\)/);
   assert.match(deleteRoute, /removeLeagueMemberships/);
   assert.match(rules, /match \/supportEmailRateLimits\/\{userId\}[\s\S]*?allow read, write: if false/);
+});
+
+test('phone welcome backgrounds stay paired with clickable start controls and their correct mappings', () => {
+  const audits = [
+    {
+      name: 'Riddle Bombs',
+      asset: '/assets/games/riddle-bombs/riddle-bombs-welcome-phone-bg.webp',
+      files: ['games/riddle-bombs/RiddleBombs.jsx'],
+      button: /className="rb-welcome-start"[\s\S]*?onClick=\{\(\) => setScreen\('menu'\)\}/,
+      desktop: /left:59%; top:62%; width:29%; height:20%;/,
+      portrait: /rb-welcome-start\{left:8%;top:62%;width:88%;height:18%\}/,
+    },
+    {
+      name: 'Weather Wizard',
+      asset: '/assets/games/weather-wizard/weather-wizards-welcome-phone-bg.webp',
+      files: ['games/weather-wizard/WeatherWizard.jsx'],
+      button: /className="ww-welcome-start"[^>]*onClick=/,
+      desktop: /left:39%;top:78%;width:22%;height:13%/,
+      portrait: /ww-welcome-only \.ww-welcome-start\{left:28%;top:64%;width:44%;height:14%\}/,
+    },
+    {
+      name: 'Find My Food',
+      asset: '/assets/games/find-my-food/find-my-food-welcome-phone-bg.webp',
+      files: ['games/find-my-food/FindMyFood.jsx'],
+      button: /className="ff-food-start-hitbox"[^>]*onClick=\{\(\) => setScreen\("player-info"\)\}/,
+      desktop: /left:68%; top:61%; width:28%; height:23%/,
+      portrait: /ff-food-start-hitbox \{ left:24%; top:86%; width:52%; height:12%; \}/,
+    },
+    {
+      name: 'Duel of the Void',
+      asset: '/assets/games/duel-of-the-void/duel-of-the-void-welcome-bg-phone.webp',
+      files: ['games/duel-of-the-void/DuelOfTheVoid.jsx'],
+      button: /on\(\$\('btn-start'\), 'click', goInfo\)[\s\S]*?id="btn-start"/,
+      desktop: /#btn-start \{\s*position: absolute; top: 75%; left: 50%; width: 34%; height: 14%;/,
+      portrait: /#btn-start \{ width: 66%; height: 12%; \}/,
+    },
+    {
+      name: 'Zoo Game',
+      asset: '/assets/games/zoo-game/zoo-game-welcome-phone-bg.webp',
+      files: ['games/zoo-game/ZooGame.jsx', 'games/zoo-game/styles/zooGame.css'],
+      button: /className="zoo-welcome-start"[^>]*onClick=/,
+      desktop: /left:\s*38%;\s*top:\s*50%;\s*width:\s*24%;\s*height:\s*20%;/,
+      portrait: /left:\s*17%;\s*top:\s*40%;\s*width:\s*66%;\s*height:\s*14%;/,
+    },
+    {
+      name: 'Soccer Shootout',
+      asset: '/assets/games/soccer-shootout/splash-phone.webp',
+      files: ['app/globals.css', 'app/games/[game]/page.tsx'],
+      button: /className="soccer-shootout-welcome-start"[\s\S]*?onClick=\{\(\) => setShowRouteWelcome\(false\)\}/,
+      desktop: /\.soccer-shootout-welcome-start \{\s*position: absolute; top: 73%; left: 12%; width: 40%; height: 19%;/,
+      portrait: /\.soccer-shootout-welcome-start \{ top: 84%; left: 7%; width: 86%; height: 13%; \}/,
+    },
+    {
+      name: 'Know It All',
+      asset: '/assets/games/know-it-all/know-it-all-welcome-phone-bg.webp',
+      files: ['app/globals.css', 'app/games/[game]/page.tsx'],
+      button: /className="know-it-all-welcome-start"[\s\S]*?onClick=\{\(\) => setShowRouteWelcome\(false\)\}/,
+      desktop: /\.know-it-all-welcome-start \{\s*position: absolute; top: 76%; left: 36%; width: 28%; height: 18%;/,
+      portrait: /\.know-it-all-welcome-start \{ top: 77%; left: 20%; width: 60%; height: 16%; \}/,
+    },
+    {
+      name: 'Emoji Spelling',
+      asset: '/assets/games/emoji-spelling-game/emoji-spelling-welcome-bg-phone.webp',
+      files: ['app/globals.css', 'app/games/[game]/page.tsx'],
+      button: /className="emoji-spelling-welcome-start"[\s\S]*?onClick=\{\(\) => setShowRouteWelcome\(false\)\}/,
+      desktop: /\.emoji-spelling-welcome-start \{ position: absolute; top: 63%; left: 38%; width: 24%; height: 16%;/,
+      portrait: /\.emoji-spelling-welcome-start \{ top: 52%; left: 28%; width: 44%; height: 14%; \}/,
+    },
+    {
+      name: 'Tic Tac Roll',
+      asset: '/assets/games/tictacroll/tic-tac-roll-welcome-phone-bg.webp',
+      files: ['games/tictacroll/TicTacRoll.tsx'],
+      button: /aria-label="Play Now"[\s\S]*?setScreen\("setup"\)[\s\S]*?left: isPortraitPhone \? "23\.5%" : "37\.2%"/,
+      desktop: /top: isPortraitPhone \? "53\.5%" : "66\.2%"[\s\S]*?width: isPortraitPhone \? "53%" : "25\.8%"/,
+      portrait: /top: isPortraitPhone \? "53\.5%" : "66\.2%"[\s\S]*?height: isPortraitPhone \? "9%" : "13\.5%"/,
+    },
+    {
+      name: 'Count and Add',
+      asset: '/assets/games/count-and-add/count-and-add-welcome-phone-bg.webp',
+      files: ['games/count-and-add/CountAndAdd.jsx'],
+      button: /className="count-add-game__welcome-start"[^>]*onClick=/,
+      desktop: /left:59%;top:62%;width:29%;height:20%/,
+      portrait: /count-add-game--welcome \.count-add-game__welcome-start \{ left:14%; top:79%; width:72%; height:17%; \}/,
+    },
+    {
+      name: 'Look and Say',
+      asset: '/assets/games/look-and-say/look-and-say-welcome-phone-bg.webp',
+      files: ['games/look-and-say/LookAndSay.jsx', 'games/look-and-say/LookAndSay.css'],
+      button: /className="start-hotspot"[\s\S]*?onClick=\{startGame\}/,
+      desktop: /\.look-and-say-game \.start-hotspot \{\s*position: absolute;\s*z-index: 5;\s*left: 50%;\s*bottom: clamp\(16px, 4vh, 40px\);/,
+      portrait: /\.look-and-say-game \.start-hotspot \{ width: min\(72%, 280px\); \}/,
+    },
+    {
+      name: 'Burger Run',
+      asset: '/assets/games/burger-run/burger-run-welcome-phone-bg.webp',
+      files: ['games/burger-run/BurgerRun.jsx'],
+      button: /className="burger-run-start-hitbox"[^>]*onClick=/,
+      desktop: /burger-run-start-hitbox\{position:absolute;z-index:1;left:50%;top:58\.5%;width:21%;height:11\.6%;/,
+      portrait: /burger-run-start-hitbox\{left:50\.8%;top:54\.5%;width:37\.2%;height:6\.9%\}/,
+    },
+    {
+      name: 'Colour Clash 2',
+      asset: '/assets/games/colour-clash-2/colour-clash-2-welcome-phone-bg.webp',
+      files: ['games/colour-clash-2/ColourClash2.jsx'],
+      button: /className="welcome-start-hitbox"[^>]*onClick=/,
+      desktop: /left:37%;top:78%;width:26%;height:16%/,
+      portrait: /\.cc\[data-screen="welcome"\] \.welcome-start-hitbox\{left:20%;top:87%;width:60%;height:12%\}/,
+    },
+    {
+      name: 'Connect 4',
+      asset: '/assets/games/connect-4/connect-4-welcome-phone-bg.webp',
+      files: ['games/connect-4/Connect4.jsx'],
+      button: /className="c4-welcome-start"[^>]*onClick=/,
+      desktop: /\.c4-welcome-start \{ position:absolute; left:61%; top:59%; z-index:2; width:29%; height:18%;/,
+      portrait: /\.c4-root\[data-screen="welcome"\] \.c4-welcome-start \{ left:18%; top:33%; width:64%; height:14%; \}/,
+    },
+    {
+      name: 'Snowy Slopes',
+      asset: '/assets/games/snowy-slopes/snowy-slopes-welcome-phone-bg.webp',
+      files: ['games/snowy-slopes/SnowySlopes.jsx', 'games/snowy-slopes/SnowySlopes.css'],
+      button: /className="ss-btn-primary" onClick=\{goToModeScreen\}/,
+    },
+    {
+      name: 'Sports Quiz',
+      asset: '/assets/games/sports-quiz/sports-quiz-welcome-phone-bg.webp',
+      files: ['games/emoji-sports-quiz/EmojiSportsQuiz.jsx', 'games/emoji-sports-quiz/EmojiSportsQuiz.css'],
+      button: /className="sports-welcome-start" onClick=\{\(\) => setScreen\("modes"\)\}/,
+    },
+    {
+      name: 'Phonics Adventure',
+      asset: '/assets/games/phonics-adventure/phonics-adventure-welcome-phone-bg.webp',
+      files: ['games/phonics-adventure/PhonicAdventure.jsx'],
+      button: /className="primary-button" onClick=\{\(\) => setScreen\("menu"\)\}/,
+    },
+  ];
+
+  const collectGameSources = directory => fs.readdirSync(path.join(root, directory), { withFileTypes: true })
+    .flatMap(entry => {
+      const relativePath = path.join(directory, entry.name);
+      if (entry.isDirectory()) return collectGameSources(relativePath);
+      return /\.(?:jsx|tsx|css)$/i.test(entry.name) ? [relativePath] : [];
+    });
+  const sourceFiles = [...collectGameSources('games'), 'app/globals.css'];
+  const phoneWelcomeAssetPattern = /(['"`])([^'"`]*\/assets\/games\/[^'"`]*(?:welcome|splash)[^'"`]*(?:phone|mobile)[^'"`]*\.webp)\1/gi;
+  const referencedPhoneWelcomeAssets = new Set(
+    sourceFiles.flatMap(file => [...read(file).matchAll(phoneWelcomeAssetPattern)].map(([, , asset]) => asset)),
+  );
+  assert.deepEqual(
+    [...referencedPhoneWelcomeAssets].sort(),
+    audits.map(item => item.asset).sort(),
+    'every in-use phone welcome background should have an audited start control',
+  );
+
+  for (const audit of audits) {
+    const source = audit.files.map(read).join('\n');
+    assert.ok(fs.existsSync(path.join(root, 'public', audit.asset.slice(1))), `${audit.name} background exists`);
+    assert.ok(source.includes(audit.asset.slice(audit.asset.lastIndexOf('/') + 1)), `${audit.name} uses its phone background`);
+    assert.match(source, audit.button, `${audit.name} welcome screen has a clickable start control`);
+    if (audit.desktop) assert.match(source, audit.desktop, `${audit.name} desktop start mapping`);
+    if (audit.portrait) assert.match(source, audit.portrait, `${audit.name} portrait start mapping`);
+  }
 });

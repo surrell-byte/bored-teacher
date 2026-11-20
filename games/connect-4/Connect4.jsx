@@ -516,12 +516,12 @@ export default function Connect4({ onComplete, onHudUpdate, profileName = '' }) 
 
         .c4-root { --screen-background:var(--screen-background-default); }
         .c4-root * { box-sizing: border-box; }
-        .c4-welcome-start { position:absolute; left:72%; top:66%; z-index:2; width:19%; height:15%; border:0; border-radius:999px; background:transparent; cursor:pointer; }
+        .c4-welcome-start { position:absolute; left:61%; top:59%; z-index:2; width:29%; height:18%; border:0; border-radius:999px; background:transparent; cursor:pointer; }
         .c4-welcome-start:focus-visible { outline:4px solid #fff; outline-offset:5px; }
         @media (max-width:600px) and (orientation:portrait) {
           .c4-root[data-screen="welcome"] { --screen-background:url('/assets/games/connect-4/connect-4-welcome-phone-bg.webp'); }
           .c4-root:not([data-screen="welcome"]) { --screen-background:url('/assets/games/connect-4/connect-4-general-phone-bg.webp'); }
-          .c4-root[data-screen="welcome"] .c4-welcome-start { left:20%; top:62%; width:60%; height:14%; }
+          .c4-root[data-screen="welcome"] .c4-welcome-start { left:18%; top:33%; width:64%; height:14%; }
         }
 
         .c4-card {
@@ -668,7 +668,7 @@ export default function Connect4({ onComplete, onHudUpdate, profileName = '' }) 
           font-size: clamp(1.8rem, 3.2vw, 3rem);
           box-shadow: inset 0 4px 10px rgba(255,255,255,0.3), inset 0 -8px 16px rgba(0,0,0,0.35), 0 0 20px var(--badge-a)55;
         }
-        .c4-side-panel.active .c4-side-avatar { animation: c4Float 2s ease-in-out infinite; }
+        .c4-side-panel.active .c4-side-avatar { animation: c4Glow 2s ease-in-out infinite; }
         .c4-side-name {
           font-weight: 800; font-size: clamp(0.8rem, 1.1vw, 1rem); color: #e8edf5; text-align: center;
           white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
@@ -747,6 +747,10 @@ export default function Connect4({ onComplete, onHudUpdate, profileName = '' }) 
         @keyframes c4ScreenEnter { from { opacity: 0; transform: translateY(30px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
         @keyframes c4CardFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
         @keyframes c4Float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+        @keyframes c4Glow {
+          0%, 100% { box-shadow: inset 0 4px 10px rgba(255,255,255,0.3), inset 0 -8px 16px rgba(0,0,0,0.35), 0 0 18px var(--badge-a)66; }
+          50% { box-shadow: inset 0 4px 10px rgba(255,255,255,0.3), inset 0 -8px 16px rgba(0,0,0,0.35), 0 0 32px var(--badge-a)cc; }
+        }
         @keyframes c4DropIn { 0% { transform: scale(0.4) translateY(-8px); opacity: 0.3; } 70% { transform: scale(1.06); } 100% { transform: scale(1) translateY(0); opacity: 1; } }
         @keyframes c4WinBurst { 0% { transform: scale(1); } 30% { transform: scale(1.22); box-shadow: 0 0 0 6px rgba(255,215,0,0.5); } 60% { transform: scale(0.95); } 100% { transform: scale(1.05); box-shadow: 0 0 0 3px rgba(255,215,0,0.3); } }
         @keyframes c4WinPulse { 0%, 100% { box-shadow: 0 0 0 3px rgba(255,215,0,0.3), 0 0 20px rgba(255,215,0,0.15); } 50% { box-shadow: 0 0 0 5px rgba(255,215,0,0.5), 0 0 30px rgba(255,215,0,0.25); } }
@@ -756,7 +760,6 @@ export default function Connect4({ onComplete, onHudUpdate, profileName = '' }) 
         }
 
         @media (max-width: 720px) {
-          .c4-welcome-start { left:62%; top:66%; width:30%; height:15%; }
           .c4-game-row { display: flex; flex-direction: column; gap: 0.6rem; }
           .c4-side-panel {
             flex-direction: row; width: 100%; max-width: 380px; min-height: 0; padding: 0.5rem 1rem;

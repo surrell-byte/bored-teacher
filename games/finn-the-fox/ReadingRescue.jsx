@@ -470,16 +470,16 @@ const CSS = `
 }
 .finn-fox--user-info,
 .finn-fox--menu {
-  background-image: linear-gradient(rgba(23, 19, 47, .42), rgba(23, 19, 47, .58)), url('/assets/games/finn-the-fox/reading-rescue-main-menu-bg.webp');
+  background-image: url('/assets/games/finn-the-fox/reading-rescue-main-menu-bg.webp');
 }
-.finn-fox--user-info { background-image: linear-gradient(rgba(23, 19, 47, .42), rgba(23, 19, 47, .58)), url('/assets/games/finn-the-fox/reading-rescue-user-input-bg.webp'); }
+.finn-fox--user-info { background-image: url('/assets/games/finn-the-fox/reading-rescue-user-input-bg.webp'); }
 .finn-fox--story,
 .finn-fox--quiz,
 .finn-fox--retell {
-  background-image: linear-gradient(rgba(23, 19, 47, .52), rgba(23, 19, 47, .68)), url('/assets/games/finn-the-fox/reading-rescue-story-pages-bg.webp');
+  background-image: url('/assets/games/finn-the-fox/reading-rescue-story-pages-bg.webp');
 }
-.finn-fox--results { background-image: linear-gradient(rgba(23, 19, 47, .42), rgba(23, 19, 47, .58)), url('/assets/games/finn-the-fox/reading-rescue-welcome-bg.webp'); }
-.finn-fox::before { background: radial-gradient(ellipse at 50% 35%, transparent 26%, rgba(11, 7, 23, .32) 100%); }
+.finn-fox--results { background-image: url('/assets/games/finn-the-fox/reading-rescue-welcome-bg.webp'); }
+.finn-fox::before { display: none; }
 .finn-fox main { background: linear-gradient(145deg, rgba(255, 252, 245, .97), rgba(255, 248, 234, .95)); }
 .finn-fox main:not(.game-container) { background: linear-gradient(145deg, rgba(255, 252, 245, .97), rgba(255, 248, 234, .95)); }
 .finn-fox header {

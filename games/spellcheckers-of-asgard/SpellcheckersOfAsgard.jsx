@@ -8,6 +8,7 @@ import "./SpellcheckersOfAsgard.css";
    ========================================================= */
 
 const W = 640, H = 360;
+const PORTRAIT_W = 360, PORTRAIT_H = 640;
 const HORIZON = 190, BRIDGE_TOP = 220, FEET_Y = 244, UI_Y = 258;
 const GATE_X0 = 36, GATE_Y0 = 76, GATE_W = 148, GATE_H = 170;
 const GATE_CX = GATE_X0 + GATE_W / 2;
@@ -175,8 +176,9 @@ function shuffle(arr) {
   return arr;
 }
 
-function AsgardGameCanvas({ onWin, onExit, playerName }) {
+function AsgardGameCanvas({ onWin, playerName }) {
   const canvasRef = useRef(null);
+  const portraitRef = useRef(false);
   const stateRef = useRef(null);
   const onWinRef = useRef(onWin);
   onWinRef.current = onWin;
@@ -189,12 +191,21 @@ function AsgardGameCanvas({ onWin, onExit, playerName }) {
   useEffect(() => {
     const canvas = canvasRef.current;
     const onResize = () => {
+      const isPortrait = window.matchMedia("(max-width: 760px) and (orientation: portrait)").matches;
+      portraitRef.current = isPortrait;
+      const logicalWidth = isPortrait ? PORTRAIT_W : W;
+      const logicalHeight = isPortrait ? PORTRAIT_H : H;
       const maxW = Math.max(1, window.innerWidth - 32);
-      const maxH = Math.max(1, window.innerHeight - 200);
-      const fit = Math.min(maxW / W, maxH / H, 1.5);
+      const maxH = Math.max(1, window.innerHeight - (isPortrait ? 260 : 200));
+      const fit = Math.min(maxW / logicalWidth, maxH / logicalHeight, 1.5);
       const s = fit >= 1 ? Math.floor(fit) : fit;
-      canvas.style.width = W * s + "px";
-      canvas.style.height = H * s + "px";
+      if (canvas.width !== logicalWidth || canvas.height !== logicalHeight) {
+        canvas.width = logicalWidth;
+        canvas.height = logicalHeight;
+        canvas.getContext("2d").imageSmoothingEnabled = false;
+      }
+      canvas.style.width = logicalWidth * s + "px";
+      canvas.style.height = logicalHeight * s + "px";
     };
     window.addEventListener("resize", onResize);
     onResize();
@@ -1189,6 +1200,194 @@ function AsgardGameCanvas({ onWin, onExit, playerName }) {
       ctx.restore();
     };
 
+    const drawPortraitScene = (t) => {
+      const pw = PORTRAIT_W, ph = PORTRAIT_H;
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, pw, ph);
+      ctx.globalAlpha = 1;
+      ctx.globalCompositeOperation = "source-over";
+
+      const sky = ctx.createLinearGradient(0, 0, 0, ph);
+      sky.addColorStop(0, "#05030f");
+      sky.addColorStop(0.42, "#171039");
+      sky.addColorStop(0.75, "#29104a");
+      sky.addColorStop(1, "#080512");
+      ctx.fillStyle = sky;
+      ctx.fillRect(0, 0, pw, ph);
+
+      const nebula = ctx.createRadialGradient(180, 240, 15, 180, 240, 240);
+      nebula.addColorStop(0, "rgba(102,68,207,.34)");
+      nebula.addColorStop(1, "rgba(20,12,52,0)");
+      ctx.fillStyle = nebula;
+      ctx.fillRect(0, 0, pw, ph);
+      for (let i = 0; i < stars.length; i++) {
+        const star = stars[i];
+        const x = (star.x / LW) * pw;
+        const y = 70 + (star.y / HORIZON) * 270;
+        const twinkle = 0.4 + 0.6 * Math.sin(t * star.sp + star.ph);
+        ctx.globalAlpha = 0.25 + 0.65 * twinkle;
+        ctx.fillStyle = star.layer === 2 ? "#b8f6ff" : "#ffffff";
+        ctx.fillRect(x, y, star.s, star.s);
+      }
+      ctx.globalAlpha = 1;
+
+      const horizon = 445;
+      const skyline = ctx.createLinearGradient(0, horizon, 0, ph);
+      skyline.addColorStop(0, "#1c1535");
+      skyline.addColorStop(1, "#080611");
+      ctx.fillStyle = skyline;
+      ctx.beginPath();
+      ctx.moveTo(0, ph);
+      for (let x = 0; x <= pw; x += 24) {
+        const height = 28 + ((x * 37) % 70);
+        ctx.lineTo(x, horizon + height);
+        ctx.lineTo(x + 12, horizon + height);
+      }
+      ctx.lineTo(pw, ph);
+      ctx.closePath();
+      ctx.fill();
+
+      const bridgeTop = 224;
+      const bridgeBottom = 584;
+      const halfWidthAt = y => 38 + ((y - bridgeTop) / (bridgeBottom - bridgeTop)) * 58;
+      for (let i = 0; i < BIFROST.length; i++) {
+        const y0 = bridgeTop + (bridgeBottom - bridgeTop) * (i / BIFROST.length);
+        const y1 = bridgeTop + (bridgeBottom - bridgeTop) * ((i + 1) / BIFROST.length);
+        const w0 = halfWidthAt(y0), w1 = halfWidthAt(y1);
+        ctx.beginPath();
+        ctx.moveTo(pw / 2 - w0, y0);
+        ctx.lineTo(pw / 2 + w0, y0);
+        ctx.lineTo(pw / 2 + w1, y1);
+        ctx.lineTo(pw / 2 - w1, y1);
+        ctx.closePath();
+        ctx.fillStyle = BIFROST[i];
+        ctx.fill();
+        ctx.globalAlpha = 0.35;
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
+      ctx.strokeStyle = "rgba(195,237,255,.55)";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(180 - halfWidthAt(bridgeTop), bridgeTop);
+      ctx.lineTo(180 - halfWidthAt(bridgeBottom), bridgeBottom);
+      ctx.moveTo(180 + halfWidthAt(bridgeTop), bridgeTop);
+      ctx.lineTo(180 + halfWidthAt(bridgeBottom), bridgeBottom);
+      ctx.stroke();
+
+      const drawPortraitArch = (x, y, width, height, fill, stroke, lineWidth) => {
+        const radius = width / 2;
+        ctx.beginPath();
+        ctx.moveTo(x, y + height);
+        ctx.lineTo(x, y + radius);
+        ctx.arc(x + radius, y + radius, radius, Math.PI, 0);
+        ctx.lineTo(x + width, y + height);
+        ctx.closePath();
+        ctx.fillStyle = fill;
+        ctx.fill();
+        ctx.strokeStyle = stroke;
+        ctx.lineWidth = lineWidth;
+        ctx.stroke();
+      };
+      const gateGlow = ctx.createRadialGradient(180, 178, 10, 180, 178, 128);
+      gateGlow.addColorStop(0, "rgba(143,234,255,.42)");
+      gateGlow.addColorStop(1, "rgba(58,79,211,0)");
+      ctx.fillStyle = gateGlow;
+      ctx.fillRect(42, 70, 276, 240);
+      drawPortraitArch(90, 90, 180, 180, "#875f18", "#f0d26c", 6);
+      const portal = ctx.createRadialGradient(180, 200, 8, 180, 190, 100);
+      portal.addColorStop(0, "#f5ffff");
+      portal.addColorStop(0.24, "#83e5ff");
+      portal.addColorStop(0.62, "#475fe3");
+      portal.addColorStop(1, "#170b3c");
+      drawPortraitArch(111, 116, 138, 150, portal, "#c7f5ff", 3);
+      ctx.save();
+      ctx.globalCompositeOperation = "lighter";
+      for (let i = 0; i < 7; i++) {
+        const angle = t * (0.6 + i * 0.09) + i * 1.13;
+        ctx.beginPath();
+        ctx.arc(180 + Math.cos(angle) * 10, 201 + Math.sin(angle) * 8, 26 + i * 8, angle, angle + 1.2);
+        ctx.strokeStyle = `rgba(185,245,255,${0.18 - i * 0.016})`;
+        ctx.lineWidth = 2 + i;
+        ctx.stroke();
+      }
+      ctx.restore();
+      for (let i = 0; i < 6; i++) {
+        const y = 148 + i * 23;
+        drawRune(96, y, 12, i, "#ffd75e", 0.7 + 0.3 * Math.sin(t * 2 + i));
+        drawRune(253, y, 12, i + 2, "#ffd75e", 0.7 + 0.3 * Math.sin(t * 2 + i));
+      }
+
+      const heimdallX = 180 + (S.heimdallX - HEIMDALL_HOME) * 0.75;
+      drawHeimdall(heimdallX, 386, t);
+      const progress = clamp((PLAYER_START - S.playerX) / (PLAYER_START - PLAYER_THROUGH), 0, 1);
+      const playerY = 570 - progress * 224;
+      if (S.playerAlpha > 0.01) {
+        ctx.globalAlpha = S.playerAlpha;
+        drawPlayer(180, playerY, t, Math.abs(S.playerTX - S.playerX) > 2);
+        ctx.globalAlpha = 1;
+      }
+
+      ctx.fillStyle = "rgba(8,5,20,.88)";
+      ctx.fillRect(14, 12, 332, 48);
+      ctx.strokeStyle = "rgba(232,195,74,.65)";
+      ctx.strokeRect(14.5, 12.5, 331, 47);
+      ctx.textAlign = "left";
+      ctx.font = "bold 11px monospace";
+      ctx.fillStyle = "#8ce9ff";
+      ctx.fillText(`REALM ${S.level + 1} / ${LEVELS.length}`, 26, 31);
+      ctx.textAlign = "right";
+      ctx.fillStyle = "#f5df99";
+      ctx.fillText(`STREAK ${S.streak} / ${GOAL}`, 334, 31);
+      ctx.textAlign = "center";
+      ctx.font = "bold 13px monospace";
+      ctx.fillStyle = "#ffffff";
+      ctx.fillText(LEVELS[S.level].name, 180, 50);
+
+      if (S.word) {
+        ctx.fillStyle = "rgba(8,5,20,.9)";
+        ctx.fillRect(24, 590, 312, 34);
+        ctx.strokeStyle = "#4a3a6e";
+        ctx.strokeRect(24.5, 590.5, 311, 33);
+        ctx.font = "bold 14px monospace";
+        ctx.fillStyle = S.screen === "fail" ? "#ff9a9a" : "#ffe14d";
+        ctx.fillText(`SPELL: ${S.word[0]}`, 180, 612);
+      }
+
+      if (S.msg) {
+        const message = S.msg.text.length > 27 ? S.msg.text.slice(0, 27) : S.msg.text;
+        ctx.fillStyle = "rgba(8,5,20,.9)";
+        ctx.fillRect(32, 70, 296, 28);
+        ctx.strokeStyle = S.msg.color;
+        ctx.strokeRect(32.5, 70.5, 295, 27);
+        ctx.textAlign = "center";
+        ctx.font = "bold 10px monospace";
+        ctx.fillStyle = S.msg.color;
+        ctx.fillText(message, 180, 88);
+      }
+      if (S.screen === "title" || S.screen === "win") {
+        ctx.fillStyle = "rgba(5,3,15,.88)";
+        ctx.fillRect(18, 270, 324, 76);
+        ctx.strokeStyle = "#e8c34a";
+        ctx.strokeRect(18.5, 270.5, 323, 75);
+        ctx.textAlign = "center";
+        ctx.font = "bold 14px monospace";
+        ctx.fillStyle = "#fff3c4";
+        ctx.fillText(S.screen === "win" ? "NINE REALMS CLEARED" : "SPELLCHECKERS OF ASGARD", 180, 302);
+        ctx.font = "bold 10px monospace";
+        ctx.fillStyle = "#8ce9ff";
+        ctx.fillText("CORRECT THE RUNES TO CROSS THE BIFROST", 180, 326);
+      }
+      if (S.flash > 0) {
+        ctx.globalAlpha = S.flash * 0.55;
+        ctx.fillStyle = "#bff6ff";
+        ctx.fillRect(0, 0, pw, ph);
+        ctx.globalAlpha = 1;
+      }
+    };
+
     /* ====================== UI ====================== */
     const drawUI = (t) => {
       const pg = ctx.createLinearGradient(0, UI_Y, 0, H);
@@ -1496,6 +1695,10 @@ function AsgardGameCanvas({ onWin, onExit, playerName }) {
 
     /* ====================== render ====================== */
     const render = (t) => {
+      if (portraitRef.current) {
+        drawPortraitScene(t);
+        return;
+      }
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.clearRect(0, 0, W, H);
 
@@ -1558,7 +1761,6 @@ function AsgardGameCanvas({ onWin, onExit, playerName }) {
     <div className="soag-game-layout">
       <header className="soag-game-toolbar">
         <p>Warrior <strong>{playerName}</strong></p>
-        <button className="soag-secondary-button" type="button" onClick={onExit}>Exit to menu</button>
       </header>
       <canvas
         ref={canvasRef}
@@ -1619,6 +1821,12 @@ export default function SpellcheckersOfAsgard({ onComplete }) {
   const [nameError, setNameError] = useState("");
   const [result, setResult] = useState(null);
 
+  useEffect(() => {
+    const returnToMenu = () => setScreen("menu");
+    window.addEventListener("spellcheckersofasgard:main-menu", returnToMenu);
+    return () => window.removeEventListener("spellcheckersofasgard:main-menu", returnToMenu);
+  }, []);
+
   const completeGame = React.useCallback((score, accuracy) => {
     setResult({ score, accuracy });
     onComplete?.(score, accuracy);
@@ -1649,7 +1857,6 @@ export default function SpellcheckersOfAsgard({ onComplete }) {
           key={result === null ? "active-game" : "restarted-game"}
           playerName={playerName}
           onWin={completeGame}
-          onExit={() => setScreen("menu")}
         />
       </main>
     );
