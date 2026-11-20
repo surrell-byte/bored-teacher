@@ -9,7 +9,7 @@
   align-items: center;
   justify-content: center;
   font-family: Arial, Helvetica, sans-serif;
-  background: #bfe4ff url('/assets/covers/look-and-say-game-screen-bg.png') center / cover no-repeat;
+  background: #bfe4ff url('/assets/covers/look-and-say-game-screen-bg.webp') center / cover no-repeat;
   color: #2d3338;
   padding: clamp(18px, 3vh, 36px) clamp(18px, 4vw, 64px);
   position: relative;

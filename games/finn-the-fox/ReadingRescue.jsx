@@ -103,7 +103,7 @@ const RETELL_ACTIVITIES = {
 
 function getStoryImage(level, pageIndex) {
   if (level === 6) return `/assets/games/finn-the-fox/${TANYA_SCENE_IMAGES[Math.min(pageIndex, TANYA_SCENE_IMAGES.length - 1)]}`;
-  return `/assets/games/finn-the-fox/finn-${Math.min(pageIndex + 1, 5)}.png`;
+  return `/assets/games/finn-the-fox/finn-${Math.min(pageIndex + 1, 5)}.webp`;
 }
 
 function normalizeQuiz(level) {

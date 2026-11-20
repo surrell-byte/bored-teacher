@@ -29,11 +29,13 @@ test('home landing invites visitors to play as guests before registration', () =
   assert.match(home, /localStorage\.setItem\('guestUser', 'true'\)/);
   assert.match(home, /router\.push\('\/games'\)/);
   assert.match(home, /router\.push\('\/hub'\)/);
-  assert.match(background, /home:\s*\{ src: '\/assets\/images\/startup-background-desktop\.png'/);
+  assert.match(background, /home:\s*\{ src: '\/assets\/images\/startup-background-desktop\.webp'/);
+  assert.match(background, /startup-background-portrait\.webp/);
+  assert.match(background, /startup-background-tablet\.webp/);
   assert.match(home, /pendingPlayRef\.current = true/);
   assert.match(home, /disabled=\{isStarting\}/);
-  assert.match(read('app/globals.css'), /startup-background-portrait\.png/);
-  assert.match(read('app/globals.css'), /startup-background-tablet\.png/);
+  assert.match(read('app/globals.css'), /startup-background-portrait\.webp/);
+  assert.match(read('app/globals.css'), /startup-background-tablet\.webp/);
   assert.match(read('app/globals.css'), /@media \(min-width: 761px\) and \(max-width: 1100px\) and \(min-aspect-ratio: 5\/4\) and \(max-aspect-ratio: 3\/2\)/);
   assert.doesNotMatch(home, /AUTH_FALLBACK_DELAY_MS|router\.replace\('\/auth'\)/);
   assert.match(shell, /guestSaveProgressPromptShown/);
@@ -66,6 +68,9 @@ test('selected games are restricted to creator access', () => {
   assert.match(games, /isVisibleToUser\(gameId, isCreator\)/);
   assert.match(navbar, /isVisibleToUser\(gameId, creator\)/);
   assert.match(gameCard, /creatorOnly \? 'Creator-only game' : 'Teacher Pro game'/);
+  assert.match(games, /TEACHER_PRO_GAME_IDS\.has\(gameId\)/);
+  assert.ok(games.indexOf('Free Games') < games.indexOf('Teacher Pro Games'));
+  assert.match(games, /games\.sort\(\(a, b\) => \(GAME_NAMES\[a\] \?\? ''\)\.localeCompare\(GAME_NAMES\[b\] \?\? ''\)\)/);
 });
 
 test('work-in-progress games are marked coming soon and excluded from public listings', () => {
@@ -338,7 +343,6 @@ test('Hub and games pages advertise the four newest catalog additions dynamicall
   assert.match(catalog, /GAME_KEYS\.filter\(\(id\) => available\.has\(id\)\)\.slice\(-4\)\.reverse\(\)/);
   assert.match(hub, /getLatestGameKeys\(visibleGameIds\)/);
   assert.match(games, /getLatestGameKeys\(availableGameIds\)/);
-  assert.match(games, /new Map\(\[\.\.\.GAME_KEYS\]\.reverse\(\)\.map/);
 });
 
 test('game menu ellipsis is centered inside its square navbar control', () => {

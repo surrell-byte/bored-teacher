@@ -59,7 +59,7 @@ export default function AboutPage() {
 
           <div className="about-hero-visual">
             <img
-              src="/images/ubuntu.png"
+              src="/images/ubuntu.webp"
               alt="Ubuntu community image"
             />
           </div>
@@ -79,7 +79,7 @@ export default function AboutPage() {
 
         <div className="about-creator">
           <img
-            src="/about-creator.png"
+            src="/about-creator.webp"
             alt="Russell Mkahanana"
             className="about-creator-avatar"
           />

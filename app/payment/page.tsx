@@ -77,7 +77,7 @@ export default function PaymentPage() {
             rel="noreferrer"
             aria-label="Open the EcoCash payment page"
           >
-            <img src="/assets/images/ecocash-logo.png" alt="EcoCash logo" className="payment-ecocash-logo" />
+            <img src="/assets/images/ecocash-logo.webp" alt="EcoCash logo" className="payment-ecocash-logo" />
             <span>EcoCash payment page</span>
           </a>
           <p className="payment-ecocash-instructions">Send amount to +263780074825 and send your slip to boredteacherapp@gmail.com</p>

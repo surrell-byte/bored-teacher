@@ -8,17 +8,17 @@ const screens = {
 const planeData = {
   red: {
     name: "Jett",
-    image: "assets/images/characters/avatars/red-plane.png",
+    image: "assets/images/characters/avatars/red-plane.webp",
     offset: { x: -1.1, y: -3.2 }
   },
   blue: {
     name: "Donnie",
-    image: "assets/images/characters/avatars/blue-plane.png",
+    image: "assets/images/characters/avatars/blue-plane.webp",
     offset: { x: 1.1, y: 3.2 }
   },
   green: {
     name: "Mira",
-    image: "assets/images/characters/avatars/green-plane.png",
+    image: "assets/images/characters/avatars/green-plane.webp",
     offset: { x: 0.6, y: -3.2 }
   }
 };

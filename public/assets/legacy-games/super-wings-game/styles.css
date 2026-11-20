@@ -58,19 +58,19 @@ button {
 }
 
 .welcome-screen {
-  background-image: url("assets/images/welcome-screen/welcome-screen-bg.png");
+  background-image: url("assets/images/welcome-screen/welcome-screen-bg.webp");
 }
 
 .select-screen {
-  background-image: url("assets/images/character-selection-screen/character-selection-screen-bg.png");
+  background-image: url("assets/images/character-selection-screen/character-selection-screen-bg.webp");
 }
 
 .race-screen {
-  background-image: url("assets/images/game-screen/game-screen-bg.png");
+  background-image: url("assets/images/game-screen/game-screen-bg.webp");
 }
 
 .victory-screen {
-  background-image: url("assets/images/victory-screen/victory-screen-bg.png");
+  background-image: url("assets/images/victory-screen/victory-screen-bg.webp");
 }
 
 .hotspot,

@@ -10,7 +10,7 @@ import {
   GAME_DIFFICULTY, GAME_DESC,
 } from '@/constants/index';
 import GameCard from '@/components/cards/GameCard';
-import { COMING_SOON_GAME_IDS, isVisibleToUser } from '@/config/game-access';
+import { COMING_SOON_GAME_IDS, isVisibleToUser, TEACHER_PRO_GAME_IDS } from '@/config/game-access';
 
 const ManagePlayersModal = lazy(() => import('@/features/players/components/ManagePlayersModal'));
 
@@ -24,12 +24,14 @@ const DIFFICULTY_OPTIONS = [
   ...Array.from(new Set(GAME_KEYS.map(k => GAME_DIFFICULTY[k]).filter(Boolean))).sort(),
 ];
 
-const SORT_OPTIONS = [
-  { label: 'Sort: A–Z',         value: 'alpha' },
-  { label: 'Sort: Newest',      value: 'newest' },
-  { label: 'Sort: Best Score',  value: 'score' },
-  { label: 'Sort: Most Played', value: 'played' },
-];
+function alphabetizeGroups(gameIds: string[]) {
+  const groups = new Map<string, string[]>();
+  gameIds.forEach(gameId => {
+    const letter = (GAME_NAMES[gameId]?.trim().charAt(0) || '#').toUpperCase();
+    groups.set(letter, [...(groups.get(letter) ?? []), gameId]);
+  });
+  return [...groups.entries()];
+}
 
 export default function GamesPage() {
   const router = useRouter();
@@ -39,9 +41,7 @@ export default function GamesPage() {
   const [search,     setSearch]     = useState('');
   const [category,   setCategory]   = useState('All Categories');
   const [difficulty, setDifficulty] = useState('All Difficulties');
-  const [sort,       setSort]       = useState('alpha');
   const [playedOnly, setPlayedOnly] = useState(false);
-  const [viewMode, setViewMode] = useState<'alpha' | 'category'>('alpha');
   const [showManage, setShowManage] = useState(false);
   const [isCreator, setIsCreator] = useState(false);
   const availableGameIds = useMemo(
@@ -79,39 +79,23 @@ export default function GamesPage() {
         return name.includes(q) || desc.includes(q) || topic.includes(q);
       });
     }
-    if (sort === 'newest') {
-      const newOrder = new Map([...GAME_KEYS].reverse().map((id, index) => [id, index]));
-      games.sort((a, b) => (newOrder.get(a) ?? Number.MAX_SAFE_INTEGER) - (newOrder.get(b) ?? Number.MAX_SAFE_INTEGER));
-    }
-    if (sort === 'score')  games.sort((a, b) => (state.games[b]?.highScore ?? 0) - (state.games[a]?.highScore ?? 0));
-    if (sort === 'played') games.sort((a, b) => (state.games[b]?.completions ?? 0) - (state.games[a]?.completions ?? 0));
-    if (sort === 'alpha')  games.sort((a, b) => (GAME_NAMES[a] ?? '').localeCompare(GAME_NAMES[b] ?? ''));
+    games.sort((a, b) => (GAME_NAMES[a] ?? '').localeCompare(GAME_NAMES[b] ?? ''));
     return games;
-  }, [search, category, difficulty, sort, playedOnly, state.games, availableGameIds]);
+  }, [search, category, difficulty, playedOnly, state.games, availableGameIds]);
 
   const totalPlayed = GAME_KEYS.filter(k => (state.games[k]?.completions ?? 0) > 0).length;
   const totalScore  = Object.values(state.games).reduce((a, g) => a + (g.highScore ?? 0), 0);
   const hasActiveFilters = category !== 'All Categories' || difficulty !== 'All Difficulties' || !!search || playedOnly;
   const advertisedNewGames = getLatestGameKeys(availableGameIds);
 
-  const alphabeticalGroups = useMemo(() => {
-    if (sort !== 'alpha') return [] as Array<[string, string[]]>;
-    const groups = new Map<string, string[]>();
-    filteredGames.forEach(gameId => {
-      const letter = (GAME_NAMES[gameId]?.trim().charAt(0) || '#').toUpperCase();
-      groups.set(letter, [...(groups.get(letter) ?? []), gameId]);
-    });
-    return [...groups.entries()];
-  }, [filteredGames, sort]);
-
-  const categoryGroups = useMemo(() => {
-    const groups = new Map<string, string[]>();
-    filteredGames.forEach(gameId => {
-      const label = GAME_TAGS[gameId]?.label || 'Other';
-      groups.set(label, [...(groups.get(label) ?? []), gameId]);
-    });
-    return [...groups.entries()].sort(([left], [right]) => left.localeCompare(right));
-  }, [filteredGames]);
+  const freeGameGroups = useMemo(
+    () => alphabetizeGroups(filteredGames.filter(gameId => !TEACHER_PRO_GAME_IDS.has(gameId))),
+    [filteredGames],
+  );
+  const teacherProGameGroups = useMemo(
+    () => alphabetizeGroups(filteredGames.filter(gameId => TEACHER_PRO_GAME_IDS.has(gameId))),
+    [filteredGames],
+  );
 
   function clearFilters() {
     setCategory('All Categories'); setDifficulty('All Difficulties'); setSearch(''); setPlayedOnly(false);
@@ -223,13 +207,6 @@ export default function GamesPage() {
           <select className="games-select" value={difficulty} onChange={e => setDifficulty(e.target.value)} aria-label="Filter by difficulty">
             {DIFFICULTY_OPTIONS.map(d => <option key={d} value={d}>{d}</option>)}
           </select>
-          <select className="games-select" value={sort} onChange={e => setSort(e.target.value)} aria-label="Sort games">
-            {SORT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-          </select>
-          <div className="games-view-toggle" role="group" aria-label="Choose game view">
-            <button type="button" className={viewMode === 'alpha' ? 'active' : ''} onClick={() => setViewMode('alpha')} aria-pressed={viewMode === 'alpha'}>A–Z</button>
-            <button type="button" className={viewMode === 'category' ? 'active' : ''} onClick={() => setViewMode('category')} aria-pressed={viewMode === 'category'}>Categories</button>
-          </div>
         </div>
 
         <div className="hub-game-count">
@@ -251,33 +228,42 @@ export default function GamesPage() {
             </div>
           </div>
         ) : (
-          viewMode === 'alpha' ? alphabeticalGroups.map(([letter, gameIds]) => (
-            <section className="games-letter-group" key={letter} aria-labelledby={`games-letter-${letter}`}>
-              <h3 className="games-letter-heading" id={`games-letter-${letter}`}>{letter}</h3>
-              <div className="hub-game-grid">
-                {gameIds.map((gameId, i) => (
-                  <div
-                    key={gameId}
-                    className="card-stagger"
-                    style={{ '--stagger-i': i } as React.CSSProperties}
-                  >
-                    <GameCard gameId={gameId} onClick={handlePlay} comingSoon={COMING_SOON_GAME_IDS.has(gameId)} />
-                  </div>
+          <>
+            {freeGameGroups.length > 0 && (
+              <section className="games-letter-group" aria-labelledby="free-games-heading">
+                <h3 className="games-letter-heading" id="free-games-heading">Free Games</h3>
+                {freeGameGroups.map(([letter, gameIds]) => (
+                  <section className="games-letter-group" key={`free-${letter}`} aria-labelledby={`free-games-letter-${letter}`}>
+                    <h4 className="games-letter-heading" id={`free-games-letter-${letter}`}>{letter}</h4>
+                    <div className="hub-game-grid">
+                      {gameIds.map((gameId, i) => (
+                        <div key={gameId} className="card-stagger" style={{ '--stagger-i': i } as React.CSSProperties}>
+                          <GameCard gameId={gameId} onClick={handlePlay} comingSoon={COMING_SOON_GAME_IDS.has(gameId)} />
+                        </div>
+                      ))}
+                    </div>
+                  </section>
                 ))}
-              </div>
-            </section>
-          )) : categoryGroups.map(([group, gameIds]) => (
-            <section className="games-letter-group games-category-group" key={group} aria-labelledby={`games-category-${group}`}>
-              <h3 className="games-letter-heading" id={`games-category-${group}`}>{group}</h3>
-              <div className="hub-game-grid">
-                {gameIds.map((gameId, i) => (
-                  <div key={gameId} className="card-stagger" style={{ '--stagger-i': i } as React.CSSProperties}>
-                    <GameCard gameId={gameId} onClick={handlePlay} comingSoon={COMING_SOON_GAME_IDS.has(gameId)} />
-                  </div>
+              </section>
+            )}
+            {teacherProGameGroups.length > 0 && (
+              <section className="games-letter-group" aria-labelledby="teacher-pro-games-heading">
+                <h3 className="games-letter-heading" id="teacher-pro-games-heading">Teacher Pro Games</h3>
+                {teacherProGameGroups.map(([letter, gameIds]) => (
+                  <section className="games-letter-group" key={`teacher-pro-${letter}`} aria-labelledby={`teacher-pro-games-letter-${letter}`}>
+                    <h4 className="games-letter-heading" id={`teacher-pro-games-letter-${letter}`}>{letter}</h4>
+                    <div className="hub-game-grid">
+                      {gameIds.map((gameId, i) => (
+                        <div key={gameId} className="card-stagger" style={{ '--stagger-i': i } as React.CSSProperties}>
+                          <GameCard gameId={gameId} onClick={handlePlay} comingSoon={COMING_SOON_GAME_IDS.has(gameId)} />
+                        </div>
+                      ))}
+                    </div>
+                  </section>
                 ))}
-              </div>
-            </section>
-          ))
+              </section>
+            )}
+          </>
         )}
       </section>
 

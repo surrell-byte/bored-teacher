@@ -42,7 +42,7 @@ export const QUIZ_ROUNDS = [
     icon: "🏆",
     prizes: [100, 1_000, 10_000, 50_000, 100_000, 250_000, 500_000, 1_000_000],
     questions: [
-      { prompt: "A computer mouse’s movement is measured in “Mickeys”. What is being measured?", answers: ["Size", "Weight", "Speed", "Price"], correct: "Speed", images: ["mickeys-1.jpg", "mickeys-2.png"] },
+      { prompt: "A computer mouse’s movement is measured in “Mickeys”. What is being measured?", answers: ["Size", "Weight", "Speed", "Price"], correct: "Speed", images: ["mickeys-1.jpg", "mickeys-2.webp"] },
       { prompt: "About how long is Ninety Mile Beach in New Zealand?", answers: ["60 miles", "55 miles", "70 miles", "90 miles"], correct: "55 miles", images: ["ninety-mile-1.jpg", "ninety-mile-2.jpg"] },
       { prompt: "What kind of animal is a Flemish giant?", answers: ["Goat", "Rabbit", "Pigeon", "Elephant"], correct: "Rabbit", images: ["flemish-giant-1.jpg", "flemish-giant-2.jpg"] },
       { prompt: "What does “hippopotamus” mean?", answers: ["River horse", "Water donkey", "River donkey", "Water horse"], correct: "River horse", images: ["hippopotamus-1.jpg", "hippopotamus-2.jpg"] },

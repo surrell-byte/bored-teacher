@@ -10,9 +10,9 @@ const MOVE_CARDS = [
 ];
 const FINISH = 32;
 const BACKGROUNDS = [
-  { id: 'rainforest', name: 'Rainforest Run', image: '/assets/games/turbo-dash/td-rainforest-game-screen-bg.png' },
-  { id: 'sahara', name: 'Sahara Sands', image: '/assets/games/turbo-dash/td-sahara-sands-game-screen-bg.png' },
-  { id: 'snowy', name: 'Snowy Slopes', image: '/assets/games/turbo-dash/td-snowy-slopes-game-screen-bg.png' },
+  { id: 'rainforest', name: 'Rainforest Run', image: '/assets/games/turbo-dash/td-rainforest-game-screen-bg.webp' },
+  { id: 'sahara', name: 'Sahara Sands', image: '/assets/games/turbo-dash/td-sahara-sands-game-screen-bg.webp' },
+  { id: 'snowy', name: 'Snowy Slopes', image: '/assets/games/turbo-dash/td-snowy-slopes-game-screen-bg.webp' },
 ];
 const ZONES = {
   3: { icon: '🌴', label: 'SLOW ZONE', effect: -1 },
@@ -71,7 +71,7 @@ export default function TurboDash({ onComplete, profileName = '' }) {
   const [background, setBackground] = useState(BACKGROUNDS[0]);
 
   useEffect(() => {
-    [...BACKGROUNDS, { image: '/assets/games/turbo-dash/td-home-bg.png' }, { image: '/assets/games/turbo-dash/td-user-input-bg.png' }].forEach(({ image }) => {
+    [...BACKGROUNDS, { image: '/assets/games/turbo-dash/td-home-bg.webp' }, { image: '/assets/games/turbo-dash/td-user-input-bg.webp' }].forEach(({ image }) => {
       const preload = new Image();
       preload.src = image;
     });
@@ -163,9 +163,9 @@ export default function TurboDash({ onComplete, profileName = '' }) {
     setPlayers((previous) => previous.map((player, index) => ({ ...player, name: `P${index + 1}`, position: 0, status: '' })));
   }
 
-  if (screen === 'title') return <div className="turbo-dash td-screen td-home-screen" style={{ '--td-screen-bg': 'url(/assets/games/turbo-dash/td-home-bg.png)' }}><div className="td-title"><p>PREMIUM BOARD RACER</p><h1>TURBO<br />DASH</h1><button className="td-start" onClick={beginNames}>TAP TO RACE</button><small>2 Players · Skill Dice · Landmarks · Powerups</small></div></div>;
+  if (screen === 'title') return <div className="turbo-dash td-screen td-home-screen" style={{ '--td-screen-bg': 'url(/assets/games/turbo-dash/td-home-bg.webp)' }}><div className="td-title"><p>PREMIUM BOARD RACER</p><h1>TURBO<br />DASH</h1><button className="td-start" onClick={beginNames}>TAP TO RACE</button><small>2 Players · Skill Dice · Landmarks · Powerups</small></div></div>;
 
-  if (screen === 'names') return <div className="turbo-dash td-screen td-user-input-screen" style={{ '--td-screen-bg': 'url(/assets/games/turbo-dash/td-user-input-bg.png)' }}><h2>ENTER YOUR <b>NAMES</b></h2><div className="td-name-cards">{[0, 1].map((index) => <label key={index} className={`td-name-card td-player-${index + 1}`}><b>PLAYER {index + 1}</b><span>{index ? '🔵' : '🔴'}</span><input value={names[index]} maxLength={14} placeholder="YOUR NAME" onChange={(event) => setNames((previous) => previous.map((name, nameIndex) => nameIndex === index ? event.target.value : name))} /></label>)}</div><button className="td-next" disabled={!names[0].trim() || !names[1].trim()} onClick={beginVehicles}>CHOOSE VEHICLES →</button></div>;
+  if (screen === 'names') return <div className="turbo-dash td-screen td-user-input-screen" style={{ '--td-screen-bg': 'url(/assets/games/turbo-dash/td-user-input-bg.webp)' }}><h2>ENTER YOUR <b>NAMES</b></h2><div className="td-name-cards">{[0, 1].map((index) => <label key={index} className={`td-name-card td-player-${index + 1}`}><b>PLAYER {index + 1}</b><span>{index ? '🔵' : '🔴'}</span><input value={names[index]} maxLength={14} placeholder="YOUR NAME" onChange={(event) => setNames((previous) => previous.map((name, nameIndex) => nameIndex === index ? event.target.value : name))} /></label>)}</div><button className="td-next" disabled={!names[0].trim() || !names[1].trim()} onClick={beginVehicles}>CHOOSE VEHICLES →</button></div>;
 
   if (screen === 'vehicles') return <div className="turbo-dash td-screen td-vehicle-screen" style={{ '--td-screen-bg': `url(${background.image})` }}><h2>PICK YOUR <b>VEHICLE</b></h2><div className="td-vehicle-section">{players.map((player, index) => <div className="td-vehicle-block" key={index}><div className={`td-preview td-player-${index + 1}`}>{player.avatar}</div><strong>{player.name.toUpperCase()}</strong><div className="td-avatar-grid">{AVATARS.map((avatar) => <button className={avatar === player.avatar ? 'selected' : ''} key={avatar} onClick={() => setPlayers((previous) => previous.map((item, playerIndex) => playerIndex === index ? { ...item, avatar } : item))}>{avatar}</button>)}</div></div>)}</div><div className="td-background-picker" aria-label="Choose race background">{BACKGROUNDS.map(option => <button key={option.id} className={background.id === option.id ? 'selected' : ''} onClick={() => setBackground(option)}><img src={option.image} alt="" />{option.name}</button>)}</div><button className="td-next" onClick={beginRace}>START RACE 🏁</button></div>;
 

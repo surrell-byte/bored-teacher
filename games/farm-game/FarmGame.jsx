@@ -93,7 +93,7 @@ const FarmGameV1_CSS = `.farmgamev1-root, .farmgamev1-root * {
     }
 
     .farmgamev1-root {
-      background: linear-gradient(rgba(12, 50, 30, .18), rgba(12, 50, 30, .18)), url('/assets/games/farm/farm-bg.png') center / cover fixed;
+      background: linear-gradient(rgba(12, 50, 30, .18), rgba(12, 50, 30, .18)), url('/assets/games/farm/farm-bg.webp') center / cover fixed;
       font-family: 'Segoe UI', 'Poppins', 'Comic Neue', system-ui, sans-serif;
       min-height: 100vh;
       display: flex;

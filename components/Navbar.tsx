@@ -146,7 +146,7 @@ export default function Navbar() {
         <div className="brand">
           <Link href="/hub" aria-label="Go to home" style={{ display: 'inline-flex', alignItems: 'center', lineHeight: 0, textDecoration: 'none' }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/assets/images/logo.png" alt="" className="brand-logo" />
+            <img src="/assets/images/logo.webp" alt="" className="brand-logo" />
             <span className="brand-word">
               <span className="brand-word-top">BORED</span>
               <span className="brand-word-bottom">TEACHER</span>

@@ -6,10 +6,10 @@ import { GameHelpText } from '@/engine/layout/GameTranslationContext';
 
 const TARGET_SCORE = 3;
 const CHARACTER_OPTIONS = [
-  { id: 'parachuter-1', name: 'Sky', src: '/assets/games/parachute-drop/parachuter-1.png' },
-  { id: 'parachuter-2', name: 'Breeze', src: '/assets/games/parachute-drop/parachuter-2.png' },
-  { id: 'parachuter-3', name: 'Cloud', src: '/assets/games/parachute-drop/parachuter-3.png' },
-  { id: 'parachuter-4', name: 'Sunny', src: '/assets/games/parachute-drop/parachuter-4.png' },
+  { id: 'parachuter-1', name: 'Sky', src: '/assets/games/parachute-drop/parachuter-1.webp' },
+  { id: 'parachuter-2', name: 'Breeze', src: '/assets/games/parachute-drop/parachuter-2.webp' },
+  { id: 'parachuter-3', name: 'Cloud', src: '/assets/games/parachute-drop/parachuter-3.webp' },
+  { id: 'parachuter-4', name: 'Sunny', src: '/assets/games/parachute-drop/parachuter-4.webp' },
 ];
 const CARD_COLORS = [
   { id: 'red', label: 'Red', hex: '#ef4444' },
@@ -396,7 +396,7 @@ export default function ParachuteDrop({ onComplete, profileName = '' }) {
           </div>
           <div className="pd-shark-row" aria-hidden="true">
             {Array.from({ length: 7 }, (_, index) => (
-              <img key={index} src="/assets/games/parachute-drop/shark.png" alt="" style={{ '--shark-delay': `${index * -0.7}s` }} />
+              <img key={index} src="/assets/games/parachute-drop/shark.webp" alt="" style={{ '--shark-delay': `${index * -0.7}s` }} />
             ))}
           </div>
         </>

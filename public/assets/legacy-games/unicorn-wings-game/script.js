@@ -8,17 +8,17 @@ const screens = {
 const unicornData = {
   luna: {
     name: "Luna",
-    image: "assets/images/characters/avatar-selection/luna.png",
+    image: "assets/images/characters/avatar-selection/luna.webp",
     offset: { x: -1.1, y: -3.2 }
   },
   stella: {
     name: "Stella",
-    image: "assets/images/characters/avatar-selection/stella.png",
+    image: "assets/images/characters/avatar-selection/stella.webp",
     offset: { x: 1.1, y: 3.2 }
   },
   rosie: {
     name: "Rosie",
-    image: "assets/images/characters/avatar-selection/rosie.png",
+    image: "assets/images/characters/avatar-selection/rosie.webp",
     offset: { x: 0.6, y: -3.2 }
   }
 };

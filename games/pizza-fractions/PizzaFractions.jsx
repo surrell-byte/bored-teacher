@@ -283,8 +283,8 @@ const STYLES = `
   margin-top: -6px;
   text-align: center;
 }
-.pizza-fractions-game { background: linear-gradient(rgba(35,14,5,.16),rgba(35,14,5,.16)), url('/games/pizza-fractions/game-bg.png') center / cover fixed; overflow: auto; }
-@media (max-width: 640px), (orientation: portrait) { .pizza-fractions-game { background-image: linear-gradient(rgba(35,14,5,.16),rgba(35,14,5,.16)), url('/games/pizza-fractions/game-bg-phone.png'); background-position: center; background-size: cover; } }
+.pizza-fractions-game { background: linear-gradient(rgba(35,14,5,.16),rgba(35,14,5,.16)), url('/games/pizza-fractions/game-bg.webp') center / cover fixed; overflow: auto; }
+@media (max-width: 640px), (orientation: portrait) { .pizza-fractions-game { background-image: linear-gradient(rgba(35,14,5,.16),rgba(35,14,5,.16)), url('/games/pizza-fractions/game-bg-phone.webp'); background-position: center; background-size: cover; } }
 .pizza-fractions-pizza-stage { width: 100%; display: grid; place-items: center; }
 /* Keep the pie centered over the chopping board artwork at every viewport size. */
 .pizza-fractions-pizza-container { width: 100%; }

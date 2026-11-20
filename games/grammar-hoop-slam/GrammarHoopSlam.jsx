@@ -116,7 +116,7 @@ export default function GrammarHoopSlam({ onComplete, profileName = '' }) {
 
   if (screen === "start") return (
     <div style={{
-      ...backgroundStyle('/assets/grammar-gym/gg-welcome-bg.png'),
+      ...backgroundStyle('/assets/grammar-gym/gg-welcome-bg.webp'),
       minHeight: "100vh", display: "flex", flexDirection: "column",
       alignItems: "center", justifyContent: "center",
       fontFamily: "'Segoe UI', sans-serif", color: "#f1f5f9", padding: 24, textAlign: "center",
@@ -154,7 +154,7 @@ export default function GrammarHoopSlam({ onComplete, profileName = '' }) {
 
   if (screen === "complete") return (
     <div style={{
-      ...backgroundStyle('/assets/grammar-gym/gg-settings-bg.png'),
+      ...backgroundStyle('/assets/grammar-gym/gg-settings-bg.webp'),
       minHeight: "100vh", display: "flex", flexDirection: "column",
       alignItems: "center", justifyContent: "center",
       fontFamily: "'Segoe UI', sans-serif", color: "#f1f5f9", padding: 24, textAlign: "center",
@@ -188,7 +188,7 @@ export default function GrammarHoopSlam({ onComplete, profileName = '' }) {
 
   return (
     <div style={{
-      ...backgroundStyle('/assets/grammar-gym/gg-level-' + level + '-bg.png'),
+      ...backgroundStyle('/assets/grammar-gym/gg-level-' + level + '-bg.webp'),
       minHeight: "100vh", display: "flex", flexDirection: "column",
       alignItems: "center", justifyContent: "center",
       fontFamily: "'Segoe UI', sans-serif", color: "#f1f5f9", padding: 24,
