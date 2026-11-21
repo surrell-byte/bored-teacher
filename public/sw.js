@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bored-teacher-runtime-v6';
+const CACHE_NAME = 'bored-teacher-runtime-v7';
 
 self.addEventListener('install', event => {
   event.waitUntil(self.skipWaiting());
@@ -70,6 +70,11 @@ self.addEventListener('fetch', event => {
       if (cached) return cached;
 
       if (isLegacyPng && isPublicAsset && fallbackRequest !== preferredRequest) {
+        const preferredResponse = await fetch(preferredRequest).catch(() => null);
+        if (preferredResponse?.ok) {
+          await cache.put(preferredRequest, preferredResponse.clone());
+          return preferredResponse;
+        }
         const fallback = await fetch(fallbackRequest).then(res => {
           if (res.ok) cache.put(fallbackRequest, res.clone());
           return res;

@@ -474,6 +474,10 @@ test('Connect 4 status cards flank a brighter board with readable cell coordinat
   assert.match(component, /connect-4-welcome-phone-bg\.webp/);
   assert.match(component, /connect-4-general-phone-bg\.webp/);
   assert.match(component, /left:18%; top:33%; width:64%; height:14%;/);
+  assert.match(component, /\.c4-cell\.p1 \{[^}]*radial-gradient\([^}]*var\(--p1-a\)/);
+  assert.match(component, /\.c4-cell\.p2 \{[^}]*radial-gradient\([^}]*var\(--p2-a\)/);
+  assert.doesNotMatch(component, /var\(--badge-a(?:,[^)]*)?\)(?:55|33|66|cc|1a)/);
+  assert.match(component, /color-mix\(in srgb, var\(--badge-a\) 55%, transparent\)/);
   assert.match(component, /\.c4-side-panel\.active \.c4-side-avatar \{ animation: c4Glow/);
   assert.doesNotMatch(component, /\.c4-side-panel\.active \.c4-side-avatar \{ animation: c4Float/);
 });
@@ -685,6 +689,15 @@ test('Tile Lanes is registered as a Teacher Pro game', () => {
   assert.match(component, /tilelanes/);
 });
 
+test('Tile Battle uses in-browser synthesized sound instead of missing MP3 files', () => {
+  const component = read('games/tile-battle/TileBattle.jsx');
+
+  assert.doesNotMatch(component, /\/assets\/sounds\/tile-battle\/\$\{?file\}?|new Audio\(/);
+  assert.match(component, /window\.AudioContext \|\| window\.webkitAudioContext/);
+  assert.match(component, /createOscillator\(\)/);
+  assert.match(component, /Audio is an optional enhancement/);
+});
+
 test('Colour Tunes start target, menu controls, and sequence counter stay usable', () => {
   const styles = read('app/globals.css');
   const component = read('games/colour-clash/ColourClash.jsx');
@@ -797,7 +810,7 @@ test('Service worker never caches Next.js chunks and clears stale runtime caches
   const serviceWorker = read('public/sw.js');
   const registration = read('components/ServiceWorkerRegistration.tsx');
 
-  assert.match(serviceWorker, /const CACHE_NAME = 'bored-teacher-runtime-v6'/);
+  assert.match(serviceWorker, /const CACHE_NAME = 'bored-teacher-runtime-v7'/);
   assert.match(serviceWorker, /if \(!isPublicAsset && !isLegacyPng\) return/);
   assert.match(serviceWorker, /const isLegacyPng = request\.destination === 'image'/);
   assert.match(serviceWorker, /fetch\(preferredRequest\)/);

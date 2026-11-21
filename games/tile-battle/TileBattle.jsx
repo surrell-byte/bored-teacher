@@ -34,12 +34,6 @@ export const THEMES = {
   slate:   { bg: "#0e1117", surface: "#161b25", surface2: "#1e2535", border: "#2a3348", border2: "#3c4d68", text: "#e0e8f8", text2: "#7888a8", accent: "#4a7abf", accent2: "#375e99" },
 };
 
-// ── Sound effects ── (drop matching mp3s in public/assets/sounds/tile-battle/ — missing files fail silently)
-const SFX_FILES = {
-  flip: "flip.mp3", heavy: "heavy.mp3", attack: "attack.mp3", heal: "heal.mp3",
-  recover: "recover.mp3", steal: "steal.mp3", explosion: "explosion.mp3",
-  win: "win.mp3", click: "click.mp3", music: "music.mp3",
-};
 const SFX_FOR_OUTCOME = { 1: "heavy", 2: "attack", 3: "steal", 4: "heal", 5: "recover", 6: "explosion" };
 
 function shuffle(arr) {
@@ -201,30 +195,37 @@ export default function TileBattle({ onComplete, themeId, profileName = '' }) {
 
   // ── sound ──
   const sfxRef = useRef({});
-  useEffect(() => {
-    const audioElements = {};
-    Object.entries(SFX_FILES).forEach(([key, file]) => {
-      const a = new Audio(`/assets/sounds/tile-battle/${file}`);
-      a.volume = key === "music" ? 0.18 : 0.55;
-      if (key === "music") a.loop = true;
-      audioElements[key] = a;
-    });
-    sfxRef.current = audioElements;
-    return () => { Object.values(audioElements).forEach((a) => a.pause()); };
-  }, []);
+  useEffect(() => () => sfxRef.current?.close?.(), []);
   const playSound = useCallback((key) => {
-    const a = sfxRef.current[key];
-    if (!a || muted) return;
-    a.pause();
-    a.currentTime = 0;
-    a.play().catch(() => {}); // ignore missing/blocked audio
+    if (muted || typeof window === "undefined") return;
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+      const ctx = sfxRef.current instanceof AudioContext ? sfxRef.current : new AudioContext();
+      sfxRef.current = ctx;
+      if (ctx.state === "suspended") ctx.resume().catch(() => {});
+      const tones = {
+        click: [320, 0.05], flip: [220, 0.08], heavy: [110, 0.18],
+        attack: [150, 0.12], heal: [520, 0.16], recover: [440, 0.14],
+        steal: [180, 0.16], explosion: [70, 0.28], win: [660, 0.32],
+      };
+      const [frequency, duration] = tones[key] || tones.click;
+      const oscillator = ctx.createOscillator();
+      const gain = ctx.createGain();
+      oscillator.type = key === "explosion" ? "sawtooth" : "triangle";
+      oscillator.frequency.setValueAtTime(frequency, ctx.currentTime);
+      gain.gain.setValueAtTime(0.08, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+      oscillator.connect(gain);
+      gain.connect(ctx.destination);
+      oscillator.start();
+      oscillator.stop(ctx.currentTime + duration);
+    } catch {
+      // Audio is an optional enhancement; gameplay must remain usable when blocked.
+    }
   }, [muted]);
   const toggleMute = useCallback(() => {
-    setMuted((m) => {
-      const next = !m;
-      Object.values(sfxRef.current).forEach((a) => { a.muted = next; });
-      return next;
-    });
+    setMuted((m) => !m);
   }, []);
 
   // ── particles ──
@@ -322,7 +323,6 @@ export default function TileBattle({ onComplete, themeId, profileName = '' }) {
     setEnd(null);
     setConfetti([]);
     setScreen("game");
-    sfxRef.current.music?.play().catch(() => {});
   }, []);
 
   const finishGame = useCallback((p1Dead, p2Dead, finalHp) => {
@@ -337,8 +337,6 @@ export default function TileBattle({ onComplete, themeId, profileName = '' }) {
 
     setEnd({ emoji, title, msg, winner, hp: finalHp });
     setScreen("end");
-    sfxRef.current.music?.pause();
-    if (sfxRef.current.music) sfxRef.current.music.currentTime = 0;
     playSound("win");
     launchConfetti();
 

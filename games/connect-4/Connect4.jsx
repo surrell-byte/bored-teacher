@@ -628,7 +628,7 @@ export default function Connect4({ onComplete, onHudUpdate, profileName = '' }) 
         .c4-badge-avatar {
           width: clamp(38px, 4.4vw, 54px); height: clamp(38px, 4.4vw, 54px); border-radius: 50%; flex-shrink: 0;
           display: flex; align-items: center; justify-content: center; font-size: clamp(1.1rem, 2vw, 1.7rem);
-          box-shadow: inset 0 3px 8px rgba(255,255,255,0.3), inset 0 -6px 12px rgba(0,0,0,0.35), 0 0 14px var(--badge-a, #d4a853)55;
+          box-shadow: inset 0 3px 8px rgba(255,255,255,0.3), inset 0 -6px 12px rgba(0,0,0,0.35), 0 0 14px color-mix(in srgb, var(--badge-a, #d4a853) 55%, transparent);
         }
         .c4-badge-info { min-width: 0; }
         .c4-badge-right .c4-badge-info { text-align: right; }
@@ -660,13 +660,13 @@ export default function Connect4({ onComplete, onHudUpdate, profileName = '' }) 
         }
         .c4-side-panel.active {
           border-color: var(--badge-a); background: linear-gradient(160deg, rgba(22,54,86,0.99), rgba(7,18,34,0.99));
-          box-shadow: 0 0 0 2px var(--badge-a)55, 0 0 30px var(--badge-a)33, inset 0 1px 0 rgba(255,255,255,0.08);
+          box-shadow: 0 0 0 2px color-mix(in srgb, var(--badge-a) 55%, transparent), 0 0 30px color-mix(in srgb, var(--badge-a) 33%, transparent), inset 0 1px 0 rgba(255,255,255,0.08);
         }
         .c4-side-avatar {
           width: clamp(56px, 7vw, 104px); height: clamp(56px, 7vw, 104px); border-radius: 50%;
           display: flex; align-items: center; justify-content: center;
           font-size: clamp(1.8rem, 3.2vw, 3rem);
-          box-shadow: inset 0 4px 10px rgba(255,255,255,0.3), inset 0 -8px 16px rgba(0,0,0,0.35), 0 0 20px var(--badge-a)55;
+          box-shadow: inset 0 4px 10px rgba(255,255,255,0.3), inset 0 -8px 16px rgba(0,0,0,0.35), 0 0 20px color-mix(in srgb, var(--badge-a) 55%, transparent);
         }
         .c4-side-panel.active .c4-side-avatar { animation: c4Glow 2s ease-in-out infinite; }
         .c4-side-name {
@@ -676,7 +676,7 @@ export default function Connect4({ onComplete, onHudUpdate, profileName = '' }) 
         .c4-side-score { font-family: 'DM Mono', monospace; font-size: 0.72rem; opacity: 0.95; color: #d5e7fa; letter-spacing: 0.5px; }
         .c4-side-turn {
           font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 1.5px; text-transform: uppercase;
-          color: var(--badge-a); background: var(--badge-a)1a; border: 1px solid var(--badge-a)55;
+          color: var(--badge-a); background: color-mix(in srgb, var(--badge-a) 10%, transparent); border: 1px solid color-mix(in srgb, var(--badge-a) 55%, transparent);
           padding: 3px 10px; border-radius: 100px;
         }
 
@@ -748,8 +748,8 @@ export default function Connect4({ onComplete, onHudUpdate, profileName = '' }) 
         @keyframes c4CardFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
         @keyframes c4Float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
         @keyframes c4Glow {
-          0%, 100% { box-shadow: inset 0 4px 10px rgba(255,255,255,0.3), inset 0 -8px 16px rgba(0,0,0,0.35), 0 0 18px var(--badge-a)66; }
-          50% { box-shadow: inset 0 4px 10px rgba(255,255,255,0.3), inset 0 -8px 16px rgba(0,0,0,0.35), 0 0 32px var(--badge-a)cc; }
+          0%, 100% { box-shadow: inset 0 4px 10px rgba(255,255,255,0.3), inset 0 -8px 16px rgba(0,0,0,0.35), 0 0 18px color-mix(in srgb, var(--badge-a) 40%, transparent); }
+          50% { box-shadow: inset 0 4px 10px rgba(255,255,255,0.3), inset 0 -8px 16px rgba(0,0,0,0.35), 0 0 32px color-mix(in srgb, var(--badge-a) 80%, transparent); }
         }
         @keyframes c4DropIn { 0% { transform: scale(0.4) translateY(-8px); opacity: 0.3; } 70% { transform: scale(1.06); } 100% { transform: scale(1) translateY(0); opacity: 1; } }
         @keyframes c4WinBurst { 0% { transform: scale(1); } 30% { transform: scale(1.22); box-shadow: 0 0 0 6px rgba(255,215,0,0.5); } 60% { transform: scale(0.95); } 100% { transform: scale(1.05); box-shadow: 0 0 0 3px rgba(255,215,0,0.3); } }
