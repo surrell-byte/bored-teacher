@@ -70,3 +70,19 @@ esl-game-hub/
   `app/games/[gameId]/page.tsx` can load them (e.g. `public/games/unicorn-trophy-run/unicorn.html`)
 - Firebase config is already embedded in `lib/firebase.ts`
 - All 11 themes work via the theme selector in the Navbar
+
+## Game quality assurance
+
+Use the game QA scripts for focused release checks:
+
+```bash
+npm run qa:assets
+npm run qa:featured
+npm run qa:games
+npm run qa:release
+```
+
+- `qa:assets` audits direct image, audio, icon, and font asset references.
+- `qa:featured` completes the Flagmaster featured-game route at mobile, tablet, and desktop viewports.
+- `qa:games` smoke-tests every available catalog game across mobile, tablet, desktop, and short-landscape viewports.
+- `qa:release` is the minimum automated release gate: catalog checks, asset audit, and regression tests.

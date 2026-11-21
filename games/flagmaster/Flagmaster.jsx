@@ -304,6 +304,10 @@ select.fm-field-input { cursor:pointer; }
 .fm-message-panel.fm-msg-wrong { background: rgba(231,76,60,0.08); border-color: rgba(231,76,60,0.3); color:#8b1a1a; }
 
 .fm-map-frame { position:relative; width:100%; height:340px; background: url('/assets/games/flagmaster/flagmaster-mission-map-bg.webp') center / cover no-repeat, radial-gradient(circle at 50% 50%, #1a3358, #0b1628); border-radius:2px; margin:20px 0; overflow:hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+.fm-screen.fm-map-screen { height:100%; }
+.fm-screen.fm-map-screen .fm-card { width:100%; height:100%; min-height:100%; }
+.fm-screen.fm-map-screen .fm-card-inner { min-height:100%; display:flex; flex-direction:column; }
+.fm-screen.fm-map-screen .fm-map-frame { flex:1 1 auto; min-height:340px; }
 .fm-map-node { position:absolute; width:56px; height:56px; border-radius:50%; background: rgba(17,34,64,0.85); border:2px solid rgba(201,168,76,0.4); display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:1.6rem; transform: translate(-50%,-50%); cursor:pointer; transition: all .25s cubic-bezier(.2,.9,.3,1.2); z-index:5; box-shadow: 0 4px 16px rgba(0,0,0,0.4); }
 .fm-map-node.fm-breathe { animation: fm-breathe 3s ease-in-out infinite; }
 @keyframes fm-breathe { 0%,100% { transform: translate(-50%,-50%) scale(1); } 50% { transform: translate(-50%,-50%) scale(1.05); } }
@@ -330,7 +334,7 @@ select.fm-field-input { cursor:pointer; }
   .fm-screen.fm-welcome-screen { max-width:min(940px, calc(100vw - 120px)); }
   .fm-card-inner { padding:clamp(34px, 4vw, 58px); }
   .fm-screen.fm-welcome-screen .fm-card-inner { padding:clamp(38px, 5vw, 68px) clamp(80px, 12vw, 160px); }
-  .fm-screen.fm-map-screen .fm-map-frame { height:460px; margin:26px 0; }
+  .fm-screen.fm-map-screen .fm-map-frame { height:clamp(300px, calc(100dvh - 600px), 380px); flex:none; margin:26px 0; }
   .fm-screen.fm-map-screen .fm-map-node { width:68px; height:68px; font-size:2rem; }
   .fm-region-list { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:12px; text-align:left; }
   .fm-region-list .fm-region-btn { margin:0; min-height:112px; font-size:1rem; }
@@ -705,7 +709,7 @@ export default function Flagmaster({ onComplete, darkMode = false, isCreator = f
           </div>
         )}
         <div className="fm-map-frame">
-          <svg width="100%" height="100%" style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 2 }}>
+          <svg viewBox="0 0 100 100" preserveAspectRatio="none" width="100%" height="100%" style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 2 }}>
             <defs>
               <linearGradient id="fmRouteGrad" x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop offset="0%" stopColor="#2a9d8f" stopOpacity="0.7" />
@@ -713,7 +717,7 @@ export default function Flagmaster({ onComplete, darkMode = false, isCreator = f
                 <stop offset="100%" stopColor="#c0392b" stopOpacity="0.7" />
               </linearGradient>
             </defs>
-            <polyline points={NODE_POSITIONS.map(pos => `${pos.x}%,${pos.y}%`).join(" ")} vectorEffect="non-scaling-stroke" stroke="url(#fmRouteGrad)" strokeWidth="2" fill="none" strokeLinecap="round" opacity="0.8" />
+            <polyline points={NODE_POSITIONS.map(pos => `${pos.x},${pos.y}`).join(" ")} vectorEffect="non-scaling-stroke" stroke="url(#fmRouteGrad)" strokeWidth="2" fill="none" strokeLinecap="round" opacity="0.8" />
           </svg>
           {LEVELS.map((level, i) => {
             const completed = !!levelCompleted[i];

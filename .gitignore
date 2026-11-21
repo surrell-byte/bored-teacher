@@ -16,6 +16,8 @@
 # next.js
 /.next/
 /.next-dev/
+.qa-results/
+qa-results/
 /out/
 /.kilo/
 /backup/

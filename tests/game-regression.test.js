@@ -997,6 +997,40 @@ test('Tic Tac Roll uses a pip die beside turn status and resolves roll-mode acti
   assert.match(statusMarkup, /↻ Play Again/);
   assert.doesNotMatch(component.slice(boardStart), /Play Again/);
   assert.match(component, /animation: rolling \? "diceTumble 0\.32s ease-in-out infinite"/);
+  assert.match(component, /endGame\("win", wl, player\)/);
+  assert.match(component, /function endGame\(result: "win" \| "draw", wl: number\[\] \| null, winner: "X" \| "O" \| null = null\)/);
+  assert.match(component, /const winningPlayer = winner \|\| currentPlayer/);
+});
+
+test('game QA runners and release scripts are wired', () => {
+  const packageJson = JSON.parse(read('package.json'));
+  const smokeRunner = read('scripts/qa-game-runner.mjs');
+  const featuredRunner = read('scripts/qa-featured-runner.mjs');
+  const assetRunner = read('scripts/qa-assets.mjs');
+
+  assert.match(packageJson.scripts['qa:games'], /qa-game-runner\.mjs/);
+  assert.match(packageJson.scripts['qa:featured'], /qa-featured-runner\.mjs/);
+  assert.match(packageJson.scripts['qa:assets'], /qa-assets\.mjs/);
+  assert.match(packageJson.scripts['qa:release'], /check-games.*qa:assets.*test/);
+  assert.match(packageJson.devDependencies['@playwright/test'], /1\./);
+  assert.match(smokeRunner, /390[\s\S]*844/);
+  assert.match(smokeRunner, /768[\s\S]*1024/);
+  assert.match(smokeRunner, /1440[\s\S]*900/);
+  assert.match(featuredRunner, /flagmaster-/);
+  assert.match(featuredRunner, /fm-map-frame/);
+  assert.match(assetRunner, /missing direct asset references|Asset audit/);
+});
+
+test('Flagmaster world route uses valid SVG coordinates', () => {
+  const component = read('games/flagmaster/Flagmaster.jsx');
+
+  assert.match(component, /<svg viewBox="0 0 100 100" preserveAspectRatio="none"/);
+  assert.match(component, /NODE_POSITIONS\.map\(pos => `\$\{pos\.x\},\$\{pos\.y\}`\)/);
+  assert.doesNotMatch(component, /\$\{pos\.x\}%,\$\{pos\.y\}%/);
+  assert.match(component, /\.fm-screen\.fm-map-screen \{ height:100%; \}/);
+  assert.match(component, /\.fm-screen\.fm-map-screen \.fm-card \{ width:100%; height:100%; min-height:100%; \}/);
+  assert.match(component, /\.fm-screen\.fm-map-screen \.fm-map-frame \{ flex:1 1 auto; min-height:340px; \}/);
+  assert.match(component, /\.fm-screen\.fm-map-screen \.fm-map-frame \{ height:clamp\(300px, calc\(100dvh - 600px\), 380px\); flex:none;/);
 });
 
 test('Burger Run maps logical coordinates to responsive artwork and keeps collisions in world space', async () => {

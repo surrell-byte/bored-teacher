@@ -193,8 +193,8 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
     spawnBurst(idx, player);
     snd.move();
     const wl = getWinner(newBoard);
-    if (wl) { setWonLine(wl); setGameActive(false); setPhase("over"); endGame("win", wl); return; }
-    if (newBoard.every(v => v !== null)) { setGameActive(false); setPhase("over"); endGame("draw", null); return; }
+    if (wl) { setWonLine(wl); setGameActive(false); setPhase("over"); endGame("win", wl, player); return; }
+    if (newBoard.every(v => v !== null)) { setGameActive(false); setPhase("over"); endGame("draw", null, player); return; }
     if (extraTurn) {
       setExtraTurn(false);
       setCanConvert(false);
@@ -255,13 +255,14 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
     return null;
   }
 
-  function endGame(result: "win" | "draw", wl: number[] | null) {
+  function endGame(result: "win" | "draw", wl: number[] | null, winner: "X" | "O" | null = null) {
     if (result === "win") {
-      const newScores = { ...scores }; newScores[currentPlayer]++; setScores(newScores);
-      setStatus({ main: `Player ${currentPlayer} wins!`, hint: "Congratulations!" });
+      const winningPlayer = winner || currentPlayer;
+      const newScores = { ...scores }; newScores[winningPlayer]++; setScores(newScores);
+      setStatus({ main: `Player ${winningPlayer} wins!`, hint: "Congratulations!" });
       snd.win();
-      if (gameMode === "ai") { const sc = currentPlayer === playerSymbol ? 100 : 0; setTimeout(() => onComplete(sc, sc === 100 ? 100 : 0), 600); }
-      else { setTimeout(() => onComplete(currentPlayer === "X" ? 50 : 50, 50), 600); }
+      if (gameMode === "ai") { const sc = winningPlayer === playerSymbol ? 100 : 0; setTimeout(() => onComplete(sc, sc === 100 ? 100 : 0), 600); }
+      else { setTimeout(() => onComplete(winningPlayer === "X" ? 50 : 50, 50), 600); }
     } else {
       const newScores = { ...scores }; newScores.draw++; setScores(newScores);
       setStatus({ main: "Draw!", hint: "Press New Game to play again" });
