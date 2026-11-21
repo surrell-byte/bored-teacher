@@ -614,7 +614,7 @@ export default function MoneyBlocks({ themeId = "black", profileName = '' }) {
   return (
     <div className={`money-blocks theme-${theme}`}>
       {screen === "welcome" && (
-        <div className="screen-overlay">
+        <div className="screen-overlay welcome-overlay">
           <div className="welcome-box">
             <div className="welcome-eyebrow">Private Table</div>
             <div className="welcome-title">
@@ -700,11 +700,6 @@ export default function MoneyBlocks({ themeId = "black", profileName = '' }) {
 
             <div className="side">
               <div className="side-controls">
-                <div className="side-buttons">
-                  <button className="side-btn" type="button" onClick={() => setShowHowTo(true)}><GameHelpText english="How to Play" /></button>
-                  <button className="side-btn" type="button" onClick={resetBoardState}>Reset Table</button>
-                </div>
-
                 <div className="turn-pill">
                   <span className="dot" />
                   {nameFor(currentPlayer)} to move
@@ -737,6 +732,11 @@ export default function MoneyBlocks({ themeId = "black", profileName = '' }) {
                   avatar={avatarFor(2)}
                   active={currentPlayer === 2}
                 />
+              </div>
+
+              <div className="side-buttons">
+                <button className="side-btn" type="button" onClick={() => setShowHowTo(true)}><GameHelpText english="How to Play" /></button>
+                <button className="side-btn" type="button" onClick={resetBoardState}>Reset Table</button>
               </div>
             </div>
           </div>

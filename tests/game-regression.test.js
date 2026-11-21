@@ -529,6 +529,27 @@ test('new game backgrounds follow screen state and reserve phone art for portrai
   assert.match(gameRoute, /'colourclash2', 'zoogame'/);
 });
 
+test('Zoo answer retries do not reveal the correct choice before the final attempt', async () => {
+  const { markAnswerOptions } = await import('../games/zoo-game/utils/answerOptions.mjs');
+  const options = [
+    { name: 'elephant' },
+    { name: 'lion' },
+    { name: 'tiger' },
+  ];
+  const retryOptions = markAnswerOptions(options, 'lion', 'elephant', false);
+  const finalOptions = markAnswerOptions(options, 'tiger', 'elephant', true);
+  const hook = read('games/zoo-game/hooks/useZooGame.js');
+
+  assert.equal(retryOptions.find(option => option.name === 'lion').status, 'wrong');
+  assert.equal(retryOptions.find(option => option.name === 'elephant').status, undefined);
+  assert.equal(retryOptions.find(option => option.name === 'elephant').disabled, undefined);
+  assert.equal(finalOptions.find(option => option.name === 'elephant').status, 'correct');
+  assert.equal(finalOptions.find(option => option.name === 'elephant').disabled, true);
+  assert.match(hook, /Correct! It's \$\{article\(currentAnimal\.name\)\} \$\{capitalize\(currentAnimal\.name\)\}!/);
+  assert.match(hook, /article\(nextAnimal\.name\)/);
+  assert.doesNotMatch(hook, /It's a \$\{capitalize\(currentAnimal\.name\)\}/);
+});
+
 test('Emoji Spelling uses its stage artwork with portrait-specific phone backgrounds', () => {
   const component = read('games/emoji-spelling-game/EmojiSpellingMaster.jsx');
   const gameRoute = read('app/games/[game]/page.tsx');
@@ -647,8 +668,26 @@ test('Money Blocks keeps account cards in its shell viewport and centers respons
   assert.match(styles, /\.reveal-preview \{ width: 100%; max-height: 5em; overflow: hidden;[\s\S]*text-align: center/);
   assert.match(styles, /\.reveal-overlay\.centered \{[\s\S]*width: clamp\(240px, 36vmin, 400px\);[\s\S]*font-size: clamp\(24px, 3vmin, 38px\)/);
   assert.match(styles, /@media \(max-width: 600px\) \{[\s\S]*\.reveal-overlay\.centered \{[\s\S]*width: min\(84vw, 360px\);[\s\S]*height: min\(46vh, 380px\)/);
+  assert.match(component, /className="screen-overlay welcome-overlay"/);
+  assert.ok(component.indexOf('className="side-panels"') < component.indexOf('className="side-buttons"'));
+  assert.match(styles, /\.screen-overlay\.welcome-overlay \{\s*align-items: center;/);
+  assert.match(styles, /\.tile-letter \{[\s\S]*font-size: clamp\(14px, 2vw, 24px\)/);
+  assert.match(styles, /\.avatar \{[\s\S]*font-size: 1\.5rem/);
   assert.match(original, /font-family:'Fraunces', serif/);
   assert.match(original, /font-family:'Inter', sans-serif/);
+});
+
+test('Fry the Egg hides navbar counters and keeps portrait cooking visuals visible', () => {
+  const component = read('games/fry-the-egg/FryTheEgg.jsx');
+  const gamePage = read('app/games/[game]/page.tsx');
+
+  assert.match(component, /camera\.fov=portrait\?72:42/);
+  assert.match(component, /PLAYER1_X=-\(portrait\?1\.65:4\.35\)/);
+  assert.match(component, /eggFlips\[player\]=\{elapsed:0,duration:\.55\}/);
+  assert.match(component, /function styleEggForProgress\(player,amount\)/);
+  assert.match(component, /font-size:12px;border-radius:10px/);
+  assert.match(gamePage, /stats=\{isNumberClouds \|\| isAirPuck \|\| isBlockFight \|\| isFryTheEgg \? \[\]/);
+  assert.doesNotMatch(gamePage, /fryTheEggHud\.scores\[/);
 });
 
 test('Migrated games use direct React components without the legacy adapter', () => {
@@ -991,7 +1030,7 @@ test('Tic Tac Roll uses a pip die beside turn status and resolves roll-mode acti
   assert.match(component, /if \(gameMode === "roll" && canConvert\) \{[\s\S]*?if \(board\[idx\] !== \(currentPlayer === "X" \? "O" : "X"\)\) return;[\s\S]*?if \(board\[idx\] !== null\) return;/);
   assert.match(component, /case 2:[\s\S]*?setPhase\("play"\);[\s\S]*?Place your mark; opponent skips next turn/);
   assert.match(component, /No opponent tile to convert; place your mark/);
-  assert.match(component, /disabled=\{!gameActive \|\| phase === "roll" \|\| \(canConvert \? !cell\.convertible : cell\.val !== null\)\}/);
+  assert.match(component, /disabled=\{!gameActive \|\| phase === "roll" \|\| \(isAiGame && currentPlayer !== playerSymbol\) \|\| \(gameMode === "esl" && !eslUnlocked\) \|\| \(canConvert \? !cell\.convertible : cell\.val !== null\)\}/);
   assert.match(component, /setPhase\("roll"\);[\s\S]*?setStatus\(\{ main: `\$\{getName\(player\)\} earned another turn!`, hint: "Roll again" \}\)/);
   assert.match(statusMarkup, /<Die value=\{rollVal\} rolling=\{rolling\} theme=\{theme\} \/>/);
   assert.match(statusMarkup, /↻ Play Again/);
@@ -1000,6 +1039,25 @@ test('Tic Tac Roll uses a pip die beside turn status and resolves roll-mode acti
   assert.match(component, /endGame\("win", wl, player\)/);
   assert.match(component, /function endGame\(result: "win" \| "draw", wl: number\[\] \| null, winner: "X" \| "O" \| null = null\)/);
   assert.match(component, /const winningPlayer = winner \|\| currentPlayer/);
+});
+
+test('Tic Tac Roll routes single-player Classic to AI setup and gates ESL moves', () => {
+  const component = read('games/tictacroll/TicTacRoll.tsx');
+  const menuStart = component.indexOf('{screen === "menu"');
+  const difficultyStart = component.indexOf('{/* DIFFICULTY SCREEN */}', menuStart);
+  const menu = component.slice(menuStart, difficultyStart);
+
+  assert.match(component, /useState<"classic" \| "roll" \| "esl">\("classic"\)/);
+  assert.match(menu, /if \(playerCount === 1\) setScreen\("difficulty"\); else launchGame\("classic"\)/);
+  assert.match(menu, /ESL Mode/);
+  assert.doesNotMatch(menu, /vs AI/);
+  assert.doesNotMatch(component, /gameMode === "ai"|launchGame\("ai"/);
+  assert.match(component, /backgroundImage: `url\(\$\{inputBackground\}\)`/);
+  assert.match(component, /zIndex: 1,[\s\S]*backgroundColor: `\$\{theme\.surface\}ee`/);
+  assert.match(component, /if \(gameMode === "esl" && !eslUnlocked\) return/);
+  assert.match(component, /setStatus\(\{ main: `\$\{getName\(winningPlayer\)\} wins!`, hint: "Congratulations!" \}\)/);
+  assert.match(component, /English grammar question/);
+  assert.equal((component.match(/prompt: "/g) || []).length, 10);
 });
 
 test('game QA runners and release scripts are wired', () => {
@@ -1299,8 +1357,16 @@ test('Burger Run is registered with the catalog and reports game completion', ()
   assert.match(component, /pl: \[mkP\(P, 0\.45\), mkP\(P2\)\]/);
   assert.doesNotMatch(component, /p\.pos = Math\.min\(GOAL, p\.pos \+ [^)]+dt\)/);
   assert.match(component, /p\.pos = Math\.min\(GOAL, Math\.max\(0, p\.pos \+ x\.mv\)\)/);
+  assert.match(component, /Move forward 5 steps", mv: 5/);
   assert.match(component, /Move forward 3 steps", mv: 3/);
-  assert.match(component, /Move forward 2 steps", mv: 2/);
+  assert.match(component, /CLASSIC_RUN_DURATION_MS = 5 \* 60 \* 1000/);
+  assert.match(component, /full five minutes/);
+  assert.match(component, /English question \{questionIndex \+ 1\} of 10/);
+  assert.match(component, /LIVES = race \? 3 : esl \? 10 : 1/);
+  assert.match(component, /g\.L\[0\]\.lives = LIVES/);
+  assert.match(component, /g\.L\[0\]\.flightRemaining = ESL_FLIGHT_DURATION_MS/);
+  assert.match(component, /ctx\.strokeStyle = color;[\s\S]*ctx\.shadowBlur = 12/);
+  assert.equal((component.match(/prompt: "/g) || []).length, 10);
   assert.match(component, /Move back 2 steps", mv: -2/);
   assert.match(component, /Stay frozen and skip your next turn", mv: 0/);
   assert.match(component, /function advanceDuelTurn\(state, currentTurn\)/);

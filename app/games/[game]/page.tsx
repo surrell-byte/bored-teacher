@@ -699,13 +699,6 @@ export default function GamePage() {
             )}
             {isFryTheEgg && fryTheEggHud && (
               <span className="game-shell-topbar-stats" aria-label="Fry the Egg match status">
-                {fryTheEggHud.screen !== 'menu' && (
-                  <>
-                    <span className="game-shell-topbar-stat"><b>Round {fryTheEggHud.round}</b></span>
-                    <span className="game-shell-topbar-stat"><b>🔵 {fryTheEggHud.scores[0]}</b><span>{fryTheEggHud.playerNames[0]}</span></span>
-                    <span className="game-shell-topbar-stat"><b>🔴 {fryTheEggHud.scores[1]}</b><span>{fryTheEggHud.playerNames[1]}</span></span>
-                  </>
-                )}
                 <button
                   type="button"
                   className="game-shell-header-action"
@@ -826,7 +819,7 @@ export default function GamePage() {
             )}
           </>
         }
-        stats={isNumberClouds || isAirPuck || isBlockFight ? [] : [
+        stats={isNumberClouds || isAirPuck || isBlockFight || isFryTheEgg ? [] : [
           { label: 'Best', value: state.games[gameId]?.highScore ?? 0, icon: '⭐' },
           { label: 'Coins', value: state.coins, icon: '🪙' },
         ]}

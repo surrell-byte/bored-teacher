@@ -36,10 +36,25 @@ const CLASH = { slow: "fast", fast: "slow", tiny: "big", big: "tiny", float: "st
 /* ---------------- 2P card duel effects (colours are shuffled onto these every round) ---------------- */
 const EFX = [
   { id: "freeze", e: "❄️", n: "FREEZE", d: "Stay frozen and skip your next turn", mv: 0, pts: -100 },
-  { id: "turbo", e: "🍅", n: "TURBO!", d: "Move forward 3 steps", mv: 3, pts: 200 },
-  { id: "boost", e: "🥬", n: "BOOST", d: "Move forward 2 steps", mv: 2, pts: 100 },
+  { id: "turbo", e: "🍅", n: "TURBO!", d: "Move forward 5 steps", mv: 5, pts: 200 },
+  { id: "boost", e: "🥬", n: "BOOST", d: "Move forward 3 steps", mv: 3, pts: 100 },
   { id: "slow", e: "🍟", n: "SLOW", d: "Move back 2 steps", mv: -2, pts: -100 },
 ];
+const ESL_RUN_QUESTIONS = [
+  { prompt: "He ___ a new bike.", options: ["have", "has", "having"], answer: 1 },
+  { prompt: "We ___ to the park yesterday.", options: ["go", "went", "gone"], answer: 1 },
+  { prompt: "There ___ an orange on the table.", options: ["is", "are", "be"], answer: 0 },
+  { prompt: "My sister is ___ than me.", options: ["tall", "taller", "tallest"], answer: 1 },
+  { prompt: "I saw ___ elephant at the zoo.", options: ["a", "an", "the"], answer: 1 },
+  { prompt: "They ___ studying right now.", options: ["is", "are", "was"], answer: 1 },
+  { prompt: "She ___ breakfast every morning.", options: ["eat", "eats", "eating"], answer: 1 },
+  { prompt: "The books are ___ the desk.", options: ["on", "at", "into"], answer: 0 },
+  { prompt: "This is the ___ answer.", options: ["good", "better", "best"], answer: 2 },
+  { prompt: "If we finish early, we ___ a game.", options: ["will play", "played", "playing"], answer: 0 },
+];
+const CLASSIC_RUN_DURATION_MS = 5 * 60 * 1000;
+const ESL_QUESTION_INTERVAL = 200;
+const ESL_FLIGHT_DURATION_MS = 5000;
 const COLS = [["#2f7de1", "Blue", "#fff"], ["#d0463a", "Red", "#fff"], ["#3fa34d", "Green", "#fff"], ["#f2c230", "Yellow", "#222"]];
 const DUEL_PORTRAIT_ART = { width: 941, height: 1671, laneYs: [697, 1460] };
 const DUEL_LANDSCAPE_ART = { width: 1672, height: 941, laneYs: [452, 901] };
@@ -62,6 +77,10 @@ const RUN_BACKGROUNDS = {
     desktop: "burger-run-game-bg-p1.webp",
     mobile: "burger-run-game-phone-bg.webp",
   },
+  esl: {
+    desktop: "burger-run-game-bg-p1.webp",
+    mobile: "burger-run-game-phone-bg.webp",
+  },
   race: {
     desktop: "burger-run-game-2p-bg.webp",
     mobile: "burger-run-game-bg-phone.webp",
@@ -77,6 +96,10 @@ const RUNNER_ART = {
     mobile: { width: 940, height: 1672, laneYs: [1078], laneBounds: [[0, 1672]] },
   },
   card: {
+    desktop: { width: 1672, height: 940, laneYs: [560], laneBounds: [[0, 940]] },
+    mobile: { width: 940, height: 1672, laneYs: [1078], laneBounds: [[0, 1672]] },
+  },
+  esl: {
     desktop: { width: 1672, height: 940, laneYs: [560], laneBounds: [[0, 940]] },
     mobile: { width: 940, height: 1672, laneYs: [1078], laneBounds: [[0, 1672]] },
   },
@@ -231,13 +254,18 @@ function Win({ d, onAgain, onMenu, bun }) {
 
 /* ================= RUNNER: classic, solo card mode, 2P race (1-2 lanes) ================= */
 function Runner({ mode, P, P2, onBest, onExit, onRestart, onWin, onComplete, onStatus }) {
-  const race = mode === "race", N = race ? 2 : 1, LIVES = race ? 3 : 1, GOAL = race ? 1200 : 1000;
+  const race = mode === "race", esl = mode === "esl", N = race ? 2 : 1, LIVES = race ? 3 : esl ? 10 : 1, GOAL = race ? 1200 : 1000;
   const cv = useRef(null), G = useRef(null), controlsRef = useRef(null);
   const completionRef = useRef(onComplete);
   completionRef.current = onComplete;
   const [fxText, setFx] = useState("");
   const [over, setOver] = useState(null);
   const [hand, setHand] = useState(null);
+  const [questionActive, setQuestionActive] = useState(false);
+  const [questionIndex, setQuestionIndex] = useState(0);
+  const [questionFeedback, setQuestionFeedback] = useState("");
+  const [questionAnswered, setQuestionAnswered] = useState(false);
+  const [streak, setStreak] = useState(0);
   const KEYS = race
     ? [{ j: ["KeyW"], d: ["KeyS"] }, { j: ["ArrowUp"], d: ["ArrowDown"] }]
     : [{ j: ["Space", "ArrowUp", "KeyW"], d: ["ArrowDown", "KeyS"] }];
@@ -249,8 +277,8 @@ function Runner({ mode, P, P2, onBest, onExit, onRestart, onWin, onComplete, onS
 
   useEffect(() => {
     const names = [P.name, P2.name], buns = [P.bun, P2.bun];
-    const mk = (i) => ({ name: names[i], bun: buns[i], x: 70, y: GY, vy: 0, duck: false, score: 0, obs: [], next: 90, lives: LIVES, inv: 0, stun: 0, fx: {}, shield: false, flash: 0, out: false, ground: 0 });
-    const g = (G.current = { state: race ? "count" : "run", cd: 180, t: 0, nextCard: 200, L: Array.from({ length: N }, (_, i) => mk(i)), clouds: [{ x: 200, y: 40 }, { x: 500, y: 70 }], viewport: null, laneOffsets: [] });
+    const mk = (i) => ({ name: names[i], bun: buns[i], x: 70, y: GY, vy: 0, duck: false, score: 0, obs: [], next: 90, lives: LIVES, inv: 0, stun: 0, fx: {}, shield: false, flash: 0, out: false, ground: 0, flying: false, flightRemaining: 0 });
+    const g = (G.current = { state: race ? "count" : "run", cd: 180, t: 0, startedAt: performance.now(), elapsedMs: 0, lastFrameAt: null, nextCard: 200, nextQuestion: ESL_QUESTION_INTERVAL, questionIndex: 0, streak: 0, L: Array.from({ length: N }, (_, i) => mk(i)), clouds: [{ x: 200, y: 40 }, { x: 500, y: 70 }], viewport: null, laneOffsets: [] });
     const canvas = cv.current;
     const ctx = canvas.getContext("2d");
     const portraitQuery = window.matchMedia("(max-width: 760px) and (orientation: portrait)");
@@ -299,14 +327,28 @@ function Runner({ mode, P, P2, onBest, onExit, onRestart, onWin, onComplete, onS
         : { x: cx - 22, y: L.y - 44, w: 46, h: 44 };
       return { x: cx + (b.x - cx) * k, y: L.y + (b.y - L.y) * k, w: b.w * k, h: b.h * k };
     };
-    const step = (L) => {
+    const step = (L, dt) => {
       const fx = L.fx;
       for (const k in fx) if (--fx[k] <= 0) delete fx[k];
       let sp = Math.min(14, 6 + L.score / 250);
       if (fx.fast) sp *= 1.35; if (fx.slow) sp *= 0.7; if (L.stun > 0) { L.stun--; sp *= 0.4; }
       if (L.inv > 0) L.inv--; if (L.flash > 0) L.flash--;
       L.score += (sp / 12) * (fx.x2 ? 2 : 1); L.ground = (L.ground + sp) % W;
-      if (L.y < GY || L.vy < 0) { L.vy += (fx.float ? 0.32 : 0.65) + (L.duck ? 0.8 : 0); L.y += L.vy; if (L.y >= GY) { L.y = GY; L.vy = 0; } }
+      const wasFlying = L.flying;
+      L.flying = L.flightRemaining > 0;
+      if (L.flying) {
+        const flightProgress = 1 - L.flightRemaining / ESL_FLIGHT_DURATION_MS;
+        L.y = GY - Math.sin(flightProgress * Math.PI) * 112;
+        L.flightRemaining = Math.max(0, L.flightRemaining - dt);
+        L.vy = 0;
+      } else if (wasFlying) {
+        L.y = GY;
+        L.vy = 0;
+      } else if (L.y < GY || L.vy < 0) {
+        L.vy += (fx.float ? 0.32 : 0.65) + (L.duck ? 0.8 : 0);
+        L.y += L.vy;
+        if (L.y >= GY) { L.y = GY; L.vy = 0; }
+      }
       if (--L.next <= 0) {
         const spawnX = (g.viewport?.viewRight ?? W) + 20;
         if (L.score > 300 && Math.random() < 0.3) { const hs = [GY - 20, GY - 45, GY - 75]; L.obs.push({ b: 1, x: spawnX, y: hs[Math.floor(Math.random() * 3)], w: 34, h: 24 }); }
@@ -316,19 +358,20 @@ function Runner({ mode, P, P2, onBest, onExit, onRestart, onWin, onComplete, onS
       const b = boxOf(L);
       for (const o of L.obs) {
         o.x -= sp;
-        if (o.x > -900 && runnerBoxesOverlap(b, o)) {
+        if (!L.flying && o.x > -900 && runnerBoxesOverlap(b, o)) {
           if (L.shield) { L.shield = false; L.flash = 30; o.x = -999; }
           else if (L.inv <= 0) { L.lives--; L.inv = 90; L.stun = 40; o.x = -999; if (L.lives <= 0) L.out = true; }
         }
       }
       L.obs = L.obs.filter((o) => o.x > (g.viewport?.viewLeft ?? 0) - 60);
     };
-    const update = () => {
+    const update = (now, dt) => {
       g.t++;
+      g.elapsedMs = Math.max(0, now - g.startedAt);
       g.clouds.forEach((c) => { c.x -= 1; if (c.x < -50) { c.x = W + 30; c.y = 20 + Math.random() * 60; } });
       if (g.state === "count") { if (--g.cd <= 0) g.state = "run"; return; }
       if (g.state !== "run") return;
-      g.L.forEach((l) => { if (!l.out) step(l); });
+      g.L.forEach((l) => { if (!l.out) step(l, dt); });
       const top = g.L.reduce((a, b) => (b.score > a.score ? b : a));
       if (race) {
         const alive = g.L.filter((l) => !l.out), done = g.L.filter((l) => l.score >= GOAL);
@@ -340,7 +383,15 @@ function Runner({ mode, P, P2, onBest, onExit, onRestart, onWin, onComplete, onS
       } else {
         const l = g.L[0];
         if (l.out) { g.state = "over"; onBest(mode, sc(l)); completionRef.current?.(sc(l), Math.round((sc(l) / GOAL) * 100)); setOver(`Score ${sc(l)} / ${GOAL}`); }
-        else if (l.score >= GOAL) { g.state = "done"; onBest(mode, GOAL); onWin({ mode, title: `You did it, ${l.name}!`, sub: `Score ${sc(l)} · Time ${(g.t / 60).toFixed(1)}s` }); }
+        else if (mode === "classic" && g.elapsedMs >= CLASSIC_RUN_DURATION_MS) { g.state = "done"; onBest(mode, sc(l)); onWin({ mode, title: `Amazing run, ${l.name}!`, sub: `You ran for the full five minutes and scored ${sc(l)} points.` }); }
+        else if (mode === "card" && l.score >= GOAL) { g.state = "done"; onBest(mode, GOAL); onWin({ mode, title: `You did it, ${l.name}!`, sub: `Score ${sc(l)} · Time ${(g.t / 60).toFixed(1)}s` }); }
+        else if (esl && l.score >= g.nextQuestion) {
+          g.state = "question";
+          setQuestionIndex(g.questionIndex);
+          setQuestionFeedback("");
+          setQuestionAnswered(false);
+          setQuestionActive(true);
+        }
         else if (mode === "card" && l.score >= g.nextCard) { g.nextCard += 200; g.state = "card"; setHand({ cards: shuffle(CARDS).slice(0, 3), pick: -1 }); }
       }
     };
@@ -380,11 +431,27 @@ function Runner({ mode, P, P2, onBest, onExit, onRestart, onWin, onComplete, onS
         if (!o.b) for (let k = 0; k < o.n; k++) { const x = o.x + k * 20, t = o.y - o.h; ctx.fillRect(x + 5, t, 7, o.h); ctx.fillRect(x, t + 12, 5, 5); ctx.fillRect(x, t + 12, 3, 12); ctx.fillRect(x + 12, t + 6, 5, 5); ctx.fillRect(x + 14, t + 6, 3, 14); }
         else { const f = Math.floor(g.t / 10) % 2; ctx.fillRect(o.x + 6, o.y - 16, 22, 8); ctx.fillRect(o.x, o.y - 14, 8, 4); ctx.fillRect(o.x + 28, o.y - 18, 6, 4); f ? ctx.fillRect(o.x + 10, o.y - 26, 12, 10) : ctx.fillRect(o.x + 10, o.y - 8, 12, 8); }
       }
+      if (L.flying) {
+        const rainbow = ["#ff5252", "#ffb142", "#ffeb3b", "#4cd964", "#45b7ff", "#9b59ff"];
+        ctx.save();
+        ctx.globalAlpha = 0.88;
+        rainbow.forEach((color, index) => {
+          ctx.beginPath();
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 4;
+          ctx.shadowColor = color;
+          ctx.shadowBlur = 12;
+          ctx.moveTo(L.x - 100, L.y - 26 + index * 6);
+          ctx.bezierCurveTo(L.x - 75, L.y - 36 + index * 6, L.x - 46, L.y - 15 + index * 6, L.x - 22, L.y - 23 + index * 6);
+          ctx.stroke();
+        });
+        ctx.restore();
+      }
       if (!(L.inv > 0 && Math.floor(g.t / 4) % 2)) {
         const k = sizeOf(L) * 1.35;
         ctx.save(); ctx.translate(L.x, L.y); ctx.scale(k, k); ctx.translate(-L.x, -L.y);
-        ctx.shadowColor = "#111827";
-        ctx.shadowBlur = 5;
+        ctx.shadowColor = L.flying ? "#ffe680" : "#111827";
+        ctx.shadowBlur = L.flying ? 24 : 5;
         drawBurger(ctx, L.x - 20, L.y, L.duck && L.y >= GY, Math.floor(g.t / 5) % 2, L.y < GY, L.bun);
         ctx.shadowBlur = 0;
         if (L.shield) { ctx.strokeStyle = "#3fa34d"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(L.x, L.y - 22, 36, 0, 7); ctx.stroke(); }
@@ -405,7 +472,10 @@ function Runner({ mode, P, P2, onBest, onExit, onRestart, onWin, onComplete, onS
       ctx.fillStyle = FG; ctx.strokeStyle = FG; ctx.lineWidth = 2; ctx.font = 'bold 16px "Courier New",monospace';
       ctx.textAlign = "left";       ctx.fillText(L.name, hudLeft, hudY);
       ctx.textAlign = "right"; ctx.fillText(String(sc(L)).padStart(4, "0"), hudRight, hudY);
-      ctx.strokeRect(hudLeft, hudY + 10, hudRight - hudLeft, 8); ctx.fillRect(hudLeft + 2, hudY + 12, (hudRight - hudLeft - 4) * Math.min(1, L.score / GOAL), 4);
+      ctx.strokeRect(hudLeft, hudY + 10, hudRight - hudLeft, 8);
+      const progress = mode === "classic" ? Math.min(1, g.elapsedMs / CLASSIC_RUN_DURATION_MS) : Math.min(1, L.score / GOAL);
+      ctx.fillRect(hudLeft + 2, hudY + 12, (hudRight - hudLeft - 4) * progress, 4);
+      if (esl) { ctx.textAlign = "left"; ctx.fillStyle = "#ff7b91"; ctx.fillText("♥".repeat(L.lives), hudLeft, hudY + 29); }
       ctx.textAlign = "right"; ctx.fillText("🏁", hudRight + 10, hudY + 28);
     };
     let last = "";
@@ -429,11 +499,18 @@ function Runner({ mode, P, P2, onBest, onExit, onRestart, onWin, onComplete, onS
       });
       if (g.state === "count") { ctx.fillStyle = ACC; ctx.font = 'bold 64px "Courier New",monospace'; ctx.textAlign = "center"; ctx.fillText(Math.ceil(g.cd / 60), (viewport.viewLeft + viewport.viewRight) / 2, (viewport.viewTop + viewport.viewBottom) / 2 + 20); }
       const L = g.L[0];
-      const txt = Object.keys(L.fx).map((k) => { const c = CARDS.find((x) => x.id === k); return `${c.e} ${c.n} ${Math.ceil(L.fx[k] / 60)}s`; }).concat(L.shield ? ["🥒 Shield"] : []).join("   ");
+      const txt = Object.keys(L.fx).map((k) => { const c = CARDS.find((x) => x.id === k); return `${c.e} ${c.n} ${Math.ceil(L.fx[k] / 60)}s`; }).concat(L.shield ? ["🥒 Shield"] : []).concat(esl && g.streak >= 3 ? [`🌈 ${g.streak} answer streak`] : []).join("   ");
       if (txt !== last) { last = txt; setFx(txt); }
     };
     let raf;
-    const loop = (now) => { update(); updatePlayerStatus(now); draw(); raf = requestAnimationFrame(loop); };
+    const loop = (now) => {
+      const dt = g.lastFrameAt === null ? 0 : Math.min(now - g.lastFrameAt, 50);
+      g.lastFrameAt = now;
+      update(now, dt);
+      updatePlayerStatus(now);
+      draw();
+      raf = requestAnimationFrame(loop);
+    };
     loop();
     const kd = (e) => {
       const km = KEYS.findIndex((k) => k.j.includes(e.code) || k.d.includes(e.code));
@@ -460,6 +537,41 @@ function Runner({ mode, P, P2, onBest, onExit, onRestart, onWin, onComplete, onS
     if (c.id === "shield") L.shield = true; else { delete L.fx[CLASH[c.id]]; L.fx[c.id] = c.t; }
     setHand({ ...hand, pick: i });
     setTimeout(() => { setHand(null); if (G.current === g && g.state === "card") g.state = "run"; }, 1700);
+  };
+
+  const answerESLQuestion = (answer) => {
+    const g = G.current;
+    if (!esl || !questionActive || questionAnswered || !g || g.state !== "question") return;
+
+    const question = ESL_RUN_QUESTIONS[g.questionIndex];
+    const correct = answer === question.answer;
+    g.L[0].lives = LIVES;
+    g.streak = correct ? g.streak + 1 : 0;
+    const earnedFlight = correct && g.streak % 3 === 0;
+    setStreak(g.streak);
+    if (earnedFlight) g.L[0].flightRemaining = ESL_FLIGHT_DURATION_MS;
+    setQuestionAnswered(true);
+    setQuestionFeedback(correct
+      ? earnedFlight ? `Correct! ${g.streak} in a row — enjoy your rainbow flight!` : `Correct! ${g.streak} in a row.`
+      : "Not quite. Your streak has reset.");
+
+    const nextIndex = g.questionIndex + 1;
+    setTimeout(() => {
+      if (G.current !== g || g.state !== "question") return;
+      if (nextIndex >= ESL_RUN_QUESTIONS.length) {
+        g.state = "done";
+        setQuestionActive(false);
+        onWin({ mode: "esl", title: `Grammar champion, ${P.name}!`, sub: `You answered all 10 English questions and scored ${Math.floor(g.L[0].score)} points.` });
+        return;
+      }
+      g.questionIndex = nextIndex;
+      g.nextQuestion += ESL_QUESTION_INTERVAL;
+      g.state = "run";
+      setQuestionIndex(nextIndex);
+      setQuestionActive(false);
+      setQuestionFeedback("");
+      setQuestionAnswered(false);
+    }, 900);
   };
 
   return (
@@ -499,6 +611,18 @@ function Runner({ mode, P, P2, onBest, onExit, onRestart, onWin, onComplete, onS
                 face={hand.pick >= 0 ? { bg: c.g ? "#3fa34d" : "#d0463a", fg: "#fff", e: c.e, n: c.n, d: c.d } : null} />
             ))}
           </div>
+        </Modal>
+      )}
+      {questionActive && (
+        <Modal>
+          <h2 className="text-2xl font-bold">English question {questionIndex + 1} of 10</h2>
+          <p style={{ maxWidth: 520, color: FG, fontSize: 18, fontWeight: 700 }}>{ESL_RUN_QUESTIONS[questionIndex].prompt}</p>
+          <div className="flex flex-wrap justify-center gap-2">
+            {ESL_RUN_QUESTIONS[questionIndex].options.map((option, index) => (
+              <Btn key={option} sm disabled={questionAnswered} onClick={() => answerESLQuestion(index)}>{option}</Btn>
+            ))}
+          </div>
+          <Sub>{questionFeedback || `Streak: ${streak} · Answer three in a row to fly with a rainbow trail.`}</Sub>
         </Modal>
       )}
       {over && (
@@ -826,7 +950,7 @@ export default function BurgerRun({ onComplete, startAtMenu = false }) {
   completionRef.current = onComplete;
   const [P, setP] = useState({ name: startAtMenu ? "Chef" : "", bun: BUNS[7].color });
   const [P2, setP2] = useState({ name: "Player 2", bun: BUNS[2].color });
-  const [best, setBest] = useState({ classic: 0, card: 0 });
+  const [best, setBest] = useState({ classic: 0, card: 0, esl: 0 });
   const [win, setWin] = useState(null);
   const [mode, setMode] = useState("classic");
   const [playerStatuses, setPlayerStatuses] = useState(() => [createPlayerStatus(P), createPlayerStatus(P2)]);
@@ -886,11 +1010,15 @@ export default function BurgerRun({ onComplete, startAtMenu = false }) {
             <div className="burger-run-menu-grid">
               <article className="burger-run-menu-mode">
                 <Btn pri onClick={() => play("classic")}>Classic Run</Btn>
-                <Sub>Solo race to 1000 points</Sub>
+                <Sub>Solo · run for up to five minutes</Sub>
               </article>
               <article className="burger-run-menu-mode">
                 <Btn pri onClick={() => play("card")}>Solo Card Mode</Btn>
                 <Sub>Solo · pick a card every 200 points</Sub>
+              </article>
+              <article className="burger-run-menu-mode">
+                <Btn pri onClick={() => play("esl")}>ESL Run</Btn>
+                <Sub>Run, answer 10 English questions, and build a streak</Sub>
               </article>
               <article className="burger-run-menu-mode">
                 <Btn pri onClick={() => play("duel")}>2P Card Duel</Btn>
@@ -905,7 +1033,7 @@ export default function BurgerRun({ onComplete, startAtMenu = false }) {
               <Btn onClick={() => setScr("howto")}>📖 <GameHelpText english="How to Play" /></Btn>
               <Btn onClick={() => setScr("info")}>👤 Edit profiles</Btn>
             </div>
-            <Sub>Best — Classic: {best.classic} · Card: {best.card}</Sub>
+            <Sub>Best — Classic: {best.classic} · Card: {best.card} · ESL: {best.esl}</Sub>
           </section>
         )}
         {scr === "howto" && (
@@ -913,11 +1041,13 @@ export default function BurgerRun({ onComplete, startAtMenu = false }) {
             <h2 className="text-2xl font-bold" style={{ textAlign: "center", color: ACC, marginTop: 0 }}><GameHelpText english="How to Play Burger Run" /></h2>
             <p><GameHelpText english="Choose a mode from the main menu. In runner modes, jump over cacti and dinosaurs, duck under pterodactyls, and reach the goal." /></p>
             <h3 style={{ color: ACC }}><GameHelpText english="Classic Run" /></h3>
-            <p><GameHelpText english="Run solo and aim for 1,000 points. Use Space, ↑, or tap the track to jump. Hold ↓ or press the Duck button to crouch. Press R to restart." /></p>
+            <p><GameHelpText english="Run solo for up to five minutes. Dodge obstacles and try to last until the congratulations screen. Use Space, ↑, or tap the track to jump. Hold ↓ or press the Duck button to crouch. Press R to restart." /></p>
+            <h3 style={{ color: ACC }}><GameHelpText english="ESL Run" /></h3>
+            <p><GameHelpText english="Run without cards and answer ten English questions as you go. Answer three questions correctly in a row to fly with a glow and rainbow trail for five seconds, then keep running to the next question." /></p>
             <h3 style={{ color: ACC }}><GameHelpText english="Solo Card Mode" /></h3>
             <p><GameHelpText english="Run solo and choose one of three cards each time you reach another 200 points. Pickle Shield blocks a hit; Cheese Float changes your jumps; Lettuce Boost doubles points; Bacon Shrink makes you smaller; Honey Slow slows the run; Hot Sauce speeds it up; Mega Size makes you bigger; and Ketchup Boots weaken your jumps. Keep dodging between picks." /></p>
             <h3 style={{ color: ACC }}><GameHelpText english="2P Card Duel" /></h3>
-            <p><GameHelpText english="Take turns picking one of four cards. Turbo moves forward 3 steps, Boost moves forward 2, Slow moves back 2, and Freeze holds position and skips that player's next turn. If both players are due to skip, each frozen turn is skipped before play resumes. First to 18 steps wins. Both burgers automatically jump cacti and dinosaurs and duck under pterodactyls; frozen burgers are safe from low-flying pterodactyls." /></p>
+            <p><GameHelpText english="Take turns picking one of four cards. Turbo moves forward 5 steps, Boost moves forward 3, Slow moves back 2, and Freeze holds position and skips that player's next turn. If both players are due to skip, each frozen turn is skipped before play resumes. First to 18 steps wins. Both burgers automatically jump cacti and dinosaurs and duck under pterodactyls; frozen burgers are safe from low-flying pterodactyls." /></p>
             <h3 style={{ color: ACC }}><GameHelpText english="2P Race" /></h3>
             <p><GameHelpText english="Race side by side to 1,200 points with three lives each. Player 1 uses W to jump and S to duck; Player 2 uses ↑ to jump and ↓ to duck. First to the finish wins, or the last burger standing wins if the other runs out of lives." /></p>
             <div style={{ display: "flex", justifyContent: "center", marginTop: 18 }}>

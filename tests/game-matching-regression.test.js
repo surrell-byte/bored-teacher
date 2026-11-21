@@ -59,7 +59,9 @@ test('Flagmaster adds a country-to-native-animal matching mission', () => {
 
 test('Da Rules shows cover artwork in its full 4:3 frame without an overlay', () => {
   const rulesPage = read('app/games/da-rules/page.tsx');
+  const gamesStyles = read('app/globals.css');
   assert.match(rulesPage, /aspectRatio: '4 \/ 3',[\s\S]*?backgroundSize: 'contain'[\s\S]*?backgroundRepeat: 'no-repeat'/);
+  assert.match(gamesStyles, /\.games-rulebook-visual \{[\s\S]*background-size: contain;[\s\S]*background-repeat: no-repeat;/);
   assert.doesNotMatch(rulesPage, /background: 'linear-gradient\(180deg, rgba\(7,10,19,0\.15\), rgba\(7,10,19,0\.65\)\)'/);
   assert.match(rulesPage, /flagmaster: 'Match flags with countries, then match countries to animals that live there\.'/);
   assert.match(rulesPage, /weatherwizard: 'Learn weather words, seasons, and sentences, then match all 12 months to their pictures\.'/);

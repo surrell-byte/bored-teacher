@@ -23,7 +23,7 @@ const CSS = `
 .fte-root .pl.b{border-color:rgba(229,92,92,.72)}
 .fte-root .pl.on.a{background:rgba(28,69,105,.82);box-shadow:0 0 16px rgba(79,163,255,.17)}
 .fte-root .pl.on.b{background:rgba(105,39,43,.82);box-shadow:0 0 16px rgba(255,107,107,.15)}
-.fte-root #status{position:absolute;top:14px;left:50%;transform:translateX(-50%);width:max-content;max-width:min(760px,88vw);padding:11px 18px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(15,23,33,.88);backdrop-filter:blur(12px);font-size:13px;line-height:1.35;text-align:center;color:#e1e7ef;box-shadow:0 8px 24px rgba(0,0,0,.12)}
+.fte-root #status{position:absolute;top:14px;left:50%;transform:translateX(-50%);width:max-content;max-width:min(760px,88vw);padding:11px 18px;border-radius:14px;border:1px solid rgba(255,255,255,.24);background:rgba(15,23,33,.97);font-size:14px;line-height:1.45;text-align:center;color:#fff;box-shadow:0 8px 24px rgba(0,0,0,.28)}
 .fte-root #status b{color:#ffd479}
 .fte-root #bottomHud{position:absolute;left:14px;right:14px;bottom:8px;display:grid;grid-template-columns:minmax(0,1fr) 346px minmax(0,1fr);gap:10px;align-items:stretch}
 .fte-root .player-card{min-width:0;min-height:124px;padding:10px 12px 9px;border-radius:17px;background:rgba(28,38,49,.96);backdrop-filter:blur(10px);display:flex;flex-direction:column;gap:6px}
@@ -63,7 +63,7 @@ const CSS = `
 .fte-root .player-card{min-height:116px;padding:9px}
 .fte-root .pl{min-width:112px;padding:7px 10px;font-size:10px}
 .fte-root .pl b{font-size:19px}}
-@media (max-width:620px){.fte-root #status{top:8px;max-width:94vw;padding:8px 10px;font-size:10px;border-radius:10px}
+@media (max-width:620px){.fte-root #status{top:8px;max-width:94vw;padding:9px 11px;font-size:12px;border-radius:10px}
 .fte-root #bottomHud{left:7px;right:7px;bottom:7px;gap:6px}
 .fte-root .player-card{min-height:105px;padding:7px;border-radius:12px;gap:5px}
 .fte-root .card-top{font-size:8px;letter-spacing:.9px}
@@ -190,7 +190,8 @@ export default function FryTheEgg({ onHudUpdate }) {
     const scene=new THREE.Scene();scene.background=new THREE.Color(0x17212c);scene.fog=new THREE.Fog(0x17212c,18,42);
     const camera=new THREE.PerspectiveCamera(42,playWidth()/playHeight(),.1,120);
     const CAM_BASE=new THREE.Vector3(0,7.8,9.6),CAM_LOOK=new THREE.Vector3(0,0,-2.6);
-    function resizeRenderer(){const width=playWidth(),height=playHeight();renderer.setSize(width,height);const a=width/height;camera.aspect=a;camera.fov=a<.8?48:42;CAM_BASE.set(0,a<.8?13.5:7.8,a<.8?16.5:9.6);CAM_LOOK.set(0,0,a<.8?-2.0:-2.6);camera.updateProjectionMatrix()}
+    let PLAYER1_X=-4.35,player1Station=null,player2Station=null;
+    function resizeRenderer(){const width=playWidth(),height=playHeight();renderer.setSize(width,height);const a=width/height,portrait=a<.8;camera.aspect=a;camera.fov=portrait?72:42;CAM_BASE.set(0,portrait?13.5:7.8,portrait?16.5:9.6);CAM_LOOK.set(0,0,portrait?-2.0:-2.6);PLAYER1_X=-(portrait?1.65:4.35);if(player1Station)player1Station.position.x=PLAYER1_X;if(player2Station)player2Station.position.x=-PLAYER1_X;camera.updateProjectionMatrix()}
     function fitCam(){resizeRenderer()}
     fitCam();
 
@@ -204,8 +205,7 @@ export default function FryTheEgg({ onHudUpdate }) {
     function mesh(g,m,p,sh){const o=new THREE.Mesh(g,m);if(p)o.position.set(...p);o.castShadow=true;o.receiveShadow=true;return o}
     const counter=mesh(new THREE.BoxGeometry(20.5,1,21.5),M(0x82909d,.76,.08),[0,-.5,-4]);scene.add(counter);
     scene.add(mesh(new THREE.BoxGeometry(20.08,.08,21.08),M(0xd7c5b0,.92,0),[0,.02,-4]));
-    const PLAYER1_X=-4.35;
-    const player1Station=new THREE.Group();player1Station.position.set(PLAYER1_X,0,0);scene.add(player1Station);
+    player1Station=new THREE.Group();player1Station.position.set(PLAYER1_X,0,0);scene.add(player1Station);
     player1Station.add(mesh(new THREE.BoxGeometry(5.4,.18,4.4),M(0x3c4b60,.48,.32),[0,.09,0]));
     const accent1=mesh(new THREE.BoxGeometry(5.35,.075,.11),M(0x91d9ec,.35,.18),[0,.205,2.15]);accent1.userData.isAccent=true;player1Station.add(accent1);
     const burnerMat=M(0x3a3d44,.55,.85);
@@ -248,10 +248,11 @@ export default function FryTheEgg({ onHudUpdate }) {
     const flameGlow=new THREE.Mesh(new THREE.CircleGeometry(1.15,40),glowMat);flameGlow.name='flameGlow';flameGlow.rotation.x=-Math.PI/2;flameGlow.position.y=.22;player1Station.add(flameGlow);
     flameLight.name='flameLight';player1Station.add(flameLight);
     flameGroup.visible=false;
-    const player2Station=player1Station.clone(true);player2Station.position.set(4.35,0,0);player2Station.rotation.y=Math.PI;player2Station.traverse(o=>{if(o.userData&&o.userData.isAccent)o.material=M(0xe9a1ac,.35,.18)});scene.add(player2Station);
+    player2Station=player1Station.clone(true);player2Station.position.set(-PLAYER1_X,0,0);player2Station.rotation.y=Math.PI;player2Station.traverse(o=>{if(o.userData&&o.userData.isAccent)o.material=M(0xe9a1ac,.35,.18)});scene.add(player2Station);
     const player2EggGroup=player2Station.getObjectByName('eggGroup');
     const p2White=player2EggGroup.children[0],p2Crisp=player2EggGroup.children[1],p2Yolk=player2EggGroup.children[2];
     [p2White,p2Crisp,p2Yolk].forEach(o=>{o.material=o.material.clone()});
+    const eggFlips=[null,null];
     const flameGroup2=player2Station.getObjectByName('flameGroup'),flameGlow2=player2Station.getObjectByName('flameGlow'),flameLight2=player2Station.getObjectByName('flameLight');
     const jets2=flameGroup2.children.slice(0,14),flameCore2=flameGroup2.children[14],knobMesh2=player2Station.getObjectByName('knobMesh');
 
@@ -398,6 +399,7 @@ export default function FryTheEgg({ onHudUpdate }) {
      const next=Math.max(0,Math.min(100,previous+delta));
      playerDoneness[player]=next;
      updatePlayerProgress(player,next);
+     eggFlips[player]={elapsed:0,duration:.55};
      renderCrateButtons();
 
      const actualDelta=next-previous;
@@ -411,7 +413,7 @@ export default function FryTheEgg({ onHudUpdate }) {
       setStatus('<b>'+escapeHTML(playerNames[player])+' reached 100% — JUST RIGHT!</b> The perfectly cooked egg wins the round!');
       // Let the winning meter finish filling before the celebration starts.
       const winToken=turnToken;
-      turnTimer=setTimeout(()=>{turnTimer=null;if(winToken!==turnToken||gameOver)return;showWinner(player)},520);
+      turnTimer=setTimeout(()=>{turnTimer=null;if(winToken!==turnToken||gameOver)return;showWinner(player)},600);
       return;
      }
 
@@ -480,10 +482,20 @@ export default function FryTheEgg({ onHudUpdate }) {
     on(window,'fry-the-egg:main-menu',returnToTitle);
     on(renderer.domElement,'pointerdown',e=>{if(state!=='playing')return;initAudio();const rect=renderer.domElement.getBoundingClientRect();if(!rect.width||!rect.height)return;ndc.set((e.clientX-rect.left)/rect.width*2-1,-((e.clientY-rect.top)/rect.height)*2+1);ray.setFromCamera(ndc,camera);const ce=ray.intersectObjects(crateEggs,false);if(ce.length)pickEgg(ce[0].object.userData.i)});
 
-    function updateEgg(){
+    function updateEgg(dt){
      if(celebration)return;
-     eggGroup.rotation.z=Math.sin(time*1.4)*.003;
-     player2EggGroup.rotation.z=Math.sin(time*1.4+1)*.003;
+     [eggGroup,player2EggGroup].forEach((group,player)=>{
+      const flip=eggFlips[player];
+      if(flip){
+       flip.elapsed+=dt;const progress=Math.min(1,flip.elapsed/flip.duration);
+       group.position.y=EGG_Y+Math.sin(progress*Math.PI)*.82;
+       group.rotation.set(progress*Math.PI*2,0,Math.sin(progress*Math.PI)*.22);
+       if(progress>=1){group.position.y=EGG_Y;group.rotation.set(0,0,0);eggFlips[player]=null}
+      }else{
+       group.position.y=EGG_Y;
+       group.rotation.set(0,0,Math.sin(time*1.4+player)*.003);
+      }
+     });
     }
     function updateFlame(dt){
      flameScale+=( ((state==='playing'||state==='celebrating')?HEAT_FLAME[1]:0)-flameScale)*Math.min(1,dt*9);
@@ -674,7 +686,7 @@ export default function FryTheEgg({ onHudUpdate }) {
      if(state==='playing'){elapsed+=dt;panTemp+=(HEAT_T[1]-panTemp)*Math.min(1,dt*.45)}
      for(const m of crateEggs){const u=m.userData;if(u.a>=0){u.a+=dt;const k=Math.min(1,u.a/.5);m.position.y=.36+k*.9;m.scale.set(1-k,1.3*(1-k),1-k);m.rotation.y+=dt*10;if(k>=1)m.visible=false;if(u.badge)u.badge.visible=false}else{const h=u.i===hoverI&&!locked&&!gameOver?.1:0;m.position.y+=(.36+h-m.position.y)*Math.min(1,dt*12);if(u.badge){u.badge.position.y=m.position.y+.29;u.badge.visible=true}}}
      for(let i=pops.length-1;i>=0;i--){const p=pops[i];p.t+=dt;p.s.position.y+=dt*.5;p.s.material.opacity=Math.max(0,1-p.t/1.6);if(p.t>1.6){scene.remove(p.s);pops.splice(i,1)}}
-     updateEgg();if(celebration)updateLoserOvercook(dt);updateFlame(dt);updateParticles(dt);knobMesh.rotation.y+=(-.65+.72-knobMesh.rotation.y)*Math.min(1,dt*10);knobMesh2.rotation.y+=(-.65+.72-knobMesh2.rotation.y)*Math.min(1,dt*10);panMat.emissive.setRGB(.16*panTemp*panTemp,.03*panTemp*panTemp,0);
+     updateEgg(dt);if(celebration)updateLoserOvercook(dt);updateFlame(dt);updateParticles(dt);knobMesh.rotation.y+=(-.65+.72-knobMesh.rotation.y)*Math.min(1,dt*10);knobMesh2.rotation.y+=(-.65+.72-knobMesh2.rotation.y)*Math.min(1,dt*10);panMat.emissive.setRGB(.16*panTemp*panTemp,.03*panTemp*panTemp,0);
      cx+=(mx*.32-cx)*Math.min(1,dt*3);cy+=(my*.22-cy)*Math.min(1,dt*3);
      camera.position.set(CAM_BASE.x+cx,CAM_BASE.y-cy*.5+Math.sin(time*.6)*.02,CAM_BASE.z);camera.lookAt(CAM_LOOK);
      kUpdate(dt);renderer.render(scene,camera)}

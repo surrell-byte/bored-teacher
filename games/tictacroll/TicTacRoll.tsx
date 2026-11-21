@@ -5,6 +5,18 @@ import { GameHelpText } from "@/engine/layout/GameTranslationContext";
 
 const AVATARS = ["🎮","🦁","🐺","🦊","🐸","🐧","🦄","🌟","⚡","🔥","🌙","💎"];
 
+const ESL_QUESTIONS = [
+  { prompt: "She ___ to school every day.", options: ["go", "goes", "going"], answer: 1 },
+  { prompt: "They ___ playing football now.", options: ["is", "are", "am"], answer: 1 },
+  { prompt: "I have ___ apple in my bag.", options: ["a", "an", "the"], answer: 1 },
+  { prompt: "We ___ dinner yesterday.", options: ["eat", "ate", "eating"], answer: 1 },
+  { prompt: "There ___ two books on the table.", options: ["is", "are", "was"], answer: 1 },
+  { prompt: "He is taller ___ his brother.", options: ["than", "then", "that"], answer: 0 },
+  { prompt: "I ___ never seen a whale before.", options: ["has", "have", "had"], answer: 1 },
+  { prompt: "This is ___ umbrella.", options: ["a", "an", "the"], answer: 1 },
+  { prompt: "She is interested ___ art.", options: ["in", "on", "at"], answer: 0 },
+  { prompt: "If it rains, we ___ inside.", options: ["stay", "stayed", "stays"], answer: 0 },
+];
 
 function winLen(n: number) { return n === 3 ? 3 : 4; }
 function computeWinLines(n: number, w: number) {
@@ -71,9 +83,12 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
   const [burst, setBurst] = useState<{ id: number; x: number; y: number; color: string }[]>([]);
   const burstId = useRef(0);
   const [gridSize, setGridSize] = useState(3);
-  const [gameMode, setGameMode] = useState<"classic" | "roll" | "ai">("classic");
+  const [gameMode, setGameMode] = useState<"classic" | "roll" | "esl">("classic");
   const [aiDiff, setAiDiff] = useState("easy");
   const [playerSymbol, setPlayerSymbol] = useState<"X" | "O">("X");
+  const [eslQuestionIndex, setEslQuestionIndex] = useState(0);
+  const [eslUnlocked, setEslUnlocked] = useState(false);
+  const [eslFeedback, setEslFeedback] = useState("");
   const [soundOn, setSoundOn] = useState(true);
   const [board, setBoard] = useState<(string | null)[]>(Array(9).fill(null));
   const [currentPlayer, setCurrentPlayer] = useState<"X" | "O">("X");
@@ -92,6 +107,7 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
   const rollTimer = useRef<number | null>(null);
   const rollTimeout = useRef<number | null>(null);
   const turnTimeout = useRef<number | null>(null);
+  const aiTimeout = useRef<number | null>(null);
   const audioCtx = useRef<AudioContext | null>(null);
 
   const theme = TIC_TAC_ROLL_THEMES.find(t => t.id === profile.theme) || TIC_TAC_ROLL_THEMES[0];
@@ -102,10 +118,12 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
   const canContinue = playerCount === 1
     ? profile.name.trim().length > 0
     : playerCount === 2 && profile.name.trim().length > 0 && player2.name.trim().length > 0;
+  const isAiGame = playerCount === 1 && (gameMode === "classic" || gameMode === "roll" || gameMode === "esl");
   const clearGameTimers = useCallback(() => {
     if (rollTimer.current) { clearInterval(rollTimer.current); rollTimer.current = null; }
     if (rollTimeout.current) { clearTimeout(rollTimeout.current); rollTimeout.current = null; }
     if (turnTimeout.current) { clearTimeout(turnTimeout.current); turnTimeout.current = null; }
+    if (aiTimeout.current) { clearTimeout(aiTimeout.current); aiTimeout.current = null; }
   }, []);
 
   function getCtx() {
@@ -149,14 +167,41 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
 
   useEffect(() => clearGameTimers, [clearGameTimers]);
 
-  const getName = (p: string) => gameMode === "ai" && p === (playerSymbol === "X" ? "O" : "X") ? "AI" : p === "X" ? profile.name : player2.name;
+  useEffect(() => {
+    if (!gameActive || !isAiGame || currentPlayer === playerSymbol) return;
+
+    setStatus({
+      main: gameMode === "roll" ? "AI is rolling..." : gameMode === "esl" ? "AI is answering a grammar question..." : "AI is thinking...",
+      hint: "",
+    });
+    aiTimeout.current = window.setTimeout(() => {
+      aiTimeout.current = null;
+      if (gameMode === "roll" && phase === "roll") {
+        startRoll();
+        return;
+      }
+      if (gameMode === "esl") {
+        setEslQuestionIndex((index) => (index + 1) % ESL_QUESTIONS.length);
+      }
+      doAiMove();
+    }, gameMode === "esl" ? 850 : 600);
+
+    return () => {
+      if (aiTimeout.current) {
+        clearTimeout(aiTimeout.current);
+        aiTimeout.current = null;
+      }
+    };
+  }, [canConvert, currentPlayer, gameActive, gameMode, isAiGame, phase, playerSymbol]);
+
+  const getName = (p: string) => isAiGame && p !== playerSymbol ? "AI" : p === "X" ? profile.name : player2.name;
 
   function buildBoard() {
     const newBoard: (string | null)[] = Array(totalCells).fill(null);
     setBoard(newBoard);
     setWonLine(null);
   }
-  function resetGame(mode: "classic" | "roll" | "ai" = gameMode) {
+  function resetGame(mode: "classic" | "roll" | "esl" = gameMode) {
     clearGameTimers();
     setRolling(false);
     const b = Array(totalCells).fill(null);
@@ -169,9 +214,15 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
     setRollVal(1);
     setLastMove("");
     setWonLine(null);
+    setEslQuestionIndex(0);
+    setEslUnlocked(false);
+    setEslFeedback("");
     if (mode === "roll") { setPhase("roll"); setStatus({ main: "Player X's turn", hint: "Roll the dice to begin" }); }
-    else if (mode === "ai") { setPhase("play"); setStatus({ main: profile.name + "'s turn", hint: "Choose a tile" }); }
-    else { setPhase("play"); setStatus({ main: "Player X's turn", hint: "Choose any empty tile" }); }
+    else {
+      setPhase("play");
+      const aiGame = playerCount === 1 && (mode === "classic" || mode === "esl");
+      setStatus({ main: aiGame && playerSymbol === "O" ? "AI's turn" : `${getName("X")}'s turn`, hint: "Choose a tile" });
+    }
     snd.reset();
   }
 
@@ -186,10 +237,14 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
   }
 
   function placeMove(idx: number, player: "X" | "O") {
+    if (gameMode === "esl" && (!isAiGame || player === playerSymbol)) {
+      setEslQuestionIndex((index) => (index + 1) % ESL_QUESTIONS.length);
+    }
+    setEslUnlocked(false);
     const newBoard = [...board];
     newBoard[idx] = player;
     setBoard(newBoard);
-    setLastMove(`Player ${player} placed tile ${idx + 1}`);
+    setLastMove(`${getName(player)} placed tile ${idx + 1}`);
     spawnBurst(idx, player);
     snd.move();
     const wl = getWinner(newBoard);
@@ -212,7 +267,7 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
     setCurrentPlayer(next);
     if (pendingSkips[next] > 0) {
       const newSkip = { ...pendingSkips }; newSkip[next]--; setSkipNext(newSkip);
-      setStatus({ main: `Player ${next} loses this turn`, hint: "Skipped by a roll of 2" });
+      setStatus({ main: `${getName(next)} loses this turn`, hint: "Skipped by a roll of 2" });
       snd.skip();
       turnTimeout.current = window.setTimeout(() => {
         turnTimeout.current = null;
@@ -222,21 +277,17 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
     }
     if (gameMode === "roll") {
       setPhase("roll"); setRollVal(1); setCanConvert(false); setExtraTurn(false);
-      setStatus({ main: `Player ${next}'s turn`, hint: "Roll the dice" });
+      setStatus({ main: `${getName(next)}'s turn`, hint: "Roll the dice" });
     } else {
       setPhase("play");
-      if (gameMode === "ai" && next === (playerSymbol === "X" ? "O" : "X")) {
-        setStatus({ main: "AI is thinking...", hint: "" });
-        setTimeout(() => { if (gameActive) doAiMove(); }, 600);
-      } else {
-        setStatus({ main: `${getName(next)}'s turn`, hint: "Choose a tile" });
-      }
+      setStatus({ main: `${getName(next)}'s turn`, hint: "Choose a tile" });
     }
   }
 
   function handleCellClick(idx: number) {
     if (!gameActive || phase === "over" || phase === "roll") return;
-    if (gameMode === "ai" && currentPlayer === (playerSymbol === "X" ? "O" : "X")) return;
+    if (isAiGame && currentPlayer !== playerSymbol) return;
+    if (gameMode === "esl" && !eslUnlocked) return;
     if (gameMode === "roll" && canConvert) {
       if (board[idx] !== (currentPlayer === "X" ? "O" : "X")) return;
       setCanConvert(false);
@@ -259,9 +310,9 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
     if (result === "win") {
       const winningPlayer = winner || currentPlayer;
       const newScores = { ...scores }; newScores[winningPlayer]++; setScores(newScores);
-      setStatus({ main: `Player ${winningPlayer} wins!`, hint: "Congratulations!" });
+      setStatus({ main: `${getName(winningPlayer)} wins!`, hint: "Congratulations!" });
       snd.win();
-      if (gameMode === "ai") { const sc = winningPlayer === playerSymbol ? 100 : 0; setTimeout(() => onComplete(sc, sc === 100 ? 100 : 0), 600); }
+      if (isAiGame) { const sc = winningPlayer === playerSymbol ? 100 : 0; setTimeout(() => onComplete(sc, sc === 100 ? 100 : 0), 600); }
       else { setTimeout(() => onComplete(winningPlayer === "X" ? 50 : 50, 50), 600); }
     } else {
       const newScores = { ...scores }; newScores.draw++; setScores(newScores);
@@ -272,9 +323,16 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
   }
 
   function doAiMove() {
+    const aiSym = playerSymbol === "X" ? "O" : "X";
+    if (gameMode === "roll" && canConvert) {
+      const opponentTile = board.findIndex((mark) => mark === playerSymbol);
+      if (opponentTile !== -1) {
+        placeMove(opponentTile, aiSym);
+        return;
+      }
+    }
     const empty = board.reduce((a, v, i) => v === null ? [...a, i] : a, [] as number[]);
     if (!empty.length) return;
-    const aiSym = playerSymbol === "X" ? "O" : "X";
     let move: number;
     if (aiDiff === "easy") {
       if (Math.random() < 0.2) { const b = findWinBlock(aiSym); if (b !== -1) move = b; else move = empty[Math.floor(Math.random() * empty.length)]; }
@@ -342,13 +400,13 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
     tone(640, 0.06, 0.07);
     switch (val) {
       case 1: case 3: case 5:
-        setPhase("play"); setStatus({ main: `Player ${currentPlayer} rolled ${val}`, hint: "Place your mark" }); break;
+        setPhase("play"); setStatus({ main: `${getName(currentPlayer)} rolled ${val}`, hint: "Place your mark" }); break;
       case 2: {
         const skippedPlayer = currentPlayer === "X" ? "O" : "X";
         const pendingSkips = { ...skipNext, [skippedPlayer]: skipNext[skippedPlayer] + 1 };
         setSkipNext(pendingSkips);
         setPhase("play");
-        setStatus({ main: `Player ${currentPlayer} rolled 2`, hint: "Place your mark; opponent skips next turn" });
+        setStatus({ main: `${getName(currentPlayer)} rolled 2`, hint: "Place your mark; opponent skips next turn" });
         snd.skip();
         break;
       }
@@ -357,14 +415,14 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
         setCanConvert(hasOpponentTile);
         setPhase("play");
         setStatus({
-          main: `Player ${currentPlayer} rolled 4`,
+          main: `${getName(currentPlayer)} rolled 4`,
           hint: hasOpponentTile ? "Convert an opponent tile" : "No opponent tile to convert; place your mark",
         });
         break;
       }
       case 6:
         setExtraTurn(true); setPhase("play");
-        setStatus({ main: `Player ${currentPlayer} rolled 6`, hint: "Extra turn after placing your mark" }); break;
+        setStatus({ main: `${getName(currentPlayer)} rolled 6`, hint: "Extra turn after placing your mark" }); break;
     }
   }
 
@@ -378,9 +436,12 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
     rollTimeout.current = window.setTimeout(() => settleRoll(result), 900);
   }
 
-  function launchGame(mode: "classic" | "roll" | "ai", opts?: { difficulty?: string; symbol?: "X" | "O" }) {
+  function launchGame(mode: "classic" | "roll" | "esl", opts?: { difficulty?: string; symbol?: "X" | "O" }) {
     setGameMode(mode);
-    if (mode === "ai") { setAiDiff(opts?.difficulty || "easy"); setPlayerSymbol(opts?.symbol || "X"); }
+    if (mode === "classic" && playerCount === 1) { setAiDiff(opts?.difficulty || "easy"); setPlayerSymbol(opts?.symbol || "X"); }
+    setEslQuestionIndex(0);
+    setEslUnlocked(false);
+    setEslFeedback("");
     setScores({ X: 0, O: 0, draw: 0 });
     buildBoard();
     setScreen("game");
@@ -399,6 +460,16 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
     clearGameTimers();
     setRolling(false);
     setTimeout(() => resetGame(), 0);
+  }
+
+  function handleESLAnswer(answer: number) {
+    if (eslUnlocked || !gameActive || gameMode !== "esl" || (isAiGame && currentPlayer !== playerSymbol)) return;
+    if (answer === ESL_QUESTIONS[eslQuestionIndex].answer) {
+      setEslUnlocked(true);
+      setEslFeedback("Correct! Your move is unlocked.");
+    } else {
+      setEslFeedback("Not quite. Try another answer to unlock your move.");
+    }
   }
 
   const boardDisplay = board.map((v, i) => {
@@ -522,9 +593,9 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
           </div>
           <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.5rem, 4vw, 2.5rem)", margin: "0 0 1.5rem" }}>Choose Your <em style={{ color: theme.accent }}>Mode</em></h2>
           <div style={{ display: "grid", gridTemplateColumns: window.innerWidth >= 600 ? "repeat(2, 1fr)" : "1fr", gap: "1rem", marginBottom: "1.5rem" }}>
-            <button onClick={() => { tone(500, 0.08, 0.07); launchGame("classic"); }} style={{ padding: "1.5rem", borderRadius: 16, border: `1px solid ${theme.border}`, background: theme.card, cursor: "pointer", textAlign: "left", transition: "all 0.15s" }}><div style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>◈</div><div style={{ fontWeight: 600 }}>Classic</div><div style={{ fontSize: "0.8rem", color: theme.muted }}>Standard tic-tac-toe</div></button>
-            <button onClick={() => { tone(500, 0.08, 0.07); launchGame("roll"); }} style={{ padding: "1.5rem", borderRadius: 16, border: `1px solid ${theme.border}`, background: theme.card, cursor: "pointer", textAlign: "left" }}><div style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>⚄</div><div style={{ fontWeight: 600 }}>Roll Mode</div><div style={{ fontSize: "0.8rem", color: theme.muted }}>Roll for special turn effects</div></button>
-            <button onClick={() => { tone(500, 0.08, 0.07); setScreen("difficulty"); }} style={{ padding: "1.5rem", borderRadius: 16, border: `1px solid ${theme.border}`, background: theme.card, cursor: "pointer", textAlign: "left" }}><div style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>🤖</div><div style={{ fontWeight: 600 }}>vs AI</div><div style={{ fontSize: "0.8rem", color: theme.muted }}>Challenge the computer</div></button>
+            <button onClick={() => { tone(500, 0.08, 0.07); if (playerCount === 1) setScreen("difficulty"); else launchGame("classic"); }} style={{ padding: "1.5rem", borderRadius: 16, border: `1px solid ${theme.border}`, background: theme.card, cursor: "pointer", textAlign: "left", transition: "all 0.15s" }}><div style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>◈</div><div style={{ fontWeight: 600 }}>Classic</div><div style={{ fontSize: "0.8rem", color: theme.muted }}>{playerCount === 1 ? "Choose a difficulty and play the AI" : "Standard two-player tic-tac-toe"}</div></button>
+            <button onClick={() => { tone(500, 0.08, 0.07); launchGame("roll"); }} style={{ padding: "1.5rem", borderRadius: 16, border: `1px solid ${theme.border}`, background: theme.card, cursor: "pointer", textAlign: "left" }}><div style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>⚄</div><div style={{ fontWeight: 600 }}>Roll Mode</div><div style={{ fontSize: "0.8rem", color: theme.muted }}>Roll for special turn effects{playerCount === 1 ? " against the AI" : ""}</div></button>
+            <button onClick={() => { tone(500, 0.08, 0.07); launchGame("esl"); }} style={{ padding: "1.5rem", borderRadius: 16, border: `1px solid ${theme.border}`, background: theme.card, cursor: "pointer", textAlign: "left" }}><div style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>📚</div><div style={{ fontWeight: 600 }}>ESL Mode</div><div style={{ fontSize: "0.8rem", color: theme.muted }}>Answer a grammar question before each move</div></button>
           </div>
           <div style={{ display: "flex", gap: "0.75rem", marginBottom: "1rem" }}>
             <button onClick={() => { tone(500, 0.08, 0.07); setScreen("setup"); }} style={{ flex: 1, padding: "0.8rem", borderRadius: 50, border: `1px solid ${theme.border}`, background: theme.card, color: theme.text, cursor: "pointer", fontWeight: 600, fontSize: "0.85rem" }}>✎ Edit Profile</button>
@@ -542,10 +613,11 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
 
       {/* DIFFICULTY SCREEN */}
       {screen === "difficulty" && (
-        <div style={{ maxWidth: "clamp(400px, 60vw, 700px)", margin: "2rem auto", padding: "clamp(1.5rem, 3vw, 2.5rem)", backgroundColor: `${theme.surface}ee`, borderRadius: "clamp(16px, 3vw, 24px)", border: `1px solid ${theme.border}`, boxShadow: theme.shadow, overflowY: "auto", maxHeight: "100vh", backgroundImage: `url(${inputBackground})`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" }}>
+        <div style={{ position: "relative", isolation: "isolate", display: "flex", alignItems: "center", justifyContent: "center", boxSizing: "border-box", width: "100%", height: "100%", minHeight: "100%", overflowY: "auto", padding: "clamp(0.75rem, 2vw, 1.5rem)", backgroundImage: `url(${inputBackground})`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" }}>
+        <div style={{ position: "relative", zIndex: 1, width: "100%", maxWidth: 700, margin: "auto", padding: "clamp(1.5rem, 3vw, 2.5rem)", backgroundColor: `${theme.surface}ee`, borderRadius: "clamp(16px, 3vw, 24px)", border: `1px solid ${theme.border}`, boxShadow: theme.shadow }}>
           <button onClick={() => { tone(500, 0.08, 0.07); setScreen("menu"); }} style={{ background: "none", border: "none", color: theme.muted, cursor: "pointer", fontSize: "0.9rem", marginBottom: "1rem" }}>← Main Menu</button>
-          <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.5rem, 4vw, 2.5rem)", margin: "0 0 0.3rem" }}>vs AI</h2>
-          <p style={{ color: theme.muted, fontSize: "0.9rem", marginBottom: "1.5rem" }}>Select difficulty & your symbol</p>
+          <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.5rem, 4vw, 2.5rem)", margin: "0 0 0.3rem" }}>Classic vs AI</h2>
+          <p style={{ color: theme.muted, fontSize: "0.9rem", marginBottom: "1.5rem" }}>Select difficulty and your symbol</p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "0.75rem", marginBottom: "1.5rem" }}>
             {["easy", "normal", "hard"].map(d => (
               <button key={d} onClick={() => setAiDiff(d)} style={{ padding: "1rem", borderRadius: 16, border: aiDiff === d ? `2px solid ${theme.accent}` : `1px solid ${theme.border}`, background: aiDiff === d ? theme.glow : theme.card, cursor: "pointer", textAlign: "center" }}>
@@ -560,7 +632,8 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
               <button key={s} onClick={() => setPlayerSymbol(s)} style={{ flex: 1, padding: "1rem", borderRadius: 16, border: playerSymbol === s ? `2px solid ${theme.accent}` : `1px solid ${theme.border}`, background: playerSymbol === s ? theme.glow : theme.card, cursor: "pointer", fontSize: "1.5rem", fontWeight: 700, color: s === "X" ? X_COLOR : O_COLOR, boxShadow: playerSymbol === s ? `0 0 0 3px ${theme.glow}` : "none" }}>{s}</button>
             ))}
           </div>
-          <button onClick={() => { tone(500, 0.08, 0.07); launchGame("ai", { difficulty: aiDiff, symbol: playerSymbol }); }} style={{ width: "100%", padding: "1rem", fontSize: "1rem", fontWeight: 600, borderRadius: 50, border: "none", background: `linear-gradient(160deg, ${theme.accent}, ${theme.accent}dd)`, color: "#fff", cursor: "pointer", boxShadow: `0 4px 15px ${theme.glow}` }}>Start Game →</button>
+          <button onClick={() => { tone(500, 0.08, 0.07); launchGame("classic", { difficulty: aiDiff, symbol: playerSymbol }); }} style={{ width: "100%", padding: "1rem", fontSize: "1rem", fontWeight: 600, borderRadius: 50, border: "none", background: `linear-gradient(160deg, ${theme.accent}, ${theme.accent}dd)`, color: "#fff", cursor: "pointer", boxShadow: `0 4px 15px ${theme.glow}` }}>Start Game →</button>
+        </div>
         </div>
       )}
 
@@ -571,14 +644,14 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
           <button onClick={() => { tone(500, 0.08, 0.07); setScreen("welcome"); }} style={{ background: "none", border: "none", color: theme.muted, cursor: "pointer", fontSize: "0.9rem", marginBottom: "1rem" }}>← <GameHelpText english="Back" /></button>
           <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.5rem, 4vw, 2.5rem)", margin: "0 0 1rem" }}><GameHelpText english="How to Play" /></h2>
           <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem" }}>
-            {["classic", "roll", "ai", "grid"].map(t => (
+            {["classic", "roll", "esl", "grid"].map(t => (
               <button key={t} onClick={() => setHtpTab(t)} style={{ flex: 1, padding: "0.5rem", borderRadius: 50, border: htpTab === t ? "none" : `1px solid ${theme.border}`, background: htpTab === t ? theme.accent : theme.card, color: htpTab === t ? "#fff" : theme.text, cursor: "pointer", fontSize: "0.75rem", fontWeight: 600, textTransform: "uppercase" }}>{t}</button>
             ))}
           </div>
           <div style={{ fontSize: "0.9rem", lineHeight: 1.7, color: theme.muted }}>
             {htpTab === "classic" && <><p><GameHelpText english="Take turns placing your mark on empty tiles. First player to get the required number in a row — horizontally, vertically, or diagonally — wins the round." /></p><p style={{ marginTop: "0.75rem" }}><GameHelpText english="On 3×3, get 3 in a row. On larger grids, get 4 in a row." /></p></>}
             {htpTab === "roll" && <><p><GameHelpText english="Roll before each turn. On 1, 3, or 5, place a mark. On 2, place a mark and your opponent skips their next turn. On 4, convert an opponent tile; if there is no opponent tile yet, place a normal mark. On 6, place a mark, then roll again for an extra turn." /></p></>}
-            {htpTab === "ai" && <><p><GameHelpText english="Play solo against the computer. Easy = mostly random moves. Normal = blocks and seeks openings. Hard = unbeatable on 3×3, strong heuristics on larger grids." /></p></>}
+            {htpTab === "esl" && <><p><GameHelpText english="Answer a grammar question correctly before each move. In one-player games the AI answers its own questions automatically; in two-player games both players answer before placing a mark." /></p></>}
             {htpTab === "grid" && <><p><GameHelpText english="Choose from 3×3 (classic, need 3), 5×5 (medium, need 4), 6×6 (large, need 4), or 7×7 (epic, need 4) in the main menu before starting." /></p></>}
           </div>
           <button type="button" onClick={() => { tone(500, 0.08, 0.07); setScreen("menu"); }} style={{ width: "100%", marginTop: "1.25rem", padding: "0.95rem", border: 0, borderRadius: 50, background: `linear-gradient(160deg, ${theme.accent}, ${theme.accent2 || theme.accent})`, color: "white", fontWeight: 800, cursor: "pointer" }}><GameHelpText english="Continue to Main Menu →" /></button>
@@ -632,13 +705,25 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
 
           {/* MAIN BOARD AREA */}
           <div style={{ display: "flex", flexDirection: "column", gap: "clamp(0.75rem, 1.5vw, 1.2rem)" }}>
+            {gameMode === "esl" && gameActive && (!isAiGame || currentPlayer === playerSymbol) && (
+              <section aria-label="English grammar question" style={{ width: "100%", maxWidth: 700, margin: "0 auto", padding: "clamp(0.75rem, 2vw, 1.1rem)", borderRadius: 16, border: `1px solid ${theme.border}`, background: theme.card, boxShadow: theme.shadow, boxSizing: "border-box" }}>
+                <h3 style={{ margin: "0 0 0.5rem", fontSize: "0.95rem", color: theme.accent }}>English check · {getName(currentPlayer)}'s turn</h3>
+                <p style={{ margin: "0 0 0.75rem", fontWeight: 700 }}>{ESL_QUESTIONS[eslQuestionIndex].prompt}</p>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "0.5rem" }}>
+                  {ESL_QUESTIONS[eslQuestionIndex].options.map((option, index) => (
+                    <button key={option} type="button" disabled={eslUnlocked} onClick={() => handleESLAnswer(index)} style={{ minWidth: 0, padding: "0.65rem 0.35rem", borderRadius: 10, border: `1px solid ${theme.border}`, background: eslUnlocked && index === ESL_QUESTIONS[eslQuestionIndex].answer ? theme.glow : theme.surface, color: theme.text, font: "inherit", fontWeight: 700, cursor: eslUnlocked ? "default" : "pointer", overflowWrap: "anywhere" }}>{option}</button>
+                  ))}
+                </div>
+                <p role="status" style={{ minHeight: "1.25em", margin: "0.5rem 0 0", color: eslFeedback.startsWith("Correct") ? theme.accent : theme.muted, fontSize: "0.82rem" }}>{eslFeedback || "Answer correctly to unlock your move."}</p>
+              </section>
+            )}
             {/* Board */}
             <div style={responsiveBoardStyle}>
               {boardDisplay.map(cell => (
                 <button
                   key={cell.idx}
                   onClick={() => handleCellClick(cell.idx)}
-                  disabled={!gameActive || phase === "roll" || (canConvert ? !cell.convertible : cell.val !== null)}
+                  disabled={!gameActive || phase === "roll" || (isAiGame && currentPlayer !== playerSymbol) || (gameMode === "esl" && !eslUnlocked) || (canConvert ? !cell.convertible : cell.val !== null)}
                   aria-label={cell.convertible ? `Convert opponent tile ${cell.num}` : cell.val ? `Player ${cell.val} on tile ${cell.num}` : `Place a mark on tile ${cell.num}`}
                   style={{
                   position: "relative",

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { CATEGORIES, MAX_ATTEMPTS, MODE_ORDER } from '../data/animals';
 import { article, buildOptionSet, capitalize, shuffleArray } from '../utils/zooUtils';
+import { markAnswerOptions } from '../utils/answerOptions.mjs';
 
 const DEFAULT_CATEGORY = 'zoo';
 const DEFAULT_TAB = 'guess';
@@ -86,7 +87,7 @@ export function useZooGame() {
       setActState({
         done: false,
         revealed: false,
-        feedback: `🎭 Act like a ${nextAnimal.name}! Say: "I see ${article(nextAnimal.name)} ${nextAnimal.name}."`,
+        feedback: `🎭 Act like ${article(nextAnimal.name)} ${nextAnimal.name}! Say: "I see ${article(nextAnimal.name)} ${nextAnimal.name}."`,
       });
     }
 
@@ -126,7 +127,7 @@ export function useZooGame() {
     setActState({
       done: false,
       revealed: false,
-      feedback: `🎭 Act like a ${animal.name}! Say: "I see ${article(animal.name)} ${animal.name}."`,
+      feedback: `🎭 Act like ${article(animal.name)} ${animal.name}! Say: "I see ${article(animal.name)} ${animal.name}."`,
     });
 
     setLookState({
@@ -188,7 +189,7 @@ export function useZooGame() {
           status: option.name === currentAnimal.name ? 'correct' : 'default',
           disabled: true,
         })),
-        feedback: `🎉 Correct! It's a ${capitalize(currentAnimal.name)}!`,
+        feedback: `🎉 Correct! It's ${article(currentAnimal.name)} ${capitalize(currentAnimal.name)}!`,
       }));
       setScore((prev) => prev + 1);
       guessTimerRef.current = setTimeout(() => {
@@ -198,15 +199,12 @@ export function useZooGame() {
     }
 
     const nextAttempts = guessState.attemptsUsed + 1;
-    const nextOptions = guessState.options.map((option) => {
-      if (option.name === optionName) {
-        return { ...option, status: 'wrong', disabled: true };
-      }
-      if (option.name === currentAnimal.name) {
-        return { ...option, status: 'correct', disabled: true };
-      }
-      return option;
-    });
+    const nextOptions = markAnswerOptions(
+      guessState.options,
+      optionName,
+      currentAnimal.name,
+      nextAttempts >= MAX_ATTEMPTS
+    );
 
     if (nextAttempts >= MAX_ATTEMPTS) {
       setGuessState({
@@ -214,7 +212,7 @@ export function useZooGame() {
         attemptsUsed: nextAttempts,
         attempted: true,
         revealed: true,
-        feedback: `👀 It's a ${capitalize(currentAnimal.name)}! Next time you'll get it!`,
+        feedback: `👀 It's ${article(currentAnimal.name)} ${capitalize(currentAnimal.name)}! Next time you'll get it!`,
       });
       guessTimerRef.current = setTimeout(() => {
         advanceCurrentQuestion();
@@ -255,15 +253,12 @@ export function useZooGame() {
     }
 
     const nextAttempts = lookState.attemptsUsed + 1;
-    const nextOptions = lookState.options.map((option) => {
-      if (option.name === optionName) {
-        return { ...option, status: 'wrong', disabled: true };
-      }
-      if (option.name === currentAnimal.name) {
-        return { ...option, status: 'correct', disabled: true };
-      }
-      return option;
-    });
+    const nextOptions = markAnswerOptions(
+      lookState.options,
+      optionName,
+      currentAnimal.name,
+      nextAttempts >= MAX_ATTEMPTS
+    );
 
     if (nextAttempts >= MAX_ATTEMPTS) {
       setLookState({
