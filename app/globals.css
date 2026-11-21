@@ -100,11 +100,7 @@ body {
   font-family: var(--font-body);
   color: var(--text);
   background: var(--bg);
-  /* Establish a stacking context on body itself. Without this, body has no
-     stacking context of its own, so its own background paints as a normal
-     in-flow box *after* (on top of) any negative z-index descendant — which
-     is exactly what .app-background is. That's why the photo backgrounds
-     were being fully covered by the opaque body.theme-* gradients below. */
+  /* Keep the global artwork behind the app shell, but above the body color. */
   position: relative;
   isolation: isolate;
 }
@@ -113,8 +109,13 @@ body {
 .app-background-overlay {
   position: fixed;
   inset: 0;
-  z-index: -1;
+  z-index: 0;
   pointer-events: none;
+}
+
+.app-shell-wrap {
+  position: relative;
+  z-index: 1;
 }
 
 .app-background {

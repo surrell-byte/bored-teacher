@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bored-teacher-runtime-v5';
+const CACHE_NAME = 'bored-teacher-runtime-v6';
 
 self.addEventListener('install', event => {
   event.waitUntil(self.skipWaiting());
@@ -37,7 +37,12 @@ self.addEventListener('fetch', event => {
     });
   }
 
-  if (request.destination === 'image' && url.pathname.startsWith('/assets/') && !url.pathname.includes('/.optimized/')) {
+  if (
+    request.destination === 'image'
+    && /\.(?:png|jpe?g)$/i.test(url.pathname)
+    && url.pathname.startsWith('/assets/')
+    && !url.pathname.includes('/.optimized/')
+  ) {
     const optimizedUrl = new URL(url);
     const originalPath = optimizedUrl.pathname
       .replace(/^\/assets\//, '')
@@ -52,16 +57,6 @@ self.addEventListener('fetch', event => {
     });
 
     preferredRequest = optimizedRequest;
-    if (isLegacyPng) {
-      const fallbackUrl = new URL(url);
-      fallbackUrl.pathname = fallbackUrl.pathname.replace(/\.png$/i, '.webp');
-      fallbackUrl.search = '';
-      fallbackRequest = new Request(fallbackUrl, {
-        method: 'GET',
-        headers: request.headers,
-        redirect: 'follow',
-      });
-    }
   }
 
   event.respondWith(
@@ -74,7 +69,7 @@ self.addEventListener('fetch', event => {
 
       if (cached) return cached;
 
-      if (isLegacyPng && isPublicAsset && fallbackRequest !== request) {
+      if (isLegacyPng && isPublicAsset && fallbackRequest !== preferredRequest) {
         const fallback = await fetch(fallbackRequest).then(res => {
           if (res.ok) cache.put(fallbackRequest, res.clone());
           return res;

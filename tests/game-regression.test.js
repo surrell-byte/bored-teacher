@@ -37,6 +37,8 @@ test('home landing invites visitors to play as guests before registration', () =
   assert.match(home, /disabled=\{isStarting\}/);
   assert.match(read('app/globals.css'), /startup-background-portrait\.webp/);
   assert.match(read('app/globals.css'), /startup-background-tablet\.webp/);
+  assert.match(read('app/globals.css'), /\.app-background,\s*\.app-background-overlay\s*\{[^}]*z-index:\s*0/);
+  assert.match(read('app/globals.css'), /\.app-shell-wrap\s*\{[^}]*position:\s*relative;[^}]*z-index:\s*1/);
   assert.match(read('app/globals.css'), /@media \(min-width: 761px\) and \(max-width: 1100px\) and \(min-aspect-ratio: 5\/4\) and \(max-aspect-ratio: 3\/2\)/);
   assert.doesNotMatch(home, /AUTH_FALLBACK_DELAY_MS|router\.replace\('\/auth'\)/);
   assert.match(shell, /guestSaveProgressPromptShown/);
@@ -795,16 +797,64 @@ test('Service worker never caches Next.js chunks and clears stale runtime caches
   const serviceWorker = read('public/sw.js');
   const registration = read('components/ServiceWorkerRegistration.tsx');
 
-  assert.match(serviceWorker, /const CACHE_NAME = 'bored-teacher-runtime-v5'/);
+  assert.match(serviceWorker, /const CACHE_NAME = 'bored-teacher-runtime-v6'/);
   assert.match(serviceWorker, /if \(!isPublicAsset && !isLegacyPng\) return/);
   assert.match(serviceWorker, /const isLegacyPng = request\.destination === 'image'/);
-  assert.match(serviceWorker, /fallbackRequest = new Request\(fallbackUrl/);
-  assert.match(serviceWorker, /fetch\(fallbackRequest\)/);
+  assert.match(serviceWorker, /fetch\(preferredRequest\)/);
   assert.doesNotMatch(serviceWorker, /_next\/static/);
   assert.match(registration, /process\.env\.NODE_ENV !== 'production'/);
   assert.match(registration, /registration\.unregister\(\)/);
   assert.match(registration, /name\.startsWith\('bored-teacher-runtime-'\)/);
   assert.match(registration, /updateViaCache: 'none'/);
+});
+
+test('service worker keeps WebP game art and the default avatar on their real asset paths', async () => {
+  const handlers = {};
+  const requestedUrls = [];
+  class WorkerRequest {
+    constructor(input, options = {}) {
+      this.url = String(input);
+      this.method = options.method ?? 'GET';
+      this.destination = 'image';
+      this.headers = options.headers;
+    }
+  }
+  const cache = { match: async () => undefined, put: async () => undefined };
+
+  vm.runInNewContext(read('public/sw.js'), {
+    URL,
+    Request: WorkerRequest,
+    self: {
+      location: { origin: 'https://test.local' },
+      addEventListener: (type, handler) => { handlers[type] = handler; },
+    },
+    caches: { open: async () => cache },
+    fetch: async request => {
+      requestedUrls.push(request.url);
+      return { ok: true, clone() { return this; } };
+    },
+  });
+
+  const webpPaths = [
+    '/assets/games/know-it-all/know-it-all-welcome-bg.webp',
+    '/assets/games/colour-clash-2/colour-clash-2-welcome-bg.webp',
+    '/assets/images/avatars/robot-avatar.webp',
+  ];
+
+  for (const pathname of webpPaths) {
+    const request = {
+      method: 'GET',
+      url: `https://test.local${pathname}`,
+      destination: 'image',
+      headers: {},
+    };
+    let response;
+    handlers.fetch({ request, respondWith: value => { response = value; } });
+    await response;
+  }
+
+  assert.deepEqual(requestedUrls, webpPaths.map(pathname => `https://test.local${pathname}`));
+  assert.ok(webpPaths.every(pathname => fs.existsSync(path.join(root, 'public', pathname.slice(1)))));
 });
 
 test('Profile editing opens the dedicated page and centers the avatar glyph', () => {

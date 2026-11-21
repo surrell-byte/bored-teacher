@@ -33,13 +33,13 @@ export const metadata: Metadata = {
     siteName: 'Bored Teacher Online',
     title: 'Bored Teacher Online | ESL Learning Games for Classrooms',
     description: 'Game-based ESL learning, classroom practice, progress tracking, and teacher resources from Bored Teacher Online.',
-    images: [{ url: '/assets/.optimized/logo.webp', alt: 'Bored Teacher Online logo' }],
+    images: [{ url: '/assets/.optimized/images/logo.webp', alt: 'Bored Teacher Online logo' }],
   },
   twitter: {
     card: 'summary',
     title: 'Bored Teacher Online | ESL Learning Games for Classrooms',
     description: 'Game-based ESL learning, classroom practice, and teacher resources.',
-    images: ['/assets/.optimized/logo.webp'],
+    images: ['/assets/.optimized/images/logo.webp'],
   },
   robots: {
     index: true,
@@ -74,7 +74,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               name: 'Bored Teacher Online',
               alternateName: 'Bored Teacher Online ESL Game Hub',
               url: 'https://www.boredteacher.online',
-              logo: 'https://www.boredteacher.online/assets/.optimized/logo.webp',
+              logo: 'https://www.boredteacher.online/assets/.optimized/images/logo.webp',
               description: 'A game-based ESL learning platform with classroom games, progress tracking, and teacher resources.',
             }),
           }}
