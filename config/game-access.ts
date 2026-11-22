@@ -8,7 +8,6 @@ export const COMING_SOON_GAME_IDS = new Set([
   'feedmonster',
   'fishingnumbers',
   'swampjump',
-  'lakersracer',
   'monkeytree',
   'monsterbound',
   'neonbridge',

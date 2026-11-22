@@ -14,8 +14,13 @@ const THEMES = {
   arcade: { name: 'Arcade', paper: '#24183d', panel: '#352354', ink: '#fff7e6', p1: '#5de2a7', p2: '#ff71ce', gold: '#ffd166', p1Soft: '#1f5b4c', p2Soft: '#6f2d62', muted: '#f6d9ef', tileHover: '#453064' },
 };
 const resolveTheme = (themeId) => ({ ...DEFAULT_THEME, ...(THEMES[themeId] || {}) });
-const EFFECTS = ['💥 -300 points', '💰 +500 points', '🥷 Steal 100 points'];
-const QWERTY_KEYS = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'].join('').split('');
+const EFFECTS = [
+  { type: 'loss', emoji: '💥', label: 'Lost 300 points' },
+  { type: 'reward', emoji: '💰', label: 'Gained 500 points' },
+  { type: 'steal', emoji: '🥷', label: 'Stole 100 points' },
+];
+const PORTRAIT_KEY_ROWS = ['QWERTY', 'UIOPA', 'SDFGH', 'JKLZX', 'CVBNM'];
+const QWERTY_KEYS = PORTRAIT_KEY_ROWS.join('').split('');
 const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 
 export default function AlphabetHunt({ onComplete, themeId = 'classroom', profileName = '' }) {
@@ -228,13 +233,13 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom', profil
       if (wasOpponentAvatar) {
         setStatusLine(`${name} found ${isLetterMode ? 'the letter' : 'the avatar'} ${opponentAv} — that's ${opponentName}'s tile!`);
       } else {
-        if (tile.content.includes('+500 points')) earnedBonusReveals = awardPoints(current, 500);
-        if (tile.content.includes('-300 points')) earnedBonusReveals = awardPoints(current, -300);
-        if (tile.content.includes('Steal 100 points')) {
+        if (tile.content.type === 'reward') earnedBonusReveals = awardPoints(current, 500);
+        if (tile.content.type === 'loss') earnedBonusReveals = awardPoints(current, -300);
+        if (tile.content.type === 'steal') {
           earnedBonusReveals = awardPoints(current, 100);
           awardPoints(current === 1 ? 2 : 1, -100);
         }
-        setStatusLine(`${name} found ${tile.content}${earnedBonusReveals ? ` — earned ${earnedBonusReveals} bonus reveal${earnedBonusReveals === 1 ? '' : 's'}` : ''}.`);
+        setStatusLine(`${name}: ${tile.content.emoji} ${tile.content.label}${earnedBonusReveals ? ` — earned ${earnedBonusReveals} bonus reveal${earnedBonusReveals === 1 ? '' : 's'}` : ''}.`);
       }
 
         setTimeout(() => {
@@ -352,7 +357,21 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom', profil
         <div className="ah-card">
           <h1><GameHelpText english="How to play" /></h1>
           <p className="ah-tag"><GameHelpText english="Find your seven matching tiles before your opponent." /></p>
-          <p className="ah-rules"><GameHelpText english="In Emoji mode, choose an emoji avatar and reveal it under the letter tiles. In Letter mode, choose a letter and reveal it under the emoji tiles. Take turns choosing tiles: finding your own target earns points and another turn; an opponent target or event tile passes play. Earn a bonus tile reveal for each 1,000 net points. Use Skip when you want to give up the turn." /></p>
+          <div className="ah-howto-grid">
+            <section className="ah-howto-mode">
+              <h2><GameHelpText english="Emoji mode" /></h2>
+              <p>Choose an emoji for each player. Reveal letter tiles to find your own emoji; your opponent&apos;s emoji ends your turn.</p>
+            </section>
+            <section className="ah-howto-mode">
+              <h2><GameHelpText english="Letter mode" /></h2>
+              <p>Choose a different letter for each player. Reveal emoji tiles to find your own letter.</p>
+            </section>
+            <section className="ah-howto-mode ah-howto-effects">
+              <h2>Turns &amp; special tiles</h2>
+              <p>Find your target to score and keep your turn. In Hard Rules, every correct pick earns another turn. Each 1,000 net points earns a bonus reveal; use Skip to pass.</p>
+              <div><span>💥</span> Lose 300 points <span>💰</span> Gain 500 points <span>🥷</span> Steal 100 points</div>
+            </section>
+          </div>
           <button className="ah-btn" onClick={() => setScreen('welcome')}><GameHelpText english="Choose a mode" /></button>
         </div>
       </div>
@@ -496,22 +515,25 @@ export default function AlphabetHunt({ onComplete, themeId = 'classroom', profil
           </div>
 
           <div className="ah-grid">
-            {tiles.map((tile, idx) => (
-              <button
-                key={idx}
-                className={`ah-tile ${tile.revealed ? 'flipped' : ''} ${tile.matched ? 'matched' : ''}`}
-                onClick={() => handleTileClick(idx)}
-                disabled={lock || tile.matched}
-                aria-label={tile.revealed ? `${tile.letter}: ${tile.content === 'p1' ? av1 : tile.content === 'p2' ? av2 : tile.content}` : `Choose ${isLetterMode ? 'emoji' : 'letter'} ${tile.letter}`}
-              >
-                <div className="ah-tile-inner">
-                  <div className="ah-tile-face ah-tile-front" aria-hidden={tile.revealed}>{tile.letter}</div>
-                  <div className="ah-tile-face ah-tile-back" aria-hidden={!tile.revealed}>
-                    {tile.content === 'p1' ? av1 : tile.content === 'p2' ? av2 : tile.content}
+            {tiles.map((tile, idx) => {
+              const contentLabel = tile.content === 'p1' ? av1 : tile.content === 'p2' ? av2 : typeof tile.content === 'string' ? tile.content : `${tile.content.emoji} ${tile.content.label}`;
+              return (
+                <button
+                  key={idx}
+                  className={`ah-tile ${tile.revealed ? 'flipped' : ''} ${tile.matched ? 'matched' : ''}`}
+                  onClick={() => handleTileClick(idx)}
+                  disabled={lock || tile.matched}
+                  aria-label={tile.revealed ? `${tile.letter}: ${contentLabel}` : `Choose ${isLetterMode ? 'emoji' : 'letter'} ${tile.letter}`}
+                >
+                  <div className="ah-tile-inner">
+                    <div className="ah-tile-face ah-tile-front" aria-hidden={tile.revealed}>{tile.letter}</div>
+                    <div className="ah-tile-face ah-tile-back" aria-hidden={!tile.revealed}>
+                      {tile.content === 'p1' ? av1 : tile.content === 'p2' ? av2 : typeof tile.content === 'string' ? tile.content : <span className="ah-event-emoji">{tile.content.emoji}</span>}
+                    </div>
                   </div>
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
 
           <div className="ah-game-stats">

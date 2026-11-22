@@ -3,7 +3,7 @@
     // lib/gameState.tsx — Global state context for ESL Game Hub
 
     import { createContext, useContext, useState, useEffect, useRef, useCallback, ReactNode } from 'react';
-    import { auth, onAuthStateChanged, saveUserState, loadUserState, addUserPlayTime } from '@/lib/firebase';
+    import { auth, onAuthStateChanged, saveUserState, loadUserState, addUserPlayTime, type EmailPreferences } from '@/lib/firebase';
     import { DEFAULT_PLAYER_AVATAR, GAME_KEYS } from '@/constants/index';
     import { getEarnedIds, getNewlyUnlocked, type Achievement } from '@/features/achievements/achievements';
     import { UNLOCKABLE_AVATARS } from '@/features/shop/catalog';
@@ -59,6 +59,7 @@
       games: Record<string, GameRecord>;
       /** ISO timestamp of when each achievement id was first earned. */
       earnedAt: Record<string, string>;
+      emailPreferences: EmailPreferences;
     }
 
     const DEFAULT_GAME: GameRecord = { highScore: 0, completions: 0, lastAccuracy: 0, totalQuestions: 100 };
@@ -72,6 +73,7 @@
       unlockedAvatars: [],
       games: Object.fromEntries(GAME_KEYS.map(k => [k, { ...DEFAULT_GAME }])),
       earnedAt: {},
+      emailPreferences: { productUpdates: false, learningTips: false },
     };
 
     const LOCAL_KEY = 'eslhub_data';
@@ -153,6 +155,14 @@
           : 0,
         games,
         earnedAt: { ...(value.earnedAt || {}) },
+        emailPreferences: {
+          productUpdates: typeof value.emailPreferences?.productUpdates === 'boolean'
+            ? value.emailPreferences.productUpdates
+            : false,
+          learningTips: typeof value.emailPreferences?.learningTips === 'boolean'
+            ? value.emailPreferences.learningTips
+            : false,
+        },
         ownedItems,
         unlockedAvatars: [...unlockedAvatars],
       };
@@ -233,6 +243,10 @@
         sound:       remote.sound       !== undefined ? remote.sound : local.sound,
         classId:     remote.classId || local.classId,
         role:        remote.role ?? local.role,
+        emailPreferences: {
+          productUpdates: remote.emailPreferences?.productUpdates ?? local.emailPreferences.productUpdates,
+          learningTips: remote.emailPreferences?.learningTips ?? local.emailPreferences.learningTips,
+        },
         ownedItems:  [...new Set([...(local.ownedItems || []), ...(remote.ownedItems || [])])],
         unlockedAvatars: [...new Set([
           ...(local.unlockedAvatars || []),

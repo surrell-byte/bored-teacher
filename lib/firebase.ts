@@ -94,6 +94,11 @@ export interface CreatorNotificationItem {
 }
 export type AccountRole = 'teacher' | 'student';
 
+export interface EmailPreferences {
+  productUpdates: boolean;
+  learningTips: boolean;
+}
+
 export const CREATOR_EMAIL = 'boredteacherapp@gmail.com';
 
 export function isCreatorUser(user: Pick<User, 'email' | 'emailVerified'> | null | undefined): boolean {
@@ -380,6 +385,7 @@ interface UserState {
   emailVerified?: boolean;
   welcomeGiftClaimed?: boolean;
   welcomeGiftId?: string | null;
+  emailPreferences?: EmailPreferences;
 }
 
 async function createUserProfile(uid: string, name: string, email: string, role: AccountRole) {
@@ -413,6 +419,7 @@ async function createUserProfile(uid: string, name: string, email: string, role:
     role,
     ownedItems: [],
     unlockedAvatars: [],
+    emailPreferences: { productUpdates: false, learningTips: false },
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
@@ -424,7 +431,8 @@ export async function saveUserState(uid: string, state: Partial<UserState>) {
   if (!uid || !db) return;
   const writableState = Object.fromEntries(Object.entries(state).filter(([key]) => [
     'name', 'username', 'usernameLower', 'avatar', 'theme', 'sound', 'games', 'xp', 'level', 'coins',
-    'lastGame', 'loginStreak', 'classId', 'welcomeGiftClaimed', 'welcomeGiftId', 'ownedItems', 'unlockedAvatars', 'lastLogin', 'isActive'
+    'lastGame', 'loginStreak', 'classId', 'welcomeGiftClaimed', 'welcomeGiftId', 'ownedItems', 'unlockedAvatars', 'lastLogin', 'isActive',
+    'emailPreferences'
   ].includes(key)));
   try {
     const username = typeof writableState.usernameLower === 'string' ? writableState.usernameLower : '';

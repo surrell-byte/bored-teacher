@@ -54,6 +54,7 @@ const ESL_RUN_QUESTIONS = [
 ];
 const CLASSIC_RUN_DURATION_MS = 5 * 60 * 1000;
 const ESL_QUESTION_INTERVAL = 200;
+const ESL_RUN_LIVES = 10;
 const ESL_FLIGHT_DURATION_MS = 5000;
 const COLS = [["#2f7de1", "Blue", "#fff"], ["#d0463a", "Red", "#fff"], ["#3fa34d", "Green", "#fff"], ["#f2c230", "Yellow", "#222"]];
 const DUEL_PORTRAIT_ART = { width: 941, height: 1671, laneYs: [697, 1460] };
@@ -217,7 +218,7 @@ function Info({ P, P2, onSave }) {
   );
   return (
     <div className="burger-run-info">
-      <h2 className="text-2xl font-bold">Who's cooking?</h2>
+      <h2 className="text-2xl font-bold">Who&apos;s cooking?</h2>
       <div className="burger-run-info-grid">
         <section className="burger-run-player-setup">
           <div className="flex flex-col items-center gap-1"><BurgerPic bun={bun1} size={96} /><Sub>{n1.trim() || "Chef"}</Sub></div>
@@ -254,9 +255,13 @@ function Win({ d, onAgain, onMenu, bun }) {
 
 /* ================= RUNNER: classic, solo card mode, 2P race (1-2 lanes) ================= */
 function Runner({ mode, P, P2, onBest, onExit, onRestart, onWin, onComplete, onStatus }) {
-  const race = mode === "race", esl = mode === "esl", N = race ? 2 : 1, LIVES = race ? 3 : esl ? 10 : 1, GOAL = race ? 1200 : 1000;
+  const race = mode === "race", esl = mode === "esl", N = race ? 2 : 1;
   const cv = useRef(null), G = useRef(null), controlsRef = useRef(null);
   const completionRef = useRef(onComplete);
+  const runConfigRef = useRef({ mode, P, P2 });
+  const callbacksRef = useRef({ onBest, onRestart, onWin, onStatus });
+  runConfigRef.current = { mode, P, P2 };
+  callbacksRef.current = { onBest, onRestart, onWin, onStatus };
   completionRef.current = onComplete;
   const [fxText, setFx] = useState("");
   const [over, setOver] = useState(null);
@@ -266,9 +271,6 @@ function Runner({ mode, P, P2, onBest, onExit, onRestart, onWin, onComplete, onS
   const [questionFeedback, setQuestionFeedback] = useState("");
   const [questionAnswered, setQuestionAnswered] = useState(false);
   const [streak, setStreak] = useState(0);
-  const KEYS = race
-    ? [{ j: ["KeyW"], d: ["KeyS"] }, { j: ["ArrowUp"], d: ["ArrowDown"] }]
-    : [{ j: ["Space", "ArrowUp", "KeyW"], d: ["ArrowDown", "KeyS"] }];
   const jump = (i) => {
     const g = G.current, L = g && g.L[i];
     if (L && g.state === "run" && !L.out && L.y >= GY) L.vy = L.fx.float ? -9 : L.fx.sticky ? -9.5 : -12.5;
@@ -276,6 +278,11 @@ function Runner({ mode, P, P2, onBest, onExit, onRestart, onWin, onComplete, onS
   const duck = (i, v) => { const L = G.current && G.current.L[i]; if (L) L.duck = v; };
 
   useEffect(() => {
+    const { mode, P, P2 } = runConfigRef.current;
+    const race = mode === "race", esl = mode === "esl", N = race ? 2 : 1, LIVES = race ? 3 : esl ? ESL_RUN_LIVES : 1, GOAL = race ? 1200 : 1000;
+    const KEYS = race
+      ? [{ j: ["KeyW"], d: ["KeyS"] }, { j: ["ArrowUp"], d: ["ArrowDown"] }]
+      : [{ j: ["Space", "ArrowUp", "KeyW"], d: ["ArrowDown", "KeyS"] }];
     const names = [P.name, P2.name], buns = [P.bun, P2.bun];
     const mk = (i) => ({ name: names[i], bun: buns[i], x: 70, y: GY, vy: 0, duck: false, score: 0, obs: [], next: 90, lives: LIVES, inv: 0, stun: 0, fx: {}, shield: false, flash: 0, out: false, ground: 0, flying: false, flightRemaining: 0 });
     const g = (G.current = { state: race ? "count" : "run", cd: 180, t: 0, startedAt: performance.now(), elapsedMs: 0, lastFrameAt: null, nextCard: 200, nextQuestion: ESL_QUESTION_INTERVAL, questionIndex: 0, streak: 0, L: Array.from({ length: N }, (_, i) => mk(i)), clouds: [{ x: 200, y: 40 }, { x: 500, y: 70 }], viewport: null, laneOffsets: [] });
@@ -378,13 +385,13 @@ function Runner({ mode, P, P2, onBest, onExit, onRestart, onWin, onComplete, onS
         if (done.length || alive.length < 2) {
           g.state = "done";
           const w = done.length ? top : alive[0] || top;
-          onWin({ mode, title: w.name + " wins!", sub: `${done.length ? "Crossed the finish line" : "Last burger standing"} · Score ${sc(w)} · ♥ ${Math.max(0, w.lives)} left` });
+          callbacksRef.current.onWin({ mode, title: w.name + " wins!", sub: `${done.length ? "Crossed the finish line" : "Last burger standing"} · Score ${sc(w)} · ♥ ${Math.max(0, w.lives)} left` });
         }
       } else {
         const l = g.L[0];
-        if (l.out) { g.state = "over"; onBest(mode, sc(l)); completionRef.current?.(sc(l), Math.round((sc(l) / GOAL) * 100)); setOver(`Score ${sc(l)} / ${GOAL}`); }
-        else if (mode === "classic" && g.elapsedMs >= CLASSIC_RUN_DURATION_MS) { g.state = "done"; onBest(mode, sc(l)); onWin({ mode, title: `Amazing run, ${l.name}!`, sub: `You ran for the full five minutes and scored ${sc(l)} points.` }); }
-        else if (mode === "card" && l.score >= GOAL) { g.state = "done"; onBest(mode, GOAL); onWin({ mode, title: `You did it, ${l.name}!`, sub: `Score ${sc(l)} · Time ${(g.t / 60).toFixed(1)}s` }); }
+        if (l.out) { g.state = "over"; callbacksRef.current.onBest(mode, sc(l)); completionRef.current?.(sc(l), Math.round((sc(l) / GOAL) * 100)); setOver(`Score ${sc(l)} / ${GOAL}`); }
+        else if (mode === "classic" && g.elapsedMs >= CLASSIC_RUN_DURATION_MS) { g.state = "done"; callbacksRef.current.onBest(mode, sc(l)); callbacksRef.current.onWin({ mode, title: `Amazing run, ${l.name}!`, sub: `You ran for the full five minutes and scored ${sc(l)} points.` }); }
+        else if (mode === "card" && l.score >= GOAL) { g.state = "done"; callbacksRef.current.onBest(mode, GOAL); callbacksRef.current.onWin({ mode, title: `You did it, ${l.name}!`, sub: `Score ${sc(l)} · Time ${(g.t / 60).toFixed(1)}s` }); }
         else if (esl && l.score >= g.nextQuestion) {
           g.state = "question";
           setQuestionIndex(g.questionIndex);
@@ -398,7 +405,7 @@ function Runner({ mode, P, P2, onBest, onExit, onRestart, onWin, onComplete, onS
     const updatePlayerStatus = (now) => {
       if (!race || now - lastStatusUpdate < 100) return;
       lastStatusUpdate = now;
-      onStatus(g.L.map((player) => ({
+      callbacksRef.current.onStatus(g.L.map((player) => ({
         name: player.name,
         bun: player.bun,
         scoreLabel: `${Math.floor(player.score)} pts`,
@@ -429,7 +436,7 @@ function Runner({ mode, P, P2, onBest, onExit, onRestart, onWin, onComplete, onS
       for (let k = 0; k < 24; k++) ctx.fillRect((k * 97 - L.ground + W * 2) % W, GY + 8 + (k % 3) * 6, 3 + (k % 4) * 2, 2);
       for (const o of L.obs) {
         if (!o.b) for (let k = 0; k < o.n; k++) { const x = o.x + k * 20, t = o.y - o.h; ctx.fillRect(x + 5, t, 7, o.h); ctx.fillRect(x, t + 12, 5, 5); ctx.fillRect(x, t + 12, 3, 12); ctx.fillRect(x + 12, t + 6, 5, 5); ctx.fillRect(x + 14, t + 6, 3, 14); }
-        else { const f = Math.floor(g.t / 10) % 2; ctx.fillRect(o.x + 6, o.y - 16, 22, 8); ctx.fillRect(o.x, o.y - 14, 8, 4); ctx.fillRect(o.x + 28, o.y - 18, 6, 4); f ? ctx.fillRect(o.x + 10, o.y - 26, 12, 10) : ctx.fillRect(o.x + 10, o.y - 8, 12, 8); }
+        else { const f = Math.floor(g.t / 10) % 2; ctx.fillRect(o.x + 6, o.y - 16, 22, 8); ctx.fillRect(o.x, o.y - 14, 8, 4); ctx.fillRect(o.x + 28, o.y - 18, 6, 4); if (f) ctx.fillRect(o.x + 10, o.y - 26, 12, 10); else ctx.fillRect(o.x + 10, o.y - 8, 12, 8); }
       }
       if (L.flying) {
         const rainbow = ["#ff5252", "#ffb142", "#ffeb3b", "#4cd964", "#45b7ff", "#9b59ff"];
@@ -516,7 +523,7 @@ function Runner({ mode, P, P2, onBest, onExit, onRestart, onWin, onComplete, onS
       const km = KEYS.findIndex((k) => k.j.includes(e.code) || k.d.includes(e.code));
       if (km >= 0 || e.code === "Space") e.preventDefault();
       if (km >= 0) { if (KEYS[km].j.includes(e.code)) jump(km); else duck(km, true); }
-      if (e.code === "KeyR" && !race) onRestart();
+      if (e.code === "KeyR" && !race) callbacksRef.current.onRestart();
     };
     const ku = (e) => KEYS.forEach((k, i) => { if (k.d.includes(e.code)) duck(i, false); });
     addEventListener("keydown", kd); addEventListener("keyup", ku);
@@ -545,7 +552,7 @@ function Runner({ mode, P, P2, onBest, onExit, onRestart, onWin, onComplete, onS
 
     const question = ESL_RUN_QUESTIONS[g.questionIndex];
     const correct = answer === question.answer;
-    g.L[0].lives = LIVES;
+    g.L[0].lives = ESL_RUN_LIVES;
     g.streak = correct ? g.streak + 1 : 0;
     const earnedFlight = correct && g.streak % 3 === 0;
     setStreak(g.streak);
@@ -647,10 +654,13 @@ function CardDuel({ P, P2, onWin, onStatus }) {
   const [, rr] = useState(0);
   const re = () => rr((n) => n + 1);
   const cv = useRef(null), timers = useRef([]);
+  const callbacksRef = useRef({ onWin, onStatus });
+  callbacksRef.current = { onWin, onStatus };
   const mobilePortrait = useRef(false);
   mobilePortrait.current = typeof window !== "undefined" && window.matchMedia("(max-width: 760px) and (orientation: portrait)").matches;
 
   useEffect(() => {
+    const activeTimers = timers.current;
     const portraitQuery = window.matchMedia("(max-width: 760px) and (orientation: portrait)");
     const ctx = cv.current.getContext("2d");
     const canvas = cv.current;
@@ -774,7 +784,7 @@ function CardDuel({ P, P2, onWin, onStatus }) {
       s.t += dt;
       if (now - lastStatusUpdate >= 100) {
         lastStatusUpdate = now;
-        onStatus(s.pl.map((player, index) => ({
+        callbacksRef.current.onStatus(s.pl.map((player, index) => ({
           name: player.name,
           bun: player.bun,
           scoreLabel: `${player.pts} pts`,
@@ -886,7 +896,7 @@ function CardDuel({ P, P2, onWin, onStatus }) {
       });
       if (s.winning && s.t - s.winning.at >= 1.6) {
         s.done = true;
-        onWin(s.winning.result);
+        callbacksRef.current.onWin(s.winning.result);
         return;
       }
       raf = requestAnimationFrame(loop);
@@ -897,7 +907,7 @@ function CardDuel({ P, P2, onWin, onStatus }) {
       portraitQuery.removeEventListener("change", updatePortraitLayout);
       resizeObserver.disconnect();
       window.removeEventListener("resize", invalidateCanvasSize);
-      timers.current.forEach(clearTimeout);
+      activeTimers.forEach(clearTimeout);
     };
   }, []);
 
@@ -981,7 +991,7 @@ export default function BurgerRun({ onComplete, startAtMenu = false }) {
 
   useEffect(() => {
     if (scr !== "splash") return;
-    const f = (e) => { if (e.code === "Space" || e.code === "Enter") { e.preventDefault(); go(); } };
+    const f = (e) => { if (e.code === "Space" || e.code === "Enter") { e.preventDefault(); setScr(P.name ? "menu" : "info"); } };
     addEventListener("keydown", f);
     return () => removeEventListener("keydown", f);
   }, [scr, P.name]);

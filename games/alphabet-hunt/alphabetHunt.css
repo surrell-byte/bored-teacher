@@ -64,6 +64,37 @@
   margin: 0 0 28px;
 }
 
+.ah-howto-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+  font-family: 'Trebuchet MS', sans-serif;
+}
+
+.ah-howto-mode {
+  padding: 14px;
+  border: 2px solid var(--ink);
+  border-radius: 4px;
+  background: var(--paper);
+  text-align: left;
+}
+
+.ah-howto-mode h2 {
+  margin: 0 0 6px;
+  color: var(--p1);
+  font-size: 1.05rem;
+}
+
+.ah-howto-mode p {
+  margin: 0;
+  line-height: 1.45;
+}
+
+.ah-howto-effects { grid-column: 1 / -1; }
+.ah-howto-effects div { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-top: 10px; font-weight: 700; }
+.ah-howto-effects span { font-size: 1.35rem; }
+
 .ah-btn {
   font-family: 'Trebuchet MS', sans-serif;
   font-size: 1.05rem;
@@ -514,6 +545,8 @@
   white-space: normal;
 }
 
+.ah-event-emoji { font-size: clamp(1.3rem, 4vw, 2.4rem); line-height: 1; }
+
 .ah-tile.matched .ah-tile-back {
   background: var(--gold);
   animation: ah-matchGlow 0.35s ease;
@@ -738,6 +771,9 @@
     grid-template-columns: 1fr;
   }
 
+  .ah-howto-grid { grid-template-columns: 1fr; }
+  .ah-howto-effects { grid-column: auto; }
+
   .ah-mode-card {
     min-height: 0;
     grid-template-columns: auto 1fr;
@@ -853,5 +889,22 @@
     background-position: center;
     background-size: cover;
     background-repeat: no-repeat;
+  }
+
+  .ah-game-screen .ah-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .ah-game-screen .ah-grid .ah-tile:nth-child(11),
+  .ah-game-screen .ah-grid .ah-tile:nth-child(20) {
+    grid-column: auto;
+  }
+
+  .ah-game-screen .ah-grid .ah-tile:nth-child(7),
+  .ah-game-screen .ah-grid .ah-tile:nth-child(12),
+  .ah-game-screen .ah-grid .ah-tile:nth-child(17),
+  .ah-game-screen .ah-grid .ah-tile:nth-child(22) {
+    grid-column: 2;
   }
 }

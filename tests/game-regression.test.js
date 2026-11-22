@@ -90,6 +90,26 @@ test('work-in-progress games are marked coming soon and excluded from public lis
   assert.match(dashboard, /comingSoon=\{COMING_SOON_GAME_IDS\.has\(id\)\}/);
 });
 
+test('Lakers Showtime Racer is public and keeps its board and controls inside one game viewport', () => {
+  const access = read('config/game-access.ts');
+  const catalog = read('games/catalog.data.ts');
+  const component = read('games/lakers-showtime-racer/LakersShowtimeRacer.jsx');
+  const comingSoonIds = access.match(/export const COMING_SOON_GAME_IDS = new Set\(\[([\s\S]*?)\]\);/);
+  const teacherProIds = access.match(/export const TEACHER_PRO_GAME_IDS = new Set\(\[([\s\S]*?)\]\);/);
+  const creatorOnlyIds = access.match(/export const CREATOR_ONLY_GAME_IDS = new Set\(\[([\s\S]*?)\]\);/);
+
+  assert.ok(comingSoonIds && teacherProIds && creatorOnlyIds);
+  for (const ids of [comingSoonIds[1], teacherProIds[1], creatorOnlyIds[1]]) {
+    assert.doesNotMatch(ids, /'lakersracer'/);
+  }
+  assert.match(catalog, /lakersracer:\s*\{[\s\S]*?name:\s*"Lakers Showtime Racer"/);
+  assert.match(component, /height:\s*100%;\s*min-height:\s*0/);
+  assert.match(component, /grid-template-columns:\s*minmax\(0,\s*1\.45fr\)\s+minmax\(250px,\s*0\.8fr\)/);
+  assert.match(component, /\.lsr-viewport\s*\{[^}]*grid-column:\s*1;[^}]*grid-row:\s*1\s*\/\s*4/);
+  assert.match(component, /\.lsr-players\s*\{[^}]*grid-column:\s*2;[^}]*grid-row:\s*1/);
+  assert.match(component, /@media \(max-width: 780px\)\s*\{[\s\S]*?grid-template-columns:\s*minmax\(0,\s*1fr\)/);
+});
+
 test('Animal Class Quest text uses strong contrast over its illustrated backgrounds', () => {
   const component = read('games/animal-class-quest/AnimalClassQuest.jsx');
 
@@ -432,6 +452,18 @@ test('Alphabet Hunt offers emoji and reverse letter modes before player setup', 
   assert.match(component, /{targetOptions\.map\(/);
 });
 
+test('Alphabet Hunt explains both modes and uses the requested portrait keyboard rows', () => {
+  const component = read('games/alphabet-hunt/AlphabetHunt.jsx');
+  const styles = read('games/alphabet-hunt/alphabetHunt.css');
+
+  assert.match(component, /const PORTRAIT_KEY_ROWS = \['QWERTY', 'UIOPA', 'SDFGH', 'JKLZX', 'CVBNM'\]/);
+  assert.match(component, /<h2><GameHelpText english="Emoji mode" \/><\/h2>/);
+  assert.match(component, /<h2><GameHelpText english="Letter mode" \/><\/h2>/);
+  assert.match(component, /className="ah-event-emoji"/);
+  assert.match(styles, /\.ah-game-screen \.ah-grid \{\s*grid-template-columns: repeat\(6, minmax\(0, 1fr\)\)/);
+  assert.match(styles, /\.ah-game-screen \.ah-grid \.ah-tile:nth-child\(7\)[\s\S]*?grid-column: 2;/);
+});
+
 test('Alphabet Hunt announces the actual winning player on the win screen', () => {
   const component = read('games/alphabet-hunt/AlphabetHunt.jsx');
 
@@ -686,7 +718,7 @@ test('Fry the Egg hides navbar counters and keeps portrait cooking visuals visib
   assert.match(component, /eggFlips\[player\]=\{elapsed:0,duration:\.55\}/);
   assert.match(component, /function styleEggForProgress\(player,amount\)/);
   assert.match(component, /font-size:12px;border-radius:10px/);
-  assert.match(gamePage, /stats=\{isNumberClouds \|\| isAirPuck \|\| isBlockFight \|\| isFryTheEgg \? \[\]/);
+  assert.match(gamePage, /stats=\{isNumberClouds \|\| isAirPuck \|\| isBlockFight \|\| isFryTheEgg \|\| \(isReadingRescue && readingRescueHud\?\.active\) \? \[\]/);
   assert.doesNotMatch(gamePage, /fryTheEggHud\.scores\[/);
 });
 
@@ -1012,6 +1044,7 @@ test('Da Rules links its cover and offers visible Chinese, Thai, and Spanish tra
   assert.match(page, /searchParams\.set\('u', window\.location\.href\)/);
   assert.match(gamesPage, /href="\/games\/da-rules"/);
   assert.ok(styles.includes("background-image: url('/assets/covers/da-rules-cover.webp')"));
+  assert.match(styles, /\.games-rulebook-visual \{[\s\S]*?aspect-ratio: 4 \/ 3;[\s\S]*?background-size: cover;/);
   assert.ok(fs.existsSync(path.join(root, 'public/assets/covers/da-rules-cover.webp')));
 });
 
@@ -1362,8 +1395,9 @@ test('Burger Run is registered with the catalog and reports game completion', ()
   assert.match(component, /CLASSIC_RUN_DURATION_MS = 5 \* 60 \* 1000/);
   assert.match(component, /full five minutes/);
   assert.match(component, /English question \{questionIndex \+ 1\} of 10/);
-  assert.match(component, /LIVES = race \? 3 : esl \? 10 : 1/);
-  assert.match(component, /g\.L\[0\]\.lives = LIVES/);
+  assert.match(component, /const ESL_RUN_LIVES = 10/);
+  assert.match(component, /LIVES = race \? 3 : esl \? ESL_RUN_LIVES : 1/);
+  assert.match(component, /g\.L\[0\]\.lives = ESL_RUN_LIVES/);
   assert.match(component, /g\.L\[0\]\.flightRemaining = ESL_FLIGHT_DURATION_MS/);
   assert.match(component, /ctx\.strokeStyle = color;[\s\S]*ctx\.shadowBlur = 12/);
   assert.equal((component.match(/prompt: "/g) || []).length, 10);
@@ -1493,13 +1527,31 @@ test('Reading Rescue keeps full background artwork and portrait game content wit
   const readingRescue = read('games/finn-the-fox/ReadingRescue.jsx');
   const globalStyles = read('app/globals.css');
   const riddleBombs = read('games/riddle-bombs/RiddleBombs.jsx');
+  const findLetterStyles = read('games/shared/find-the-letter.css');
+  const route = read('app/games/[game]/page.tsx');
 
   assert.match(readingRescue, /\.finn-fox--welcome \{[\s\S]*?background: url\('\/assets\/games\/finn-the-fox\/reading-rescue-welcome-bg\.webp'\) center \/ cover no-repeat/);
+  assert.doesNotMatch(readingRescue, /ff-welcome-copy|ff-welcome-art/);
   assert.match(readingRescue, /\.finn-fox--welcome::before \{ display: none; \}/);
-  assert.match(readingRescue, /\.finn-fox--welcome \.ff-welcome-screen \{[\s\S]*?background: transparent;[\s\S]*?backdrop-filter: none;/);
+  assert.match(readingRescue, /\.finn-fox--welcome main\.ff-welcome-screen:not\(\.game-container\) \{[\s\S]*?background-image: none;[\s\S]*?backdrop-filter: none;/);
   assert.doesNotMatch(globalStyles, /\.game-route-wrap \.game-shell--emojisportsquiz[^{]*\{[^}]*width:/);
-  assert.match(riddleBombs, /@media\(max-width:639px\) and \(orientation:portrait\)\{\.riddle-bombs--game\{display:block;height:100%;min-height:0;padding:8px;overflow:hidden\}[\s\S]*?\.rb-game-grid\{height:100%;grid-template-columns:minmax\(76px,.3fr\) minmax\(0,1fr\)/);
-  assert.match(riddleBombs, /\.rb-answers\{grid-template-columns:1fr;gap:6px\}\.rb-answers button\{min-height:38px;padding:8px 10px/);
+  assert.match(riddleBombs, /@media\(max-width:639px\) and \(orientation:portrait\)\{[\s\S]*?\.rb-game-grid\{height:auto;min-height:calc\(100dvh - 130px\);grid-template-columns:minmax\(0,1fr\)/);
+  assert.match(riddleBombs, /\.rb-answers\{grid-template-columns:1fr;gap:7px\}\s*\.rb-answers button\{min-height:44px;padding:9px 11px/);
+  assert.match(findLetterStyles, /@media \(max-width: 680px\) and \(orientation: portrait\) \{[\s\S]*?justify-content: center;[\s\S]*?\.find-letter-layout \{[\s\S]*?grid-template-columns: minmax\(0, 1fr\)/);
+  assert.match(route, /stats=\{isNumberClouds \|\| isAirPuck \|\| isBlockFight \|\| isFryTheEgg \|\| \(isReadingRescue && readingRescueHud\?\.active\) \? \[\]/);
+  assert.match(route, /Find the Letter lives remaining/);
+});
+
+test('Block Fight card mode shows numbered card backs below the moon and moves the navbar menu right', () => {
+  const component = read('games/block-fight/BlockFight.jsx');
+  const styles = read('app/globals.css');
+
+  assert.match(component, /const W = 800, GROUND = 360/);
+  assert.match(component, /<div className="bf-face bf-back"><span className="bf-q">\{i \+ 1\}<\/span><\/div>/);
+  assert.doesNotMatch(component, /\.bf-num/);
+  assert.match(component, /\.bf-cm-side \{\s*position: absolute; top: 25%/);
+  assert.match(styles, /\.game-shell--blockfight \.game-header-actions \{ width: 100%; justify-content: flex-end; \}/);
+  assert.match(styles, /@media \(orientation: landscape\) and \(max-width: 1023px\) \{\s+\.game-shell--blockfight \.game-header-default \{ flex-wrap: wrap; \}\s+\.game-shell--blockfight \.game-header-title \{ flex: 0 0 100%; width: 100%; \}\s+\.game-shell--blockfight \.game-header-actions \{ width: 100%; justify-content: flex-end; \}/);
 });
 
 test('128-Bit Trophy is a purchasable avatar with optimized artwork', () => {

@@ -5,6 +5,8 @@ import QUIZ_QUESTIONS from "../quick-fire/questions.json";
 import "./soccerShootout.css";
 
 const SHOT_LIMIT = 5;
+const SHOT_ANIMATION_MS = 850;
+const SHOT_RESULT_HOLD_MS = 180;
 const DIRECTIONS = [
   { id: "left", label: "Left corner", shortLabel: "LEFT" },
   { id: "center", label: "Center", shortLabel: "CENTER" },
@@ -175,7 +177,7 @@ export default function SoccerShootout({ onComplete }) {
         setFeedback(mode === "esl" ? "Answer correctly to unlock your shot." : "Choose a corner, then take your shot.");
         setPhase(mode === "esl" ? "question" : "ready");
       }
-    }, 850);
+    }, SHOT_ANIMATION_MS + SHOT_RESULT_HOLD_MS);
   };
 
   const handleKeyDown = (event) => {

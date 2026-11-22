@@ -482,7 +482,9 @@
 }
 
 .ss-keeper--dive-center {
-  background-position: 25% 50%;
+  background-image: url("/assets/games/soccer-shootout/goalkeeper-dive-left.webp");
+  background-position: center;
+  background-size: contain;
 }
 
 .ss-keeper--save-left {

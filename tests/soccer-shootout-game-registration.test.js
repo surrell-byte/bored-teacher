@@ -49,6 +49,7 @@ test('Soccer Shootout is registered and uses the supplied stadium background', (
   assert.match(styles, /\.ss-keeper--save-center\s*\{[^}]*goalkeeper-save-center\.webp/);
   assert.match(styles, /\.ss-keeper--save-right\s*\{[^}]*goalkeeper-save-left\.webp/);
   assert.match(styles, /\.ss-keeper--ready\s*\{[^}]*goalkeeper-anticipation\.webp/);
+  assert.match(styles, /\.ss-keeper--dive-center\s*\{[^}]*goalkeeper-dive-left\.webp/);
   assert.match(styles, /\.ss-keeper--celebrate\s*\{[^}]*goalkeeper-celebration\.webp/);
   assert.match(styles, /\.ss-keeper--disappointed\s*\{[^}]*goalkeeper-defeated\.webp/);
   assert.match(styles, /\.soccer-shootout\.is-setup-screen\s*\{[^}]*overhead-background\.webp/);
@@ -62,6 +63,9 @@ test('Soccer Shootout is registered and uses the supplied stadium background', (
   assert.match(styles, /goalkeeper-sprites-v2\.webp/);
   assert.match(game, /ss-keeper--\$\{keeperPose\}/);
   assert.match(game, /setKeeperPose\("ready"\)/);
+  assert.match(game, /SHOT_ANIMATION_MS = 850/);
+  assert.match(game, /SHOT_RESULT_HOLD_MS = 180/);
+  assert.match(game, /SHOT_ANIMATION_MS \+ SHOT_RESULT_HOLD_MS/);
   assert.match(game, /setKeeperPose\(Math\.max\(\.\.\.nextPlayerGoals\.slice\(0, playerCount\)\) < 3 \? "celebrate" : "disappointed"\)/);
   assert.match(game, /useState\("menu"\)/);
   assert.match(game, /useState\("classic"\)/);

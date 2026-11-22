@@ -819,7 +819,7 @@ export default function GamePage() {
             )}
           </>
         }
-        stats={isNumberClouds || isAirPuck || isBlockFight || isFryTheEgg ? [] : [
+        stats={isNumberClouds || isAirPuck || isBlockFight || isFryTheEgg || (isReadingRescue && readingRescueHud?.active) ? [] : [
           { label: 'Best', value: state.games[gameId]?.highScore ?? 0, icon: '⭐' },
           { label: 'Coins', value: state.coins, icon: '🪙' },
         ]}

@@ -18,6 +18,7 @@ export default function ProfilePage() {
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
   const [avatar, setAvatar] = useState(DEFAULT_PLAYER_AVATAR);
+  const [emailPreferences, setEmailPreferences] = useState(state.emailPreferences);
   const [feedback, setFeedback] = useState('');
   const [saving, setSaving] = useState(false);
   const [isGuest, setIsGuest] = useState(false);
@@ -41,6 +42,7 @@ export default function ProfilePage() {
     });
   }, [router]);
   useEffect(() => { setName(state.name === 'Explorer' ? '' : state.name); setUsername(state.username || ''); setAvatar(state.avatar || DEFAULT_PLAYER_AVATAR); }, [state.name, state.username, state.avatar]);
+  useEffect(() => { setEmailPreferences(state.emailPreferences); }, [state.emailPreferences]);
 
   async function save() {
     if (isGuest) { setFeedback('Create an account or sign in before changing your profile.'); return; }
@@ -48,7 +50,7 @@ export default function ProfilePage() {
     const cleanUsername = username.replace(/^@/, '');
     if (cleanUsername && !/^[a-zA-Z0-9_]{1,24}$/.test(cleanUsername)) { setFeedback('Username may use letters, numbers, and underscores only.'); return; }
     setSaving(true);
-    setState({ name: name.trim(), username: cleanUsername, avatar });
+    setState({ name: name.trim(), username: cleanUsername, avatar, emailPreferences });
     try { if (auth?.currentUser) await setDisplayName(auth.currentUser, name.trim()); } catch (_) { /* local profile still saves */ }
     setFeedback('Profile saved.');
     setSaving(false);
@@ -99,11 +101,40 @@ export default function ProfilePage() {
   const available = [...new Set([DEFAULT_PLAYER_AVATAR, ...baseAvatars, ...purchased, ...earnedAvatars])];
 
   return <main className="profile-page hub-page">
-    <div className="profile-page-header"><div><p className="suggestions-kicker">Your account</p><h1 className="hub-welcome-title">Profile</h1><p className="hub-welcome-sub">Manage your identity, avatar, and learning look.</p></div><div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}><button type="button" className="pill-btn" onClick={() => router.push('/profile/demo')}>Preview student &amp; teacher profiles</button><button type="button" className="pill-btn" onClick={() => router.push('/hub')}>← Dashboard</button></div></div>
+    <div className="profile-page-header"><div><p className="suggestions-kicker">Your account</p><h1 className="hub-welcome-title">Profile</h1><p className="hub-welcome-sub">Manage your identity, avatar, learning look, and optional email preferences.</p></div><div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}><button type="button" className="pill-btn" onClick={() => router.push('/profile/demo')}>Preview student &amp; teacher profiles</button><button type="button" className="pill-btn" onClick={() => router.push('/hub')}>← Dashboard</button></div></div>
     {isGuest && <section className="shell-card profile-auth-prompt"><h2>Sign in to edit your profile</h2><p>Create an account or sign in to save your name, username, theme, and avatar.</p><button type="button" className="btn-primary" onClick={() => router.push('/auth?returnTo=/profile')}>Create account / Sign in</button></section>}
     <div className="profile-layout">
       <section className="shell-card profile-preview"><div className="profile-preview-avatar"><ProfileAvatar value={avatar} size={124} /></div><h2>{name.trim() || 'Explorer'}</h2><p>{username ? `@${username.replace(/^@/, '')}` : 'Choose a username'}</p><div className="profile-preview-stats"><span><b>{state.level}</b><small>Level</small></span><span><b>{state.coins}</b><small>Coins</small></span><span><b>{state.xp}</b><small>XP</small></span></div></section>
-      <section className="shell-card profile-form"><h2>Profile details</h2><label className="lb-field-label" htmlFor="profile-name">Display name</label><input id="profile-name" className="lb-input" value={name} maxLength={32} readOnly={isGuest} onChange={event => setName(event.target.value)} placeholder="Your name" /><label className="lb-field-label" htmlFor="profile-username">Username</label><input id="profile-username" className="lb-input" value={username} maxLength={24} readOnly={isGuest} onChange={event => setUsername(event.target.value)} placeholder="yourhandle" /><label className="lb-field-label" htmlFor="profile-theme">Preferred theme</label><select id="profile-theme" className="lb-input" value={state.theme} disabled={isGuest} onChange={event => changeTheme(event.target.value)}>{THEMES.map(theme => <option key={theme.value} value={theme.value}>{theme.label}</option>)}</select><div className="profile-save-row"><button type="button" className="btn-primary" onClick={save} disabled={saving || isGuest}>{saving ? 'Saving…' : 'Save Changes'}</button>{feedback && <span role="status">{feedback}</span>}</div></section>
+      <section className="shell-card profile-form">
+        <h2>Profile details</h2>
+        <label className="lb-field-label" htmlFor="profile-name">Display name</label>
+        <input id="profile-name" className="lb-input" value={name} maxLength={32} readOnly={isGuest} onChange={event => setName(event.target.value)} placeholder="Your name" />
+        <label className="lb-field-label" htmlFor="profile-username">Username</label>
+        <input id="profile-username" className="lb-input" value={username} maxLength={24} readOnly={isGuest} onChange={event => setUsername(event.target.value)} placeholder="yourhandle" />
+        <label className="lb-field-label" htmlFor="profile-theme">Preferred theme</label>
+        <select id="profile-theme" className="lb-input" value={state.theme} disabled={isGuest} onChange={event => changeTheme(event.target.value)}>{THEMES.map(theme => <option key={theme.value} value={theme.value}>{theme.label}</option>)}</select>
+        <fieldset className="profile-email-preferences" disabled={isGuest}>
+          <legend>Email preferences</legend>
+          <p>Optional email campaigns are not currently being sent. These choices are saved for future opt-in messages. Account verification, password reset, and other necessary service emails are unaffected.</p>
+          <label className="profile-email-preference">
+            <input
+              type="checkbox"
+              checked={emailPreferences.productUpdates}
+              onChange={event => setEmailPreferences(current => ({ ...current, productUpdates: event.target.checked }))}
+            />
+            <span>Product news and feature updates</span>
+          </label>
+          <label className="profile-email-preference">
+            <input
+              type="checkbox"
+              checked={emailPreferences.learningTips}
+              onChange={event => setEmailPreferences(current => ({ ...current, learningTips: event.target.checked }))}
+            />
+            <span>Learning tips and classroom inspiration</span>
+          </label>
+        </fieldset>
+        <div className="profile-save-row"><button type="button" className="btn-primary" onClick={save} disabled={saving || isGuest}>{saving ? 'Saving…' : 'Save Changes'}</button>{feedback && <span role="status">{feedback}</span>}</div>
+      </section>
     </div>
     <section className="shell-card profile-avatars"><div className="profile-section-heading"><div><h2>Choose your avatar</h2><p>Shop purchases and earned game rewards appear alongside the starter collection.</p></div><button type="button" className="pill-btn" onClick={() => router.push('/shop')}>Visit shop</button></div><div className="profile-avatar-grid">{available.map(value => <button type="button" key={value} className={`profile-avatar-option${value === avatar ? ' selected' : ''}`} onClick={() => chooseAvatar(value)} disabled={isGuest} aria-label="Choose avatar" aria-pressed={value === avatar}><ProfileAvatar value={value} size={72} /></button>)}</div></section>
     {!isGuest && <section className="shell-card profile-danger-zone">

@@ -127,7 +127,7 @@ service cloud.firestore {
           'xp', 'level', 'coins', 'lastGame', 'loginStreak', 'classId',
           'totalPlaySeconds',
           'welcomeGiftClaimed', 'welcomeGiftId', 'ownedItems', 'unlockedAvatars', 'lastLogin',
-          'isActive', 'updatedAt'
+          'emailPreferences', 'isActive', 'updatedAt'
         ]))
         && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['totalPlaySeconds'])
           || (request.resource.data.totalPlaySeconds is number
@@ -136,6 +136,11 @@ service cloud.firestore {
           || classIdCanBeSet(request.resource.data.classId))
         && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['usernameLower'])
           || usernameIndexMatchesAfter(userId, request.resource.data.usernameLower))
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['emailPreferences'])
+          || (request.resource.data.emailPreferences is map
+            && request.resource.data.emailPreferences.keys().hasOnly(['productUpdates', 'learningTips'])
+            && request.resource.data.emailPreferences.productUpdates is bool
+            && request.resource.data.emailPreferences.learningTips is bool))
       );
 
       allow delete: if request.auth != null

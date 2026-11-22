@@ -106,12 +106,71 @@ const CSS = `
 .bf-menu-btn:active { transform: scale(.98); }
 
 /* How to play */
-.bf-howto { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,.7); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; padding: 16px; }
-.bf-howto-box { background: linear-gradient(145deg, #172a55, #0f1c3d); border: 1px solid rgba(255,255,255,.15); border-radius: 22px; padding: 26px 28px; width: min(100%, 520px); max-height: 90vh; overflow: auto; color: #e8eeff; font: 14px/1.55 system-ui, sans-serif; }
-.bf-howto-box h3 { margin: 0 0 8px; color: #ffd166; }
-.bf-howto-box h4 { margin: 18px 0 6px; color: #fff; }
-.bf-howto-box ul { margin: 0; padding-left: 20px; }
-.bf-howto-box .bf-big { margin-top: 20px; width: 100%; }
+.bf-howto { position: fixed; inset: 0; z-index: 100; background: rgba(3,7,20,.82); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; padding: 20px; animation: bf-fade .2s both; }
+.bf-howto-box { position:relative; background:linear-gradient(150deg,#172a55 0%,#101b38 65%,#171b39 100%); border:1px solid rgba(180,204,255,.22); border-radius:28px; padding:clamp(22px,4vw,38px); width:min(100%,900px); max-height:min(90vh,820px); overflow:auto; color:#e8eeff; font:15px/1.5 system-ui,sans-serif; box-shadow:0 32px 100px rgba(0,0,0,.65),inset 0 1px rgba(255,255,255,.08); }
+.bf-howto-head { display:flex; align-items:flex-start; justify-content:space-between; gap:18px; margin-bottom:22px; }
+.bf-howto-eyebrow { margin:0 0 5px; color:#9fb8ee; font-size:11px; font-weight:900; letter-spacing:.2em; text-transform:uppercase; }
+.bf-howto-box h2 { margin:0; color:#fff; font-size:clamp(28px,5vw,42px); line-height:1.05; letter-spacing:-.04em; }
+.bf-howto-subtitle { margin:9px 0 0; color:#bdcbed; }
+.bf-howto-close { flex:0 0 42px; width:42px; height:42px; border:1px solid rgba(255,255,255,.16); border-radius:50%; background:rgba(255,255,255,.07); color:#fff; font-size:23px; cursor:pointer; }
+.bf-howto-close:hover { background:rgba(255,255,255,.15); }
+.bf-howto-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.bf-howto-section { min-width:0; padding:20px; border:1px solid rgba(255,255,255,.1); border-radius:21px; background:rgba(255,255,255,.045); }
+.bf-howto-section--adventure { border-top:3px solid #ffbd4a; }
+.bf-howto-section--duel { border-top:3px solid #9d7cff; }
+.bf-howto-section h3 { display:flex; align-items:center; gap:10px; margin:0 0 14px; color:#fff; font-size:19px; }
+.bf-howto-section h3 span { display:grid; place-items:center; width:36px; height:36px; border-radius:12px; background:rgba(255,209,102,.13); font-size:20px; }
+.bf-howto-section--duel h3 span { background:rgba(157,124,255,.16); }
+.bf-howto-lead { margin:0 0 12px; color:#bdcbed; font-size:13px; }
+.bf-howto-controls { display:grid; gap:8px; margin:0; padding:0; list-style:none; }
+.bf-howto-controls li { display:flex; align-items:center; gap:10px; min-height:40px; padding:7px 10px; border-radius:12px; background:rgba(5,10,25,.36); color:#e8eeff; }
+.bf-howto-controls kbd { display:inline-grid; place-items:center; min-width:32px; height:28px; margin:0; padding:0 7px; border:1px solid rgba(255,209,102,.35); border-radius:8px; background:#273858; color:#ffd966; font:bold 11px monospace; white-space:nowrap; }
+.bf-howto-goal { display:flex; align-items:center; gap:10px; margin-top:12px; padding:11px 12px; border-radius:13px; background:rgba(255,209,102,.1); color:#ffe5a0; font-size:13px; font-weight:750; }
+.bf-howto-goal span { font-size:20px; }
+.bf-howto-turn { margin:0 0 12px; padding:12px 14px; border-radius:14px; background:rgba(157,124,255,.12); color:#e6ddff; font-size:13px; }
+.bf-howto-turn strong { color:#fff; }
+.bf-howto-cards { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.bf-howto-card { display:grid; grid-template-columns:32px 1fr; align-items:center; gap:1px 8px; min-height:62px; padding:9px; border:1px solid rgba(255,255,255,.08); border-radius:13px; background:rgba(5,10,25,.32); }
+.bf-howto-card span { grid-row:1 / 3; font-size:23px; text-align:center; }
+.bf-howto-card strong { color:#fff; font-size:12px; }
+.bf-howto-card small { color:#b7c5e7; font-size:11px; line-height:1.25; }
+.bf-howto-foot { display:flex; align-items:center; justify-content:space-between; gap:14px; margin-top:19px; }
+.bf-howto-foot p { margin:0; color:#99add6; font-size:12px; }
+.bf-howto-foot .bf-big { min-width:180px; }
+
+/* Premium finish across the title, mode picker, and in-game panels. */
+.bf-root:not(.bf-root-duel) { isolation:isolate; background:radial-gradient(ellipse at 18% 8%,rgba(57,95,180,.38),transparent 42%),radial-gradient(ellipse at 88% 88%,rgba(130,57,171,.2),transparent 38%),linear-gradient(145deg,#090e20,#101a35 54%,#090e20); }
+.bf-root:not(.bf-root-duel)::before { content:""; position:absolute; inset:0; z-index:-1; opacity:.18; background-image:radial-gradient(#b7ccff 1px,transparent 1px); background-size:28px 28px; mask-image:linear-gradient(135deg,#000,transparent 75%); pointer-events:none; }
+.bf-game-card { border-color:rgba(177,204,255,.2); background:linear-gradient(145deg,rgba(255,255,255,.085),rgba(255,255,255,.025)); box-shadow:0 25px 70px rgba(0,0,0,.48),inset 0 1px rgba(255,255,255,.09); }
+.bf-screen { position:relative; width:min(100%,760px); min-height:min(82vh,640px); padding:clamp(18px,4vw,40px); }
+.bf-mini { margin-bottom:14px; filter:drop-shadow(0 8px 18px rgba(0,0,0,.3)); }
+.bf-logo { font-size:clamp(56px,12vw,112px); letter-spacing:.015em; filter:drop-shadow(0 7px 0 rgba(0,0,0,.25)) drop-shadow(0 0 28px rgba(255,174,73,.14)); }
+.bf-tagline { color:#c1d0f4; letter-spacing:.24em; font-weight:800; }
+.bf-big { min-height:52px; padding:14px 30px; border:1px solid rgba(255,255,255,.38); background:linear-gradient(135deg,#ffe18a,#ffb13e 58%,#ff8751); box-shadow:0 10px 26px rgba(255,159,67,.24),inset 0 1px rgba(255,255,255,.6); }
+.bf-big:focus-visible,.bf-link:focus-visible,.bf-menu-btn:focus-visible,.bf-pill:focus-visible,.bf-howto-close:focus-visible { outline:3px solid #fff; outline-offset:4px; }
+.bf-menu-title { margin-bottom:8px; font-size:clamp(30px,6vw,46px); letter-spacing:.12em; }
+.bf-menu-grid { width:min(100%,500px); gap:12px; }
+.bf-menu-btn { min-height:88px; grid-template-columns:62px 1fr; padding:17px 20px; border-color:rgba(180,204,255,.16); background:linear-gradient(120deg,rgba(37,57,100,.7),rgba(22,32,62,.55)); box-shadow:0 12px 26px rgba(0,0,0,.18),inset 0 1px rgba(255,255,255,.07); }
+.bf-menu-btn .ico { display:grid; place-items:center; width:50px; height:50px; border:1px solid rgba(255,255,255,.1); border-radius:16px; background:rgba(255,255,255,.07); }
+.bf-menu-btn b { font-size:19px; letter-spacing:.01em; }
+.bf-menu-btn small { color:#bdcbed; }
+.bf-menu-btn:hover { transform:translateY(-2px); border-color:rgba(255,209,102,.56); background:linear-gradient(120deg,rgba(49,73,128,.86),rgba(34,44,82,.74)); box-shadow:0 16px 32px rgba(0,0,0,.27),0 0 24px rgba(255,209,102,.08); }
+.bf-link { font-weight:700; }
+.bf-stats,.bf-tip,.bf-pill { border-color:rgba(180,204,255,.2); background:rgba(8,15,34,.82); box-shadow:0 8px 20px rgba(0,0,0,.24); }
+.bf-over { border:1px solid rgba(255,255,255,.13); }
+@media(max-width:640px){
+  .bf-howto { align-items:flex-start; padding:10px; }
+  .bf-howto-box { width:100%; max-height:calc(100dvh - 20px); padding:20px 16px; border-radius:22px; }
+  .bf-howto-head { margin-bottom:16px; }
+  .bf-howto-grid { grid-template-columns:1fr; gap:10px; }
+  .bf-howto-section { padding:15px; border-radius:17px; }
+  .bf-howto-section h3 { margin-bottom:10px; font-size:17px; }
+  .bf-howto-foot { align-items:stretch; flex-direction:column; }
+  .bf-howto-foot .bf-big { width:100%; }
+  .bf-howto-foot p { text-align:center; }
+  .bf-screen { min-height:min(80dvh,620px); padding:12px 4px; }
+}
+@media(max-height:700px) and (min-width:641px){.bf-howto { padding:10px; }.bf-howto-box { max-height:96vh; padding:20px 24px; }.bf-howto-head { margin-bottom:14px; }.bf-howto-section { padding:15px; }}
 
 /* Card Duel */
 .bf-cardwrap { width: 100%; height: 100%; min-width: 0; min-height: 0; }
@@ -146,8 +205,7 @@ const CSS = `
 .bf-card.chosen .bf-face { box-shadow: 0 0 22px rgba(255,209,102,.8); }
 .bf-face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border: 2px solid rgba(255,255,255,.28); padding: 6px; box-shadow: 0 8px 20px rgba(0,0,0,.4); }
 .bf-back { background: repeating-linear-gradient(45deg, #3a2a7a, #3a2a7a 8px, #2b1f5c 8px, #2b1f5c 16px); }
-.bf-q { font-size: 46px; font-weight: 900; color: rgba(255,255,255,.75); }
-.bf-num { position: absolute; top: 6px; left: 10px; font-size: 13px; font-weight: 800; color: #ffd166; }
+.bf-q { font-size: 52px; font-weight: 900; color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,.45); }
 .bf-front { transform: rotateY(180deg); text-align: center; }
 .bf-front.atk { background: linear-gradient(160deg, #ff7a45, #c0262d); }
 .bf-front.safe { background: linear-gradient(160deg, #4aa3ff, #2a4f9e); }
@@ -167,9 +225,12 @@ const CSS = `
   .bf-cm-cards { gap: 8px; } .bf-cm-status { font-size: 15px; }
 }
 @media (max-width: 760px) {
-  .bf-cm { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; }
-  .bf-cm-arena { grid-row: 1; }
-  .bf-cm-side { grid-row: 2; gap: 4px; padding: 8px; max-height: 38vh; }
+  .bf-cm { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); }
+  .bf-cm-arena { grid-area: 1 / 1; }
+  .bf-cm-side {
+    position: absolute; top: 25%; left: 50%; z-index: 2; transform: translateX(-50%);
+    width: min(94%, 560px); max-height: none; gap: 4px; padding: 0; background: transparent;
+  }
   .bf-cm-cards { flex: 0 0 auto; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: minmax(80px, 1fr); }
   .bf-root-duel .bf-card { height: clamp(80px, 20vh, 118px); }
   .bf-cm-status { min-height: 20px; }
@@ -583,7 +644,7 @@ function Adventure({ onMenu, onComplete }) {
 
 /* ═══════════════════════════ CARD DUEL ═══════════════════════════ */
 
-const W = 800, GROUND = 330, FS = 64, MAX_HP = 5;
+const W = 800, GROUND = 360, FS = 64, MAX_HP = 5;
 const BASE = [150, 586];
 const COL = ["#ff77b5", "#5db8ff"];
 const NAMES = ["Player 1", "Player 2"];
@@ -940,7 +1001,7 @@ function CardDuel({ onMenu, onHudUpdate }) {
               return (
                 <button key={`${s.dealId}-${i}`} type="button" className={cls} aria-label={`Card ${i + 1}`} onClick={() => d.pick(i)}>
                   <div className="bf-inner">
-                    <div className="bf-face bf-back"><span className="bf-num">{i + 1}</span><span className="bf-q">?</span></div>
+                    <div className="bf-face bf-back"><span className="bf-q">{i + 1}</span></div>
                     <div className={`bf-face bf-front ${T.cls}`}>
                       <span className="bf-emoji">{T.emoji}</span><b>{T.name}</b><small>{T.desc}</small>
                     </div>
@@ -978,23 +1039,43 @@ function CardDuel({ onMenu, onHudUpdate }) {
 function HowTo({ onClose }) {
   return (
     <div className="bf-howto" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="bf-howto-box">
-        <h3>🗡️ <GameHelpText english="Adventure" /></h3>
-        <ul>
-          <li><kbd>◀</kbd> <kbd>▶</kbd> <GameHelpText english="move" /> · <kbd>␣</kbd> / <kbd>▲</kbd> <GameHelpText english="jump (hold for higher)" /></li>
-          <li><kbd>X</kbd> <GameHelpText english="slash enemies" /> · <kbd>R</kbd> <GameHelpText english="restart" /> · <kbd>Esc</kbd> <GameHelpText english="menu" /></li>
-          <li><GameHelpText english="Collect every gem to win. You have 3 hearts." /></li>
-        </ul>
-        <h4>🃏 <GameHelpText english="Card Duel (2 players, same screen)" /></h4>
-        <ul>
-          <li><GameHelpText english="Both players start with 5 hearts and take turns." /></li>
-          <li><GameHelpText english="On your turn, pick 1 of 4 face-down cards (click, tap or press 1–4). The cards are shuffled every turn." /></li>
-          <li><GameHelpText english="⚔️ Sword Strike — your opponent loses 2 hearts. 🔥 Fireball — your opponent loses 1 heart." /></li>
-          <li><GameHelpText english="🛡️ Shield — nothing happens." /></li>
-          <li><GameHelpText english="💣 Bomb — it backfires, you lose a heart!" /></li>
-          <li><GameHelpText english="First player to reach 0 hearts loses." /></li>
-        </ul>
-        <button className="bf-big" onClick={onClose}><GameHelpText english="Got it" /></button>
+      <div className="bf-howto-box" role="dialog" aria-modal="true" aria-labelledby="bf-howto-title">
+        <div className="bf-howto-head">
+          <div>
+            <p className="bf-howto-eyebrow">BLOCK FIGHT FIELD GUIDE</p>
+            <h2 id="bf-howto-title">Pick your battle</h2>
+            <p className="bf-howto-subtitle">Two game modes. One arena. Here&apos;s how to win.</p>
+          </div>
+          <button className="bf-howto-close" type="button" aria-label="Close how to play" onClick={onClose}>×</button>
+        </div>
+        <div className="bf-howto-grid">
+          <section className="bf-howto-section bf-howto-section--adventure">
+            <h3><span aria-hidden="true">🗡️</span><GameHelpText english="Adventure" /></h3>
+            <p className="bf-howto-lead">Run, leap, and clear the level by collecting every gem.</p>
+            <ul className="bf-howto-controls">
+              <li><kbd>←</kbd><kbd>→</kbd><span><GameHelpText english="move" /></span></li>
+              <li><kbd>SPACE</kbd><kbd>↑</kbd><span><GameHelpText english="jump (hold for higher)" /></span></li>
+              <li><kbd>X</kbd><span><GameHelpText english="slash enemies" /></span></li>
+              <li><kbd>R</kbd><kbd>ESC</kbd><span><GameHelpText english="restart" /> / <GameHelpText english="menu" /></span></li>
+            </ul>
+            <div className="bf-howto-goal"><span aria-hidden="true">💎</span><GameHelpText english="Collect every gem to win. You have 3 hearts." /></div>
+          </section>
+          <section className="bf-howto-section bf-howto-section--duel">
+            <h3><span aria-hidden="true">🃏</span><GameHelpText english="Card Duel (2 players, same screen)" /></h3>
+            <p className="bf-howto-turn"><strong>Take turns.</strong> Pick 1 of 4 face-down cards by tapping, clicking, or pressing <kbd>1–4</kbd>. The cards shuffle every turn.</p>
+            <div className="bf-howto-cards">
+              <div className="bf-howto-card"><span>⚔️</span><strong>Sword Strike</strong><small>Opponent loses 2 hearts</small></div>
+              <div className="bf-howto-card"><span>🔥</span><strong>Fireball</strong><small>Opponent loses 1 heart</small></div>
+              <div className="bf-howto-card"><span>🛡️</span><strong>Shield</strong><small>Block the turn</small></div>
+              <div className="bf-howto-card"><span>💣</span><strong>Bomb</strong><small>Backfires: lose 1 heart</small></div>
+            </div>
+            <div className="bf-howto-goal"><span aria-hidden="true">❤️</span><GameHelpText english="Both players start with 5 hearts and take turns." /> <span>First to 0 loses.</span></div>
+          </section>
+        </div>
+        <div className="bf-howto-foot">
+          <p>Tip: In Adventure, hold jump to reach higher platforms.</p>
+          <button className="bf-big" onClick={onClose}><GameHelpText english="Got it" /> <span aria-hidden="true">→</span></button>
+        </div>
       </div>
     </div>
   );

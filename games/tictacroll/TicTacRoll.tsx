@@ -68,6 +68,7 @@ function Die({ value, rolling, theme }: { value: number; rolling: boolean; theme
 }
 
 type Screen = "welcome" | "setup" | "menu" | "difficulty" | "game" | "howtoplay";
+type WindowWithWebkitAudioContext = Window & { webkitAudioContext?: typeof AudioContext };
 interface Props {
   onComplete: (score: number, accuracy: number) => void;
   themeId?: string;
@@ -108,6 +109,11 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
   const rollTimeout = useRef<number | null>(null);
   const turnTimeout = useRef<number | null>(null);
   const aiTimeout = useRef<number | null>(null);
+  const aiActionsRef = useRef<{ startNewGame: () => void; startRoll: () => void; doAiMove: () => void }>({
+    startNewGame: () => {},
+    startRoll: () => {},
+    doAiMove: () => {},
+  });
   const audioCtx = useRef<AudioContext | null>(null);
 
   const theme = TIC_TAC_ROLL_THEMES.find(t => t.id === profile.theme) || TIC_TAC_ROLL_THEMES[0];
@@ -128,7 +134,11 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
 
   function getCtx() {
     if (!soundOn) return null;
-    if (!audioCtx.current) { try { audioCtx.current = new (window.AudioContext || (window as any).webkitAudioContext)(); } catch { return null; } }
+    if (!audioCtx.current) {
+      const AudioContextConstructor = window.AudioContext || (window as WindowWithWebkitAudioContext).webkitAudioContext;
+      if (!AudioContextConstructor) return null;
+      try { audioCtx.current = new AudioContextConstructor(); } catch { return null; }
+    }
     if (audioCtx.current.state === "suspended") audioCtx.current.resume().catch(() => {});
     return audioCtx.current;
   }
@@ -151,7 +161,7 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
   }, [onThemeChange, profile.theme]);
 
   useEffect(() => {
-    const handleNewGame = () => { if (screen === "game") startNewGame(); };
+    const handleNewGame = () => { if (screen === "game") aiActionsRef.current.startNewGame(); };
     const handleMainMenu = () => {
       clearGameTimers();
       setRolling(false);
@@ -177,13 +187,13 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
     aiTimeout.current = window.setTimeout(() => {
       aiTimeout.current = null;
       if (gameMode === "roll" && phase === "roll") {
-        startRoll();
+        aiActionsRef.current.startRoll();
         return;
       }
       if (gameMode === "esl") {
         setEslQuestionIndex((index) => (index + 1) % ESL_QUESTIONS.length);
       }
-      doAiMove();
+      aiActionsRef.current.doAiMove();
     }, gameMode === "esl" ? 850 : 600);
 
     return () => {
@@ -435,6 +445,8 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
     }, 90);
     rollTimeout.current = window.setTimeout(() => settleRoll(result), 900);
   }
+
+  aiActionsRef.current = { startNewGame, startRoll, doAiMove };
 
   function launchGame(mode: "classic" | "roll" | "esl", opts?: { difficulty?: string; symbol?: "X" | "O" }) {
     setGameMode(mode);
@@ -707,7 +719,7 @@ export default function TicTacRoll({ onComplete, themeId = "kalahari", onThemeCh
           <div style={{ display: "flex", flexDirection: "column", gap: "clamp(0.75rem, 1.5vw, 1.2rem)" }}>
             {gameMode === "esl" && gameActive && (!isAiGame || currentPlayer === playerSymbol) && (
               <section aria-label="English grammar question" style={{ width: "100%", maxWidth: 700, margin: "0 auto", padding: "clamp(0.75rem, 2vw, 1.1rem)", borderRadius: 16, border: `1px solid ${theme.border}`, background: theme.card, boxShadow: theme.shadow, boxSizing: "border-box" }}>
-                <h3 style={{ margin: "0 0 0.5rem", fontSize: "0.95rem", color: theme.accent }}>English check · {getName(currentPlayer)}'s turn</h3>
+                <h3 style={{ margin: "0 0 0.5rem", fontSize: "0.95rem", color: theme.accent }}>English check · {getName(currentPlayer)}&apos;s turn</h3>
                 <p style={{ margin: "0 0 0.75rem", fontWeight: 700 }}>{ESL_QUESTIONS[eslQuestionIndex].prompt}</p>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "0.5rem" }}>
                   {ESL_QUESTIONS[eslQuestionIndex].options.map((option, index) => (
