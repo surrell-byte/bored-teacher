@@ -25,8 +25,10 @@ test('home landing invites visitors to play as guests before registration', () =
   const shell = read('components/AppShell.tsx');
   const auth = read('app/auth/page.tsx');
 
-  assert.match(home, /Practice English with fun games and challenges/);
+  assert.match(home, /Fun English games and challenges\. Start playing for free\./);
   assert.match(home, /Play a game/);
+  assert.match(home, /className="visitor-landing-mobile-content"/);
+  assert.match(home, /className="visitor-landing-mobile-footer"/);
   assert.match(home, /localStorage\.setItem\('guestUser', 'true'\)/);
   assert.match(home, /router\.push\('\/games'\)/);
   assert.match(home, /router\.push\('\/hub'\)/);
@@ -35,7 +37,15 @@ test('home landing invites visitors to play as guests before registration', () =
   assert.match(background, /startup-background-tablet\.webp/);
   assert.match(home, /pendingPlayRef\.current = true/);
   assert.match(home, /disabled=\{isStarting\}/);
-  assert.match(read('app/globals.css'), /startup-background-portrait\.webp/);
+  const styles = read('app/globals.css');
+  assert.match(styles, /\.visitor-landing-mobile-content\s*\{[^}]*background:\s*#063d2e/);
+  assert.match(styles, /\.visitor-landing-mobile h1\s*\{[^}]*\/1\.05[^}]*letter-spacing:\s*-.02em/);
+  assert.match(styles, /\.visitor-landing-mobile \.visitor-landing-copy\s*\{[^}]*font-size:\s*1rem;[^}]*line-height:\s*1\.5/);
+  assert.match(styles, /\.visitor-landing-mobile-footer\s*\{[^}]*background:\s*#063d2e/);
+  assert.match(styles, /\.visitor-landing-mobile-content\s*\{[^}]*padding:\s*14px/);
+  assert.match(styles, /\.visitor-landing-mobile-footer\s*\{[^}]*padding:\s*10px 14px max\(12px, env\(safe-area-inset-bottom\)\)/);
+  assert.match(styles, /\.visitor-landing-mobile-footer\s*\{[^}]*border-radius:\s*18px/);
+  assert.match(styles, /startup-background-portrait\.webp/);
   assert.match(read('app/globals.css'), /startup-background-tablet\.webp/);
   assert.match(read('app/globals.css'), /\.app-background,\s*\.app-background-overlay\s*\{[^}]*z-index:\s*0/);
   assert.match(read('app/globals.css'), /\.app-shell-wrap\s*\{[^}]*position:\s*relative;[^}]*z-index:\s*1/);
@@ -47,6 +57,27 @@ test('home landing invites visitors to play as guests before registration', () =
   assert.match(auth, /searchParams\.get\('tab'\) === 'register'/);
   assert.match(auth, /Create a free account to save your progress and keep your rewards across devices/);
   assert.match(auth, /localStorage\.removeItem\('guestUser'\)/);
+});
+
+test('auth returnTo accepts only safe same-origin paths', () => {
+  const source = read('lib/safe-return-to.ts');
+  const compiled = require('typescript').transpileModule(source, {
+    compilerOptions: { module: require('typescript').ModuleKind.CommonJS },
+  }).outputText;
+  const moduleContainer = { exports: {} };
+  vm.runInNewContext(compiled, {
+    module: moduleContainer,
+    exports: moduleContainer.exports,
+    URL,
+  });
+
+  const { getSafeReturnTo } = moduleContainer.exports;
+  assert.equal(getSafeReturnTo('/games?topic=space#quiz'), '/games?topic=space#quiz');
+  assert.equal(getSafeReturnTo(null), '/hub');
+  assert.equal(getSafeReturnTo('https://attacker.example'), '/hub');
+  assert.equal(getSafeReturnTo('//attacker.example'), '/hub');
+  assert.equal(getSafeReturnTo('/\\attacker.example'), '/hub');
+  assert.equal(getSafeReturnTo('/%2e%2e//attacker.example'), '/hub');
 });
 
 test('selected games are restricted to creator access', () => {

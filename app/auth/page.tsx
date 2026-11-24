@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import {
   signIn, signUp, resetPasswordByUsername, onAuthStateChanged,
 } from '@/lib/firebase';
+import { getSafeReturnTo } from '@/lib/safe-return-to';
 
 type Tab = 'login' | 'register';
 
@@ -23,7 +24,7 @@ function AuthPageInner() {
   const [resetLoading, setResetLoading] = useState(false);
   const [ready, setReady]     = useState(false);
   const [showPwd, setShowPwd] = useState(false);
-  const returnTo = searchParams.get('returnTo') || '/hub';
+  const returnTo = getSafeReturnTo(searchParams.get('returnTo'));
 
   // Auth guard — if already signed in, go to hub.
   useEffect(() => {

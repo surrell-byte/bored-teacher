@@ -35,17 +35,21 @@
 .save-progress-card > small { color: #c1ccbc; font-size: .76rem; }
 
 @media (max-width: 760px) {
-  .visitor-landing { display: flex; min-height: 100svh; align-items: stretch; justify-content: center; padding: 7svh 22px 5svh; }
+  .visitor-landing { display: flex; min-height: 100svh; align-items: stretch; justify-content: center; padding: max(16px, env(safe-area-inset-top)) 16px 0; }
   .visitor-landing-signin, .visitor-landing-desktop-cta { display: none; }
-  .visitor-landing-mobile { display: flex; width: min(100%, 440px); flex: 1; flex-direction: column; align-items: center; text-align: center; }
-  .visitor-landing-mobile-brand, .visitor-landing-benefits { display: none; }
-  .visitor-landing-eyebrow { margin-bottom: 10px; color: #e4ff75; font-size: .68rem; font-weight: 900; letter-spacing: .18em; text-shadow: 0 2px 8px rgba(0,35,20,.8); }
-  .visitor-landing-mobile h1 { font: 800 clamp(2.4rem,11vw,3.8rem)/.98 var(--font-display, Syne); letter-spacing: -.055em; text-shadow: 0 3px 14px rgba(0,35,20,.65); }
-  .visitor-landing-copy { max-width: 360px; margin: 12px 0 24px; color: #f0fff2; font-size: .98rem; line-height: 1.45; text-shadow: 0 2px 9px rgba(0,35,20,.85); }
-  .visitor-landing-mobile .visitor-landing-play { width: 100%; min-height: 56px; justify-content: space-between; }
-  .visitor-landing-no-account { margin: 13px 0 10px; color: #edffef; font-size: .78rem; text-shadow: 0 2px 8px rgba(0,35,20,.9); }
-  .visitor-landing-mobile-signin { color: #d7ff9f; font-size: .84rem; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
-  .visitor-landing-mobile .visitor-landing-play { margin-top: auto; }
+  .visitor-landing-mobile { display: flex; width: min(100%, 440px); flex: 1; flex-direction: column; align-items: stretch; text-align: left; }
+  .visitor-landing-mobile-content { flex: 0 0 auto; margin-top: clamp(0px, calc(34svh - 184px), 104px); padding: 14px; border: 1px solid rgba(255,255,255,.16); border-radius: 18px; background: #063d2e; }
+  .visitor-landing-eyebrow { margin-bottom: 7px; color: #e4ff75; font-size: .68rem; font-weight: 900; letter-spacing: .18em; }
+  .visitor-landing-mobile h1 { font: 800 clamp(1.7rem,7.2vw,3rem)/1.05 var(--font-display, Syne); letter-spacing: -.02em; }
+  .visitor-landing-mobile .visitor-landing-copy { max-width: 360px; margin: 8px 0 0; color: #f0fff2; font-size: 1rem; line-height: 1.5; }
+  .visitor-landing-mobile-footer { display: flex; flex-direction: column; align-items: stretch; margin: auto 0 max(12px, env(safe-area-inset-bottom)); padding: 10px 14px max(12px, env(safe-area-inset-bottom)); border: 1px solid rgba(255,255,255,.16); border-radius: 18px; background: #063d2e; box-shadow: 0 -8px 26px rgba(0,0,0,.15); text-align: center; }
+  .visitor-landing-mobile .visitor-landing-play { width: 100%; min-height: 52px; justify-content: space-between; margin: 0; }
+  .visitor-landing-no-account { margin: 8px 0 4px; color: #edffef; font-size: .8rem; }
+  .visitor-landing-mobile-signin { color: #d7ff9f; font-size: .8rem; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+}
+
+@media (max-width: 760px) and (max-height: 640px) {
+  .visitor-landing-mobile-content { margin-top: 0; }
 }
 
 @media (max-width: 760px) and (orientation: portrait) {

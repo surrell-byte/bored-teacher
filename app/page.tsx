@@ -54,7 +54,7 @@ export default function HomePage() {
         <p className="visitor-landing-eyebrow">BORED TEACHER ONLINE</p>
         <h1>Learn English.<br />Play big.</h1>
         <p className="visitor-landing-copy">
-          Practice English with fun games and challenges. Play free right away—no account needed.
+          Fun English games and challenges. Start playing for free.
         </p>
         <button type="button" className="visitor-landing-play" onClick={playNow} disabled={isStarting}>
           {isStarting ? authReady ? 'Loading games…' : 'Getting things ready…' : isAuthenticated ? 'Explore games' : 'Play a game'}
@@ -62,25 +62,22 @@ export default function HomePage() {
       </div>
 
       <div className="visitor-landing-mobile">
-        <div className="visitor-landing-mobile-brand" aria-hidden="true">🎓</div>
-        <p className="visitor-landing-eyebrow">BORED TEACHER ONLINE</p>
-        <h1>Learn English.<br />Play big.</h1>
-        <p className="visitor-landing-copy">
-          Practice English with fun games and challenges. Play free right away—no account needed.
-        </p>
-
-        <div className="visitor-landing-benefits">
-          <div><span aria-hidden="true">🎮</span><strong>100+ games</strong><small>Play and practice</small></div>
-          <div><span aria-hidden="true">🏆</span><strong>Earn rewards</strong><small>Collect achievements</small></div>
-          <div><span aria-hidden="true">📈</span><strong>Track progress</strong><small>Keep improving</small></div>
+        <div className="visitor-landing-mobile-content">
+          <p className="visitor-landing-eyebrow">BORED TEACHER ONLINE</p>
+          <h1>Learn English.<br />Play big.</h1>
+          <p className="visitor-landing-copy">
+            Fun English games and challenges. Start playing for free.
+          </p>
         </div>
 
-        <button type="button" className="visitor-landing-play" onClick={playNow} disabled={isStarting}>
-          {isStarting ? authReady ? 'Loading games…' : 'Getting things ready…' : isAuthenticated ? 'Explore games' : 'Play a game'}
-          {!isStarting && <span aria-hidden="true">→</span>}
-        </button>
-        <p className="visitor-landing-no-account">Free to start · No sign-up required</p>
-        <Link className="visitor-landing-mobile-signin" href="/auth">Already have an account? Sign in</Link>
+        <div className="visitor-landing-mobile-footer">
+          <button type="button" className="visitor-landing-play" onClick={playNow} disabled={isStarting}>
+            {isStarting ? authReady ? 'Loading games…' : 'Getting things ready…' : isAuthenticated ? 'Explore games' : 'Play a game'}
+            {!isStarting && <span aria-hidden="true">→</span>}
+          </button>
+          <p className="visitor-landing-no-account">Free to start · No sign-up required</p>
+          <Link className="visitor-landing-mobile-signin" href="/auth">Already have an account? Sign in</Link>
+        </div>
       </div>
     </section>
   );
