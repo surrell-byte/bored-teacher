@@ -100,6 +100,7 @@ const GAMES_WITH_WELCOME = new Set([
   'countadd',
   'moneyblocks',
   'emojisportsquiz',
+  'nathansspacequiz',
   'generalknowledgequiz',
   'alphabethunt', 'buildtower', 'whatsmissing', 'angryverbs', 'miniracer', 'burgerrun',
   'colourclash2', 'zoogame',

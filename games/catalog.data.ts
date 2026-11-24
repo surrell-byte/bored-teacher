@@ -20,6 +20,18 @@ export interface GameCatalogEntry {
 }
 
 export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
+  nathansspacequiz: {
+    name: "Nathan's Space Quiz",
+    icon: "🚀",
+    desc: "Explore the future of space travel, private rockets, Mars, and asteroid mining through ten multiple-choice questions.",
+    cover: "/assets/covers/know-it-all-cover.webp",
+    tag: { label: "Space", color: "tag-bio" },
+    badge: "10 Questions",
+    difficulty: "Mixed Skills",
+    barColor: "var(--blue)",
+    isNew: true,
+    hasComponent: true,
+  },
   alphabethunt: {
     name: "Alphabet Hunt",
     icon: "🔤",
