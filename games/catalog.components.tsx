@@ -125,6 +125,7 @@ export const GAME_COMPONENTS: Partial<Record<string, React.LazyExoticComponent<R
   mathracing: lazyGame('mathracing', () => import('@/games/math-racing/MathRacing.jsx')),
   weatherwizard: lazyGame('weatherwizard', () => import('@/games/weather-wizard/WeatherWizard.jsx')),
   pizzafractions: lazyGame('pizzafractions', () => import('@/games/pizza-fractions/PizzaFractions.jsx')),
+  pizzafractions2: lazyGame('pizzafractions2', () => import('@/games/pizza-fractions-2/PizzaFractions2.jsx')),
   fishingnumbers: lazyGame('fishingnumbers', () => import('@/games/fishing-numbers/FishingNumbers.jsx')),
   shapebuilder: lazyGame('shapebuilder', () => import('@/games/shape-builder/ShapeBuilder.jsx')),
   higherorlower: lazyGame('higherorlower', () => import('@/games/higher-or-lower/HigherOrLower.jsx')),

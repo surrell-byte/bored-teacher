@@ -3,9 +3,10 @@
 // Requires: npm i three@0.128.0
 import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import { ESL_SENTENCES, normalizeEslAnswer } from './esl-sentences.mjs';
 
 const CSS = `
-.fte-root{color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.fte-root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 .fte-root *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 .fte-root{width:100%;height:100%;overflow:hidden;background:#17212c;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;color:#fff;user-select:none}
 .fte-root #app{position:absolute;inset:0}
@@ -166,6 +167,135 @@ const CSS = `
 .fte-root .pre-card{padding:22px 32px}
 .fte-root .how-to-grid{margin:19px 0 17px}}
 .fte-root{position:relative;isolation:isolate;z-index:0;display:flex;flex:1 1 auto;min-width:0;min-height:0;width:100%;height:100%;overflow:hidden}
+.fte-root{background:#f5ebdd;color:#40352c}
+.fte-root #title{color:#344c3b;text-shadow:0 2px 0 rgba(255,255,255,.55)}
+.fte-root #title .brand-icon{filter:none}
+.fte-root #roundInfo{color:#6e765f}
+.fte-root .pl{border-color:rgba(64,53,44,.16);background:rgba(250,247,239,.94);color:#40352c;box-shadow:0 5px 16px rgba(74,54,31,.1)}
+.fte-root .pl b{color:#40352c}
+.fte-root .pl.a{border-color:rgba(105,151,181,.55)}
+.fte-root .pl.b{border-color:rgba(200,121,82,.58)}
+.fte-root .pl.on.a{background:#e5edf0;box-shadow:0 0 0 2px rgba(105,151,181,.2)}
+.fte-root .pl.on.b{background:#f5e4d8;box-shadow:0 0 0 2px rgba(200,121,82,.18)}
+.fte-root #status{border-color:rgba(185,130,80,.28);background:rgba(250,247,239,.97);color:#40352c;box-shadow:0 8px 24px rgba(74,54,31,.18)}
+.fte-root #status b{color:#344c3b}
+.fte-root .player-card{background:rgba(250,247,239,.97);box-shadow:0 10px 24px rgba(74,54,31,.14)}
+.fte-root .player-card.active{background:#fffaf0}
+.fte-root #panel{border-color:#83a2b3;box-shadow:inset 0 0 0 1px rgba(105,151,181,.12)}
+.fte-root #p2Panel{border-color:#ca8763;box-shadow:inset 0 0 0 1px rgba(200,121,82,.12)}
+.fte-root .player-blue{color:#587f96}
+.fte-root .player-red{color:#b76545}
+.fte-root .outcome,.fte-root .cook-label,.fte-root .state-caption{color:#514538}
+.fte-root .outcome{font-size:11px}
+.fte-root .cook-label{font-size:11.5px;font-weight:700}
+.fte-root .progress-scale{font-size:9px;color:#514538}
+.fte-root .state-caption{font-size:10.5px}
+.fte-root .progress-track{background:#e3ddcf;border-color:#d6cbb8}
+.fte-root .cook-fill,.fte-root .red-fill{background:linear-gradient(90deg,#a8bd91,#82977a)}
+.fte-root .progress-scale{color:#514538}
+.fte-root .progress-scale span:last-child{color:#587451}
+.fte-root .action-btn{border-color:#ded3c0;background:#ece5d7;color:#756b5e}
+.fte-root #panel .action-btn.primary{background:#587f96;border-color:#466a7e;color:#fff}
+.fte-root #p2Panel .action-btn.primary{background:#b76545;border-color:#985139;color:#fff8f1}
+.fte-root #eggLegend{background:rgba(250,247,239,.98);border-color:#dfd2bd;box-shadow:0 10px 24px rgba(74,54,31,.14)}
+.fte-root #eggLegend .legend-title{color:#57412f}
+.fte-root #eggLegend .legend-sub{color:#756b5e}
+.fte-root .crate-choice{border-color:#95653c;background:linear-gradient(180deg,#c9945d,#9a693e);color:#fff8eb;box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 2px 4px rgba(64,53,44,.12);transition:transform .14s,filter .14s,box-shadow .14s,background .14s}
+.fte-root .crate-choice:hover:not(:disabled){filter:brightness(1.08);transform:translateY(-1px);box-shadow:inset 0 1px 0 rgba(255,255,255,.24),0 4px 8px rgba(64,53,44,.2)}
+.fte-root .crate-choice:active:not(:disabled){filter:brightness(.9);transform:translateY(1px);background:linear-gradient(180deg,#95653c,#80552f);box-shadow:inset 0 2px 5px rgba(64,53,44,.28)}
+.fte-root .crate-choice:focus-visible{outline:3px solid #587f96;outline-offset:2px}
+.fte-root #result{background:rgba(64,53,44,.48)}
+.fte-root #resultCard{background:#faf7ef;border-color:#e0d2bd;box-shadow:0 20px 60px rgba(64,53,44,.24)}
+.fte-root #resultDesc{color:#756b5e}
+.fte-root #resultTime{color:#998c7c}
+.fte-root #againBtn{border-color:#82977a;background:#e4ecdf;color:#344c3b}
+.fte-root .result-home{color:#756b5e}
+.fte-root .pre-screen{background:radial-gradient(ellipse at 50% 0%,#fffaf0 0%,#e8ddc8 58%,#d1c1a6 100%)}
+.fte-root #splashScreen.splash-screen{padding:0;overflow:hidden;background-image:url('/assets/games/fry-the-egg/splash-desktop.webp');background-size:cover;background-position:center bottom;background-repeat:no-repeat}
+.fte-root .splash-title{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.fte-root .splash-start{position:absolute;top:76%;left:35.5%;width:29%;height:19%;border:0;border-radius:999px;background:transparent;cursor:pointer}
+.fte-root .splash-start:hover{background:rgba(255,255,255,.035)}
+.fte-root .splash-start:active{transform:scale(.97)}
+.fte-root .splash-start:focus-visible{outline:3px solid #fff;outline-offset:3px;box-shadow:0 0 0 8px rgba(52,76,59,.55)}
+.fte-root .pre-card{border-color:rgba(130,151,122,.35);background:linear-gradient(145deg,rgba(255,251,242,.98),rgba(245,235,221,.98));box-shadow:0 30px 90px rgba(74,54,31,.22),inset 0 1px 0 rgba(255,255,255,.8)}
+.fte-root .eyebrow{color:#82977a}
+.fte-root .pre-card h1,.fte-root .pre-card h2{color:#344c3b;text-shadow:none}
+.fte-root .pre-subtitle{color:#6e6253}
+.fte-root .how-to-grid>div{background:rgba(130,151,122,.1);border-color:rgba(130,151,122,.22)}
+.fte-root .how-to-grid span{color:#a76f3d}
+.fte-root .how-to-grid b{color:#40352c}
+.fte-root .how-to-grid small{color:#756b5e}
+.fte-root .big-button{border-color:#9a693d;background:linear-gradient(180deg,#c9945d,#b98250);color:#fff9ed;box-shadow:0 8px 0 #80552f,0 14px 24px rgba(74,54,31,.18)}
+.fte-root .big-button:active{box-shadow:0 4px 0 #80552f,0 8px 15px rgba(74,54,31,.15)}
+.fte-root .pre-foot{color:#897b69}
+.fte-root .player-input-row{border-color:rgba(130,151,122,.26);background:rgba(130,151,122,.08)}
+.fte-root .player-input-row label{color:#40352c}
+@media(max-width:620px),(orientation:portrait) and (max-width:900px){
+.fte-root #splashScreen.splash-screen{background-image:url('/assets/games/fry-the-egg/splash-mobile.webp')}
+.fte-root .splash-start{top:81%;left:18%;width:64%;height:14%}}
+.fte-root .player-input-row label span,.fte-root .setup-note{color:#756b5e}
+.fte-root .player-input-row input{border-color:#d9cbb5;background:#fffaf1;color:#40352c}
+.fte-root .player-input-row input:focus{border-color:#82977a;box-shadow:0 0 0 3px rgba(130,151,122,.16)}
+.fte-root .text-button{color:#756b5e}
+.fte-root .player-count{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:18px 0}
+.fte-root .player-count button,.fte-root .mode-tile,.fte-root .esl-action{border:1px solid #d5c6ad;border-radius:14px;background:#fffaf1;color:#40352c;font:inherit;font-weight:800;font-size:13px;transition:transform .14s,box-shadow .14s,border-color .14s}
+.fte-root .player-count button{min-height:44px}
+.fte-root .player-count button[aria-pressed="true"]{border-color:#82977a;background:#e6ede1;box-shadow:0 0 0 2px rgba(130,151,122,.16)}
+.fte-root .player-count button:hover,.fte-root .mode-tile:hover,.fte-root .esl-action:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(74,54,31,.14)}
+.fte-root .mode-screen{background:transparent!important}
+.fte-root .mode-card{width:min(820px,100%);text-align:center}
+.fte-root .mode-card .pre-subtitle{margin-bottom:26px}
+.fte-root .mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.fte-root .mode-tile{min-height:190px;padding:24px;text-align:left;border-radius:20px;box-shadow:0 10px 24px rgba(74,54,31,.12)}
+.fte-root .mode-tile:disabled{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none}
+.fte-root .mode-icon{display:block;font-size:36px;margin-bottom:12px}
+.fte-root .mode-tile strong{display:block;font-size:21px;color:#344c3b}
+.fte-root .mode-tile small{display:block;margin-top:8px;color:#756b5e;font-size:13px;line-height:1.5}
+.fte-root .esl-screen{background:transparent!important;z-index:60}
+.fte-root .esl-card{width:min(850px,100%);max-height:calc(100% - 24px);overflow:auto;padding:clamp(20px,4vw,36px);border:1px solid #d7c8b1;border-radius:24px;background:rgba(255,250,241,.98);box-shadow:0 24px 70px rgba(43,38,28,.26);color:#40352c}
+.fte-root .esl-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.fte-root .esl-top h2{color:#344c3b;font-size:clamp(23px,4vw,32px)}
+.fte-root .esl-round{font-size:12px;font-weight:900;color:#82977a;letter-spacing:1px}
+.fte-root .esl-scoreboard{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;margin:18px 0}
+.fte-root .esl-score{padding:10px 14px;border:1px solid #d9cbb5;border-radius:13px;background:#f6efe3;font-weight:900}
+.fte-root .esl-score:last-child{text-align:right}
+.fte-root .esl-score span{overflow-wrap:anywhere}
+.fte-root .esl-score b{display:inline-block;margin-left:8px;color:#344c3b;font-size:22px}
+.fte-root .esl-vs{font-size:11px;font-weight:900;color:#9a693d;letter-spacing:1px}
+.fte-root .esl-prompt{margin:18px 0;padding:24px 16px;border-radius:18px;background:#f0e7d8;text-align:center;font-size:clamp(19px,4vw,30px);font-weight:850;line-height:1.5}
+.fte-root .esl-blank{display:inline-block;min-width:100px;margin:0 5px;padding:0 10px;border-bottom:3px solid #b98250;color:#82977a}
+.fte-root .esl-racers{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.fte-root .esl-racer{padding:16px;border:1px solid #ddd0bc;border-radius:16px;background:#fffdf8}
+.fte-root .esl-racer label{display:block;margin-bottom:8px;font-size:12px;font-weight:900;letter-spacing:.7px;color:#587f96}
+.fte-root .esl-racer.red strong{display:block;margin-bottom:8px;font-size:12px;color:#b76545}
+.fte-root .esl-racer.red label{color:#b76545}
+.fte-root .esl-entry{display:flex;gap:7px}
+.fte-root .esl-entry input{min-width:0;flex:1;height:44px;padding:0 11px;border:1px solid #d5c6ad;border-radius:10px;background:white;color:#40352c;font:inherit;font-weight:600;font-size:16px;user-select:text}
+.fte-root .esl-entry input:focus{outline:3px solid rgba(130,151,122,.22);border-color:#82977a}
+.fte-root .esl-entry button,.fte-root .esl-action{min-height:44px;padding:0 15px;border-color:#95653c;background:linear-gradient(180deg,#c9945d,#b98250);color:#fff8eb;font-size:12px;font-weight:900}
+.fte-root .esl-feedback{min-height:20px;margin-top:8px;color:#756b5e;font-size:12px}
+.fte-root .esl-feedback.error{color:#aa463b}
+.fte-root .esl-feedback.success{color:#4b7445;font-weight:800}
+.fte-root .esl-ai-hint{margin:9px 0 0;color:#756b5e;font-size:12px}
+.fte-root .esl-result{text-align:center;padding:32px 10px}
+.fte-root .esl-result h3{margin:8px 0;color:#344c3b;font-size:clamp(27px,5vw,40px)}
+.fte-root .esl-result p{margin:0 0 22px;color:#756b5e}
+.fte-root .esl-footer{display:flex;justify-content:space-between;gap:10px;margin-top:20px}
+.fte-root .esl-footer .esl-action.secondary{border-color:#d5c6ad;background:#f4ecdf;color:#57412f}
+.fte-root [hidden]{display:none!important}
+@media(max-width:620px){
+.fte-root .mode-grid{grid-template-columns:1fr;gap:10px}
+.fte-root .mode-tile{min-height:132px;padding:17px}
+.fte-root .mode-icon{font-size:28px;display:inline-block;vertical-align:middle;margin:0 10px 0 0}
+.fte-root .mode-tile strong{display:inline-block;font-size:18px}
+.fte-root .mode-tile small{margin-top:5px}
+.fte-root .esl-card{padding:16px;border-radius:18px}
+.fte-root .esl-scoreboard{gap:6px}
+.fte-root .esl-score{padding:8px;font-size:11px}
+.fte-root .esl-score b{display:block;margin:3px 0 0;font-size:20px}
+.fte-root .esl-racers{grid-template-columns:1fr}
+.fte-root .esl-racer{padding:12px}
+.fte-root .esl-footer .esl-action{flex:1;padding:0 8px}}
 `;
 
 export default function FryTheEgg({ onHudUpdate }) {
@@ -187,7 +317,7 @@ export default function FryTheEgg({ onHudUpdate }) {
     renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
     renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.1;
     app.appendChild(renderer.domElement);
-    const scene=new THREE.Scene();scene.background=new THREE.Color(0x17212c);scene.fog=new THREE.Fog(0x17212c,18,42);
+    const scene=new THREE.Scene();scene.background=new THREE.Color(0xf5ebdd);scene.fog=new THREE.Fog(0xf5ebdd,40,82);
     const camera=new THREE.PerspectiveCamera(42,playWidth()/playHeight(),.1,120);
     const CAM_BASE=new THREE.Vector3(0,7.8,9.6),CAM_LOOK=new THREE.Vector3(0,0,-2.6);
     let PLAYER1_X=-4.35,player1Station=null,player2Station=null;
@@ -195,25 +325,153 @@ export default function FryTheEgg({ onHudUpdate }) {
     function fitCam(){resizeRenderer()}
     fitCam();
 
-    scene.add(new THREE.HemisphereLight(0x93b7ff,0x1a120c,.8));
-    const key=new THREE.DirectionalLight(0xfff0d8,1.4);key.position.set(5,9,6);key.castShadow=true;
+    scene.add(new THREE.HemisphereLight(0xfff3dc,0x78654b,1.15));
+    const key=new THREE.DirectionalLight(0xfff0d8,1.75);key.position.set(-5,10,5);key.castShadow=true;
     key.shadow.mapSize.set(2048,2048);Object.assign(key.shadow.camera,{left:-9,right:9,top:9,bottom:-9,near:1,far:36});key.shadow.bias=-.0006;scene.add(key);
-    const rim=new THREE.DirectionalLight(0x6f8cff,.8);rim.position.set(-6,4,-7);scene.add(rim);
+    const windowLight=new THREE.DirectionalLight(0xd8ebd1,.9);windowLight.position.set(-6,7,-7);windowLight.castShadow=true;
+    windowLight.shadow.mapSize.set(1024,1024);Object.assign(windowLight.shadow.camera,{left:-12,right:12,top:8,bottom:-8,near:1,far:36});windowLight.shadow.bias=-.0007;windowLight.shadow.radius=4;scene.add(windowLight);
+    const rim=new THREE.DirectionalLight(0xffe6c1,.42);rim.position.set(6,5,-7);scene.add(rim);
     const flameLight=new THREE.PointLight(0xff8a3a,0,8,2);
 
     const M=(c,r,m,x)=>new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:r,metalness:m},x||{}));
     function mesh(g,m,p,sh){const o=new THREE.Mesh(g,m);if(p)o.position.set(...p);o.castShadow=true;o.receiveShadow=true;return o}
-    const counter=mesh(new THREE.BoxGeometry(20.5,1,21.5),M(0x82909d,.76,.08),[0,-.5,-4]);scene.add(counter);
-    scene.add(mesh(new THREE.BoxGeometry(20.08,.08,21.08),M(0xd7c5b0,.92,0),[0,.02,-4]));
+    function makeWoodTexture(){
+      const canvas=document.createElement('canvas');canvas.width=1024;canvas.height=512;
+      const ctx=canvas.getContext('2d');ctx.fillStyle='#c9a36d';ctx.fillRect(0,0,1024,512);
+      for(let row=0;row<12;row++){
+        const y=row*(512/12);ctx.fillStyle=row%2?'#cfac78':'#c5a06a';ctx.fillRect(0,y,1024,512/12-.5);
+        ctx.strokeStyle='rgba(92,65,35,.1)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,y+512/12);ctx.lineTo(1024,y+512/12);ctx.stroke();
+        for(let i=0;i<42;i++){
+          const x=Math.random()*1024,span=50+Math.random()*270,gy=y+2+Math.random()*(512/12-4);
+          ctx.strokeStyle=`rgba(92,65,35,${.018+Math.random()*.055})`;ctx.lineWidth=.5+Math.random()*1.25;
+          ctx.beginPath();ctx.moveTo(x,gy);ctx.bezierCurveTo(x+span*.3,gy-3,x+span*.7,gy+3,x+span,gy);ctx.stroke();
+        }
+      }
+      const texture=new THREE.CanvasTexture(canvas);texture.encoding=THREE.sRGBEncoding;texture.anisotropy=renderer.capabilities.getMaxAnisotropy();return texture;
+    }
+    const woodTexture=makeWoodTexture();
+    const oakMat=M(0xffffff,.78,.02,{map:woodTexture});
+    const counter=mesh(new THREE.BoxGeometry(20.5,1,21.5),M(0xa47c4c,.86,.02),[0,-.5,-4]);scene.add(counter);
+    scene.add(mesh(new THREE.BoxGeometry(20.08,.08,21.08),oakMat,[0,.02,-4]));
+
+    const wall=mesh(new THREE.BoxGeometry(22,.24,5.2),M(0xf3eadb,.96,0),[0,2.7,-10.15]);wall.castShadow=false;scene.add(wall);
+    const tileCanvas=document.createElement('canvas');tileCanvas.width=256;tileCanvas.height=128;
+    const tileCtx=tileCanvas.getContext('2d');tileCtx.fillStyle='#d9d1c5';tileCtx.fillRect(0,0,256,128);
+    for(let row=0;row<2;row++)for(let col=-1;col<4;col++){
+      const x=col*128+(row%2)*64,y=row*64;
+      const tileGradient=tileCtx.createLinearGradient(x,y,x+124,y+60),bright=(row+col)%3===0;
+      tileGradient.addColorStop(0,bright?'#fbf7f0':'#f7efe4');tileGradient.addColorStop(1,bright?'#f6efe5':'#f1e7d9');
+      tileCtx.fillStyle=tileGradient;tileCtx.fillRect(x+2,y+2,124,60);
+      tileCtx.strokeStyle='rgba(207,197,182,.42)';tileCtx.lineWidth=1;tileCtx.strokeRect(x+2.5,y+2.5,123,59);
+    }
+    const tileTexture=new THREE.CanvasTexture(tileCanvas);tileTexture.wrapS=tileTexture.wrapT=THREE.RepeatWrapping;tileTexture.repeat.set(13.75,6.5);tileTexture.encoding=THREE.sRGBEncoding;
+    const wallTiles=mesh(new THREE.PlaneGeometry(22,5.2),M(0xffffff,.92,0,{map:tileTexture}),[0,2.7,-10.015]);wallTiles.castShadow=false;scene.add(wallTiles);
+    const trimMat=M(0xb58a57,.78,.02,{map:woodTexture}),cabinetMat=M(0x82977a,.77,0),cabinetInset=M(0x93a789,.76,0),steelMat=M(0xaeb7bc,.3,.78);
+    scene.add(mesh(new THREE.BoxGeometry(22,.18,.28),trimMat,[0,.14,-9.82]));
+    scene.add(mesh(new THREE.BoxGeometry(22,.12,.32),trimMat,[0,5.28,-9.82]));
+    const windowGroup=new THREE.Group();windowGroup.position.set(-4.3,2,-9.82);scene.add(windowGroup);
+    const viewCanvas=document.createElement('canvas');viewCanvas.width=512;viewCanvas.height=320;
+    const viewCtx=viewCanvas.getContext('2d'),sky=viewCtx.createLinearGradient(0,0,0,320);
+    sky.addColorStop(0,'#9cc8d8');sky.addColorStop(.7,'#d7e5d6');sky.addColorStop(1,'#f0dfb8');
+    viewCtx.fillStyle=sky;viewCtx.fillRect(0,0,512,320);
+    viewCtx.fillStyle='#ffe8b1';viewCtx.beginPath();viewCtx.arc(392,72,24,0,Math.PI*2);viewCtx.fill();
+    viewCtx.fillStyle='rgba(255,250,231,.44)';
+    for(const [x,y,w,h] of[[126,77,65,14],[148,72,48,13],[294,112,72,12],[319,107,48,11]]){viewCtx.beginPath();viewCtx.ellipse(x,y,w,h,0,0,Math.PI*2);viewCtx.fill()}
+    viewCtx.fillStyle='#a8c6c5';viewCtx.beginPath();viewCtx.moveTo(0,196);viewCtx.lineTo(74,132);viewCtx.lineTo(146,190);viewCtx.lineTo(230,122);viewCtx.lineTo(318,194);viewCtx.lineTo(405,143);viewCtx.lineTo(512,197);viewCtx.lineTo(512,320);viewCtx.lineTo(0,320);viewCtx.closePath();viewCtx.fill();
+    viewCtx.fillStyle='#9fbd9d';viewCtx.beginPath();viewCtx.moveTo(0,218);viewCtx.bezierCurveTo(96,178,177,236,266,205);viewCtx.bezierCurveTo(359,174,429,225,512,191);viewCtx.lineTo(512,320);viewCtx.lineTo(0,320);viewCtx.closePath();viewCtx.fill();
+    viewCtx.fillStyle='#809d72';viewCtx.beginPath();viewCtx.moveTo(0,254);viewCtx.bezierCurveTo(118,222,206,270,314,240);viewCtx.bezierCurveTo(393,218,452,259,512,233);viewCtx.lineTo(512,320);viewCtx.lineTo(0,320);viewCtx.closePath();viewCtx.fill();
+    for(const x of[55,465]){
+      viewCtx.fillStyle='#788f69';viewCtx.fillRect(x-3,218,6,56);
+      viewCtx.fillStyle='#6f8d68';
+      for(const [dx,dy,r] of[[-15,0,17],[2,-10,21],[18,2,16],[0,9,20]]){viewCtx.beginPath();viewCtx.arc(x+dx,218+dy,r,0,Math.PI*2);viewCtx.fill()}
+    }
+    const viewTexture=new THREE.CanvasTexture(viewCanvas);viewTexture.encoding=THREE.sRGBEncoding;
+    const windowBackdrop=mesh(new THREE.PlaneGeometry(3.78,2.58),new THREE.MeshBasicMaterial({map:viewTexture}),[0,0,-.04]);windowBackdrop.castShadow=false;windowGroup.add(windowBackdrop);
+    const windowGlass=mesh(new THREE.PlaneGeometry(3.78,2.58),new THREE.MeshPhysicalMaterial({color:0xffffff,roughness:.13,transparent:true,opacity:.08,clearcoat:1,depthWrite:false}),[0,0,.03]);windowGlass.castShadow=false;windowGroup.add(windowGlass);
+    const windowWood=M(0xf6efdf,.54,0);
+    [[0,1.35,4.12,.16,.22], [0,-1.35,4.12,.16,.22],[-2.06,0,.16,2.96,.22],[2.06,0,.16,2.96,.22],[0,0,.12,2.7,.2]].forEach(([x,y,w,h,d])=>windowGroup.add(mesh(new THREE.BoxGeometry(w,h,d),windowWood,[x,y,.17])));
+    windowGroup.add(mesh(new THREE.BoxGeometry(.1,2.6,.08),windowWood,[0,0,.2]));
+    windowGroup.add(mesh(new THREE.BoxGeometry(4.35,.2,.55),trimMat,[0,-1.48,.05]));
+    windowGroup.traverse(o=>{if(o.isMesh)o.castShadow=false});
+    function addCabinet(x,width=2.55){
+      const g=new THREE.Group();g.position.set(x,2.25,-9.65);scene.add(g);
+      g.add(mesh(new THREE.BoxGeometry(width,1.65,.62),cabinetMat,[0,0,0]));
+      g.add(mesh(new THREE.BoxGeometry(width+.12,.13,.76),trimMat,[0,.88,-.02]));
+      const doorWidth=width/2-.09;
+      for(let side=-1;side<=1;side+=2){
+        const dx=side*(doorWidth/2+.035);
+        g.add(mesh(new THREE.BoxGeometry(doorWidth,1.43,.11),cabinetInset,[dx,0,.36]));
+        g.add(mesh(new THREE.BoxGeometry(doorWidth-.2,1.17,.035),cabinetMat,[dx,0,.435]));
+        const pull=mesh(new THREE.CylinderGeometry(.027,.027,.4,10),steelMat,[dx+side*(doorWidth*.34),0,.51]);g.add(pull);
+        for(const y of[-.23,.23])g.add(mesh(new THREE.SphereGeometry(.055,12,10),steelMat,[dx+side*(doorWidth*.34),y,.51]));
+      }
+      g.traverse(o=>{if(o.isMesh)o.castShadow=false});
+      return g;
+    }
+    [-8.45,.1,3.35,7.2].forEach((x,i)=>addCabinet(x,i===0||i===3?2.45:2.65));
+    function addKitchenShelf(x,y,width){
+      const shelf=new THREE.Group();shelf.position.set(x,y,-9.52);scene.add(shelf);
+      shelf.add(mesh(new THREE.BoxGeometry(width,.12,.48),trimMat,[0,0,0]));
+      for(const side of[-1,1])shelf.add(mesh(new THREE.BoxGeometry(.08,.3,.16),steelMat,[side*(width*.38),-.2,-.12]));
+      const ceramic=M(0xf5ebdd,.34,0);
+      for(let i=0;i<3;i++)shelf.add(mesh(new THREE.CylinderGeometry(.31-i*.02,.31-i*.02,.045,32),ceramic,[-.72,.085+i*.047,0]));
+      shelf.add(mesh(new THREE.CylinderGeometry(.14,.11,.22,24,1,true),ceramic,[.32,.16,0]));
+      shelf.add(mesh(new THREE.CylinderGeometry(.11,.11,.035,24),ceramic,[.32,.055,0]));
+      const handle=mesh(new THREE.TorusGeometry(.09,.018,8,20),ceramic,[.46,.17,0]);handle.rotation.y=Math.PI/2;shelf.add(handle);
+      const bowlProfile=[[0,0],[.2,0],[.32,.05],[.37,.16],[.37,.2]].map(([r,h])=>new THREE.Vector2(r,h));
+      const bowl=mesh(new THREE.LatheGeometry(bowlProfile,24),ceramic,[.98,.065,0]);shelf.add(bowl);
+      for(const o of shelf.children)if(o.isMesh)o.castShadow=true;
+      return shelf;
+    }
+    addKitchenShelf(-8.1,1.02,2.9);
+    const utensilRail=new THREE.Group();utensilRail.position.set(5.45,1.48,-9.42);scene.add(utensilRail);
+    utensilRail.add(mesh(new THREE.CylinderGeometry(.035,.035,2.5,12),steelMat,[0,0,0]));
+    for(const x of[-1.08,1.08])utensilRail.add(mesh(new THREE.CylinderGeometry(.025,.025,.22,10),steelMat,[x,-.12,-.03]));
+    for(const [i,x] of[-.72,0,.72].entries()){
+      const utensil=new THREE.Group();utensil.position.set(x,-.25,.04);utensilRail.add(utensil);
+      utensil.add(mesh(new THREE.CylinderGeometry(.022,.032,.64,10),steelMat,[0,-.34,0]));
+      if(i===1){
+        const head=mesh(new THREE.SphereGeometry(.12,16,10),steelMat,[0,-.72,0]);head.scale.set(1,.55,.42);utensil.add(head);
+      }else utensil.add(mesh(new THREE.BoxGeometry(.18,.22,.055),steelMat,[0,-.72,0]));
+      const hook=mesh(new THREE.TorusGeometry(.065,.014,7,14),steelMat,[0,.08,0]);hook.rotation.x=Math.PI/2;utensil.add(hook);
+    }
+
+    function addCounterPlant(x,z){
+      const potMat=M(0xc87952,.52,0),leafMat=M(0x607a55,.78,0),pot=new THREE.Group();pot.position.set(x,0,z);scene.add(pot);
+      pot.add(mesh(new THREE.CylinderGeometry(.34,.26,.48,24),potMat,[0,.24,0]));
+      pot.add(mesh(new THREE.TorusGeometry(.32,.035,8,24),potMat,[0,.47,0]));
+      for(let i=0;i<7;i++){
+        const a=i/7*Math.PI*2,length=.48+Math.random()*.28,leaf=new THREE.Mesh(new THREE.SphereGeometry(1,12,10),leafMat);
+        leaf.scale.set(.11,length*.55,.055);leaf.position.set(Math.cos(a)*.18,.52+length*.36,Math.sin(a)*.18);leaf.rotation.z=-Math.cos(a)*.55;leaf.rotation.x=Math.sin(a)*.45;leaf.castShadow=true;pot.add(leaf);
+      }
+      return pot;
+    }
+    const herbPlant=addCounterPlant(-8.1,-6.4),herbLeaves=herbPlant.children.slice(2);
+    herbLeaves.forEach(leaf=>{leaf.userData.baseRotationX=leaf.rotation.x;leaf.userData.baseRotationZ=leaf.rotation.z});
+    function addShaker(x,z,color){
+      const g=new THREE.Group();g.position.set(x,.04,z);scene.add(g);
+      g.add(mesh(new THREE.CylinderGeometry(.13,.15,.4,20),M(0xf8f2e7,.28,0),[0,.2,0]));
+      g.add(mesh(new THREE.CylinderGeometry(.14,.14,.08,20),steelMat,[0,.44,0]));
+      for(let i=0;i<5;i++){const dot=mesh(new THREE.SphereGeometry(.018,8,8),M(color,.3,0),[(i-2)*.045,.49,0]);g.add(dot)}
+    }
+    addShaker(7.25,-5.7,0xffffff);addShaker(7.7,-5.7,0x3d332b);
+    const utensilPot=new THREE.Group();utensilPot.position.set(8.35,0,-3.15);scene.add(utensilPot);
+    utensilPot.add(mesh(new THREE.CylinderGeometry(.3,.24,.55,24),M(0x9a693e,.55,0),[0,.275,0]));
+    for(let i=0;i<4;i++){const a=i/4*Math.PI*2,tool=mesh(new THREE.CylinderGeometry(.025,.035,.92,10),steelMat,[Math.cos(a)*.12,.84,Math.sin(a)*.12]);tool.rotation.z=(i-1.5)*.11;utensilPot.add(tool);utensilPot.add(mesh(new THREE.SphereGeometry(.11,12,10),steelMat,[Math.cos(a)*.12,1.33,Math.sin(a)*.12]))}
     player1Station=new THREE.Group();player1Station.position.set(PLAYER1_X,0,0);scene.add(player1Station);
-    player1Station.add(mesh(new THREE.BoxGeometry(5.4,.18,4.4),M(0x3c4b60,.48,.32),[0,.09,0]));
-    const accent1=mesh(new THREE.BoxGeometry(5.35,.075,.11),M(0x91d9ec,.35,.18),[0,.205,2.15]);accent1.userData.isAccent=true;player1Station.add(accent1);
+    player1Station.add(mesh(new THREE.BoxGeometry(5.52,.12,4.52),M(0x303638,.72,.08),[0,.05,0]));
+    player1Station.add(mesh(new THREE.BoxGeometry(5.4,.13,4.4),M(0x0b0d0e,.72,.01),[0,.115,0]));
+    const accent1=mesh(new THREE.BoxGeometry(5.35,.075,.11),M(0x7d9eae,.35,.18),[0,.205,2.15]);accent1.userData.isAccent=true;player1Station.add(accent1);
+    const heatIndicatorMat=M(0xc87952,.38,.12,{emissive:0xb95c32,emissiveIntensity:.35});
+    for(const x of[-1.42,1.42])player1Station.add(mesh(new THREE.SphereGeometry(.045,12,8),heatIndicatorMat,[x,.235,1.73]));
     const burnerMat=M(0x3a3d44,.55,.85);
     player1Station.add(mesh(new THREE.CylinderGeometry(.6,.7,.06,40),burnerMat,[0,.21,0]));
     player1Station.add(mesh(new THREE.CylinderGeometry(.3,.34,.05,32),burnerMat,[0,.255,0]));
     const grateMat=M(0x15171b,.5,.9);
     for(let i=0;i<4;i++){const a=Math.PI/4+i*Math.PI/2;const arm=mesh(new THREE.BoxGeometry(.92,.06,.13),grateMat,[Math.cos(a)*.7,.3,Math.sin(a)*.7]);arm.rotation.y=-a;player1Station.add(arm)}
     const ring=mesh(new THREE.TorusGeometry(1.16,.032,8,56),grateMat,[0,.3,0]);ring.rotation.x=Math.PI/2;player1Station.add(ring);
+    const heatRingMat=M(0x9c5b40,.35,.18,{emissive:0xc87952,emissiveIntensity:.12});
+    const heatRing=mesh(new THREE.TorusGeometry(1.31,.026,8,56),heatRingMat,[0,.235,0]);heatRing.rotation.x=Math.PI/2;player1Station.add(heatRing);
 
     const knobGroup=new THREE.Group();knobGroup.name='knobGroup';knobGroup.position.set(-2,.18,1.55);player1Station.add(knobGroup);
     const knobMesh=mesh(new THREE.CylinderGeometry(.21,.23,.14,28),M(0x2b2f36,.35,.9),[0,.07,0]);knobMesh.name='knobMesh';knobGroup.add(knobMesh);
@@ -225,7 +483,7 @@ export default function FryTheEgg({ onHudUpdate }) {
     panGroup.add(mesh(new THREE.CylinderGeometry(1.2,.95,.42,56,1,true),panMat,[0,.21,0]));
     panGroup.add(mesh(new THREE.CylinderGeometry(.955,.955,.08,56),panMat,[0,.04,0]));
     const rimM=mesh(new THREE.TorusGeometry(1.2,.035,8,64),panMat,[0,.42,0]);rimM.rotation.x=Math.PI/2;panGroup.add(rimM);
-    const handle=mesh(new THREE.CylinderGeometry(.055,.075,1.05,14),M(0x15171a,.65,.5),[1.7,.36,0]);handle.rotation.z=-Math.PI/2;panGroup.add(handle);
+    const handle=mesh(new THREE.CylinderGeometry(.055,.075,1.05,14),M(0xb3bdc0,.46,.05),[1.7,.36,0]);handle.rotation.z=-Math.PI/2;panGroup.add(handle);
     panGroup.add(mesh(new THREE.BoxGeometry(.22,.1,.16),panMat,[1.22,.38,0]));
 
     const EGG_Y=.125;const eggGroup=new THREE.Group();eggGroup.name='eggGroup';eggGroup.position.y=EGG_Y;panGroup.add(eggGroup);
@@ -240,10 +498,10 @@ export default function FryTheEgg({ onHudUpdate }) {
     const flameGroup=new THREE.Group();flameGroup.name='flameGroup';flameGroup.position.set(0,.245,0);player1Station.add(flameGroup);
     const jets=[];
     for(let i=0;i<14;i++){const a=i/14*Math.PI*2;const g=new THREE.ConeGeometry(.072,1,8,1,true);g.translate(0,.5,0);
-    const m=new THREE.MeshBasicMaterial({color:0x5aa8ff,transparent:true,opacity:.85,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide});
+    const m=new THREE.MeshBasicMaterial({color:0xffa45a,transparent:true,opacity:.85,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide});
     const j=new THREE.Mesh(g,m);j.position.set(Math.cos(a)*.62,0,Math.sin(a)*.62);j.rotation.x=Math.sin(a)*.6;j.rotation.z=-Math.cos(a)*.6;flameGroup.add(j);jets.push({mesh:j,phase:Math.random()*12})}
     const cg=new THREE.ConeGeometry(.26,1,16,1,true);cg.translate(0,.5,0);
-    const flameCore=new THREE.Mesh(cg,new THREE.MeshBasicMaterial({color:0xcfe6ff,transparent:true,opacity:.55,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));flameGroup.add(flameCore);
+    const flameCore=new THREE.Mesh(cg,new THREE.MeshBasicMaterial({color:0xffd7a0,transparent:true,opacity:.55,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));flameGroup.add(flameCore);
     const glowMat=new THREE.MeshBasicMaterial({color:0xff7a20,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
     const flameGlow=new THREE.Mesh(new THREE.CircleGeometry(1.15,40),glowMat);flameGlow.name='flameGlow';flameGlow.rotation.x=-Math.PI/2;flameGlow.position.y=.22;player1Station.add(flameGlow);
     flameLight.name='flameLight';player1Station.add(flameLight);
@@ -258,7 +516,7 @@ export default function FryTheEgg({ onHudUpdate }) {
 
     const VS=`attribute float aSize;attribute float aAlpha;attribute vec3 aColor;varying float vA;varying vec3 vC;
     void main(){vA=aAlpha;vC=aColor;vec4 mv=modelViewMatrix*vec4(position,1.0);gl_PointSize=aSize*(260.0/max(.001,-mv.z));gl_Position=projectionMatrix*mv;}`;
-    const FS=`varying float vA;varying vec3 vC;void main(){float d=length(gl_PointCoord-vec2(.5));if(d>.5)discard;gl_FragColor=vec4(vC,smoothstep(.5,.06,d)*vA);}`;
+    const FS=`varying float vA;varying vec3 vC;void main(){float d=length(gl_PointCoord-vec2(.5));if(d>.5)discard;gl_FragColor=vec4(vC,(1.0-smoothstep(.06,.5,d))*vA);}`;
     class Particles{
       constructor(n,blending,gravity){this.n=n;this.g=gravity;this.c=0;
         this.pos=new Float32Array(n*3);this.vel=new Float32Array(n*3);this.col=new Float32Array(n*3);
@@ -277,6 +535,27 @@ export default function FryTheEgg({ onHudUpdate }) {
       clear(){this.life.fill(0);this.alp.fill(0);this.geo.attributes.aAlpha.needsUpdate=true}
     }
     const sparks=new Particles(260,THREE.AdditiveBlending,-3.4),smoke=new Particles(180,THREE.NormalBlending,.55);
+    const steamCanvas=document.createElement('canvas');steamCanvas.width=steamCanvas.height=128;
+    const steamContext=steamCanvas.getContext('2d'),steamGradient=steamContext.createRadialGradient(64,64,4,64,64,62);
+    steamGradient.addColorStop(0,'rgba(255,255,255,.65)');steamGradient.addColorStop(.45,'rgba(250,248,241,.3)');steamGradient.addColorStop(1,'rgba(250,248,241,0)');
+    steamContext.fillStyle=steamGradient;steamContext.fillRect(0,0,128,128);
+    const steamTexture=new THREE.CanvasTexture(steamCanvas),steamPuffs=[];
+    function emitSteam(){
+      for(const x of[PLAYER1_X,-PLAYER1_X]){
+        const material=new THREE.SpriteMaterial({map:steamTexture,color:0xf5f2eb,transparent:true,opacity:0,depthWrite:false});
+        const sprite=new THREE.Sprite(material);sprite.position.set(x+(Math.random()-.5)*.4,.78,(Math.random()-.5)*.45);sprite.scale.set(.38,.56,1);scene.add(sprite);
+        steamPuffs.push({sprite,age:0,duration:1.7+Math.random()*.4,drift:(Math.random()-.5)*.12});
+      }
+    }
+    function updateSteam(dt){
+      if(state==='playing'&&panTemp>.2){steamAcc+=dt*1.6;while(steamAcc>=1){steamAcc--;emitSteam()}}
+      for(let i=steamPuffs.length-1;i>=0;i--){
+        const puff=steamPuffs[i],progress=puff.age/puff.duration;puff.age+=dt;
+        if(progress>=1){scene.remove(puff.sprite);puff.sprite.material.dispose();steamPuffs.splice(i,1);continue}
+        puff.sprite.position.y=.78+progress*.42;puff.sprite.position.x+=puff.drift*dt;
+        puff.sprite.scale.set(.38+progress*.18,.56+progress*.26,1);puff.sprite.material.opacity=.3*Math.sin(progress*Math.PI);
+      }
+    }
 
     let actx=null,sizzleGain=null,bgSizzle=null,masterOut=null,muted=false;
     function initAudio(){if(actx){if(actx.state==='suspended')actx.resume();return}
@@ -349,6 +628,104 @@ export default function FryTheEgg({ onHudUpdate }) {
      $('againBtn').textContent='START NEW ROUND';$('result').classList.remove('show');
      setStatus('<b>Both eggs are cracked!</b> The burners are on <b>LOW</b> and both eggs are frying automatically. '+escapeHTML(playerNames[0])+', choose the first numbered egg.');
      renderScores();renderCrateButtons();
+    }
+    function setSoloMode(enabled){
+     soloMode=enabled;
+     $('twoPlayerBtn').setAttribute('aria-pressed',String(!enabled));
+     $('soloPlayerBtn').setAttribute('aria-pressed',String(enabled));
+     $('player2Row').hidden=enabled;
+     $('classicModeBtn').disabled=enabled;
+     $('classicModeNote').textContent=enabled?'Classic mode needs two players.':'The original two-player hidden-egg cook-off.';
+    }
+    function showModeMenu(){
+     playerNames=[
+      ($('player1Input').value||'Player 1').trim().slice(0,18)||'Player 1',
+      soloMode?'Chef AI':(($('player2Input').value||'Player 2').trim().slice(0,18)||'Player 2')
+     ];
+     $('modePlayerNames').textContent=soloMode?`${playerNames[0]} · SOLO PRACTICE`:`${playerNames[0]} vs ${playerNames[1]}`;
+     $('setupScreen').classList.remove('active');$('modeScreen').classList.add('active');
+     $('app').style.display='block';$('ui').style.display='none';resizeRenderer();
+     notifyHud();
+    }
+    function startClassicGame(){
+     if(soloMode)return;
+     $('panelName0').textContent=playerNames[0].toUpperCase()+' · BLUE PAN';
+     $('panelName1').textContent=playerNames[1].toUpperCase()+' · RED PAN';
+     $('modeScreen').classList.remove('active');$('app').style.display='block';$('ui').style.display='block';
+     resizeRenderer();initAudio();newGame();
+    }
+    function clearEslTimers(){
+     if(eslAiTimer){clearTimeout(eslAiTimer);eslAiTimer=null}
+     if(eslNextTimer){clearTimeout(eslNextTimer);eslNextTimer=null}
+    }
+    function shuffleEslDeck(){
+     eslDeck=ESL_SENTENCES.map((_,index)=>index);
+     for(let i=eslDeck.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[eslDeck[i],eslDeck[j]]=[eslDeck[j],eslDeck[i]]}
+    }
+    function renderEslRound(){
+     if(!eslDeck.length)shuffleEslDeck();
+     eslSentence=ESL_SENTENCES[eslDeck.pop()];eslLocked=false;eslRound++;
+     $('eslRoundLabel').textContent=`SENTENCE ${eslRound}`;
+     $('eslBefore').textContent=`${eslSentence.before} `;
+     $('eslAfter').textContent=/^[.,!?]/.test(eslSentence.after)?eslSentence.after:` ${eslSentence.after}`;
+     $('eslBlank').textContent='_____';
+     $('eslScore0').textContent=String(eslScores[0]);$('eslScore1').textContent=String(eslScores[1]);
+     $('eslPlayer0Name').textContent=playerNames[0];
+     $('eslPlayer1Name').textContent=playerNames[1];
+     $('eslPlayer0FormName').textContent=playerNames[0];
+     $('eslPlayer1FormName').textContent=playerNames[1];
+     $('eslAnswer0').value='';$('eslAnswer1').value='';
+     $('eslAnswer0').disabled=false;$('eslAnswer1').disabled=false;
+     ['eslFeedback0','eslFeedback1'].forEach(id=>{$(id).textContent='';$(id).className='esl-feedback'});
+     $('eslAiFeedback').textContent='Chef AI is thinking…';$('eslAiFeedback').className='esl-feedback';
+     $('eslPlayArea').hidden=false;$('eslResult').hidden=true;
+     $('eslAnswer0').focus();
+     if(soloMode){
+      eslAiTimer=setTimeout(()=>awardEslPoint(1),3100+Math.random()*1900);
+     }
+    }
+    function finishEslRace(winner){
+     clearEslTimers();$('eslPlayArea').hidden=true;$('eslResult').hidden=false;
+     $('eslWinner').textContent=`${playerNames[winner]} wins the word race!`;
+     $('eslFinalScore').textContent=`${eslScores[0]} – ${eslScores[1]} · First to 5`;
+    }
+    function awardEslPoint(player){
+     if(eslLocked||state!=='esl')return;
+     eslLocked=true;
+     if(eslAiTimer){clearTimeout(eslAiTimer);eslAiTimer=null}
+     eslScores[player]++;
+     $('eslScore0').textContent=String(eslScores[0]);$('eslScore1').textContent=String(eslScores[1]);
+     $('eslAnswer0').disabled=true;$('eslAnswer1').disabled=true;
+     const feedback=player===1&&soloMode?$('eslAiFeedback'):$(`eslFeedback${player}`);
+     feedback.textContent=player===1&&soloMode?'Chef AI spelled it first!':`${playerNames[player]} got it!`;
+     feedback.className='esl-feedback success';
+     if(player===0&&soloMode){$('eslAiFeedback').textContent='Too slow!';$('eslAiFeedback').className='esl-feedback error'}
+     $('eslBlank').textContent=eslSentence.answer;
+     if(eslScores[player]>=5){eslNextTimer=setTimeout(()=>finishEslRace(player),850);return}
+     eslNextTimer=setTimeout(()=>{eslNextTimer=null;if(state==='esl')renderEslRound()},1050);
+    }
+    function submitEslAnswer(player){
+     if(eslLocked||state!=='esl')return;
+     const value=$(`eslAnswer${player}`).value;
+     if(!normalizeEslAnswer(value))return;
+     if(normalizeEslAnswer(value)!==normalizeEslAnswer(eslSentence.answer)){
+      const feedback=$(`eslFeedback${player}`);feedback.textContent='Not quite — check the spelling and try again.';feedback.className='esl-feedback error';return;
+     }
+     awardEslPoint(player);
+    }
+    function startEslRace(){
+     clearEslTimers();eslScores=[0,0];eslRound=0;eslLocked=false;shuffleEslDeck();
+     $('modeScreen').classList.remove('active');$('eslGameScreen').classList.add('active');
+     $('app').style.display='block';$('ui').style.display='none';$('eslRacer1').hidden=soloMode;$('eslAiRacer').hidden=!soloMode;
+     $('eslTitle').textContent=soloMode?'ESL WORD RACE · VS CHEF AI':'ESL WORD RACE';
+     state='esl';notifyHud();renderEslRound();
+    }
+    function returnToModes(){
+     clearEslTimers();if(K.on)kStop();
+     $('result').classList.remove('show');$('eslGameScreen').classList.remove('active');
+     $('setupScreen').classList.remove('active');$('splashScreen').classList.remove('active');
+     $('modeScreen').classList.add('active');$('app').style.display='block';$('ui').style.display='none';
+     state='menu';notifyHud();
     }
     function startRoundEndAnimations(winner){
      const loser=1-winner;
@@ -445,6 +822,7 @@ export default function FryTheEgg({ onHudUpdate }) {
     const HEAT_T=[0,.35,.65,1],HEAT_NAMES=['OFF','LOW','MED','HIGH'],HEAT_FLAME=[0,.34,.55,.76];
     const BAR_MAX=140,PMIN=68,PMAX=95;
     let heat=1,doneness=0,state='menu',elapsed=0,flameScale=0,time=0,panTemp=0,cur=0,scores=[0,0],gameOver=false,locked=false,roundNumber=0,celebration=null,turnTimer=null,turnToken=0;
+    let soloMode=false,eslScores=[0,0],eslDeck=[],eslSentence=null,eslRound=0,eslLocked=false,eslAiTimer=null,eslNextTimer=null;
     let playerNames=['Player 1','Player 2'],playerDoneness=[0,0];
     function notifyHud(){onHudUpdate?.({screen:state,round:roundNumber,scores:[...scores],playerNames:[...playerNames],muted})}
     const $=id=>root.querySelector('#'+id);
@@ -462,23 +840,25 @@ export default function FryTheEgg({ onHudUpdate }) {
       return out.setHex(stops[stops.length-1][1])}
 
     const ray=new THREE.Raycaster(),ndc=new THREE.Vector2();
-    function beginGame(){
-     scores=[0,0];roundNumber=0;
-     playerNames=[($('player1Input').value||'Player 1').trim().slice(0,18)||'Player 1',($('player2Input').value||'Player 2').trim().slice(0,18)||'Player 2'];
-     $('panelName0').textContent=playerNames[0].toUpperCase()+' · BLUE PAN';$('panelName1').textContent=playerNames[1].toUpperCase()+' · RED PAN';
-     $('setupScreen').classList.remove('active');$('splashScreen').classList.remove('active');
-     $('app').style.display='block';$('ui').style.display='block';
-     resizeRenderer();initAudio();newGame();
-    }
+    function beginGame(){scores=[0,0];roundNumber=0;showModeMenu()}
     on(window,'fry-the-egg:toggle-sound',()=>{initAudio();setMuted(!muted)});
     on(window,'keydown',e=>{if(e.key!=='m'&&e.key!=='M')return;const t=e.target;if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'))return;setMuted(!muted)});
     setMuted(muted);
     on($('toSetupBtn'),'click',()=>{$('setupScreen').classList.add('active');$('splashScreen').classList.remove('active')});
     on($('backToSplashBtn'),'click',()=>{$('setupScreen').classList.remove('active');$('splashScreen').classList.add('active')});
+    on($('twoPlayerBtn'),'click',()=>setSoloMode(false));
+    on($('soloPlayerBtn'),'click',()=>setSoloMode(true));
     on($('startGameBtn'),'click',beginGame);
+    on($('backToSetupBtn'),'click',()=>{$('modeScreen').classList.remove('active');$('setupScreen').classList.add('active')});
+    on($('classicModeBtn'),'click',startClassicGame);
+    on($('eslModeBtn'),'click',startEslRace);
+    on($('eslForm0'),'submit',e=>{e.preventDefault();submitEslAnswer(0)});
+    on($('eslForm1'),'submit',e=>{e.preventDefault();submitEslAnswer(1)});
+    on($('eslAgainBtn'),'click',startEslRace);
+    on($('eslModesBtn'),'click',returnToModes);
     $('againBtn').onclick=()=>{initAudio();newGame()};
-    const returnToTitle=()=>{$('result').classList.remove('show');$('ui').style.display='none';$('app').style.display='none';$('setupScreen').classList.remove('active');$('splashScreen').classList.add('active');state='menu';notifyHud()};
-    $('homeBtn').onclick=returnToTitle;
+    $('homeBtn').onclick=returnToModes;
+    const returnToTitle=()=>{clearEslTimers();if(K.on)kStop();$('result').classList.remove('show');$('ui').style.display='none';$('app').style.display='none';$('setupScreen').classList.remove('active');$('modeScreen').classList.remove('active');$('eslGameScreen').classList.remove('active');$('splashScreen').classList.add('active');state='menu';notifyHud()};
     on(window,'fry-the-egg:main-menu',returnToTitle);
     on(renderer.domElement,'pointerdown',e=>{if(state!=='playing')return;initAudio();const rect=renderer.domElement.getBoundingClientRect();if(!rect.width||!rect.height)return;ndc.set((e.clientX-rect.left)/rect.width*2-1,-((e.clientY-rect.top)/rect.height)*2+1);ray.setFromCamera(ndc,camera);const ce=ray.intersectObjects(crateEggs,false);if(ce.length)pickEgg(ce[0].object.userData.i)});
 
@@ -499,7 +879,9 @@ export default function FryTheEgg({ onHudUpdate }) {
     }
     function updateFlame(dt){
      flameScale+=( ((state==='playing'||state==='celebrating')?HEAT_FLAME[1]:0)-flameScale)*Math.min(1,dt*9);
-     const vis=flameScale>.012;flameGroup.visible=vis;flameGroup2.visible=vis;
+     const vis=flameScale>.012;flameGroup.visible=false;flameGroup2.visible=false;
+     heatRingMat.emissiveIntensity=.1+flameScale*(.4+Math.sin(time*2.7)*.025);
+     heatIndicatorMat.emissiveIntensity=.2+flameScale*(.3+Math.sin(time*3.4)*.025);
      if(vis){
       for(let i=0;i<jets.length;i++){
        const f=1+Math.sin(time*17+jets[i].phase)*.13+Math.sin(time*29+jets[i].phase*2.3)*.07;
@@ -516,11 +898,12 @@ export default function FryTheEgg({ onHudUpdate }) {
     }
     function updateParticles(dt){
      if(state==='playing'&&panTemp>.2){
-      sAcc+=dt*panTemp*15;while(sAcc>=1){sAcc--;for(const x of [PLAYER1_X,-PLAYER1_X]){const a=Math.random()*6.28,r=.3+Math.random()*.55;sparks.spawn(x+Math.cos(a)*r,.46,Math.sin(a)*r,(Math.random()-.5)*.4,.35+Math.random()*.5,(Math.random()-.5)*.4,.035+Math.random()*.04,.3+Math.random()*.25,1,.8,.42)}}
+      sAcc+=dt*panTemp*15;while(sAcc>=1){sAcc--;for(const x of [PLAYER1_X,-PLAYER1_X]){const a=Math.random()*6.28,r=.3+Math.random()*.55;sparks.spawn(x+Math.cos(a)*r,.46,Math.sin(a)*r,(Math.random()-.5)*.4,.35+Math.random()*.5,(Math.random()-.5)*.4,.045+Math.random()*.03,.3+Math.random()*.25,1,.8,.42)}}
+      steamAcc+=dt*3.2;while(steamAcc>=1){steamAcc--;for(const x of[PLAYER1_X,-PLAYER1_X])smoke.spawn(x+(Math.random()-.5)*.42,1.04,(Math.random()-.5)*.42,(Math.random()-.5)*.07,.2+Math.random()*.13,(Math.random()-.5)*.07,.42+Math.random()*.16,1.5+Math.random()*.4,.98,.97,.94)}
      }
      sparks.update(dt);smoke.update(dt);
     }
-    let sAcc=0,lastLb='';
+    let sAcc=0,steamAcc=0,lastLb='';
 
     const KZ=-7.3,KPX=-.35,RAW_R=.28,PLATE_X=2.65;
     const kEase=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2,kClamp=x=>Math.max(0,Math.min(1,x));
@@ -550,10 +933,10 @@ export default function FryTheEgg({ onHudUpdate }) {
     const kFlame=new THREE.Group();kFlame.position.set(KPX,.245,0);kFlame.visible=false;kitchen.add(kFlame);
     const kJets=[];
     for(let i=0;i<12;i++){const a=i/12*Math.PI*2;const g=new THREE.ConeGeometry(.072,1,8,1,true);g.translate(0,.5,0);
-      const m=new THREE.MeshBasicMaterial({color:0x5aa8ff,transparent:true,opacity:.85,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide});
+      const m=new THREE.MeshBasicMaterial({color:0xffa45a,transparent:true,opacity:.85,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide});
       const j=new THREE.Mesh(g,m);j.position.set(Math.cos(a)*.62,0,Math.sin(a)*.62);j.rotation.x=Math.sin(a)*.6;j.rotation.z=-Math.cos(a)*.6;kFlame.add(j);kJets.push({mesh:j,phase:Math.random()*12})}
     const kcg=new THREE.ConeGeometry(.26,1,16,1,true);kcg.translate(0,.5,0);
-    const kCoreMat=new THREE.MeshBasicMaterial({color:0xcfe6ff,transparent:true,opacity:.55,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide});
+    const kCoreMat=new THREE.MeshBasicMaterial({color:0xffd7a0,transparent:true,opacity:.55,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide});
     const kCore=new THREE.Mesh(kcg,kCoreMat);kFlame.add(kCore);
     const kGlowMat=new THREE.MeshBasicMaterial({color:0xff7a20,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
     const kGlow=new THREE.Mesh(new THREE.CircleGeometry(1.15,40),kGlowMat);kGlow.rotation.x=-Math.PI/2;kGlow.position.set(KPX,.22,0);kitchen.add(kGlow);
@@ -683,10 +1066,13 @@ export default function FryTheEgg({ onHudUpdate }) {
     on(window,'pointermove',e=>{const rect=renderer.domElement.getBoundingClientRect();if(!rect.width||!rect.height)return;mx=(e.clientX-rect.left)/rect.width*2-1;my=(e.clientY-rect.top)/rect.height*2-1;ndc.set(mx,-my);ray.setFromCamera(ndc,camera);const h=ray.intersectObjects(crateEggs,false);hoverI=h.length?h[0].object.userData.i:-1});
     function animate(now){if(disposed)return;raf=requestAnimationFrame(animate);
      const dt=Math.min((now-last)/1000,.05);last=now;time+=dt;
+     windowLight.position.x=-6+Math.sin(time*.2)*.35;windowLight.position.y=7+Math.cos(time*.16)*.14;
+     herbLeaves.forEach((leaf,i)=>{leaf.rotation.x=leaf.userData.baseRotationX+Math.sin(time*.8+i)*.014;leaf.rotation.z=leaf.userData.baseRotationZ+Math.cos(time*.65+i)*.018});
+     oil.material.opacity=.29+Math.sin(time*5.2)*.025;
      if(state==='playing'){elapsed+=dt;panTemp+=(HEAT_T[1]-panTemp)*Math.min(1,dt*.45)}
      for(const m of crateEggs){const u=m.userData;if(u.a>=0){u.a+=dt;const k=Math.min(1,u.a/.5);m.position.y=.36+k*.9;m.scale.set(1-k,1.3*(1-k),1-k);m.rotation.y+=dt*10;if(k>=1)m.visible=false;if(u.badge)u.badge.visible=false}else{const h=u.i===hoverI&&!locked&&!gameOver?.1:0;m.position.y+=(.36+h-m.position.y)*Math.min(1,dt*12);if(u.badge){u.badge.position.y=m.position.y+.29;u.badge.visible=true}}}
      for(let i=pops.length-1;i>=0;i--){const p=pops[i];p.t+=dt;p.s.position.y+=dt*.5;p.s.material.opacity=Math.max(0,1-p.t/1.6);if(p.t>1.6){scene.remove(p.s);pops.splice(i,1)}}
-     updateEgg(dt);if(celebration)updateLoserOvercook(dt);updateFlame(dt);updateParticles(dt);knobMesh.rotation.y+=(-.65+.72-knobMesh.rotation.y)*Math.min(1,dt*10);knobMesh2.rotation.y+=(-.65+.72-knobMesh2.rotation.y)*Math.min(1,dt*10);panMat.emissive.setRGB(.16*panTemp*panTemp,.03*panTemp*panTemp,0);
+     updateEgg(dt);if(celebration)updateLoserOvercook(dt);updateFlame(dt);updateParticles(dt);updateSteam(dt);knobMesh.rotation.y+=(-.65+.72-knobMesh.rotation.y)*Math.min(1,dt*10);knobMesh2.rotation.y+=(-.65+.72-knobMesh2.rotation.y)*Math.min(1,dt*10);panMat.emissive.setRGB(.16*panTemp*panTemp,.03*panTemp*panTemp,0);
      cx+=(mx*.32-cx)*Math.min(1,dt*3);cy+=(my*.22-cy)*Math.min(1,dt*3);
      camera.position.set(CAM_BASE.x+cx,CAM_BASE.y-cy*.5+Math.sin(time*.6)*.02,CAM_BASE.z);camera.lookAt(CAM_LOOK);
      kUpdate(dt);renderer.render(scene,camera)}
@@ -703,6 +1089,8 @@ export default function FryTheEgg({ onHudUpdate }) {
       turnToken++;
       try { if (actx && actx.state !== 'closed') actx.close(); } catch (e) {}
       actx = null;
+      steamPuffs.forEach(puff=>{scene.remove(puff.sprite);puff.sprite.material.dispose()});
+      steamTexture.dispose();
       try {
         renderer.dispose();
         if (renderer.forceContextLoss) renderer.forceContextLoss();
@@ -714,41 +1102,102 @@ export default function FryTheEgg({ onHudUpdate }) {
   return (
     <div className="fte-root" ref={rootRef}>
       <style>{CSS}</style>
-      <div id="splashScreen" className="pre-screen active">
-        <div className="pre-card splash-card">
-          <div className="hero-egg">🍳</div>
-          <div className="eyebrow">A TWO-PLAYER COOK-OFF</div>
-          <h1>READY TO COOK?</h1>
-          <p className="pre-subtitle">One crate. Two pans. One perfectly cooked egg.</p>
-          <div className="how-to-grid">
-            <div><span>01</span><b>CRACK & COOK</b><small>Both eggs start frying on low heat.</small></div>
-            <div><span>02</span><b>PICK A NUMBER</b><small>Choose a numbered egg from the crate.</small></div>
-            <div><span>03</span><b>GET IT JUST RIGHT</b><small>Be the first to fill your cooking bar to 100%.</small></div>
-          </div>
-          <button id="toSetupBtn" className="big-button">LET’S PLAY <span>→</span></button>
-          <div className="pre-foot">NO TIMING BUTTONS · CHOOSE YOUR WAY TO THE PERFECT EGG</div>
-        </div>
+      <div id="splashScreen" className="pre-screen splash-screen active">
+        <h1 className="splash-title">Fry the Egg</h1>
+        <button id="toSetupBtn" className="splash-start" aria-label="Start Fry the Egg"></button>
       </div>
 
       <div id="setupScreen" className="pre-screen">
         <div className="pre-card setup-card">
           <div className="eyebrow">BEFORE THE PANS GET HOT</div>
-          <h2>WHO’S COOKING?</h2>
-          <p className="pre-subtitle">Add the two player names to set up your cook-off.</p>
+          <h2>WHO’S PLAYING?</h2>
+          <p className="pre-subtitle">Choose your player setup, then pick a game mode.</p>
+          <div className="player-count" role="group" aria-label="Number of players">
+            <button id="twoPlayerBtn" type="button" aria-pressed="true">2 Players</button>
+            <button id="soloPlayerBtn" type="button" aria-pressed="false">Solo vs Chef AI</button>
+          </div>
           <div className="player-input-row blue-input">
             <div className="input-icon">🔵</div>
-            <label htmlFor="player1Input">PLAYER 1 <span>BLUE PAN</span></label>
+            <label htmlFor="player1Input">YOUR NAME <span>BLUE PAN</span></label>
             <input id="player1Input" maxLength="18" autoComplete="off" placeholder="Enter player 1 name" defaultValue="Player 1" />
           </div>
-          <div className="player-input-row red-input">
+          <div id="player2Row" className="player-input-row red-input">
             <div className="input-icon">🔴</div>
             <label htmlFor="player2Input">PLAYER 2 <span>RED PAN</span></label>
             <input id="player2Input" maxLength="18" autoComplete="off" placeholder="Enter player 2 name" defaultValue="Player 2" />
           </div>
-          <div className="setup-note">Take turns choosing numbered eggs. Good picks cook your egg closer to 100%; cooling picks set your progress back.</div>
-          <button id="startGameBtn" className="big-button">START COOKING <span>→</span></button>
+          <div className="setup-note">Classic mode is a two-player cook-off. ESL mode can be played with a friend or solo against Chef AI.</div>
+          <button id="startGameBtn" className="big-button">CONTINUE TO MODES <span>→</span></button>
           <button id="backToSplashBtn" className="text-button">← BACK</button>
         </div>
+      </div>
+
+      <div id="modeScreen" className="pre-screen mode-screen">
+        <div className="pre-card mode-card">
+          <div className="eyebrow">COOK-OFF READY</div>
+          <h2>CHOOSE YOUR MODE</h2>
+          <p id="modePlayerNames" className="pre-subtitle">Player 1 vs Player 2</p>
+          <div className="mode-grid">
+            <button id="classicModeBtn" className="mode-tile" type="button">
+              <span className="mode-icon" aria-hidden="true">🍳</span>
+              <strong>Classic Cook-Off</strong>
+              <small id="classicModeNote">The original two-player hidden-egg cook-off.</small>
+            </button>
+            <button id="eslModeBtn" className="mode-tile" type="button">
+              <span className="mode-icon" aria-hidden="true">🔤</span>
+              <strong>ESL Word Race</strong>
+              <small>Spell the missing word before your friend or Chef AI.</small>
+            </button>
+          </div>
+          <button id="backToSetupBtn" className="text-button" type="button">← CHANGE PLAYERS</button>
+        </div>
+      </div>
+
+      <div id="eslGameScreen" className="pre-screen esl-screen">
+        <section className="esl-card" aria-labelledby="eslTitle">
+          <div className="esl-top">
+            <h2 id="eslTitle">ESL WORD RACE</h2>
+            <span id="eslRoundLabel" className="esl-round" aria-live="polite">SENTENCE 1</span>
+          </div>
+          <div className="esl-scoreboard" aria-label="Race score">
+            <div className="esl-score"><span id="eslPlayer0Name">Player 1</span><b id="eslScore0">0</b></div>
+            <span className="esl-vs">FIRST TO 5</span>
+            <div className="esl-score"><span id="eslPlayer1Name">Player 2</span><b id="eslScore1">0</b></div>
+          </div>
+          <div id="eslPlayArea" className="esl-play-area">
+            <p className="esl-prompt" aria-live="polite"><span id="eslBefore"></span><span id="eslBlank" className="esl-blank" aria-label="missing word">_____</span><span id="eslAfter"></span></p>
+            <div className="esl-racers">
+              <div className="esl-racer">
+                <form id="eslForm0">
+                  <label htmlFor="eslAnswer0"><span id="eslPlayer0FormName">Player 1</span> · TYPE THE MISSING WORD</label>
+                  <div className="esl-entry"><input id="eslAnswer0" autoComplete="off" autoCapitalize="none" spellCheck="false" aria-label="Player 1 missing word" /><button type="submit">SPELL IT</button></div>
+                </form>
+                <p id="eslFeedback0" className="esl-feedback" aria-live="polite"></p>
+              </div>
+              <div id="eslRacer1" className="esl-racer red">
+                <form id="eslForm1">
+                  <label htmlFor="eslAnswer1"><span id="eslPlayer1FormName">Player 2</span> · TYPE THE MISSING WORD</label>
+                  <div className="esl-entry"><input id="eslAnswer1" autoComplete="off" autoCapitalize="none" spellCheck="false" aria-label="Player 2 missing word" /><button type="submit">SPELL IT</button></div>
+                </form>
+                <p id="eslFeedback1" className="esl-feedback" aria-live="polite"></p>
+              </div>
+              <div id="eslAiRacer" className="esl-racer red" hidden>
+                <strong>🤖 Chef AI</strong>
+                <p id="eslAiFeedback" className="esl-feedback" aria-live="polite"></p>
+              </div>
+            </div>
+          </div>
+          <div id="eslResult" className="esl-result" hidden>
+            <div className="hero-egg" aria-hidden="true">🏆</div>
+            <h3 id="eslWinner"></h3>
+            <p id="eslFinalScore"></p>
+            <button id="eslAgainBtn" className="esl-action" type="button">RACE AGAIN</button>
+          </div>
+          <div className="esl-footer">
+            <button id="eslModesBtn" className="esl-action secondary" type="button">← MODES</button>
+            <span className="esl-ai-hint">First correct spelling wins the sentence.</span>
+          </div>
+        </section>
       </div>
 
       <div id="app"></div>
@@ -778,7 +1227,7 @@ export default function FryTheEgg({ onHudUpdate }) {
         <div id="result"><div id="resultCard">
           <div id="resultEmoji">🏆</div><div id="resultVerdict">PERFECT EGG!</div><div id="resultDesc"></div><div id="resultTime"></div>
           <button id="againBtn">PLAY AGAIN</button>
-          <button id="homeBtn" className="result-home">BACK TO TITLE</button>
+          <button id="homeBtn" className="result-home">BACK TO MODES</button>
         </div></div>
       </div>
     </div>

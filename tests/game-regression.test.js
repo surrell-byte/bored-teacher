@@ -1617,6 +1617,14 @@ test('account and support communications use the requested sender and protected 
 test('phone welcome backgrounds stay paired with clickable start controls and their correct mappings', () => {
   const audits = [
     {
+      name: 'Fry the Egg',
+      asset: '/assets/games/fry-the-egg/splash-mobile.webp',
+      files: ['games/fry-the-egg/FryTheEgg.jsx'],
+      button: /id="toSetupBtn" className="splash-start" aria-label="Start Fry the Egg"/,
+      desktop: /splash-desktop\.webp'\);background-size:cover;background-position:center bottom/,
+      portrait: /splash-start\{top:81%;left:18%;width:64%;height:14%\}/,
+    },
+    {
       name: 'Riddle Bombs',
       asset: '/assets/games/riddle-bombs/riddle-bombs-welcome-phone-bg.webp',
       files: ['games/riddle-bombs/RiddleBombs.jsx'],
@@ -1773,4 +1781,17 @@ test('phone welcome backgrounds stay paired with clickable start controls and th
     if (audit.desktop) assert.match(source, audit.desktop, `${audit.name} desktop start mapping`);
     if (audit.portrait) assert.match(source, audit.portrait, `${audit.name} portrait start mapping`);
   }
+});
+
+test('Fry the Egg ESL prompts have missing-word answers and normalized spelling checks', async () => {
+  const { ESL_SENTENCES, normalizeEslAnswer } = await import('../games/fry-the-egg/esl-sentences.mjs');
+  assert.ok(ESL_SENTENCES.length >= 10);
+  for (const { before, after, answer } of ESL_SENTENCES) {
+    assert.ok(before.trim());
+    assert.ok(after.trim());
+    assert.match(answer, /^[A-Za-z]+$/);
+    assert.ok(!`${before} ${after}`.toLowerCase().includes(answer.toLowerCase()));
+  }
+  assert.equal(normalizeEslAnswer('  TUESDAY!  '), 'tuesday');
+  assert.equal(normalizeEslAnswer('Apple'), normalizeEslAnswer(' apple '));
 });

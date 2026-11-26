@@ -373,6 +373,8 @@ export default function GamePage() {
                   ? findMyFoodShellTheme
                   : isMoneyBlocks
                     ? moneyBlocksShellTheme
+                    : isFryTheEgg
+                      ? { nav: '#344c3b', navRaised: '#405945', navText: '#fffaf0', navMuted: '#d9e3cf', background: '#f5ebdd' }
                     : getCatalogShellTheme(gameId);
 
   // ── onComplete: called by React game components ──

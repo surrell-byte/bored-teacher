@@ -1156,10 +1156,10 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
   frytheegg: {
     name: "Fry the Egg",
     icon: "🍳",
-    desc: "Challenge a friend to a 3D cook-off: choose hidden egg effects and be first to cook an egg just right.",
-    cover: "/assets/covers/find-my-food-cover.webp",
+    desc: "Choose a classic 3D cook-off or race to spell missing words in ESL sentences against a friend or Chef AI.",
+    cover: "/assets/covers/fry-the-egg-cover.webp",
     tag: { label: "Cooking", color: "tag-bio" },
-    badge: "2 Players",
+    badge: "2 Modes",
     difficulty: "Strategy",
     barColor: "var(--gold)",
     hasComponent: true,
@@ -1248,6 +1248,18 @@ export const GAME_CATALOG: Record<string, GameCatalogEntry> = {
     barColor: "var(--teal)",
     isNew: true,
     hasComponent: true,
+  },
+  pizzafractions2: {
+    name: "Pizza Fractions 2.0",
+    icon: "🍕",
+    desc: "Serve fraction orders on a rich 3D pizza, lift slices, and solve equivalent fractions and fraction addition.",
+    cover: "/assets/covers/pizza-fractions-cover.webp",
+    tag: { label: "Math", color: "tag-bio" },
+    badge: "3D Fractions",
+    difficulty: "Intermediate",
+    barColor: "var(--gold)",
+    hasComponent: true,
+    isNew: true,
   },
 };
 
